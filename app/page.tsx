@@ -10,7 +10,7 @@ export default function Home() {
       <main>
         {/* Hero Section */}
         <section className="relative overflow-hidden border-b bg-[#F2F0F1] py-12 md:py-20">
-          <div className="container relative z-10">
+          <div className="container mx-auto px-4 relative z-10">
             <div className="grid gap-8 md:grid-cols-2 md:gap-12">
               <div className="flex flex-col justify-center space-y-6">
                 <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
@@ -60,7 +60,7 @@ export default function Home() {
 
         {/* Brand Logos */}
         <div className="border-b py-8">
-          <div className="container">
+          <div className="container mx-auto px-4">
             <div className="flex flex-wrap items-center justify-center gap-8 grayscale">
               {["Versace", "Zara", "Gucci", "Prada", "Calvin Klein"].map(
                 (brand) => (
@@ -75,7 +75,7 @@ export default function Home() {
 
         {/* New Arrivals */}
         <section className="py-16">
-          <div className="container">
+          <div className="container mx-auto px-4">
             <h2 className="mb-8 text-center text-3xl font-bold">
               NEW ARRIVALS
             </h2>
@@ -119,7 +119,7 @@ export default function Home() {
 
         {/* Top Selling */}
         <section className="py-16">
-          <div className="container">
+          <div className="container mx-auto px-4">
             <h2 className="mb-8 text-center text-3xl font-bold">TOP SELLING</h2>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
               <ProductCard
@@ -160,7 +160,7 @@ export default function Home() {
 
         {/* Browse by Style */}
         <section className="bg-gray-50 py-16">
-          <div className="container">
+          <div className="container mx-auto px-4">
             <h2 className="mb-8 text-center text-3xl font-bold">
               BROWSE BY DRESS STYLE
             </h2>
@@ -179,7 +179,7 @@ export default function Home() {
 
         {/* Testimonials */}
         <section className="py-16">
-          <div className="container">
+          <div className="container mx-auto px-4">
             <h2 className="mb-8 text-center text-3xl font-bold">
               OUR HAPPY CUSTOMERS
             </h2>
@@ -205,7 +205,7 @@ export default function Home() {
 
         {/* Newsletter */}
         <section className="bg-black py-16 text-white">
-          <div className="container">
+          <div className="container mx-auto px-4">
             <div className="mx-auto max-w-2xl text-center">
               <h2 className="mb-4 text-3xl font-bold">
                 STAY UP TO DATE ABOUT OUR LATEST OFFERS

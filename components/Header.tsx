@@ -17,7 +17,7 @@ const Header = () => {
 
       {/* Header */}
       <header className="border-b">
-        <div className="container flex items-center justify-between py-4">
+        <div className="container mx-auto flex items-center justify-between py-4">
           <div className="flex items-center gap-8">
             <Link href="/" className="text-xl font-bold">
               SHOP.CO
