@@ -39,6 +39,8 @@ export default function CartSheet() {
     },
   ]);
 
+  const [isOpen, setIsOpen] = useState(false); // Cart open/close state
+
   const updateQuantity = (id: number, newQuantity: number) => {
     setCartItems((items) =>
       items.map((item) =>
@@ -52,9 +54,9 @@ export default function CartSheet() {
   };
 
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" onClick={() => setIsOpen(true)}>
           <ShoppingCart className="h-5 w-5" />
         </Button>
       </SheetTrigger>
@@ -121,8 +123,10 @@ export default function CartSheet() {
             )}
           </span>
         </div>
-        <Link href="/Cart" className="mt-4 block w-full">
-          <Button className="w-full">View Cart</Button>
+        <Link href="/Cart">
+          <Button className="w-full mt-4" onClick={() => setIsOpen(false)}>
+            View Cart
+          </Button>
         </Link>
       </SheetContent>
     </Sheet>
