@@ -1,8 +1,9 @@
-import { ShoppingCart, Search, Menu } from "lucide-react";
+import { Search, Menu } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { Input } from "./ui/Input";
 import { Button } from "./ui/Button";
+import CartSheet from "./Cart";
 
 const Header = () => {
   return (
@@ -62,9 +63,7 @@ const Header = () => {
                 className="w-[300px] pl-10"
               />
             </div>
-            <Button variant="ghost" size="icon">
-              <ShoppingCart className="h-5 w-5" />
-            </Button>
+            <CartSheet />
             <Button variant="ghost" size="icon" className="md:hidden">
               <Menu className="h-5 w-5" />
             </Button>
