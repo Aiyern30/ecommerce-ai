@@ -124,19 +124,22 @@ export function ComparisonSummary({ products }: ComparisonSummaryProps) {
 
         <div className="mt-6">
           <h3 className="font-medium mb-3">Overall Recommendation</h3>
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {products.map((product, index) => (
               <Card
                 key={product.id}
                 className={cn(
-                  "flex-1 border",
-                  index === 1 ? "border-primary" : "border-muted"
+                  "border flex flex-col justify-between transition-all duration-300 hover:shadow-lg hover:scale-[1.02]",
+                  index === 1 ? "border-primary bg-primary/5" : "border-muted"
                 )}
               >
-                <CardHeader
-                  className={cn("pb-2", index === 1 ? "bg-primary/5" : "")}
-                >
-                  <CardTitle className="text-lg">{product.name}</CardTitle>
+                <CardHeader>
+                  <div className="flex flex-col sm:flex-row justify-between">
+                    <CardTitle className="text-lg">{product.name}</CardTitle>
+                    <span className="font-bold text-lg sm:hidden">
+                      {product.price}
+                    </span>
+                  </div>
                   {index === 1 && <Badge className="w-fit">Best Overall</Badge>}
                   {index === 0 && (
                     <Badge variant="outline" className="w-fit">
@@ -149,11 +152,13 @@ export function ComparisonSummary({ products }: ComparisonSummaryProps) {
                     </Badge>
                   )}
                 </CardHeader>
-                <CardContent className="pt-4">
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-lg">{product.price}</span>
-                    <Button size="sm">View Details</Button>
-                  </div>
+                <CardContent className="flex flex-col gap-4 sm:gap-2 sm:flex-row items-start sm:items-center justify-between">
+                  <span className="font-bold text-lg hidden sm:block">
+                    {product.price}
+                  </span>
+                  <Button size="sm" className="w-full sm:w-auto">
+                    View Details
+                  </Button>
                 </CardContent>
               </Card>
             ))}
