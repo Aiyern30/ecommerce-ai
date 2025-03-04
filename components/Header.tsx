@@ -1,4 +1,4 @@
-import { ShoppingCart, Search, Menu, X } from "lucide-react";
+import { ShoppingCart, Search, Menu } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { Input } from "./ui/Input";
@@ -8,39 +8,45 @@ const Header = () => {
   return (
     <div>
       {/* Top Banner */}
-      <div className="relative bg-black px-4 py-1 text-center text-sm text-white">
+      {/* <div className="relative bg-black px-4 py-1 text-center text-sm text-white">
         <p>Sign up and get 20% off on your first order</p>
         <button className="absolute right-2 top-1/2 -translate-y-1/2 text-white">
           <X className="h-4 w-4" />
         </button>
-      </div>
+      </div> */}
 
       {/* Header */}
       <header className="border-b">
         <div className="container mx-auto flex items-center justify-between py-4">
           <div className="flex items-center gap-8">
             <Link href="/" className="text-xl font-bold">
-              SHOP.CO
+              ShopYTL
             </Link>
             <nav className="hidden md:block">
               <ul className="flex gap-6">
                 <li>
-                  <Link href="/shop" className="hover:text-gray-600">
+                  <Link href="/Shop" className="hover:text-gray-600">
                     Shop
                   </Link>
                 </li>
                 <li>
-                  <Link href="/on-sale" className="hover:text-gray-600">
+                  <Link
+                    href="/Category#On-Sale"
+                    className="hover:text-gray-600"
+                  >
                     On Sale
                   </Link>
                 </li>
                 <li>
-                  <Link href="/new-arrivals" className="hover:text-gray-600">
+                  <Link
+                    href="/Category#New-Arrivals"
+                    className="hover:text-gray-600"
+                  >
                     New Arrivals
                   </Link>
                 </li>
                 <li>
-                  <Link href="/brands" className="hover:text-gray-600">
+                  <Link href="/Category#Brands" className="hover:text-gray-600">
                     Brands
                   </Link>
                 </li>
