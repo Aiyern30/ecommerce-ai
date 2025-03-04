@@ -1,21 +1,17 @@
-import { Search, Menu } from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import { Search, Menu, X } from "lucide-react";
 import Link from "next/link";
-import React from "react";
 import { Input } from "./ui/Input";
 import { Button } from "./ui/Button";
 import CartSheet from "./Cart";
 
 const Header = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <div>
-      {/* Top Banner */}
-      {/* <div className="relative bg-black px-4 py-1 text-center text-sm text-white">
-        <p>Sign up and get 20% off on your first order</p>
-        <button className="absolute right-2 top-1/2 -translate-y-1/2 text-white">
-          <X className="h-4 w-4" />
-        </button>
-      </div> */}
-
       {/* Header */}
       <header className="fixed top-0 left-0 w-full bg-white shadow-md border-b z-50">
         <div className="container mx-auto flex items-center justify-between p-4">
@@ -23,6 +19,7 @@ const Header = () => {
             <Link href="/" className="text-xl font-bold">
               ShopYTL
             </Link>
+            {/* Desktop Navigation */}
             <nav className="hidden md:block">
               <ul className="flex gap-6">
                 <li>
@@ -54,6 +51,8 @@ const Header = () => {
               </ul>
             </nav>
           </div>
+
+          {/* Right Side Icons */}
           <div className="flex items-center gap-4">
             <div className="relative hidden md:block">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -64,11 +63,66 @@ const Header = () => {
               />
             </div>
             <CartSheet />
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <Menu className="h-5 w-5" />
+
+            {/* Mobile Menu Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setMenuOpen(!menuOpen)}
+            >
+              {menuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </Button>
           </div>
         </div>
+
+        {/* Mobile Dropdown Menu */}
+        {menuOpen && (
+          <nav className="md:hidden absolute top-full left-0 w-full bg-white shadow-lg border-b">
+            <ul className="flex flex-col gap-4 p-4">
+              <li>
+                <Link
+                  href="/Shop"
+                  className="block w-full py-2"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Shop
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/Category#On-Sale"
+                  className="block w-full py-2"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  On Sale
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/Category#New-Arrivals"
+                  className="block w-full py-2"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  New Arrivals
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/Category#Brands"
+                  className="block w-full py-2"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Brands
+                </Link>
+              </li>
+            </ul>
+          </nav>
+        )}
       </header>
     </div>
   );
