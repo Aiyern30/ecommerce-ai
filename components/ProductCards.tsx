@@ -1,4 +1,4 @@
-import { Star } from "lucide-react";
+import { Star, ShoppingCart, Heart, ZoomIn } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -20,15 +20,31 @@ export function ProductCard({
   image,
 }: ProductCardProps) {
   return (
-    <Link href="#" className="group block">
+    <Link href="#" className="group block relative">
       <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100">
+        {/* Product Image */}
         <Image
           src={image || "/placeholder.svg"}
           alt={name}
           fill
           className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
+
+        {/* Hover Icons */}
+        <div className="absolute left-4 bottom-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <button className="p-2 bg-white rounded-full shadow-md hover:bg-gray-200">
+            <ShoppingCart className="h-5 w-5 text-blue-600" />
+          </button>
+          <button className="p-2 bg-white rounded-full shadow-md hover:bg-gray-200">
+            <ZoomIn className="h-5 w-5 text-blue-600" />
+          </button>
+          <button className="p-2 bg-white rounded-full shadow-md hover:bg-gray-200">
+            <Heart className="h-5 w-5 text-blue-600" />
+          </button>
+        </div>
       </div>
+
+      {/* Product Details */}
       <div className="mt-4 space-y-2">
         <h3 className="font-medium">{name}</h3>
         <div className="flex items-center gap-2">
