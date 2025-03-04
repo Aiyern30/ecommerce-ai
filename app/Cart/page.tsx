@@ -96,7 +96,8 @@ export default function CartPage() {
                     <Image
                       src={item.image || "/placeholder.svg"}
                       alt={item.name}
-                      fill
+                      width={96}
+                      height={96}
                       className="object-cover"
                     />
                   </div>
