@@ -1,8 +1,9 @@
-import { ShoppingCart, Search, Menu } from "lucide-react";
+import { Search, Menu } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { Input } from "./ui/Input";
 import { Button } from "./ui/Button";
+import CartSheet from "./Cart";
 
 const Header = () => {
   return (
@@ -16,8 +17,8 @@ const Header = () => {
       </div> */}
 
       {/* Header */}
-      <header className="border-b">
-        <div className="container mx-auto flex items-center justify-between py-4">
+      <header className="fixed top-0 left-0 w-full bg-white shadow-md border-b z-50">
+        <div className="container mx-auto flex items-center justify-between p-4">
           <div className="flex items-center gap-8">
             <Link href="/" className="text-xl font-bold">
               ShopYTL
@@ -62,9 +63,7 @@ const Header = () => {
                 className="w-[300px] pl-10"
               />
             </div>
-            <Button variant="ghost" size="icon">
-              <ShoppingCart className="h-5 w-5" />
-            </Button>
+            <CartSheet />
             <Button variant="ghost" size="icon" className="md:hidden">
               <Menu className="h-5 w-5" />
             </Button>
