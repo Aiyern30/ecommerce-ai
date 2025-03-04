@@ -17,7 +17,7 @@ const Header = () => {
       </div> */}
 
       {/* Header */}
-      <header className="border-b">
+      <header className="fixed top-0 left-0 w-full bg-white shadow-md border-b z-50">
         <div className="container mx-auto flex items-center justify-between p-4">
           <div className="flex items-center gap-8">
             <Link href="/" className="text-xl font-bold">

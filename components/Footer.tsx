@@ -8,7 +8,7 @@ const Footer = () => {
         <div className="container mx-auto px-4">
           <div className="grid gap-8 md:grid-cols-4">
             <div>
-              <h3 className="mb-4 text-lg font-bold">SHOP.CO</h3>
+              <h3 className="mb-4 text-lg font-bold">Shop YTL</h3>
               <p className="text-sm text-muted-foreground">
                 We have clothes that suits your style and which you&apos;re
                 proud to wear.
