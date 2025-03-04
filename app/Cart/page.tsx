@@ -151,21 +151,33 @@ export default function CartPage() {
             <div className="rounded-lg border bg-white p-6">
               <h2 className="text-lg font-semibold">Order Summary</h2>
               <div className="mt-6 space-y-4">
-                <div className="flex justify-between">
+                {cartItems.map((item) => (
+                  <div key={item.id} className="flex justify-between">
+                    <span>
+                      {item.name} (x{item.quantity})
+                    </span>
+                    <span className="font-medium">
+                      ${(item.price * item.quantity).toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+                <div className="flex justify-between border-t pt-4">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span className="font-medium">${subtotal}</span>
+                  <span className="font-medium">${subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-red-500">
                   <span>Discount (-20%)</span>
-                  <span>-${discount}</span>
+                  <span>-${discount.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Delivery Fee</span>
-                  <span className="font-medium">${deliveryFee}</span>
+                  <span className="font-medium">${deliveryFee.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between border-t pt-4">
                   <span className="text-base font-semibold">Total</span>
-                  <span className="text-base font-semibold">${total}</span>
+                  <span className="text-base font-semibold">
+                    ${total.toFixed(2)}
+                  </span>
                 </div>
               </div>
 
