@@ -33,11 +33,11 @@ export function PricingTab({ products, itemCount }: PricingTabProps) {
         <Card
           key={product.id}
           className={cn(
-            "h-full flex flex-col",
-            index === 1 ? "border-primary" : ""
+            "h-full flex flex-col transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg",
+            index === 1 ? "border-primary bg-primary/5 hover:bg-primary/10" : ""
           )}
         >
-          <CardHeader className={cn(index === 1 ? "bg-primary/5" : "")}>
+          <CardHeader>
             <CardTitle>{product.name}</CardTitle>
             <CardDescription>
               <div className="mt-2">
