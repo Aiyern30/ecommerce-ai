@@ -39,10 +39,12 @@ const RelatedProductCard = ({
 );
 
 export default function ProductPage() {
+  const [selectedImage, setSelectedImage] = useState("/placeholder.svg");
   const [selectedColor, setSelectedColor] = useState("olive");
   const [selectedSize, setSelectedSize] = useState("large");
   const [quantity, setQuantity] = useState(1);
 
+  const images = ["/placeholder.svg", "/placeholder2.svg", "/placeholder3.svg"];
   const colors = [
     { name: "olive", class: "bg-[#4A5043]" },
     { name: "forest", class: "bg-[#1B4B33]" },
@@ -75,30 +77,34 @@ export default function ProductPage() {
       <div className="container mx-auto px-4 pb-16 pt-6">
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Product Images */}
-          <div className="flex gap-4">
-            <div className="flex flex-col gap-4">
-              {[1, 2, 3].map((i) => (
+          <div>
+            {/* Main Image */}
+            <div className="relative w-full h-80 sm:h-[500px] rounded-lg overflow-hidden bg-white">
+              <Image
+                src={selectedImage}
+                alt="Main product image"
+                fill
+                className="object-cover"
+              />
+            </div>
+            {/* Thumbnails */}
+            <div className="mt-4 flex justify-center gap-2 sm:gap-4">
+              {images.map((img, i) => (
                 <button
                   key={i}
-                  className="relative h-20 w-20 overflow-hidden rounded-lg border"
+                  onClick={() => setSelectedImage(img)}
+                  className={`relative h-16 w-16 overflow-hidden rounded-lg border ${
+                    selectedImage === img ? "ring-2 ring-black" : ""
+                  }`}
                 >
                   <Image
-                    src={`/placeholder.svg`}
+                    src={img}
                     alt={`Product image ${i}`}
                     fill
                     className="object-cover"
                   />
                 </button>
               ))}
-            </div>
-            <div className="relative flex-1 rounded-lg bg-white">
-              <Image
-                src={`/placeholder.svg`}
-                alt="Main product image"
-                width={600}
-                height={600}
-                className="rounded-lg object-cover"
-              />
             </div>
           </div>
 
