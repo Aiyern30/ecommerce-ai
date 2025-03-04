@@ -17,37 +17,64 @@ interface CartItem {
 }
 
 export default function CartPage() {
-  // const [cartItems, setCartItems] = useState<CartItem[]>([
-  //   {
-  //     id: 1,
-  //     name: "Gradient Graphic T-shirt",
-  //     size: "Large",
-  //     color: "White",
-  //     price: 145,
-  //     quantity: 1,
-  //     image: "/placeholder.svg",
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Checkered Shirt",
-  //     size: "Medium",
-  //     color: "Red",
-  //     price: 180,
-  //     quantity: 1,
-  //     image: "/placeholder.svg",
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Skinny Fit Jeans",
-  //     size: "Large",
-  //     color: "Blue",
-  //     price: 240,
-  //     quantity: 1,
-  //     image: "/placeholder.svg",
-  //   },
-  // ]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([
+    {
+      id: 1,
+      name: "Gradient Graphic T-shirt",
+      size: "Large",
+      color: "White",
+      price: 145,
+      quantity: 1,
+      image: "/placeholder.svg",
+    },
+    {
+      id: 2,
+      name: "Checkered Shirt",
+      size: "Medium",
+      color: "Red",
+      price: 180,
+      quantity: 1,
+      image: "/placeholder.svg",
+    },
+    {
+      id: 3,
+      name: "Skinny Fit Jeans",
+      size: "Large",
+      color: "Blue",
+      price: 240,
+      quantity: 1,
+      image: "/placeholder.svg",
+    },
+    {
+      id: 4,
+      name: "Gradient Graphic T-shirt",
+      size: "Large",
+      color: "White",
+      price: 145,
+      quantity: 1,
+      image: "/placeholder.svg",
+    },
+    {
+      id: 5,
+      name: "Checkered Shirt",
+      size: "Medium",
+      color: "Red",
+      price: 180,
+      quantity: 1,
+      image: "/placeholder.svg",
+    },
+    {
+      id: 6,
+      name: "Skinny Fit Jeans",
+      size: "Large",
+      color: "Blue",
+      price: 240,
+      quantity: 1,
+      image: "/placeholder.svg",
+    },
+  ]);
 
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  // const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   const updateQuantity = (id: number, newQuantity: number) => {
     setCartItems((items) =>
@@ -164,7 +191,7 @@ export default function CartPage() {
             </div>
 
             {/* Order Summary */}
-            <div className="lg:sticky lg:top-4">
+            <div className="lg:col-span-1 self-start sticky top-28">
               <div className="rounded-lg border bg-white p-6">
                 <h2 className="text-lg font-semibold">Order Summary</h2>
                 <div className="mt-6 space-y-4">
