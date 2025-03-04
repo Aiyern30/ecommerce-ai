@@ -119,7 +119,7 @@ export default function CartPage() {
                           onClick={() =>
                             updateQuantity(item.id, item.quantity - 1)
                           }
-                          className="p-2"
+                          className="p-2 cursor-pointer"
                         >
                           <Minus className="h-4 w-4" />
                         </button>
@@ -128,14 +128,14 @@ export default function CartPage() {
                           onClick={() =>
                             updateQuantity(item.id, item.quantity + 1)
                           }
-                          className="p-2"
+                          className="p-2 cursor-pointer"
                         >
                           <Plus className="h-4 w-4" />
                         </button>
                       </div>
                       <button
                         onClick={() => removeItem(item.id)}
-                        className="text-red-500 hover:text-red-600"
+                        className="text-red-500 hover:text-red-600 cursor-pointer"
                       >
                         <Trash2 className="h-5 w-5" />
                       </button>
