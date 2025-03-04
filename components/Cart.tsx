@@ -22,23 +22,23 @@ interface CartItem {
 }
 
 export default function CartSheet() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]); // Empty cart initially
-  // const [cartItems, setCartItems] = useState<CartItem[]>([
-  //   {
-  //     id: 1,
-  //     name: "Gradient Graphic T-shirt",
-  //     price: 145,
-  //     quantity: 1,
-  //     image: "/placeholder.svg",
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Checkered Shirt",
-  //     price: 180,
-  //     quantity: 1,
-  //     image: "/placeholder.svg",
-  //   },
-  // ]);
+  // const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([
+    {
+      id: 1,
+      name: "Gradient Graphic T-shirt",
+      price: 145,
+      quantity: 1,
+      image: "/placeholder.svg",
+    },
+    {
+      id: 2,
+      name: "Checkered Shirt",
+      price: 180,
+      quantity: 1,
+      image: "/placeholder.svg",
+    },
+  ]);
   const [isOpen, setIsOpen] = useState(false);
 
   const updateQuantity = (id: number, newQuantity: number) => {
