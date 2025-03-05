@@ -76,7 +76,7 @@ export default function CartSheet() {
               className="mb-4"
             />
             <p className="text-gray-500 text-xl">Your cart is empty.</p>
-            <Link href="/Shop">
+            <Link href="/Product">
               <Button className="mt-4" onClick={() => setIsOpen(false)}>
                 Continue Shopping
               </Button>

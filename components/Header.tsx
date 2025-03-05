@@ -23,13 +23,13 @@ const Header = () => {
             <nav className="hidden md:block">
               <ul className="flex gap-6">
                 <li>
-                  <Link href="/Shop" className="hover:text-gray-600">
+                  <Link href="/Product" className="hover:text-gray-600">
                     Shop
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="/Category#On-Sale"
+                    href="/Category/On-Sale"
                     className="hover:text-gray-600"
                   >
                     On Sale
@@ -37,14 +37,14 @@ const Header = () => {
                 </li>
                 <li>
                   <Link
-                    href="/Category#New-Arrivals"
+                    href="/Category/New-Arrivals"
                     className="hover:text-gray-600"
                   >
                     New Arrivals
                   </Link>
                 </li>
                 <li>
-                  <Link href="/Category#Brands" className="hover:text-gray-600">
+                  <Link href="/Category/Brands" className="hover:text-gray-600">
                     Brands
                   </Link>
                 </li>
@@ -95,7 +95,7 @@ const Header = () => {
               </li>
               <li>
                 <Link
-                  href="/Category#On-Sale"
+                  href="/Category/On-Sale"
                   className="block w-full py-2"
                   onClick={() => setMenuOpen(false)}
                 >
@@ -104,7 +104,7 @@ const Header = () => {
               </li>
               <li>
                 <Link
-                  href="/Category#New-Arrivals"
+                  href="/Category/New-Arrivals"
                   className="block w-full py-2"
                   onClick={() => setMenuOpen(false)}
                 >
@@ -113,7 +113,7 @@ const Header = () => {
               </li>
               <li>
                 <Link
-                  href="/Category#Brands"
+                  href="/Category/Brands"
                   className="block w-full py-2"
                   onClick={() => setMenuOpen(false)}
                 >
