@@ -6,7 +6,7 @@ import { Button } from "@/components/ui";
 import { ProductCard } from "@/components/ProductCards";
 import { FiltersSidebar } from "@/components/Category/FiltersSidebar";
 
-export default function CategoryPage() {
+export default function ProductPage() {
   const products = [
     {
       name: "Gradient Graphic T-shirt",
@@ -89,7 +89,7 @@ export default function CategoryPage() {
             Home
           </Link>
           <ChevronRight className="h-4 w-4" />
-          <span className="text-gray-900">Casual</span>
+          <span className="text-gray-900">Product</span>
         </div>
 
         {/* Product Grid */}
