@@ -1,57 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui";
 import { ProductCard } from "@/components/ProductCards";
 import { FiltersSidebar } from "@/components/Category/FiltersSidebar";
 
 export default function CategoryPage() {
+  const pathname = usePathname(); // Get current path
+  const category = pathname.split("/").pop()?.replace(/-/g, " "); // Extract last part of the path & format
+
   const products = [
-    {
-      name: "Gradient Graphic T-shirt",
-      price: 145,
-      rating: 3.5,
-      reviews: 145,
-      image: "/placeholder.svg",
-    },
-    {
-      name: "Polo with Tipping Details",
-      price: 180,
-      rating: 4.5,
-      reviews: 152,
-      image: "/placeholder.svg",
-    },
-    {
-      name: "Black Striped T-shirt",
-      price: 120,
-      originalPrice: 160,
-      rating: 5.0,
-      reviews: 145,
-      image: "/placeholder.svg",
-    },
-    {
-      name: "Gradient Graphic T-shirt",
-      price: 145,
-      rating: 3.5,
-      reviews: 145,
-      image: "/placeholder.svg",
-    },
-    {
-      name: "Polo with Tipping Details",
-      price: 180,
-      rating: 4.5,
-      reviews: 152,
-      image: "/placeholder.svg",
-    },
-    {
-      name: "Black Striped T-shirt",
-      price: 120,
-      originalPrice: 160,
-      rating: 5.0,
-      reviews: 145,
-      image: "/placeholder.svg",
-    },
     {
       name: "Gradient Graphic T-shirt",
       price: 145,
@@ -89,7 +49,7 @@ export default function CategoryPage() {
             Home
           </Link>
           <ChevronRight className="h-4 w-4" />
-          <span className="text-gray-900">Casual</span>
+          <span className="text-gray-900 capitalize">{category}</span>
         </div>
 
         {/* Product Grid */}
