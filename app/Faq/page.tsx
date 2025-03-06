@@ -73,10 +73,10 @@ export default function ContactPage() {
     <div className="container mx-auto px-4 py-12">
       {/* Header Section */}
       <div className="text-center mb-16">
-        <h1 className="text-4xl font-bold mb-4">You can ask us questions</h1>
+        <h1 className="text-4xl font-bold mb-4">Frequently Asked Questions</h1>
         <p className="text-gray-600 max-w-2xl mx-auto">
-          Contact us for all your questions and opinions, or you can solve your
-          problems faster by reaching out to our contact offices.
+          Find answers to common questions about our services, policies, and
+          more. If you need further help, feel free to contact us
         </p>
       </div>
 
@@ -84,9 +84,7 @@ export default function ContactPage() {
       <div className="grid md:grid-cols-2 gap-12 mb-16">
         {/* Left Column - FAQ Section */}
         <div>
-          <h2 className="text-2xl font-bold mb-4">
-            Frequently Asked Questions
-          </h2>
+          <h2 className="text-2xl font-bold mb-4">General Information</h2>
           <div className="space-y-6">
             {faqs.map((faq, index) => (
               <div key={index}>

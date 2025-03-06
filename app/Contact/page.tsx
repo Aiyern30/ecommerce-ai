@@ -88,10 +88,10 @@ export default function ContactPage() {
     <div className="container mx-auto px-4 py-12">
       {/* Header Section */}
       <div className="text-center mb-16">
-        <h1 className="text-4xl font-bold mb-4">You can ask us questions</h1>
+        <h1 className="text-4xl font-bold mb-4">Get in Touch with Us</h1>
         <p className="text-gray-600 max-w-2xl mx-auto">
-          Contact us for all your questions and opinions, or you can solve your
-          problems faster by reaching out to our contact offices.
+          Have questions or need support? Reach out to us through our contact
+          form, or visit our headquarters for direct assistance.
         </p>
       </div>
 
