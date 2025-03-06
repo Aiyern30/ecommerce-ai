@@ -69,95 +69,103 @@ export function FiltersSidebar({
   };
 
   const FiltersContent = () => (
-    <div className="px-4 py-10 h-full overflow-auto">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Filters</h2>
-        <SlidersHorizontal className="h-5 w-5" />
+    <div className="flex flex-col h-full">
+      {/* Header - Sticky */}
+      <div className="sticky top-0 z-10 bg-white px-4 py-4 border-b">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Filters</h2>
+          <SlidersHorizontal className="h-5 w-5" />
+        </div>
       </div>
 
-      {/* Categories */}
-      <div className="mt-6 space-y-4">
-        {categories.map((category) => (
-          <button
-            key={category.name}
-            className="flex w-full items-center justify-between text-sm hover:text-gray-900"
-          >
-            <span>{category.name}</span>
-            <span className="text-muted-foreground">({category.count})</span>
-          </button>
-        ))}
-      </div>
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-auto px-4 py-4">
+        {/* Categories */}
+        <div className="mt-4 space-y-4">
+          {categories.map((category) => (
+            <button
+              key={category.name}
+              className="flex w-full items-center justify-between text-sm hover:text-gray-900"
+            >
+              <span>{category.name}</span>
+              <span className="text-muted-foreground">({category.count})</span>
+            </button>
+          ))}
+        </div>
 
-      {/* Price Range */}
-      <div className="mt-6">
-        <h3 className="flex items-center justify-between text-sm font-medium">
-          Price
-          <ChevronDown className="h-4 w-4" />
-        </h3>
-        <div className="mt-4">
-          <Slider
-            defaultValue={[50]}
-            max={200}
-            step={1}
-            value={priceRange}
-            onValueChange={setPriceRange}
-            className="py-4"
-          />
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">
-              ${priceRange[0]}
-            </span>
-            <span className="text-sm text-muted-foreground">$200</span>
+        {/* Price Range */}
+        <div className="mt-6">
+          <h3 className="flex items-center justify-between text-sm font-medium">
+            Price
+            <ChevronDown className="h-4 w-4" />
+          </h3>
+          <div className="mt-4">
+            <Slider
+              defaultValue={[50]}
+              max={200}
+              step={1}
+              value={priceRange}
+              onValueChange={setPriceRange}
+              className="py-4"
+            />
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">
+                ${priceRange[0]}
+              </span>
+              <span className="text-sm text-muted-foreground">$200</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Colors */}
+        <div className="mt-6">
+          <h3 className="flex items-center justify-between text-sm font-medium">
+            Colors
+            <ChevronDown className="h-4 w-4" />
+          </h3>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {colors.map((color) => (
+              <button
+                key={color.name}
+                onClick={() => toggleColor(color.name)}
+                className={`h-8 w-8 rounded-full ${color.class} ${
+                  selectedColors.includes(color.name)
+                    ? "ring-2 ring-black ring-offset-2"
+                    : ""
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Sizes */}
+        <div className="mt-6">
+          <h3 className="flex items-center justify-between text-sm font-medium">
+            Size
+            <ChevronDown className="h-4 w-4" />
+          </h3>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {sizes.map((size) => (
+              <button
+                key={size}
+                onClick={() => toggleSize(size)}
+                className={`rounded px-3 py-1 text-sm ${
+                  selectedSizes.includes(size)
+                    ? "bg-gray-900 text-white"
+                    : "bg-gray-100 hover:bg-gray-200"
+                }`}
+              >
+                {size}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Colors */}
-      <div className="mt-6">
-        <h3 className="flex items-center justify-between text-sm font-medium">
-          Colors
-          <ChevronDown className="h-4 w-4" />
-        </h3>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {colors.map((color) => (
-            <button
-              key={color.name}
-              onClick={() => toggleColor(color.name)}
-              className={`h-8 w-8 rounded-full ${color.class} ${
-                selectedColors.includes(color.name)
-                  ? "ring-2 ring-black ring-offset-2"
-                  : ""
-              }`}
-            />
-          ))}
-        </div>
+      {/* Sticky Apply Button */}
+      <div className="sticky bottom-0 z-10 bg-white px-4 py-4 border-t">
+        <Button className="w-full">Apply Filter</Button>
       </div>
-
-      {/* Sizes */}
-      <div className="mt-6">
-        <h3 className="flex items-center justify-between text-sm font-medium">
-          Size
-          <ChevronDown className="h-4 w-4" />
-        </h3>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {sizes.map((size) => (
-            <button
-              key={size}
-              onClick={() => toggleSize(size)}
-              className={`rounded px-3 py-1 text-sm ${
-                selectedSizes.includes(size)
-                  ? "bg-gray-900 text-white"
-                  : "bg-gray-100 hover:bg-gray-200"
-              }`}
-            >
-              {size}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Apply Button */}
-      <Button className="mt-6 w-full">Apply Filter</Button>
     </div>
   );
 
