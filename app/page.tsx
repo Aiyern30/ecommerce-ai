@@ -3,6 +3,7 @@ import { Button, Input } from "@/components/ui";
 import { ProductCard } from "@/components/ProductCards";
 import { StyleCard } from "@/components/StyleCards";
 import { TestimonialCard } from "@/components/TestimonialCard";
+import LatestBlog from "@/components/LatestBlog";
 
 export default function Home() {
   return (
@@ -173,6 +174,14 @@ export default function Home() {
                 <StyleCard title="Formal" image="/placeholder.svg" />
                 <StyleCard title="Gym" image="/placeholder.svg" />
               </div>
+            </div>
+          </div>
+        </section>
+        <section className="py-16">
+          <div className="container mx-auto px-4">
+            <h2 className="mb-8 text-center text-3xl font-bold">LATEST BLOG</h2>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
+              <LatestBlog />
             </div>
           </div>
         </section>
