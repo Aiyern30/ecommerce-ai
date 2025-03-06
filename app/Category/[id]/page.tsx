@@ -83,8 +83,7 @@ export default function CategoryPage() {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-50 ">
-      {/* Sidebar - Sticky */}
+    <div className="flex h-screen bg-gray-50">
       <div className="hidden md:flex w-64 flex-shrink-0 bg-white border-r sticky top-0 h-screen overflow-hidden">
         <FiltersSidebar
           isFilterOpen={isFilterOpen}
@@ -92,34 +91,35 @@ export default function CategoryPage() {
         />
       </div>
 
-      {/* Main Content - Scrollable */}
-      <div className="flex-1 overflow-auto px-8 py-6 container mx-auto">
-        <BreadcrumbNav
-          currentPage={category || "Category"}
-          showFilterButton={true}
-          onFilterClick={() => setIsFilterOpen(true)}
-        />
-
-        {/* Product Grid */}
-        <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {products.map((product, i) => (
-            <ProductCard key={i} {...product} />
-          ))}
+      <div className="flex-1 flex flex-col min-w-0">
+        <div className="sticky top-0 bg-white z-10 shadow-sm px-8 py-5">
+          <BreadcrumbNav
+            currentPage={category || "Category"}
+            showFilterButton={true}
+            onFilterClick={() => setIsFilterOpen(true)}
+          />
         </div>
 
-        {/* Pagination */}
-        <div className="mt-8 flex items-center justify-center gap-2">
-          <Button variant="outline" size="icon">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          {[1, 2, 3, "...", 8, 9, 10].map((page, i) => (
-            <Button key={i} variant={page === 1 ? "default" : "outline"}>
-              {page}
+        <div className="flex-1 overflow-auto px-8 py-6">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {products.map((product, i) => (
+              <ProductCard key={i} {...product} />
+            ))}
+          </div>
+
+          <div className="mt-8 flex items-center justify-center gap-2 pb-6">
+            <Button variant="outline" size="icon">
+              <ChevronLeft className="h-4 w-4" />
             </Button>
-          ))}
-          <Button variant="outline" size="icon">
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+            {[1, 2, 3, "...", 8, 9, 10].map((page, i) => (
+              <Button key={i} variant={page === 1 ? "default" : "outline"}>
+                {page}
+              </Button>
+            ))}
+            <Button variant="outline" size="icon">
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>
