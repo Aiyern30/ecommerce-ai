@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 interface ChatMessageProps {
-  role: "user" | "assistant" | "system";
+  role: "user" | "assistant" | "system" | "data";
   content: string;
 }
 
