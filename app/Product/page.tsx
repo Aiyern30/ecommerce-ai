@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui";
 import { ProductCard } from "@/components/ProductCards";
 import { FiltersSidebar } from "@/components/Category/FiltersSidebar";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 export default function ProductPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -47,27 +47,11 @@ export default function ProductPage() {
 
       {/* Main Content - Scrollable */}
       <div className="flex-1 min-w-0 overflow-auto px-8 py-6 container mx-auto">
-        {/* Breadcrumbs */}
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <Link href="/" className="hover:text-gray-900">
-              Home
-            </Link>
-            <ChevronRight className="h-4 w-4" />
-            <span className="text-gray-900">Product</span>
-          </div>
-
-          <div className="md:hidden">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2"
-              onClick={() => setIsFilterOpen(true)}
-            >
-              Filters
-            </Button>
-          </div>
-        </div>
+        <BreadcrumbNav
+          currentPage="Product"
+          showFilterButton={true}
+          onFilterClick={() => setIsFilterOpen(true)}
+        />
 
         {/* Product Grid */}
         <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
