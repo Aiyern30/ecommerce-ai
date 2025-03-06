@@ -1,13 +1,13 @@
 "use client";
 
 import type React from "react";
-
 import { useState, useRef, useEffect } from "react";
 import { useChat } from "ai/react";
 import { Button, Input } from "@/components/ui";
 import { Maximize2, Minimize2, X, Send } from "lucide-react";
 import ChatMessage from "./ChatMessage";
 import TypingIndicator from "./TypingIndicator";
+import { cn } from "@/lib/utils";
 
 interface ChatWindowProps {
   isExpanded: boolean;
@@ -42,18 +42,16 @@ export default function ChatWindow({
     }
   };
 
-  const windowClasses = `
-    bg-white dark:bg-slate-900 rounded-lg shadow-xl overflow-hidden flex flex-col
-    transition-all duration-300 ease-in-out
-    ${
-      isExpanded
-        ? "fixed inset-4 z-50 md:inset-10"
-        : "w-80 h-96 md:w-96 md:h-[32rem]"
-    }
-  `;
-
   return (
-    <div className={windowClasses}>
+    <div
+      className={cn(
+        "bg-white dark:bg-slate-900 rounded-lg shadow-xl overflow-hidden flex flex-col border",
+        "border-gray-300 dark:border-slate-700 transition-all duration-300 ease-in-out",
+        isExpanded
+          ? "fixed inset-4 z-50 md:inset-10"
+          : "w-80 h-96 md:w-96 md:h-[32rem]"
+      )}
+    >
       {/* Chat header */}
       <div className="flex items-center justify-between p-4 border-b dark:border-slate-700">
         <h2 className="font-semibold text-slate-800 dark:text-slate-100">
