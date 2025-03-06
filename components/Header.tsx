@@ -53,9 +53,7 @@ const Header = () => {
             </nav>
           </div>
 
-          {/* Right Side Icons */}
           <div className="flex items-center gap-4">
-            {/* Search bar - show only on lg screens */}
             <div className="relative hidden lg:block">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <Input
@@ -67,7 +65,6 @@ const Header = () => {
             <CartSheet />
             <WishlistSheet />
 
-            {/* Mobile Menu Button */}
             <Button
               variant="ghost"
               size="icon"
@@ -83,7 +80,6 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Mobile Dropdown Menu */}
         {menuOpen && (
           <nav className="absolute top-full left-0 w-full bg-white shadow-lg border-b lg:hidden">
             <div className="container mx-auto p-4">

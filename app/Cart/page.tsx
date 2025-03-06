@@ -121,7 +121,7 @@ export default function CartPage() {
               className="mb-4"
             />
             <p className="text-gray-500 text-3xl">Your cart is empty.</p>
-            <Link href="/Shop">
+            <Link href="/Product">
               <Button className="mt-4">Continue Shopping</Button>
             </Link>
           </div>
