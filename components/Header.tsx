@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Input } from "./ui/Input";
 import { Button } from "./ui/Button";
 import CartSheet from "./Cart";
+import WishlistSheet from "./Wishlist";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -64,6 +65,7 @@ const Header = () => {
               />
             </div>
             <CartSheet />
+            <WishlistSheet />
 
             {/* Mobile Menu Button */}
             <Button
