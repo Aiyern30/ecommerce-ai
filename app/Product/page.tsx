@@ -46,7 +46,7 @@ export default function ProductPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 px-8 py-6">
+      <div className="flex-1 px-8 py-6 container mx-auto">
         {/* Breadcrumb & Filter Button */}
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           {/* Breadcrumb */}
@@ -93,12 +93,6 @@ export default function ProductPage() {
           </Button>
         </div>
       </div>
-
-      {/* Mobile Filter Sidebar */}
-      <FiltersSidebar
-        isFilterOpen={isFilterOpen}
-        setIsFilterOpen={setIsFilterOpen}
-      />
     </div>
   );
 }
