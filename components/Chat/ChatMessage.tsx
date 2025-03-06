@@ -29,7 +29,7 @@ export default function ChatMessage({ role, content }: ChatMessageProps) {
     >
       <div
         className={cn(
-          "max-w-[80%] rounded-lg px-4 py-2",
+          "max-w-[80%] w-fit break-words break-anywhere rounded-lg px-4 py-2",
           role === "user"
             ? "bg-primary text-primary-foreground"
             : "bg-secondary text-secondary-foreground"
