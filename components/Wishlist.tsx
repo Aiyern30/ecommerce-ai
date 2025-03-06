@@ -52,7 +52,6 @@ export default function WishlistSheet() {
   // const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
 
-  // This would be replaced with your actual cart state management
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   const removeItem = (id: number) => {
@@ -60,11 +59,9 @@ export default function WishlistSheet() {
   };
 
   const addToCart = (item: WishlistItem) => {
-    // Check if item already exists in cart
     const existingItem = cartItems.find((cartItem) => cartItem.id === item.id);
 
     if (existingItem) {
-      // If item exists, increase quantity
       setCartItems((items) =>
         items.map((cartItem) =>
           cartItem.id === item.id
@@ -73,14 +70,11 @@ export default function WishlistSheet() {
         )
       );
     } else {
-      // If item doesn't exist, add it with quantity 1
       setCartItems((items) => [...items, { ...item, quantity: 1 }]);
     }
 
-    // Optionally remove from wishlist after adding to cart
-    // removeItem(item.id);
+    removeItem(item.id);
 
-    // Show a confirmation message (you could implement a toast notification here)
     alert("Item added to cart!");
   };
 
@@ -100,7 +94,7 @@ export default function WishlistSheet() {
           {wishlistItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center h-full">
               <Image
-                src="/placeholder.svg?height=300&width=300"
+                src="/shopping-cart.svg"
                 alt="Empty Wishlist"
                 width={300}
                 height={300}

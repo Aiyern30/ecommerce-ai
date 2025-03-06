@@ -62,7 +62,7 @@ export default function WishlistPage() {
         {wishlistItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-center py-12">
             <Image
-              src="/placeholder.svg?height=300&width=300"
+              src="/shopping-cart.svg"
               alt="Empty Wishlist"
               width={300}
               height={300}
