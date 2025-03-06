@@ -2,9 +2,23 @@
 
 import { useState } from "react";
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
-import { Slider, Button } from "@/components/ui";
+import {
+  Button,
+  Slider,
+  Sheet,
+  // SheetTrigger,
+  SheetContent,
+} from "@/components/ui/";
 
-export function FiltersSidebar() {
+interface FiltersSidebarProps {
+  isFilterOpen: boolean;
+  setIsFilterOpen: (open: boolean) => void;
+}
+
+export function FiltersSidebar({
+  isFilterOpen,
+  setIsFilterOpen,
+}: FiltersSidebarProps) {
   const [priceRange, setPriceRange] = useState([50]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
@@ -54,8 +68,8 @@ export function FiltersSidebar() {
     );
   };
 
-  return (
-    <div className="sticky top-16 h-screen overflow-auto w-64 flex-shrink-0 border-r bg-white px-4 py-6">
+  const FiltersContent = () => (
+    <div className="px-4 py-6 h-full overflow-auto">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Filters</h2>
         <SlidersHorizontal className="h-5 w-5" />
@@ -145,5 +159,20 @@ export function FiltersSidebar() {
       {/* Apply Button */}
       <Button className="mt-6 w-full">Apply Filter</Button>
     </div>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block w-64 flex-shrink-0 border-r bg-white">
+        <FiltersContent />
+      </div>
+
+      <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+        <SheetContent side="left" className="h-screen overflow-auto">
+          <FiltersContent />
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }
