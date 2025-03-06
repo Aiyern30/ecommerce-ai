@@ -36,18 +36,65 @@ export default function CategoryPage() {
       reviews: 145,
       image: "/placeholder.svg",
     },
+    {
+      name: "Gradient Graphic T-shirt",
+      price: 145,
+      rating: 3.5,
+      reviews: 145,
+      image: "/placeholder.svg",
+    },
+    {
+      name: "Polo with Tipping Details",
+      price: 180,
+      rating: 4.5,
+      reviews: 152,
+      image: "/placeholder.svg",
+    },
+    {
+      name: "Black Striped T-shirt",
+      price: 120,
+      originalPrice: 160,
+      rating: 5.0,
+      reviews: 145,
+      image: "/placeholder.svg",
+    },
+    {
+      name: "Gradient Graphic T-shirt",
+      price: 145,
+      rating: 3.5,
+      reviews: 145,
+      image: "/placeholder.svg",
+    },
+    {
+      name: "Polo with Tipping Details",
+      price: 180,
+      rating: 4.5,
+      reviews: 152,
+      image: "/placeholder.svg",
+    },
+    {
+      name: "Black Striped T-shirt",
+      price: 120,
+      originalPrice: 160,
+      rating: 5.0,
+      reviews: 145,
+      image: "/placeholder.svg",
+    },
   ];
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <div className="hidden md:block">
+    <div className="flex h-screen bg-gray-50 ">
+      {/* Sidebar - Sticky */}
+      <div className="hidden md:flex w-64 flex-shrink-0 bg-white border-r sticky top-0 h-screen overflow-hidden">
         <FiltersSidebar
           isFilterOpen={isFilterOpen}
           setIsFilterOpen={setIsFilterOpen}
         />
       </div>
 
-      <div className="flex-1 px-8 py-6 container mx-auto">
+      {/* Main Content - Scrollable */}
+      <div className="flex-1 overflow-auto px-8 py-6 container mx-auto">
+        {/* Breadcrumbs */}
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <Link href="/" className="hover:text-gray-900">
@@ -69,12 +116,14 @@ export default function CategoryPage() {
           </div>
         </div>
 
+        {/* Product Grid */}
         <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {products.map((product, i) => (
             <ProductCard key={i} {...product} />
           ))}
         </div>
 
+        {/* Pagination */}
         <div className="mt-8 flex items-center justify-center gap-2">
           <Button variant="outline" size="icon">
             <ChevronLeft className="h-4 w-4" />

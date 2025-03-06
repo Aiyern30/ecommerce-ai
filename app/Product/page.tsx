@@ -36,20 +36,19 @@ export default function ProductPage() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block">
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
+      {/* Sidebar - Sticky */}
+      <div className="hidden md:flex w-64 flex-shrink-0 bg-white border-r sticky top-0 h-screen overflow-hidden">
         <FiltersSidebar
           isFilterOpen={isFilterOpen}
           setIsFilterOpen={setIsFilterOpen}
         />
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 px-8 py-6 container mx-auto">
-        {/* Breadcrumb & Filter Button */}
+      {/* Main Content - Scrollable */}
+      <div className="flex-1 min-w-0 overflow-auto px-8 py-6 container mx-auto">
+        {/* Breadcrumbs */}
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-          {/* Breadcrumb */}
           <div className="flex items-center gap-2">
             <Link href="/" className="hover:text-gray-900">
               Home
@@ -58,7 +57,6 @@ export default function ProductPage() {
             <span className="text-gray-900">Product</span>
           </div>
 
-          {/* Mobile Filter Button */}
           <div className="md:hidden">
             <Button
               variant="outline"
