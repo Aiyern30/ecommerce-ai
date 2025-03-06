@@ -67,7 +67,7 @@ export default function CartSheet() {
           <ShoppingCart className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="flex flex-col h-full px-4">
+      <SheetContent side="right" className="flex flex-col h-full p-4 pt-0">
         <SheetHeader className="px-0">
           <SheetTitle className="font-bold">Shopping Cart</SheetTitle>
         </SheetHeader>

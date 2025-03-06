@@ -45,7 +45,7 @@ export default function ProductPage() {
       </div>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <div className="sticky top-0 bg-white z-10 shadow-sm px-8 py-5">
+        <div className="sticky top-0 bg-white z-10 border-b px-8 py-5">
           <BreadcrumbNav
             currentPage="Product"
             showFilterButton={true}
