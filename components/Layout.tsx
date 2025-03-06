@@ -1,16 +1,46 @@
+"use client";
+
 import type React from "react";
 import Header from "./Header";
 import Footer from "./Footer";
+import { useState } from "react";
+import ChatWindow from "./Chat/ChatWindow";
+import ChatButton from "./Chat/ChatButton";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 export function Layout({ children }: LayoutProps) {
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const toggleChat = () => {
+    setIsChatOpen(!isChatOpen);
+    if (isChatOpen) {
+      setIsExpanded(false);
+    }
+  };
+
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded);
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="flex-1 pt-16">{children}</main> <Footer />
+      <main className="flex-1 pt-16">{children}</main>
+      <div className="fixed bottom-0 right-0 z-50 flex items-end p-4">
+        {isChatOpen && (
+          <ChatWindow
+            isExpanded={isExpanded}
+            onClose={toggleChat}
+            onExpand={toggleExpand}
+          />
+        )}
+        {!isChatOpen && <ChatButton onClick={toggleChat} />}
+      </div>
+      <Footer />
     </div>
   );
 }
