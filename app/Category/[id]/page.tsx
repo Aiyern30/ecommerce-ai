@@ -40,7 +40,6 @@ export default function CategoryPage() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Desktop Sidebar */}
       <div className="hidden md:block">
         <FiltersSidebar
           isFilterOpen={isFilterOpen}
@@ -48,11 +47,8 @@ export default function CategoryPage() {
         />
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 px-8 py-6">
-        {/* Breadcrumb & Filter Button */}
+      <div className="flex-1 px-8 py-6 container mx-auto">
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-          {/* Breadcrumb */}
           <div className="flex items-center gap-2">
             <Link href="/" className="hover:text-gray-900">
               Home
@@ -61,7 +57,6 @@ export default function CategoryPage() {
             <span className="text-gray-900 capitalize">{category}</span>
           </div>
 
-          {/* Mobile Filter Button */}
           <div className="md:hidden">
             <Button
               variant="outline"
@@ -74,14 +69,12 @@ export default function CategoryPage() {
           </div>
         </div>
 
-        {/* Product Grid */}
         <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {products.map((product, i) => (
             <ProductCard key={i} {...product} />
           ))}
         </div>
 
-        {/* Pagination */}
         <div className="mt-8 flex items-center justify-center gap-2">
           <Button variant="outline" size="icon">
             <ChevronLeft className="h-4 w-4" />

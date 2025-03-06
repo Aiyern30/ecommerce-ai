@@ -69,7 +69,7 @@ export function FiltersSidebar({
   };
 
   const FiltersContent = () => (
-    <div className="px-4 py-6 h-full overflow-auto">
+    <div className="px-4 py-10 h-full overflow-auto">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Filters</h2>
         <SlidersHorizontal className="h-5 w-5" />
