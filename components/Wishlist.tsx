@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Heart, Trash2, ShoppingBag } from "lucide-react";
+import { toast } from "sonner";
 import {
   Button,
   Sheet,
@@ -11,8 +12,16 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
 } from "@/components/ui/";
-import { toast } from "sonner";
 
 interface WishlistItem {
   id: number;
@@ -99,13 +108,17 @@ export default function WishlistSheet() {
     },
   ]);
 
-  // const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
-
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [selectedItem, setSelectedItem] = useState<WishlistItem | null>(null);
 
   const removeItem = (id: number) => {
     setWishlistItems((items) => items.filter((item) => item.id !== id));
+
+    toast.success("Item removed from wishlist!", {
+      description: "You can explore more products to add back.",
+      duration: 3000,
+      style: { background: "#16a34a", color: "#fff" },
+    });
   };
 
   const addToCart = (item: WishlistItem) => {
@@ -133,9 +146,9 @@ export default function WishlistSheet() {
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+    <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" onClick={() => setIsOpen(true)}>
+        <Button variant="ghost" size="icon">
           <Heart className="h-5 w-5" />
         </Button>
       </SheetTrigger>
@@ -156,9 +169,7 @@ export default function WishlistSheet() {
               />
               <p className="text-gray-500 text-xl">Your wishlist is empty.</p>
               <Link href="/Product">
-                <Button className="mt-4" onClick={() => setIsOpen(false)}>
-                  Explore Products
-                </Button>
+                <Button className="mt-4">Explore Products</Button>
               </Link>
             </div>
           ) : (
@@ -170,7 +181,7 @@ export default function WishlistSheet() {
                 }`}
               >
                 <Image
-                  src={item.image || "/placeholder.svg"}
+                  src={item.image}
                   alt={item.name}
                   width={50}
                   height={50}
@@ -189,12 +200,57 @@ export default function WishlistSheet() {
                     Add to Cart
                   </Button>
                 </div>
-                <button
-                  onClick={() => removeItem(item.id)}
-                  className="text-red-500 hover:text-red-600 cursor-pointer"
-                >
-                  <Trash2 className="h-5 w-5" />
-                </button>
+
+                {/* Delete Button with AlertDialog */}
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <button
+                      onClick={() => setSelectedItem(item)}
+                      className="text-red-500 hover:text-red-600 cursor-pointer"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
+                  </AlertDialogTrigger>
+                  {selectedItem && (
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Remove Item</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to remove{" "}
+                          <span className="font-semibold">
+                            {selectedItem.name}
+                          </span>{" "}
+                          from your wishlist?
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <div className="flex items-center gap-4">
+                        <Image
+                          src={selectedItem.image}
+                          alt={selectedItem.name}
+                          width={60}
+                          height={60}
+                          className="rounded"
+                        />
+                        <div>
+                          <p className="text-sm font-medium">
+                            {selectedItem.name}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            ${selectedItem.price}
+                          </p>
+                        </div>
+                      </div>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => removeItem(selectedItem.id)}
+                        >
+                          Confirm
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  )}
+                </AlertDialog>
               </div>
             ))
           )}
@@ -203,9 +259,7 @@ export default function WishlistSheet() {
         {wishlistItems.length > 0 && (
           <div className="border-t pt-4">
             <Link href="/Wishlist">
-              <Button className="w-full mt-4" onClick={() => setIsOpen(false)}>
-                View Wishlist
-              </Button>
+              <Button className="w-full mt-4">View Wishlist</Button>
             </Link>
           </div>
         )}
