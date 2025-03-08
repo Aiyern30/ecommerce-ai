@@ -4,7 +4,20 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight, Minus, Plus, Trash2, Tag } from "lucide-react";
-import { Button, Input } from "@/components/ui";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+  Button,
+  Input,
+} from "@/components/ui";
+import { toast } from "sonner";
 
 interface CartItem {
   id: number;
@@ -75,7 +88,7 @@ export default function CartPage() {
   ]);
 
   // const [cartItems, setCartItems] = useState<CartItem[]>([]);
-
+  const [selectedItem, setSelectedItem] = useState<CartItem | null>(null);
   const updateQuantity = (id: number, newQuantity: number) => {
     setCartItems((items) =>
       items.map((item) =>
@@ -86,6 +99,10 @@ export default function CartPage() {
 
   const removeItem = (id: number) => {
     setCartItems((items) => items.filter((item) => item.id !== id));
+    toast.success("Item removed from cart!", {
+      duration: 3000,
+      style: { background: "#16a34a", color: "#fff" },
+    });
   };
 
   const subtotal = cartItems.reduce(
@@ -177,12 +194,35 @@ export default function CartPage() {
                             <Plus className="h-4 w-4" />
                           </button>
                         </div>
-                        <button
-                          onClick={() => removeItem(item.id)}
-                          className="text-red-500 hover:text-red-600 cursor-pointer"
-                        >
-                          <Trash2 className="h-5 w-5" />
-                        </button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <button
+                              onClick={() => setSelectedItem(item)}
+                              className="text-red-500 hover:text-red-600"
+                            >
+                              <Trash2 className="h-5 w-5" />
+                            </button>
+                          </AlertDialogTrigger>
+                          {selectedItem && (
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Remove Item</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to remove{" "}
+                                  {selectedItem.name} from your cart?
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => removeItem(selectedItem.id)}
+                                >
+                                  Confirm
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          )}
+                        </AlertDialog>
                       </div>
                     </div>
                   </div>
