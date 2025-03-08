@@ -12,6 +12,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/";
+import { toast } from "sonner";
 
 interface WishlistItem {
   id: number;
@@ -124,7 +125,11 @@ export default function WishlistSheet() {
 
     removeItem(item.id);
 
-    alert("Item added to cart!");
+    toast.success(`${item.name} added to cart!`, {
+      description: "Check your cart to proceed with checkout.",
+      duration: 3000,
+      style: { background: "#16a34a", color: "#fff" },
+    });
   };
 
   return (
