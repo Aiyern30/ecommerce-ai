@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ShoppingCart, Trash2, Minus, Plus } from "lucide-react";
+import { toast } from "sonner";
 import {
   Button,
   Sheet,
@@ -11,6 +12,15 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
 } from "@/components/ui/";
 
 interface CartItem {
@@ -37,72 +47,9 @@ export default function CartSheet() {
       quantity: 1,
       image: "/images/leather-sofa.jpg",
     },
-    {
-      id: 3,
-      name: "Minimalist Bookshelf",
-      price: 199,
-      quantity: 1,
-      image: "/images/bookshelf.jpg",
-    },
-    {
-      id: 4,
-      name: "Cozy Fabric Armchair",
-      price: 349,
-      quantity: 1,
-      image: "/images/armchair.jpg",
-    },
-    {
-      id: 5,
-      name: "Glass Coffee Table",
-      price: 259,
-      quantity: 1,
-      image: "/images/coffee-table.jpg",
-    },
-    {
-      id: 6,
-      name: "Ergonomic Office Chair",
-      price: 299,
-      quantity: 1,
-      image: "/images/office-chair.jpg",
-    },
-    {
-      id: 7,
-      name: "Elegant Bed Frame (Queen)",
-      price: 799,
-      quantity: 1,
-      image: "/images/bed-frame.jpg",
-    },
-    {
-      id: 8,
-      name: "Rustic Wooden Nightstand",
-      price: 149,
-      quantity: 1,
-      image: "/images/nightstand.jpg",
-    },
-    {
-      id: 9,
-      name: "Stylish TV Console",
-      price: 379,
-      quantity: 1,
-      image: "/images/tv-console.jpg",
-    },
-    {
-      id: 10,
-      name: "Industrial Bar Stools (Set of 2)",
-      price: 189,
-      quantity: 1,
-      image: "/images/bar-stools.jpg",
-    },
-    {
-      id: 11,
-      name: "Foldable Study Desk",
-      price: 225,
-      quantity: 1,
-      image: "/images/study-desk.jpg",
-    },
   ]);
 
-  // const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [selectedItem, setSelectedItem] = useState<CartItem | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
   const updateQuantity = (id: number, newQuantity: number) => {
@@ -115,6 +62,10 @@ export default function CartSheet() {
 
   const removeItem = (id: number) => {
     setCartItems((items) => items.filter((item) => item.id !== id));
+    toast.success("Item removed from cart!", {
+      duration: 3000,
+      style: { background: "#16a34a", color: "#fff" },
+    });
   };
 
   return (
@@ -147,12 +98,10 @@ export default function CartSheet() {
               </Link>
             </div>
           ) : (
-            cartItems.map((item, index) => (
+            cartItems.map((item) => (
               <div
                 key={item.id}
-                className={`flex items-center gap-4 ${
-                  index !== cartItems.length - 1 ? "border-b pb-3" : ""
-                }`}
+                className="flex items-center gap-4 border-b pb-3"
               >
                 <Image
                   src={item.image}
@@ -169,25 +118,48 @@ export default function CartSheet() {
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      className="p-1 border rounded cursor-pointer"
+                      className="p-1 border rounded"
                     >
                       <Minus className="h-4 w-4" />
                     </button>
                     <span>{item.quantity}</span>
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      className="p-1 border rounded cursor-pointer"
+                      className="p-1 border rounded"
                     >
                       <Plus className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
-                <button
-                  onClick={() => removeItem(item.id)}
-                  className="text-red-500 hover:text-red-600 cursor-pointer"
-                >
-                  <Trash2 className="h-5 w-5" />
-                </button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <button
+                      onClick={() => setSelectedItem(item)}
+                      className="text-red-500 hover:text-red-600"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
+                  </AlertDialogTrigger>
+                  {selectedItem && (
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Remove Item</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to remove {selectedItem.name}{" "}
+                          from your cart?
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => removeItem(selectedItem.id)}
+                        >
+                          Confirm
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  )}
+                </AlertDialog>
               </div>
             ))
           )}
