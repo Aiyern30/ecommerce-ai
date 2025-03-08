@@ -4,7 +4,19 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ShoppingBag, Trash2, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+  Button,
+} from "@/components/ui/";
+import { toast } from "sonner";
 
 interface WishlistItem {
   id: number;
@@ -34,16 +46,21 @@ export default function WishlistPage() {
       image: "/placeholder.svg",
     },
   ]);
+  const [selectedItem, setSelectedItem] = useState<WishlistItem | null>(null);
 
   const removeItem = (id: number) => {
     setWishlistItems((items) => items.filter((item) => item.id !== id));
+    toast.success("Item removed from wishlist!", {
+      duration: 3000,
+      style: { background: "#16a34a", color: "#fff" },
+    });
   };
 
   const addToCart = (item: WishlistItem) => {
-    // This would integrate with your actual cart functionality
-    alert(`Added ${item.name} to cart!`);
-    // Optionally remove from wishlist
-    // removeItem(item.id);
+    toast.success(`Added ${item.name} to cart!`, {
+      duration: 3000,
+      style: { background: "#16a34a", color: "#fff" },
+    });
   };
 
   return (
@@ -101,14 +118,35 @@ export default function WishlistPage() {
                       <ShoppingBag className="h-4 w-4 mr-2" />
                       Add to Cart
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => removeItem(item.id)}
-                      className="text-red-500 hover:text-red-600 hover:border-red-600"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <button
+                          onClick={() => setSelectedItem(item)}
+                          className="text-red-500 hover:text-red-600"
+                        >
+                          <Trash2 className="h-5 w-5" />
+                        </button>
+                      </AlertDialogTrigger>
+                      {selectedItem && (
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Remove Item</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to remove{" "}
+                              {selectedItem.name} from your cart?
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => removeItem(selectedItem.id)}
+                            >
+                              Confirm
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      )}
+                    </AlertDialog>
                   </div>
                 </div>
               </div>
