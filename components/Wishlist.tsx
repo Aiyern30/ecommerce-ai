@@ -32,23 +32,72 @@ export default function WishlistSheet() {
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([
     {
       id: 1,
-      name: "Gradient Graphic T-shirt",
-      price: 145,
-      image: "/placeholder.svg",
+      name: "Modern Wooden Dining Table",
+      price: 499,
+      image: "/images/dining-table.jpg",
     },
     {
       id: 2,
-      name: "Checkered Shirt",
-      price: 180,
-      image: "/placeholder.svg",
+      name: "Luxury Leather Sofa",
+      price: 899,
+      image: "/images/leather-sofa.jpg",
+    },
+    {
+      id: 3,
+      name: "Minimalist Bookshelf",
+      price: 199,
+      image: "/images/bookshelf.jpg",
     },
     {
       id: 4,
-      name: "Leather Jacket",
-      price: 350,
-      image: "/placeholder.svg",
+      name: "Cozy Fabric Armchair",
+      price: 349,
+      image: "/images/armchair.jpg",
+    },
+    {
+      id: 5,
+      name: "Glass Coffee Table",
+      price: 259,
+      image: "/images/coffee-table.jpg",
+    },
+    {
+      id: 6,
+      name: "Ergonomic Office Chair",
+      price: 299,
+      image: "/images/office-chair.jpg",
+    },
+    {
+      id: 7,
+      name: "Elegant Bed Frame (Queen)",
+      price: 799,
+      image: "/images/bed-frame.jpg",
+    },
+    {
+      id: 8,
+      name: "Rustic Wooden Nightstand",
+      price: 149,
+      image: "/images/nightstand.jpg",
+    },
+    {
+      id: 9,
+      name: "Stylish TV Console",
+      price: 379,
+      image: "/images/tv-console.jpg",
+    },
+    {
+      id: 10,
+      name: "Industrial Bar Stools (Set of 2)",
+      price: 189,
+      image: "/images/bar-stools.jpg",
+    },
+    {
+      id: 11,
+      name: "Foldable Study Desk",
+      price: 225,
+      image: "/images/study-desk.jpg",
     },
   ]);
+
   // const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -108,10 +157,12 @@ export default function WishlistSheet() {
               </Link>
             </div>
           ) : (
-            wishlistItems.map((item) => (
+            wishlistItems.map((item, index) => (
               <div
                 key={item.id}
-                className="flex items-center gap-4 border-b pb-3"
+                className={`flex items-center gap-4 ${
+                  index !== wishlistItems.length - 1 ? "border-b pb-3" : ""
+                }`}
               >
                 <Image
                   src={item.image || "/placeholder.svg"}
@@ -145,7 +196,7 @@ export default function WishlistSheet() {
         </div>
 
         {wishlistItems.length > 0 && (
-          <div className="border-t pt-4 mt-4">
+          <div className="border-t pt-4">
             <Link href="/Wishlist">
               <Button className="w-full mt-4" onClick={() => setIsOpen(false)}>
                 View Wishlist
