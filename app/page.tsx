@@ -1,64 +1,17 @@
-import Image from "next/image";
+"use client";
+
 import { Button, Input } from "@/components/ui";
 import { ProductCard } from "@/components/ProductCards";
 import { StyleCard } from "@/components/StyleCards";
 import { TestimonialCard } from "@/components/TestimonialCard";
 import LatestBlog from "@/components/LatestBlog";
+import HeroCarousel from "@/components/HeroCarousel";
 
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col">
       <main>
-        {/* Hero Section */}
-        <section className="relative overflow-hidden border-b bg-[#F2F0F1] py-12 md:py-20">
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="grid gap-8 md:grid-cols-2 md:gap-12">
-              <div className="flex flex-col justify-center space-y-6">
-                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-                  FIND CLOTHES THAT MATCHES YOUR STYLE
-                </h1>
-                <p className="text-lg text-muted-foreground">
-                  Browse through our diverse range of meticulously crafted
-                  garments, designed to bring out your individuality and cater
-                  to your sense of style.
-                </p>
-                <Button className="w-fit" size="lg">
-                  Shop Now
-                </Button>
-                <div className="grid grid-cols-3 gap-4 pt-8">
-                  <div>
-                    <p className="text-2xl font-bold">200+</p>
-                    <p className="text-sm text-muted-foreground">
-                      International Brands
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">2,000+</p>
-                    <p className="text-sm text-muted-foreground">
-                      High-Quality Products
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">30,000+</p>
-                    <p className="text-sm text-muted-foreground">
-                      Happy Customers
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="relative h-[400px] md:h-[500px]">
-                <Image
-                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Homepage.jpg-a6iuUKfor8aTKTXZAzc1hEzs8eiKFp.jpeg"
-                  alt="Fashion models wearing stylish outfits"
-                  fill
-                  className="object-contain"
-                  priority
-                />
-              </div>
-            </div>
-          </div>
-        </section>
-
+        <HeroCarousel />
         {/* Brand Logos */}
         <div className="border-b py-8">
           <div className="container mx-auto px-4">

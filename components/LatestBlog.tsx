@@ -50,7 +50,7 @@ export default function LatestBlog() {
   return (
     <>
       {blogPosts.map((post) => (
-        <Link key={post.id} href="#" className="group block relative">
+        <div key={post.id} className="group block relative">
           <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100">
             {/* Blog Image */}
             <Image
@@ -87,7 +87,7 @@ export default function LatestBlog() {
               Read More
             </Link>
           </div>
-        </Link>
+        </div>
       ))}
     </>
   );
