@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CarouselItem {
@@ -22,58 +21,46 @@ export default function HeroCarousel() {
 
   const carouselItems: CarouselItem[] = [
     {
-      title: "Built for Your Business, Designed for Success",
+      title: "Transform Your Home with Elegant Furniture",
       description:
-        "Discover heavy-duty vehicles engineered for strength, endurance, and efficiency. Designed to deliver exceptional performance in logistics and construction, ensuring affordability and reliability for every job.",
-      buttonText: "Learn more",
-      buttonLink: "/learn-more",
+        "Discover our curated selection of stylish and durable furniture pieces. Whether you're looking for modern minimalism or classic charm, we have the perfect fit for your space.",
+      buttonText: "Shop Now",
+      buttonLink: "/shop",
       imageSrc:
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-4qds0DTFicVeC0YBzdvfp81hYzjCag.png",
-      imageAlt:
-        "Green heavy-duty trucks parked in front of a building with palm trees",
+        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/elegant-living-room-set.png",
+      imageAlt: "Modern living room with stylish furniture",
     },
     {
-      title: "Powerful Performance, Reliable Results",
+      title: "Comfort Meets Design in Every Piece",
       description:
-        "Our fleet of industrial-grade vehicles combines cutting-edge technology with robust engineering. Experience unmatched power and precision for your most demanding projects.",
-      buttonText: "View fleet",
-      buttonLink: "/fleet",
-      imageSrc: "/placeholder.svg?height=600&width=800",
-      imageAlt: "Industrial vehicles showcase",
+        "Experience furniture that combines aesthetics with functionality. From cozy sofas to ergonomic chairs, our collection ensures comfort without compromising on style.",
+      buttonText: "Explore Collection",
+      buttonLink: "/collection",
+      imageSrc:
+        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/cozy-sofa-set.png",
+      imageAlt: "Comfortable sofa set in a well-lit room",
     },
     {
-      title: "Sustainable Solutions for Modern Industry",
+      title: "Sustainable and Eco-Friendly Choices",
       description:
-        "Embrace eco-friendly operations without compromising on power. Our latest models feature reduced emissions and improved fuel efficiency while maintaining superior performance.",
-      buttonText: "Explore options",
+        "Our furniture is crafted using sustainable materials, ensuring an eco-conscious choice for your home. Elevate your space while caring for the planet.",
+      buttonText: "Go Green",
       buttonLink: "/sustainable",
-      imageSrc: "/placeholder.svg?height=600&width=800",
-      imageAlt: "Eco-friendly industrial vehicles",
+      imageSrc:
+        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eco-friendly-furniture.png",
+      imageAlt: "Eco-friendly wooden dining table with chairs",
     },
     {
-      title: "Expert Support, Whenever You Need It",
+      title: "Expert Craftsmanship, Built to Last",
       description:
-        "Our dedicated team provides comprehensive maintenance and technical support. Count on us for rapid response and professional service to keep your operations running smoothly.",
-      buttonText: "Contact us",
-      buttonLink: "/contact",
-      imageSrc: "/placeholder.svg?height=600&width=800",
-      imageAlt: "Support team with vehicles",
+        "We take pride in delivering high-quality furniture made by skilled artisans. Every piece is designed for durability, elegance, and everyday comfort.",
+      buttonText: "Learn More",
+      buttonLink: "/about-us",
+      imageSrc:
+        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/handcrafted-furniture.png",
+      imageAlt: "Artisan working on a wooden furniture piece",
     },
   ];
-
-  const nextSlide = () => {
-    setCurrentSlide((prev) =>
-      prev === carouselItems.length - 1 ? 0 : prev + 1
-    );
-    setIsAutoPlaying(false);
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) =>
-      prev === 0 ? carouselItems.length - 1 : prev - 1
-    );
-    setIsAutoPlaying(false);
-  };
 
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
@@ -102,7 +89,7 @@ export default function HeroCarousel() {
           <div key={index} className="w-full flex-shrink-0">
             <div className="relative flex flex-col md:flex-row items-center">
               <div className="w-full md:w-1/2 p-6 md:p-12 bg-white/90 z-10">
-                <div className="max-w-xl">
+                <div className="max-w-xl mx-auto">
                   <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
                     {item.title}
                   </h2>
@@ -129,22 +116,6 @@ export default function HeroCarousel() {
           </div>
         ))}
       </div>
-
-      <button
-        onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md z-20"
-        aria-label="Previous slide"
-      >
-        <ChevronLeft className="h-6 w-6" />
-      </button>
-
-      <button
-        onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md z-20"
-        aria-label="Next slide"
-      >
-        <ChevronRight className="h-6 w-6" />
-      </button>
 
       {/* Dot indicators */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
