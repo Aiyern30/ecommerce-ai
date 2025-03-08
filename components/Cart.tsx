@@ -25,26 +25,83 @@ export default function CartSheet() {
   const [cartItems, setCartItems] = useState<CartItem[]>([
     {
       id: 1,
-      name: "Gradient Graphic T-shirt",
-      price: 145,
+      name: "Modern Wooden Dining Table",
+      price: 499,
       quantity: 1,
-      image: "/placeholder.svg",
+      image: "/images/dining-table.jpg",
     },
     {
       id: 2,
-      name: "Checkered Shirt",
-      price: 180,
+      name: "Luxury Leather Sofa",
+      price: 899,
       quantity: 1,
-      image: "/placeholder.svg",
+      image: "/images/leather-sofa.jpg",
     },
     {
       id: 3,
-      name: "Denim Jacket",
-      price: 220,
+      name: "Minimalist Bookshelf",
+      price: 199,
       quantity: 1,
-      image: "/placeholder.svg",
+      image: "/images/bookshelf.jpg",
+    },
+    {
+      id: 4,
+      name: "Cozy Fabric Armchair",
+      price: 349,
+      quantity: 1,
+      image: "/images/armchair.jpg",
+    },
+    {
+      id: 5,
+      name: "Glass Coffee Table",
+      price: 259,
+      quantity: 1,
+      image: "/images/coffee-table.jpg",
+    },
+    {
+      id: 6,
+      name: "Ergonomic Office Chair",
+      price: 299,
+      quantity: 1,
+      image: "/images/office-chair.jpg",
+    },
+    {
+      id: 7,
+      name: "Elegant Bed Frame (Queen)",
+      price: 799,
+      quantity: 1,
+      image: "/images/bed-frame.jpg",
+    },
+    {
+      id: 8,
+      name: "Rustic Wooden Nightstand",
+      price: 149,
+      quantity: 1,
+      image: "/images/nightstand.jpg",
+    },
+    {
+      id: 9,
+      name: "Stylish TV Console",
+      price: 379,
+      quantity: 1,
+      image: "/images/tv-console.jpg",
+    },
+    {
+      id: 10,
+      name: "Industrial Bar Stools (Set of 2)",
+      price: 189,
+      quantity: 1,
+      image: "/images/bar-stools.jpg",
+    },
+    {
+      id: 11,
+      name: "Foldable Study Desk",
+      price: 225,
+      quantity: 1,
+      image: "/images/study-desk.jpg",
     },
   ]);
+
   // const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -90,10 +147,12 @@ export default function CartSheet() {
               </Link>
             </div>
           ) : (
-            cartItems.map((item) => (
+            cartItems.map((item, index) => (
               <div
                 key={item.id}
-                className="flex items-center gap-4 border-b pb-3"
+                className={`flex items-center gap-4 ${
+                  index !== cartItems.length - 1 ? "border-b pb-3" : ""
+                }`}
               >
                 <Image
                   src={item.image}
@@ -135,7 +194,7 @@ export default function CartSheet() {
         </div>
 
         {cartItems.length > 0 && (
-          <div className="border-t pt-4 mt-4">
+          <div className="border-t pt-4">
             <div className="flex justify-between font-medium">
               <span>Total:</span>
               <span>
