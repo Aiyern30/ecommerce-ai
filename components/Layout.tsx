@@ -6,6 +6,7 @@ import Footer from "./Footer";
 import { useState, useEffect, useRef } from "react";
 import ChatWindow from "./Chat/ChatWindow";
 import ChatButton from "./Chat/ChatButton";
+import { Toaster } from "./ui";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -46,7 +47,10 @@ export function Layout({ children }: LayoutProps) {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="flex-1 pt-16">{children}</main>
+      <main className="flex-1 pt-16">
+        {children}
+        <Toaster />
+      </main>
       <div className="fixed bottom-0 right-0 z-50 flex items-end p-4">
         {isChatOpen && (
           <div ref={chatRef}>
