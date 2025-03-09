@@ -6,8 +6,10 @@ import { StyleCard } from "@/components/StyleCards";
 import { TestimonialCard } from "@/components/TestimonialCard";
 import LatestBlog from "@/components/LatestBlog";
 import HeroCarousel from "@/components/HeroCarousel";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
   return (
     <div className="flex min-h-screen flex-col">
       <main>
@@ -66,7 +68,12 @@ export default function Home() {
               />
             </div>
             <div className="mt-8 text-center">
-              <Button variant="outline">View All</Button>
+              <Button
+                variant="outline"
+                onClick={() => router.push("/Category/New-arrivals")}
+              >
+                View All
+              </Button>
             </div>
           </div>
         </section>
@@ -107,7 +114,12 @@ export default function Home() {
               />
             </div>
             <div className="mt-8 text-center">
-              <Button variant="outline">View All</Button>
+              <Button
+                variant="outline"
+                onClick={() => router.push("/Category/Top-selling")}
+              >
+                View All
+              </Button>
             </div>
           </div>
         </section>
