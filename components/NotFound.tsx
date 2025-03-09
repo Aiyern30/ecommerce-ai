@@ -6,8 +6,10 @@ import Image from "next/image";
 import { Search, Home, ShoppingBag, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/";
 import { Input } from "@/components/ui/";
+import { useDeviceType } from "@/utils/useDeviceTypes";
 
 export default function NotFoundPage() {
+  const { isMobile } = useDeviceType();
   const [searchQuery, setSearchQuery] = useState("");
 
   const featuredProducts = [
@@ -95,34 +97,35 @@ export default function NotFoundPage() {
           </Button>
         </div>
 
-        {/* Featured products */}
-        <div className="border-t border-gray-200 pt-4">
-          <h2 className="text-xl font-semibold mb-6">
-            You might be interested in
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {featuredProducts.map((product) => (
-              <Link
-                href={`/Product/${product.id}`}
-                key={product.id}
-                className="group p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="relative h-32 mb-3">
-                  <Image
-                    src={product.image || "/placeholder.svg"}
-                    alt={product.name}
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-                <h3 className="font-medium group-hover:text-[#f83d92] transition-colors">
-                  {product.name}
-                </h3>
-                <p className="text-gray-700">{product.price}</p>
-              </Link>
-            ))}
+        {!isMobile && (
+          <div className="border-t border-gray-200 pt-4">
+            <h2 className="text-xl font-semibold mb-6">
+              You might be interested in
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              {featuredProducts.map((product) => (
+                <Link
+                  href={`/Product/${product.id}`}
+                  key={product.id}
+                  className="group p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <div className="relative h-32 mb-3">
+                    <Image
+                      src={product.image || "/placeholder.svg"}
+                      alt={product.name}
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                  <h3 className="font-medium group-hover:text-[#f83d92] transition-colors">
+                    {product.name}
+                  </h3>
+                  <p className="text-gray-700">{product.price}</p>
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
