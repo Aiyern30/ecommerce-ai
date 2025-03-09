@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronRight, Minus, Plus, Trash2, Tag } from "lucide-react";
+import { Minus, Plus, Trash2, Tag } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +18,7 @@ import {
   Input,
 } from "@/components/ui";
 import { toast } from "sonner";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 interface CartItem {
   id: number;
@@ -114,19 +115,12 @@ export default function CartPage() {
   const total = subtotal - discount + deliveryFee;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Breadcrumb */}
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Link href="/" className="hover:text-gray-900">
-            Home
-          </Link>
-          <ChevronRight className="h-4 w-4" />
-          <span className="text-gray-900">Cart</span>
-        </div>
+    <div className="min-h-screen bg-gray-50 mb-4">
+      <div className="p-4 container mx-auto">
+        <BreadcrumbNav showFilterButton={false} />
       </div>
 
-      <div className="container mx-auto px-4 pb-16 pt-6">
+      <div className="container mx-auto px-4">
         <h1 className="text-3xl font-bold">YOUR CART</h1>
         {cartItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-center h-[60vh]">

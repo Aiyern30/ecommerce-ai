@@ -25,6 +25,7 @@ import {
   Input,
   Button,
 } from "@/components/ui/";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -85,7 +86,10 @@ export default function ContactPage() {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="container mx-auto mb-4">
+      <div className="p-4 container mx-auto">
+        <BreadcrumbNav showFilterButton={false} />
+      </div>
       {/* Header Section */}
       <div className="text-center mb-16">
         <h1 className="text-4xl font-bold mb-4">Get in Touch with Us</h1>
