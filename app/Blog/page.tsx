@@ -8,174 +8,123 @@ import {
 } from "@/components/ui/";
 import { Facebook, Linkedin, Twitter } from "lucide-react";
 
+// Blog Data
+const blogs = [
+  {
+    id: 1,
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-U8Lz7UTDjrUncO2xr3rqYppgi1tu8W.png",
+    title: "How grocers are approaching delivery as the market evolves",
+    date: "August 17, 2023",
+    author: "Catherine Douglas",
+    description:
+      "As consumer preferences shift and technology advances, grocery retailers are adapting their delivery strategies to meet changing demands while maintaining profitability in an increasingly competitive market.",
+  },
+  {
+    id: 2,
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-U8Lz7UTDjrUncO2xr3rqYppgi1tu8W.png",
+    title: "The Friday Checkout: Food insecurity keeps retailers off balance",
+    date: "August 11, 2023",
+    author: "Editorial Staff",
+    description:
+      "Grocery retailers are navigating complex challenges as food insecurity affects consumer purchasing patterns, forcing companies to balance affordability initiatives with operational costs and profit margins.",
+  },
+  {
+    id: 3,
+    image:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-U8Lz7UTDjrUncO2xr3rqYppgi1tu8W.png",
+    title: "Consumers want grocers to use AI to help them save money",
+    date: "August 9, 2023",
+    author: "Peyton Garcia",
+    description:
+      "A recent study reveals that consumers are increasingly open to AI-powered solutions in grocery shopping, particularly when these technologies can help identify savings opportunities and personalize promotions.",
+  },
+];
+
+// Related People Data
+const relatedPeople = [
+  {
+    id: 1,
+    name: "Janice Doe",
+    position: "VP of Technology at FreshMart",
+    avatar: "/placeholder.svg?height=40&width=40",
+    fallback: "JD",
+  },
+  {
+    id: 2,
+    name: "Michael Smith",
+    position: "Director of Operations at GroceryPlus",
+    avatar: "/placeholder.svg?height=40&width=40",
+    fallback: "MS",
+  },
+  {
+    id: 3,
+    name: "Sarah Johnson",
+    position: "Head of AI Solutions at RetailTech",
+    avatar: "/placeholder.svg?height=40&width=40",
+    fallback: "SJ",
+  },
+];
+
 export default function BlogPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Main Content */}
         <div className="lg:w-3/4">
-          {/* Blog Post 1 */}
-          <Card className="mb-8 overflow-hidden border-0 shadow-sm">
-            <div className="relative h-64 sm:h-80">
-              <Image
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-U8Lz7UTDjrUncO2xr3rqYppgi1tu8W.png"
-                alt="Yellow soda and ice cream float"
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="p-6">
-              <h2 className="text-2xl font-bold mb-2">
-                How grocers are approaching delivery as the market evolves
-              </h2>
-              <div className="flex items-center text-sm text-gray-500 mb-4">
-                <span>August 17, 2023</span>
-                <span className="mx-2">•</span>
-                <span>By Catherine Douglas</span>
+          {blogs.map((blog) => (
+            <Card
+              key={blog.id}
+              className="mb-8 overflow-hidden border-0 shadow-sm"
+            >
+              <div className="relative h-64 sm:h-80">
+                <Image
+                  src={blog.image || "/placeholder.svg"}
+                  alt={blog.title || "Blog image"}
+                  fill
+                  className="object-cover"
+                />
               </div>
-              <p className="text-gray-700 mb-4">
-                As consumer preferences shift and technology advances, grocery
-                retailers are adapting their delivery strategies to meet
-                changing demands while maintaining profitability in an
-                increasingly competitive market.
-              </p>
-              <Button
-                variant="secondary"
-                className="bg-purple-600 hover:bg-purple-700 text-white"
-              >
-                Read more
-              </Button>
-            </div>
-          </Card>
-
-          {/* Blog Post 2 */}
-          <Card className="mb-8 overflow-hidden border-0 shadow-sm">
-            <div className="relative h-64 sm:h-80">
-              <Image
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-U8Lz7UTDjrUncO2xr3rqYppgi1tu8W.png"
-                alt="Beer bottles in ice"
-                fill
-                className="object-cover object-center"
-              />
-            </div>
-            <div className="p-6">
-              <h2 className="text-2xl font-bold mb-2">
-                The Friday Checkout: Food insecurity keeps retailers off balance
-              </h2>
-              <div className="flex items-center text-sm text-gray-500 mb-4">
-                <span>August 11, 2023</span>
-                <span className="mx-2">•</span>
-                <span>By Editorial Staff</span>
+              <div className="p-6">
+                <h2 className="text-2xl font-bold mb-2">
+                  {blog.title || "Untitled Blog"}
+                </h2>
+                <div className="flex items-center text-sm text-gray-500 mb-4">
+                  <span>{blog.date || "Unknown Date"}</span>
+                  <span className="mx-2">•</span>
+                  <span>{blog.author || "Unknown Author"}</span>
+                </div>
+                <p className="text-gray-700 mb-4">
+                  {blog.description || "No description available."}
+                </p>
+                <Button variant="default">Read more</Button>
               </div>
-              <p className="text-gray-700 mb-4">
-                Grocery retailers are navigating complex challenges as food
-                insecurity affects consumer purchasing patterns, forcing
-                companies to balance affordability initiatives with operational
-                costs and profit margins.
-              </p>
-              <Button
-                variant="secondary"
-                className="bg-purple-600 hover:bg-purple-700 text-white"
-              >
-                Read more
-              </Button>
-            </div>
-          </Card>
-
-          {/* Blog Post 3 */}
-          <Card className="mb-8 overflow-hidden border-0 shadow-sm">
-            <div className="relative h-64 sm:h-80">
-              <Image
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-U8Lz7UTDjrUncO2xr3rqYppgi1tu8W.png"
-                alt="Cheese selection"
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="p-6">
-              <h2 className="text-2xl font-bold mb-2">
-                Consumer want grocers to use AI to help them save money
-                Dunnhumby
-              </h2>
-              <div className="flex items-center text-sm text-gray-500 mb-4">
-                <span>August 9, 2023</span>
-                <span className="mx-2">•</span>
-                <span>By Peyton Garcia</span>
-              </div>
-              <p className="text-gray-700 mb-4">
-                A recent study reveals that consumers are increasingly open to
-                AI-powered solutions in grocery shopping, particularly when
-                these technologies can help identify savings opportunities and
-                personalize promotions.
-              </p>
-              <Button
-                variant="secondary"
-                className="bg-purple-600 hover:bg-purple-700 text-white"
-              >
-                Read more
-              </Button>
-            </div>
-          </Card>
+            </Card>
+          ))}
         </div>
 
         {/* Sidebar */}
         <div className="lg:w-1/4">
           <div className="sticky top-24">
+            {/* Related People */}
             <div className="mb-8">
               <h3 className="text-sm font-semibold text-gray-500 mb-4">
                 RELATED TO
               </h3>
               <div className="space-y-4">
-                {/* Related Item 1 */}
-                <div className="flex items-start gap-3">
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage
-                      src="/placeholder.svg?height=40&width=40"
-                      alt="Profile"
-                    />
-                    <AvatarFallback>JD</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="text-sm font-medium">Janice Doe</p>
-                    <p className="text-xs text-gray-500">
-                      VP of Technology at FreshMart
-                    </p>
+                {relatedPeople.map((person) => (
+                  <div key={person.id} className="flex items-start gap-3">
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={person.avatar} alt={person.name} />
+                      <AvatarFallback>{person.fallback}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-medium">{person.name}</p>
+                      <p className="text-xs text-gray-500">{person.position}</p>
+                    </div>
                   </div>
-                </div>
-
-                {/* Related Item 2 */}
-                <div className="flex items-start gap-3">
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage
-                      src="/placeholder.svg?height=40&width=40"
-                      alt="Profile"
-                    />
-                    <AvatarFallback>MS</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="text-sm font-medium">Michael Smith</p>
-                    <p className="text-xs text-gray-500">
-                      Director of Operations at GroceryPlus
-                    </p>
-                  </div>
-                </div>
-
-                {/* Related Item 3 */}
-                <div className="flex items-start gap-3">
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage
-                      src="/placeholder.svg?height=40&width=40"
-                      alt="Profile"
-                    />
-                    <AvatarFallback>SJ</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="text-sm font-medium">Sarah Johnson</p>
-                    <p className="text-xs text-gray-500">
-                      Head of AI Solutions at RetailTech
-                    </p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
