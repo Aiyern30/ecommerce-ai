@@ -42,7 +42,7 @@ export default function NotFoundPage() {
       <div className="max-w-3xl w-full text-center">
         <div className="mb-8 relative h-40 w-full">
           <Image
-            src="/placeholder.svg?height=160&width=400&text=404"
+            src="404.svg"
             alt="404 Not Found"
             fill
             className="object-contain"
@@ -74,7 +74,7 @@ export default function NotFoundPage() {
         </form>
 
         {/* Navigation options */}
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
+        <div className="flex flex-wrap justify-center gap-4 mb-4">
           <Button asChild variant="outline" className="gap-2">
             <Link href="/">
               <Home className="h-4 w-4" />
@@ -96,7 +96,7 @@ export default function NotFoundPage() {
         </div>
 
         {/* Featured products */}
-        <div className="border-t border-gray-200 pt-8">
+        <div className="border-t border-gray-200 pt-4">
           <h2 className="text-xl font-semibold mb-6">
             You might be interested in
           </h2>
