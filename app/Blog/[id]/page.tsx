@@ -5,17 +5,17 @@ import RelatedTo from "@/components/Blog/RelatedTo";
 import { Card } from "@/components/ui";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
-interface BlogPostParams {
-  params: {
-    id: string;
-  };
-}
+// interface BlogPostParams {
+//   params: {
+//     id: string;
+//   };
+// }
 
-export default function BlogPost({}: BlogPostParams) {
+export default function BlogPost() {
   return (
     <article className="container mx-auto">
       <div className="py-4">
-        <BreadcrumbNav currentPage={"Blog"} showFilterButton={false} />
+        <BreadcrumbNav showFilterButton={false} />
       </div>
       <div className="flex flex-col lg:flex-row gap-8 mb-4">
         <div className="lg:w-3/4">

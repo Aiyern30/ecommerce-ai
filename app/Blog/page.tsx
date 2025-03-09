@@ -41,7 +41,7 @@ export default function BlogPage() {
   return (
     <div className="container mx-auto">
       <div className="py-4">
-        <BreadcrumbNav currentPage={"Blog"} showFilterButton={false} />
+        <BreadcrumbNav showFilterButton={false} />
       </div>
       <div className="flex flex-col lg:flex-row gap-8 mb-4">
         {/* Main Content */}

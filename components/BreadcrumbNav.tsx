@@ -11,20 +11,19 @@ import {
 } from "@/components/ui/";
 import { Button } from "@/components/ui";
 import { ChevronRight } from "lucide-react";
+import Link from "next/link";
 
 interface BreadcrumbNavProps {
-  currentPage: string;
   showFilterButton?: boolean;
   onFilterClick?: () => void;
 }
 
 export function BreadcrumbNav({
-  currentPage,
   showFilterButton = false,
   onFilterClick,
 }: BreadcrumbNavProps) {
   const pathname = usePathname();
-  const category = pathname.split("/").pop()?.replace(/-/g, " ");
+  const pathSegments = pathname.split("/").filter(Boolean);
 
   return (
     <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -32,16 +31,34 @@ export function BreadcrumbNav({
       <Breadcrumb>
         <BreadcrumbList className="flex items-center gap-2">
           <BreadcrumbItem>
-            <BreadcrumbLink href="/">Home</BreadcrumbLink>
+            <BreadcrumbLink asChild>
+              <Link href="/">Home</Link>
+            </BreadcrumbLink>
           </BreadcrumbItem>
-          <BreadcrumbSeparator>
-            <ChevronRight className="h-4 w-4" />
-          </BreadcrumbSeparator>
-          <BreadcrumbItem>
-            <BreadcrumbPage className="capitalize">
-              {category || currentPage}
-            </BreadcrumbPage>
-          </BreadcrumbItem>
+          {pathSegments.map((segment, index) => {
+            const href = "/" + pathSegments.slice(0, index + 1).join("/");
+            const isLast = index === pathSegments.length - 1;
+            return (
+              <>
+                <BreadcrumbSeparator key={`sep-${index}`}>
+                  <ChevronRight className="h-4 w-4" />
+                </BreadcrumbSeparator>
+                <BreadcrumbItem key={href}>
+                  {isLast ? (
+                    <BreadcrumbPage className="capitalize">
+                      {decodeURIComponent(segment.replace(/-/g, " "))}
+                    </BreadcrumbPage>
+                  ) : (
+                    <BreadcrumbLink asChild>
+                      <Link href={href} className="capitalize">
+                        {decodeURIComponent(segment.replace(/-/g, " "))}
+                      </Link>
+                    </BreadcrumbLink>
+                  )}
+                </BreadcrumbItem>
+              </>
+            );
+          })}
         </BreadcrumbList>
       </Breadcrumb>
 
