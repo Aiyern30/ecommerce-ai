@@ -26,6 +26,7 @@ import {
   Button,
 } from "@/components/ui/";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
+import { FeatureCard } from "@/components/FeatureCards";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -234,16 +235,7 @@ export default function ContactPage() {
       </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {features.map((feature, index) => (
-          <div
-            key={index}
-            className="p-6 border rounded-lg flex flex-col items-center text-center"
-          >
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-              <feature.icon className="h-6 w-6 text-purple-600" />
-            </div>
-            <h3 className="font-semibold mb-2">{feature.title}</h3>
-            <p className="text-sm text-gray-600">{feature.description}</p>
-          </div>
+          <FeatureCard key={index} {...feature} />
         ))}
       </div>
     </div>

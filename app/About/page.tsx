@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Truck, Coins, Award, Headphones } from "lucide-react";
 import { Button } from "@/components/ui/";
 import { useRouter } from "next/navigation";
+import { FeatureCard } from "@/components/FeatureCards";
 
 interface Feature {
   icon: React.ElementType;
@@ -71,16 +72,7 @@ export default function AboutUs() {
         <h2 className="text-3xl font-bold text-center mb-16">Our Features</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((feature, index) => (
-            <div
-              key={index}
-              className="p-6 border rounded-lg flex flex-col items-center text-center"
-            >
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                <feature.icon className="h-6 w-6 text-purple-600" />
-              </div>
-              <h3 className="font-semibold mb-2">{feature.title}</h3>
-              <p className="text-sm text-gray-600">{feature.description}</p>
-            </div>
+            <FeatureCard key={index} {...feature} />
           ))}
         </div>
       </div>
