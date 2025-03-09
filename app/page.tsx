@@ -120,12 +120,28 @@ export default function Home() {
             </h2>
             <div className="grid gap-6 sm:grid-cols-2">
               <div className="grid gap-6">
-                <StyleCard title="Casual" image="/placeholder.svg" />
-                <StyleCard title="Party" image="/placeholder.svg" />
+                <StyleCard
+                  title="Casual"
+                  image="/placeholder.svg"
+                  path={"/Category/Casual"}
+                />
+                <StyleCard
+                  title="Party"
+                  image="/placeholder.svg"
+                  path={"/Category/Party"}
+                />
               </div>
               <div className="grid gap-6">
-                <StyleCard title="Formal" image="/placeholder.svg" />
-                <StyleCard title="Gym" image="/placeholder.svg" />
+                <StyleCard
+                  title="Formal"
+                  image="/placeholder.svg"
+                  path={"/Category/Formal"}
+                />
+                <StyleCard
+                  title="Gym"
+                  image="/placeholder.svg"
+                  path={"/Category/Gym"}
+                />
               </div>
             </div>
           </div>
