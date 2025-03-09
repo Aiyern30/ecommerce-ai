@@ -82,13 +82,13 @@ export default function NotFoundPage() {
             </Link>
           </Button>
           <Button asChild variant="outline" className="gap-2">
-            <Link href="/products">
+            <Link href="/Product">
               <ShoppingBag className="h-4 w-4" />
               Browse Products
             </Link>
           </Button>
           <Button asChild variant="outline" className="gap-2">
-            <Link href="/contact">
+            <Link href="/Contact">
               <ArrowLeft className="h-4 w-4" />
               Contact Support
             </Link>
@@ -103,7 +103,7 @@ export default function NotFoundPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {featuredProducts.map((product) => (
               <Link
-                href={`/products/${product.id}`}
+                href={`/Product/${product.id}`}
                 key={product.id}
                 className="group p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
               >
