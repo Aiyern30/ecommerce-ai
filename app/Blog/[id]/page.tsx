@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Play, ChevronLeft, ChevronRight } from "lucide-react";
 import RelatedTo from "@/components/Blog/RelatedTo";
 import { Card } from "@/components/ui";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 interface BlogPostParams {
   params: {
@@ -12,8 +13,11 @@ interface BlogPostParams {
 
 export default function BlogPost({}: BlogPostParams) {
   return (
-    <article className="container mx-auto px-4 py-8">
-      <div className="flex flex-col lg:flex-row gap-8">
+    <article className="container mx-auto">
+      <div className="py-4">
+        <BreadcrumbNav currentPage={"Blog"} showFilterButton={false} />
+      </div>
+      <div className="flex flex-col lg:flex-row gap-8 mb-4">
         <div className="lg:w-3/4">
           <Card className="">
             <div className="relative w-full h-[300px] md:h-[400px] mb-6">

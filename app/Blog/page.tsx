@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Button, Card } from "@/components/ui/";
 import RelatedTo from "@/components/Blog/RelatedTo";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 // Blog Data
 const blogs = [
@@ -38,8 +39,11 @@ const blogs = [
 
 export default function BlogPage() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col lg:flex-row gap-8">
+    <div className="container mx-auto">
+      <div className="py-4">
+        <BreadcrumbNav currentPage={"Blog"} showFilterButton={false} />
+      </div>
+      <div className="flex flex-col lg:flex-row gap-8 mb-4">
         {/* Main Content */}
         <div className="lg:w-3/4">
           {blogs.map((blog) => (
