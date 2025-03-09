@@ -4,13 +4,13 @@ import Link from "next/link";
 interface StyleCardProps {
   title: string;
   image: string;
-  path: string; // Add path as a prop
+  path: string;
 }
 
 export function StyleCard({ title, image, path }: StyleCardProps) {
   return (
     <Link
-      href={path}
+      href={path || "/"}
       className="group relative block overflow-hidden rounded-lg"
     >
       <div className="relative aspect-[4/3]">
