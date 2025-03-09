@@ -110,6 +110,7 @@ export default function WishlistSheet() {
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<WishlistItem | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
 
   const removeItem = (id: number) => {
     setWishlistItems((items) => items.filter((item) => item.id !== id));
@@ -146,9 +147,9 @@ export default function WishlistSheet() {
   };
 
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" onClick={() => setIsOpen(true)}>
           <Heart className="h-5 w-5" />
         </Button>
       </SheetTrigger>
@@ -169,7 +170,9 @@ export default function WishlistSheet() {
               />
               <p className="text-gray-500 text-xl">Your wishlist is empty.</p>
               <Link href="/Product">
-                <Button className="mt-4">Explore Products</Button>
+                <Button className="mt-4" onClick={() => setIsOpen(false)}>
+                  Explore Products
+                </Button>
               </Link>
             </div>
           ) : (
@@ -259,7 +262,9 @@ export default function WishlistSheet() {
         {wishlistItems.length > 0 && (
           <div className="border-t pt-4">
             <Link href="/Wishlist">
-              <Button className="w-full mt-4">View Wishlist</Button>
+              <Button className="w-full mt-4" onClick={() => setIsOpen(false)}>
+                View Wishlist
+              </Button>
             </Link>
           </div>
         )}
