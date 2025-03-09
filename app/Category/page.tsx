@@ -2,6 +2,13 @@ import { StyleCard } from "@/components/StyleCards";
 import React from "react";
 
 const page = () => {
+  const categories = [
+    { title: "Casual", path: "/Category/Casual", image: "/placeholder.svg" },
+    { title: "Party", path: "/Category/Party", image: "/placeholder.svg" },
+    { title: "Formal", path: "/Category/Formal", image: "/placeholder.svg" },
+    { title: "Gym", path: "/Category/Gym", image: "/placeholder.svg" },
+  ];
+
   return (
     <div>
       <section className="bg-gray-50 py-16">
@@ -10,14 +17,14 @@ const page = () => {
             BROWSE BY DRESS STYLE
           </h2>
           <div className="grid gap-6 sm:grid-cols-2">
-            <div className="grid gap-6">
-              <StyleCard title="Casual" image="/placeholder.svg" />
-              <StyleCard title="Party" image="/placeholder.svg" />
-            </div>
-            <div className="grid gap-6">
-              <StyleCard title="Formal" image="/placeholder.svg" />
-              <StyleCard title="Gym" image="/placeholder.svg" />
-            </div>
+            {categories.map((category, index) => (
+              <StyleCard
+                key={index}
+                title={category.title}
+                image={category.image}
+                path={category.path}
+              />
+            ))}
           </div>
         </div>
       </section>
