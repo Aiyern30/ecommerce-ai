@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { Search, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { Input } from "./ui/Input";
@@ -10,6 +11,10 @@ import WishlistSheet from "./Wishlist";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Function to check if a link is active
+  const isActive = (path: string) => pathname.startsWith(path);
 
   return (
     <div>
@@ -21,40 +26,32 @@ const Header = () => {
               ShopYTL
             </Link>
 
-            {/* Desktop Navigation - only show on lg screens */}
+            {/* Desktop Navigation */}
             <nav className="hidden lg:block">
               <ul className="flex gap-6 whitespace-nowrap">
-                <li>
-                  <Link href="/Product" className="hover:text-gray-600">
-                    Shop
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/Category" className="hover:text-gray-600">
-                    Categories
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/Comparison" className="hover:text-gray-600">
-                    Compare
-                  </Link>
-                </li>
-
-                <li>
-                  <Link href="/Blog" className="hover:text-gray-600">
-                    Blog
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/FAQ" className="hover:text-gray-600">
-                    FAQ
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/Contact" className="hover:text-gray-600">
-                    Contact
-                  </Link>
-                </li>
+                {[
+                  { name: "Shop", path: "/Product" },
+                  { name: "Categories", path: "/Category" },
+                  { name: "Compare", path: "/Comparison" },
+                  { name: "Blog", path: "/Blog" },
+                  { name: "FAQ", path: "/FAQ" },
+                  { name: "Contact", path: "/Contact" },
+                ].map(({ name, path }) => (
+                  <li key={path} className="relative">
+                    <Link
+                      href={path}
+                      className={`hover:text-gray-600 ${
+                        isActive(path) ? "text-black font-semibold" : ""
+                      }`}
+                    >
+                      {name}
+                    </Link>
+                    {/* Active Indicator */}
+                    {isActive(path) && (
+                      <div className="absolute left-0 -bottom-1 h-[2px] w-full bg-black rounded-md"></div>
+                    )}
+                  </li>
+                ))}
               </ul>
             </nav>
           </div>
@@ -93,61 +90,26 @@ const Header = () => {
           <nav className="absolute top-full left-0 w-full bg-white shadow-lg border-b lg:hidden">
             <div className="container mx-auto p-4">
               <ul className="flex flex-col gap-4">
-                <li>
-                  <Link
-                    href="/Product"
-                    className="block w-full hover:font-semibold"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    Shop
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/Category"
-                    className="block w-full hover:font-semibold"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    Categories
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/Comparison"
-                    className="block w-full hover:font-semibold"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    Compare
-                  </Link>
-                </li>
-
-                <li>
-                  <Link
-                    href="/Blog"
-                    className="block w-full hover:font-semibold"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    Blog
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/FAQ"
-                    className="block w-full hover:font-semibold"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    FAQ
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/Contact"
-                    className="block w-full hover:font-semibold"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    Contact
-                  </Link>
-                </li>
+                {[
+                  { name: "Shop", path: "/Product" },
+                  { name: "Categories", path: "/Category" },
+                  { name: "Compare", path: "/Comparison" },
+                  { name: "Blog", path: "/Blog" },
+                  { name: "FAQ", path: "/FAQ" },
+                  { name: "Contact", path: "/Contact" },
+                ].map(({ name, path }) => (
+                  <li key={path}>
+                    <Link
+                      href={path}
+                      className={`block w-full hover:font-semibold ${
+                        isActive(path) ? "text-black font-semibold" : ""
+                      }`}
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      {name}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
           </nav>
