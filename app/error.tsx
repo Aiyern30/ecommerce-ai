@@ -1,6 +1,6 @@
 "use client";
 
-import ErrorPage from "@/components/error";
+import ErrorPage from "@/components/Error";
 
 interface ErrorPageProps {
   error: Error;
