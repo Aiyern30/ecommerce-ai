@@ -10,8 +10,8 @@ const Footer = () => {
             <div>
               <h3 className="mb-4 text-lg font-bold">Shop YTL</h3>
               <p className="text-sm text-muted-foreground">
-                We have clothes that suits your style and which you&apos;re
-                proud to wear.
+                We have clothes that suit your style and which you&apos;re proud
+                to wear.
               </p>
             </div>
             <div>
@@ -66,7 +66,12 @@ const Footer = () => {
               </ul>
             </div>
           </div>
-          <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t pt-8 md:flex-row">
+        </div>
+
+        <div className="border-t w-full mt-8" />
+
+        <div className="container mx-auto px-4">
+          <div className="mt-8 flex flex-col items-center justify-between gap-4 py-4 md:flex-row">
             <p className="text-sm text-muted-foreground">
               © 2024 SHOP.CO All Rights Reserved.
             </p>
