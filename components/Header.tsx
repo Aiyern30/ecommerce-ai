@@ -34,8 +34,9 @@ const Header = () => {
                   { name: "Categories", path: "/Category" },
                   { name: "Compare", path: "/Comparison" },
                   { name: "Blog", path: "/Blog" },
-                  { name: "FAQ", path: "/FAQ" },
+                  { name: "FAQ", path: "/Faq" },
                   { name: "Contact", path: "/Contact" },
+                  { name: "About", path: "/About" },
                 ].map(({ name, path }) => (
                   <li key={path} className="relative">
                     <Link
@@ -95,8 +96,9 @@ const Header = () => {
                   { name: "Categories", path: "/Category" },
                   { name: "Compare", path: "/Comparison" },
                   { name: "Blog", path: "/Blog" },
-                  { name: "FAQ", path: "/FAQ" },
+                  { name: "FAQ", path: "/Faq" },
                   { name: "Contact", path: "/Contact" },
+                  { name: "About", path: "/About" },
                 ].map(({ name, path }) => (
                   <li key={path}>
                     <Link
