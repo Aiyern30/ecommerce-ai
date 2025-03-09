@@ -1,6 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import { Truck, Coins, Award, Headphones } from "lucide-react";
 import { Button } from "@/components/ui/";
+import { useRouter } from "next/navigation";
 
 interface Feature {
   icon: React.ElementType;
@@ -9,6 +12,7 @@ interface Feature {
 }
 
 export default function AboutUs() {
+  const router = useRouter();
   const features: Feature[] = [
     {
       icon: Truck,
@@ -58,9 +62,7 @@ export default function AboutUs() {
             tristique amet erat vitae eget dolor lobortis. Accumsan faucibus
             vitae lobortis quis bibendum quam.
           </p>
-          <Button className="bg-[#f83d92] hover:bg-[#e02a7d] text-white">
-            Contact us
-          </Button>
+          <Button onClick={() => router.push("/Contact")}>Contact us</Button>
         </div>
       </div>
 
