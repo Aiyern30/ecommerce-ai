@@ -1,3 +1,4 @@
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { StyleCard } from "@/components/StyleCards";
 import React from "react";
 
@@ -10,25 +11,26 @@ const page = () => {
   ];
 
   return (
-    <div>
-      <section className="bg-gray-50 py-16">
-        <div className="container mx-auto px-4">
-          <h2 className="mb-8 text-center text-3xl font-bold">
-            BROWSE BY DRESS STYLE
-          </h2>
-          <div className="grid gap-6 sm:grid-cols-2">
-            {categories.map((category, index) => (
-              <StyleCard
-                key={index}
-                title={category.title}
-                image={category.image}
-                path={category.path}
-              />
-            ))}
-          </div>
+    <section className="bg-gray-50 mb-4">
+      <div className="p-4 container mx-auto">
+        <BreadcrumbNav showFilterButton={false} />
+      </div>
+      <div className="container mx-auto px-4">
+        <h2 className="mb-8 text-center text-3xl font-bold">
+          BROWSE BY DRESS STYLE
+        </h2>
+        <div className="grid gap-6 sm:grid-cols-2">
+          {categories.map((category, index) => (
+            <StyleCard
+              key={index}
+              title={category.title}
+              image={category.image}
+              path={category.path}
+            />
+          ))}
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   );
 };
 
