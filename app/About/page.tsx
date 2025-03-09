@@ -1,12 +1,41 @@
 import Image from "next/image";
 import { Truck, Coins, Award, Headphones } from "lucide-react";
 import { Button } from "@/components/ui/";
-interface FeatureCardProps {
-  icon: React.ReactNode;
+
+interface Feature {
+  icon: React.ElementType;
   title: string;
   description: string;
 }
+
 export default function AboutUs() {
+  const features: Feature[] = [
+    {
+      icon: Truck,
+      title: "Free Delivery",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Massa purus gravida.",
+    },
+    {
+      icon: Coins,
+      title: "100% Cash Back",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Massa purus gravida.",
+    },
+    {
+      icon: Award,
+      title: "Quality Product",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Massa purus gravida.",
+    },
+    {
+      icon: Headphones,
+      title: "24/7 Support",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Massa purus gravida.",
+    },
+  ];
+
   return (
     <div className="container mx-auto px-4 py-12">
       {/* Hero Section */}
@@ -38,27 +67,19 @@ export default function AboutUs() {
       {/* Features Section */}
       <div className="mb-24">
         <h2 className="text-3xl font-bold text-center mb-16">Our Features</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          <FeatureCard
-            icon={<Truck className="w-12 h-12 text-[#f83d92]" />}
-            title="Free Delivery"
-            description="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Massa purus gravida."
-          />
-          <FeatureCard
-            icon={<Coins className="w-12 h-12 text-[#f83d92]" />}
-            title="100% Cash Back"
-            description="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Massa purus gravida."
-          />
-          <FeatureCard
-            icon={<Award className="w-12 h-12 text-[#f83d92]" />}
-            title="Quality Product"
-            description="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Massa purus gravida."
-          />
-          <FeatureCard
-            icon={<Headphones className="w-12 h-12 text-[#f83d92]" />}
-            title="24/7 Support"
-            description="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Massa purus gravida."
-          />
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {features.map((feature, index) => (
+            <div
+              key={index}
+              className="p-6 border rounded-lg flex flex-col items-center text-center"
+            >
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                <feature.icon className="h-6 w-6 text-purple-600" />
+              </div>
+              <h3 className="font-semibold mb-2">{feature.title}</h3>
+              <p className="text-sm text-gray-600">{feature.description}</p>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -113,16 +134,6 @@ export default function AboutUs() {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function FeatureCard({ icon, title, description }: FeatureCardProps) {
-  return (
-    <div className="flex flex-col items-center text-center p-6">
-      <div className="mb-4">{icon}</div>
-      <h3 className="text-xl font-semibold mb-3">{title}</h3>
-      <p className="text-gray-600">{description}</p>
     </div>
   );
 }
