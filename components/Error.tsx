@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { RefreshCw, Home, MessageSquare, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/";
 import { Progress } from "@/components/ui/";
+import ErrorIllustration from "./ErrorIllustration";
 
 interface ErrorPageProps {
   error: Error;
@@ -44,13 +44,8 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
 
         <div className="p-8">
           <div className="flex flex-col md:flex-row gap-8 items-center">
-            <div className="relative w-40 h-40 flex-shrink-0">
-              <Image
-                src="/placeholder.svg?height=160&width=160&text=⚠️"
-                alt="Error"
-                fill
-                className="object-contain"
-              />
+            <div className="flex-shrink-0">
+              <ErrorIllustration width={160} height={160} />
             </div>
 
             <div className="flex-1">
@@ -70,10 +65,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
                 </div>
               ) : (
                 <div className="flex flex-wrap gap-3 mb-6">
-                  <Button
-                    onClick={handleRetry}
-                    className="gap-2 bg-[#2a3990] hover:bg-[#1e2a6e]"
-                  >
+                  <Button onClick={handleRetry} className="gap-2 ">
                     <RefreshCw className="h-4 w-4" />
                     Try Again
                   </Button>
@@ -90,14 +82,14 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
                 <p className="text-sm text-gray-500 mb-4">You can also:</p>
                 <div className="flex flex-wrap gap-4">
                   <Link
-                    href="/contact"
+                    href="/Contact"
                     className="text-[#f83d92] hover:underline flex items-center gap-1"
                   >
                     <MessageSquare className="h-4 w-4" />
                     Contact Support
                   </Link>
                   <Link
-                    href="/products"
+                    href="/Product"
                     className="text-[#f83d92] hover:underline flex items-center gap-1"
                   >
                     <ShoppingBag className="h-4 w-4" />
