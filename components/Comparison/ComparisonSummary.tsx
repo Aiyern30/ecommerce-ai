@@ -16,7 +16,7 @@ interface ComparisonSummaryProps {
 
 export function ComparisonSummary({ products }: ComparisonSummaryProps) {
   return (
-    <Card className="mb-8">
+    <Card className="mb-8 px-4">
       <CardHeader>
         <CardTitle>Comparison Summary</CardTitle>
         <CardDescription>

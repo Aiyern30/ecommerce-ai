@@ -1,9 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useState } from "react";
-import { Star, Minus, Plus, ChevronRight } from "lucide-react";
+import { Star, Minus, Plus } from "lucide-react";
 import {
   Tabs,
   TabsList,
@@ -11,6 +10,7 @@ import {
   TabsContent,
   Button,
 } from "@/components/ui";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 interface RelatedProductCardProps {
   name: string;
   price: number;
@@ -55,23 +55,8 @@ export default function ProductPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Breadcrumb */}
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Link href="/" className="hover:text-gray-900">
-            Home
-          </Link>
-          <ChevronRight className="h-4 w-4" />
-          <Link href="/shop" className="hover:text-gray-900">
-            Shop
-          </Link>
-          <ChevronRight className="h-4 w-4" />
-          <Link href="/men" className="hover:text-gray-900">
-            Men
-          </Link>
-          <ChevronRight className="h-4 w-4" />
-          <span className="text-gray-900">T-shirts</span>
-        </div>
+      <div className="p-4 container mx-auto">
+        <BreadcrumbNav showFilterButton={false} />
       </div>
 
       <div className="container mx-auto px-4 pb-16 pt-6">

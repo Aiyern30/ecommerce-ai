@@ -9,6 +9,7 @@ import { SpecificationsTab } from "@/components/Comparison/Tabs/SpecificationTab
 import { FeaturesTab } from "@/components/Comparison/Tabs/FeaturesTab";
 import { PricingTab } from "@/components/Comparison/Tabs/PricingTab";
 import { Product } from "@/type/product";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 export default function ComparisonPage() {
   const [itemCount, setItemCount] = useState<"2" | "3" | "4">("3");
   const [showSummary, setShowSummary] = useState(false);
@@ -93,16 +94,17 @@ export default function ComparisonPage() {
   const displayedProducts = products.slice(0, Number.parseInt(itemCount));
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="container mx-auto mb-4">
+      <div className="p-4 container mx-auto">
+        <BreadcrumbNav showFilterButton={false} />
+      </div>
       <ComparisonHeader
         itemCount={itemCount}
         setItemCount={setItemCount}
         showSummary={showSummary}
         setShowSummary={setShowSummary}
       />
-
       {showSummary && <ComparisonSummary products={displayedProducts} />}
-
       <Tabs defaultValue="overview">
         <TabsList className="mb-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
