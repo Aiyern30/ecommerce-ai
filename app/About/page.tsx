@@ -5,6 +5,7 @@ import { Truck, Coins, Award, Headphones } from "lucide-react";
 import { Button } from "@/components/ui/";
 import { useRouter } from "next/navigation";
 import { FeatureCard } from "@/components/FeatureCards";
+import TestimonialCarousel from "@/components/TestimonialCarousel";
 
 interface Feature {
   icon: React.ElementType;
@@ -78,56 +79,8 @@ export default function AboutUs() {
       </div>
 
       {/* Testimonial Section */}
-      <div className="mb-24">
-        <h2 className="text-3xl font-bold text-center mb-16">
-          Our Client Say!
-        </h2>
-        <div className="max-w-3xl mx-auto">
-          <div className="flex flex-col items-center">
-            <div className="flex gap-2 mb-6">
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
-                <Image
-                  src="/placeholder.svg?height=32&width=32"
-                  alt="Client"
-                  width={32}
-                  height={32}
-                  className="object-cover"
-                />
-              </div>
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 border-2 border-[#f83d92]">
-                <Image
-                  src="/placeholder.svg?height=32&width=32"
-                  alt="Client"
-                  width={32}
-                  height={32}
-                  className="object-cover"
-                />
-              </div>
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
-                <Image
-                  src="/placeholder.svg?height=32&width=32"
-                  alt="Client"
-                  width={32}
-                  height={32}
-                  className="object-cover"
-                />
-              </div>
-            </div>
-            <h3 className="text-xl font-semibold mb-4">Selina Gomez</h3>
-            <p className="text-center text-gray-600 mb-8">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Non duis
-              ultricies euismod mi id sollicitudin aliquet id arcu. Nam vitae a
-              tortor ac, sed quam quisitis ut enim. Phareque duffius dolor
-              aliquet risus volutpat praesent.
-            </p>
-            <div className="flex gap-2">
-              <div className="w-2 h-2 rounded-full bg-gray-300"></div>
-              <div className="w-8 h-2 rounded-full bg-[#f83d92]"></div>
-              <div className="w-2 h-2 rounded-full bg-gray-300"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+
+      <TestimonialCarousel />
     </div>
   );
 }
