@@ -20,6 +20,7 @@ const Header = () => {
             <Link href="/" className="text-xl font-bold">
               ShopYTL
             </Link>
+
             {/* Desktop Navigation - only show on lg screens */}
             <nav className="hidden lg:block">
               <ul className="flex gap-6 whitespace-nowrap">
@@ -29,24 +30,29 @@ const Header = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/Category/On-Sale"
-                    className="hover:text-gray-600"
-                  >
-                    On Sale
+                  <Link href="/Category" className="hover:text-gray-600">
+                    Categories
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/Category/New-Arrivals"
-                    className="hover:text-gray-600"
-                  >
-                    New Arrivals
+                  <Link href="/Comparison" className="hover:text-gray-600">
+                    Compare
+                  </Link>
+                </li>
+
+                <li>
+                  <Link href="/Blog" className="hover:text-gray-600">
+                    Blog
                   </Link>
                 </li>
                 <li>
-                  <Link href="/Category/Brands" className="hover:text-gray-600">
-                    Brands
+                  <Link href="/FAQ" className="hover:text-gray-600">
+                    FAQ
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/Contact" className="hover:text-gray-600">
+                    Contact
                   </Link>
                 </li>
               </ul>
@@ -54,6 +60,7 @@ const Header = () => {
           </div>
 
           <div className="flex items-center gap-4">
+            {/* Search Box (Desktop Only) */}
             <div className="relative hidden lg:block">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <Input
@@ -65,6 +72,7 @@ const Header = () => {
             <CartSheet />
             <WishlistSheet />
 
+            {/* Mobile Menu Toggle */}
             <Button
               variant="ghost"
               size="icon"
@@ -80,6 +88,7 @@ const Header = () => {
           </div>
         </div>
 
+        {/* Mobile Navigation */}
         {menuOpen && (
           <nav className="absolute top-full left-0 w-full bg-white shadow-lg border-b lg:hidden">
             <div className="container mx-auto p-4">
@@ -95,29 +104,48 @@ const Header = () => {
                 </li>
                 <li>
                   <Link
-                    href="/Category/On-Sale"
+                    href="/Category"
                     className="block w-full hover:font-semibold"
                     onClick={() => setMenuOpen(false)}
                   >
-                    On Sale
+                    Categories
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="/Category/New-Arrivals"
+                    href="/Comparison"
                     className="block w-full hover:font-semibold"
                     onClick={() => setMenuOpen(false)}
                   >
-                    New Arrivals
+                    Compare
+                  </Link>
+                </li>
+
+                <li>
+                  <Link
+                    href="/Blog"
+                    className="block w-full hover:font-semibold"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Blog
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="/Category/Brands"
+                    href="/FAQ"
                     className="block w-full hover:font-semibold"
                     onClick={() => setMenuOpen(false)}
                   >
-                    Brands
+                    FAQ
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/Contact"
+                    className="block w-full hover:font-semibold"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Contact
                   </Link>
                 </li>
               </ul>
