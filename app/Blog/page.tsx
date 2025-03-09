@@ -42,7 +42,6 @@ const blogs = [
   },
 ];
 
-// Related People Data
 const relatedPeople = [
   {
     id: 1,
