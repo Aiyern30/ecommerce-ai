@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSwipeable } from "react-swipeable";
 import { Button } from "@/components/ui/";
 import { cn } from "@/lib/utils";
 
@@ -67,20 +68,36 @@ export default function HeroCarousel() {
     setIsAutoPlaying(false);
   };
 
+  const nextSlide = useCallback(() => {
+    setCurrentSlide((prev) =>
+      prev === carouselItems.length - 1 ? 0 : prev + 1
+    );
+  }, [carouselItems.length]);
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) =>
+      prev === 0 ? carouselItems.length - 1 : prev - 1
+    );
+  };
+
+  // Swipe functionality using react-swipeable
+  const handlers = useSwipeable({
+    onSwipedLeft: nextSlide,
+    onSwipedRight: prevSlide,
+    preventScrollOnSwipe: true,
+    trackTouch: true,
+    trackMouse: false,
+  });
+
   useEffect(() => {
     if (!isAutoPlaying) return;
 
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) =>
-        prev === carouselItems.length - 1 ? 0 : prev + 1
-      );
-    }, 5000);
-
+    const interval = setInterval(nextSlide, 5000);
     return () => clearInterval(interval);
-  }, [isAutoPlaying, carouselItems.length]);
+  }, [isAutoPlaying, nextSlide]);
 
   return (
-    <div className="relative w-full overflow-hidden">
+    <div className="relative w-full overflow-hidden" {...handlers}>
       <div
         className="flex transition-transform duration-500 ease-in-out"
         style={{ transform: `translateX(-${currentSlide * 100}%)` }}
