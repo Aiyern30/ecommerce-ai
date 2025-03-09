@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname } from "next/navigation";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui";
 import { ProductCard } from "@/components/ProductCards";
@@ -9,8 +8,6 @@ import { FiltersSidebar } from "@/components/Category/FiltersSidebar";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 export default function CategoryPage() {
-  const pathname = usePathname();
-  const category = pathname.split("/").pop()?.replace(/-/g, " ");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const products = [
@@ -94,7 +91,6 @@ export default function CategoryPage() {
       <div className="flex-1 flex flex-col min-w-0">
         <div className="sticky top-0 bg-white z-10 border-b px-8 py-5">
           <BreadcrumbNav
-            currentPage={category || "Category"}
             showFilterButton={true}
             onFilterClick={() => setIsFilterOpen(true)}
           />
