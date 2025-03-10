@@ -154,7 +154,7 @@ export default function WishlistSheet() {
         </Button>
       </SheetTrigger>
       <SheetContent side="right" className="flex flex-col h-full p-4 pt-0">
-        <SheetHeader className="px-0">
+        <SheetHeader className="px-0 border-b">
           <SheetTitle className="font-bold">Wishlist</SheetTitle>
         </SheetHeader>
 
