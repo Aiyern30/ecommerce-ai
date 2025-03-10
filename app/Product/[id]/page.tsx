@@ -193,25 +193,10 @@ export default function ProductPage() {
         {/* Product Details Tabs */}
         <div className="mt-16">
           <Tabs defaultValue="details">
-            <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
-              <TabsTrigger
-                value="details"
-                className="rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-black"
-              >
-                Product Details
-              </TabsTrigger>
-              <TabsTrigger
-                value="reviews"
-                className="rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-black"
-              >
-                Rating & Reviews
-              </TabsTrigger>
-              <TabsTrigger
-                value="faqs"
-                className="rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-black"
-              >
-                FAQs
-              </TabsTrigger>
+            <TabsList className="justify-start">
+              <TabsTrigger value="details">Product Details</TabsTrigger>
+              <TabsTrigger value="reviews">Rating & Reviews</TabsTrigger>
+              <TabsTrigger value="faqs">FAQs</TabsTrigger>
             </TabsList>
             <TabsContent value="details" className="pt-4">
               <ProductDetails />
