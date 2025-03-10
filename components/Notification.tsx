@@ -12,6 +12,7 @@ import {
   SheetTrigger,
   Badge,
 } from "@/components/ui/";
+import Link from "next/link";
 
 interface Notification {
   id: number;
@@ -184,6 +185,15 @@ export default function NotificationSheet() {
             ))
           )}
         </div>
+        {notifications.length > 0 && (
+          <div className="border-t pt-4">
+            <Link href="/Notifications">
+              <Button className="w-full mt-4" onClick={() => setIsOpen(false)}>
+                View Notification
+              </Button>
+            </Link>
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   );
