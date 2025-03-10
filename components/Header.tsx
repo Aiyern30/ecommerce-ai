@@ -14,6 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/";
+import NotificationSheet from "./Notification";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -108,6 +109,7 @@ const Header = () => {
                 className="w-[300px] pl-10"
               />
             </div>
+            <NotificationSheet />
             <CartSheet />
             <WishlistSheet />
 
