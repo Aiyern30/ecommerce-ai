@@ -4,7 +4,7 @@ import { NotificationsList } from "./NotificationList";
 
 export default function NotificationsPage() {
   return (
-    <div className="container mx-auto py-8 px-4 md:px-6">
+    <div className="container mx-auto mb-4">
       <NotificationsHeader />
 
       <Tabs defaultValue="all" className="mt-6">
