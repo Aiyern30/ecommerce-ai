@@ -108,26 +108,24 @@ export default function NotificationSheet() {
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="flex flex-col h-full p-4 pt-0">
+      <SheetContent side="right" className="flex flex-col h-full px-4">
         <SheetHeader className="px-0">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col gap-2">
             <SheetTitle className="font-bold">Notifications</SheetTitle>
-            <div className="flex gap-2">
-              {notifications.length > 0 && (
-                <>
-                  <Button variant="outline" size="sm" onClick={markAllAsRead}>
-                    Mark all read
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={clearAllNotifications}
-                  >
-                    Clear all
-                  </Button>
-                </>
-              )}
-            </div>
+            {notifications.length > 0 && (
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={markAllAsRead}>
+                  Mark all read
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearAllNotifications}
+                >
+                  Clear all
+                </Button>
+              </div>
+            )}
           </div>
         </SheetHeader>
 
