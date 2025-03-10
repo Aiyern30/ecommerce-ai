@@ -108,8 +108,8 @@ export default function NotificationSheet() {
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="flex flex-col h-full px-4">
-        <SheetHeader className="px-0">
+      <SheetContent side="right" className="flex flex-col h-full p-4 pt-0">
+        <SheetHeader className="px-0 border-b">
           <div className="flex flex-col gap-2">
             <SheetTitle className="font-bold">Notifications</SheetTitle>
             {notifications.length > 0 && (
