@@ -1,9 +1,9 @@
 "use client";
 
-import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/";
 import { clearAllNotifications } from "./actions";
 import { toast } from "sonner";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 export function NotificationsHeader() {
   const handleClearAll = async () => {
@@ -18,14 +18,15 @@ export function NotificationsHeader() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-      <div className="flex items-center gap-2">
-        <Bell className="h-6 w-6 text-primary" />
-        <h1 className="text-2xl font-bold tracking-tight">Notifications</h1>
+    <div className="flex flex-col md:flex-row justify-between items-center">
+      <div className="container mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between w-full p-4">
+        <BreadcrumbNav showFilterButton={false} />
       </div>
-      <Button variant="outline" onClick={handleClearAll}>
-        Clear all notifications
-      </Button>
+      <div className="w-full sm:w-auto flex justify-center sm:justify-end">
+        <Button variant="outline" onClick={handleClearAll}>
+          Clear all notifications
+        </Button>
+      </div>
     </div>
   );
 }
