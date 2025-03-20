@@ -1,9 +1,55 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui";
+import { Button, Input } from "@/components/ui";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/";
+
+const formSchema = z
+  .object({
+    name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+    email: z.string().email({ message: "Please enter a valid email address" }),
+    password: z
+      .string()
+      .min(6, { message: "Password must be at least 6 characters" }),
+    confirmPassword: z
+      .string()
+      .min(6, { message: "Password must be at least 6 characters" }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
+
+type FormValues = z.infer<typeof formSchema>;
 
 export default function LoginPage() {
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  // Handle form submission
+  function onSubmit(data: FormValues) {
+    console.log(data);
+    // Here you would typically handle user registration
+  }
   return (
     <div className="flex min-h-[calc(100vh-70px)]">
       <div className="flex w-full items-center justify-center lg:w-1/2">
@@ -15,47 +61,91 @@ export default function LoginPage() {
           <p className="text-sm text-gray-500">Welcome back !!!</p>
           <h1 className="mb-6 mt-2 text-4xl font-bold">Sing in</h1>
 
-          <form className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                placeholder="test@gmail.com"
-                className="w-full rounded-md bg-[#fff5f3] p-3 text-sm outline-none"
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem className="space-y-2">
+                    <FormLabel>Full Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="John Doe"
+                        {...field}
+                        className="bg-[#fff5f3]"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label htmlFor="password" className="block text-sm">
-                  Password
-                </label>
-                <Link
-                  href="#"
-                  className="text-xs text-gray-400 hover:text-[#ff7a5c]"
-                >
-                  Forgot Password ?
-                </Link>
-              </div>
-              <input
-                id="password"
-                type="password"
-                placeholder="••••••••••••"
-                className="w-full rounded-md bg-[#fff5f3] p-3 text-sm outline-none"
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem className="space-y-2">
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="test@gmail.com"
+                        {...field}
+                        className="bg-[#fff5f3]"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <Button
-              type="submit"
-              className="mt-2 flex w-40 items-center justify-center gap-2 rounded-full "
-            >
-              SIGN IN
-              <ArrowRight size={16} />
-            </Button>
-          </form>
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem className="space-y-2">
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="••••••••••••"
+                        {...field}
+                        className="bg-[#fff5f3]"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem className="space-y-2">
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="••••••••••••"
+                        {...field}
+                        className="bg-[#fff5f3]"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button
+                type="submit"
+                className="mt-2 flex w-40 items-center justify-center gap-2 rounded-full bg-[#ff7a5c] hover:bg-[#ff6a4c]"
+              >
+                SIGN UP
+                <ArrowRight size={16} />
+              </Button>
+            </form>
+          </Form>
 
           <p className="mt-8 text-center text-sm text-gray-400">
             I don&apos;t have an account :
