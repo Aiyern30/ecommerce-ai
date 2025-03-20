@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from "react";
 import ChatWindow from "./Chat/ChatWindow";
 import ChatButton from "./Chat/ChatButton";
 import { Toaster } from "./ui";
+import { SessionProvider } from "next-auth/react";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -16,6 +17,7 @@ export function Layout({ children }: LayoutProps) {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
+
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
     if (isChatOpen) {
@@ -45,25 +47,27 @@ export function Layout({ children }: LayoutProps) {
   }, [isChatOpen]);
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="flex-1 pt-[70px]">
-        {children}
-        <Toaster />
-      </main>
-      <div className="fixed bottom-0 right-0 z-50 flex items-end p-4">
-        {isChatOpen && (
-          <div ref={chatRef}>
-            <ChatWindow
-              isExpanded={isExpanded}
-              onClose={toggleChat}
-              onExpand={toggleExpand}
-            />
-          </div>
-        )}
-        {!isChatOpen && <ChatButton onClick={toggleChat} />}
+    <SessionProvider>
+      <div className="flex min-h-screen flex-col">
+        <Header />
+        <main className="flex-1 pt-[70px]">
+          {children}
+          <Toaster />
+        </main>
+        <div className="fixed bottom-0 right-0 z-50 flex items-end p-4">
+          {isChatOpen && (
+            <div ref={chatRef}>
+              <ChatWindow
+                isExpanded={isExpanded}
+                onClose={toggleChat}
+                onExpand={toggleExpand}
+              />
+            </div>
+          )}
+          {!isChatOpen && <ChatButton onClick={toggleChat} />}
+        </div>
+        <Footer />
       </div>
-      <Footer />
-    </div>
+    </SessionProvider>
   );
 }

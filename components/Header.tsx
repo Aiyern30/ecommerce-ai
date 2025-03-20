@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname } from "next/navigation";
-import { Search, Menu, X, ChevronDown } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Search, Menu, X, ChevronDown, LogIn } from "lucide-react";
 import Link from "next/link";
 import { Input } from "./ui/Input";
 import { Button } from "./ui/Button";
@@ -13,12 +13,18 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
 } from "@/components/ui/";
 import NotificationSheet from "./Notification";
+import { useSession } from "next-auth/react";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const { data: session } = useSession();
 
   const isActive = (path: string) => pathname.startsWith(path);
 
@@ -38,6 +44,19 @@ const Header = () => {
   const isAnySecondaryActive = secondaryNavItems.some((item) =>
     isActive(item.path)
   );
+
+  const handleLoginClick = () => {
+    router.push("/login");
+    setMenuOpen(false);
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
+  };
 
   return (
     <div>
@@ -113,6 +132,27 @@ const Header = () => {
             <CartSheet />
             <WishlistSheet />
 
+            {!session ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLoginClick}
+                className="hidden lg:flex items-center gap-2 border-[#ff7a5c] text-[#ff7a5c] hover:bg-[#fff5f3]"
+              >
+                <LogIn className="h-4 w-4" />
+                <span>Login</span>
+              </Button>
+            ) : (
+              <Link href="/dashboard" className="hidden lg:block">
+                <Avatar className="h-9 w-9 border-2 border-[#ff7a5c]">
+                  <AvatarImage src={session.user?.image || undefined} />
+                  <AvatarFallback>
+                    {session.user?.name ? getInitials(session.user.name) : "U"}
+                  </AvatarFallback>
+                </Avatar>
+              </Link>
+            )}
+
             <Button
               variant="ghost"
               size="icon"
@@ -156,7 +196,40 @@ const Header = () => {
                     </li>
                   )
                 )}
+
+                {!session && (
+                  <li className="mt-2 pt-2 border-t">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleLoginClick}
+                      className="w-full flex items-center justify-center gap-2 border-[#ff7a5c] text-[#ff7a5c] hover:bg-[#fff5f3]"
+                    >
+                      <LogIn className="h-4 w-4" />
+                      <span>Login / Sign Up</span>
+                    </Button>
+                  </li>
+                )}
               </ul>
+
+              {session && (
+                <div className="mt-4 pt-4 border-t flex items-center gap-3">
+                  <Avatar className="h-9 w-9 border-2 border-[#ff7a5c]">
+                    <AvatarImage src={session.user?.image || undefined} />
+                    <AvatarFallback>
+                      {session.user?.name
+                        ? getInitials(session.user.name)
+                        : "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{session.user?.name}</p>
+                    <p className="text-sm text-gray-500">
+                      {session.user?.email}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </nav>
         )}
