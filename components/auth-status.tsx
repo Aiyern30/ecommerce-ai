@@ -1,6 +1,8 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { signOut } from "@/auth";
+
 import { Button } from "@/components/ui/";
 import Link from "next/link";
 import Image from "next/image";
