@@ -201,7 +201,7 @@ export default function LoginPage() {
         <div className="flex h-full items-center justify-center p-16">
           <div className="relative h-full w-full">
             <Image
-              src="/login.png"
+              src="/Login.png"
               alt="Shopping illustration"
               fill
               className="object-contain"
