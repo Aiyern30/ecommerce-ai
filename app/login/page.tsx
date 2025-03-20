@@ -1,70 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-function ShoppingIllustration() {
-  return (
-    <svg
-      width="500"
-      height="500"
-      viewBox="0 0 500 500"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <g clipPath="url(#clip0_1_2)">
-        {/* Person */}
-        <path
-          d="M400 350 C 420 280 420 280 420 280 L 380 260 L 360 350 Z"
-          fill="#ff7a5c"
-        />
-        <path
-          d="M380 260 C 380 260 370 240 370 220 C 370 200 380 190 390 190 C 400 190 410 200 410 220 C 410 240 400 260 400 260 Z"
-          fill="#f5d0c5"
-        />
-        <path
-          d="M380 190 C 380 190 370 180 370 170 C 370 160 380 150 390 150 C 400 150 410 160 410 170 C 410 180 400 190 400 190 Z"
-          fill="#333"
-        />
-        <path
-          d="M360 350 C 360 350 360 400 360 450 C 360 460 350 470 340 470 C 330 470 320 460 320 450 L 320 350 Z"
-          fill="#111"
-        />
-        <path
-          d="M400 350 C 400 350 400 400 400 450 C 400 460 410 470 420 470 C 430 470 440 460 440 450 L 440 350 Z"
-          fill="#111"
-        />
-        <path
-          d="M380 280 C 380 280 370 290 370 300 C 370 310 380 320 390 320 C 400 320 410 310 410 300 C 410 290 400 280 400 280 Z"
-          fill="#f5d0c5"
-        />
-
-        {/* Shopping Cart */}
-        <path
-          d="M300 450 L 350 450 L 380 350 L 270 350 Z"
-          stroke="#333"
-          strokeWidth="2"
-          fill="none"
-        />
-        <path
-          d="M270 350 L 240 400 L 270 450"
-          stroke="#333"
-          strokeWidth="2"
-          fill="none"
-        />
-        <circle cx="290" cy="470" r="10" fill="#333" />
-        <circle cx="340" cy="470" r="10" fill="#333" />
-
-        {/* Items in cart */}
-        <rect x="280" y="370" width="40" height="30" fill="#0cf" />
-        <rect x="320" y="380" width="30" height="20" fill="#00f" />
-        <circle cx="310" cy="390" r="20" fill="#ff7a5c" />
-      </g>
-      <defs>
-        <clipPath id="clip0_1_2">
-          <rect width="500" height="500" fill="white" />
-        </clipPath>
-      </defs>
-    </svg>
-  );
-}
 
 export default function LoginPage() {
   return (
@@ -132,8 +68,16 @@ export default function LoginPage() {
 
       {/* Right side - Illustration */}
       <div className="hidden bg-[#fff0e8] lg:block lg:w-1/2">
-        <div className="flex h-full items-center justify-center p-8">
-          <ShoppingIllustration />
+        <div className="flex h-full items-center justify-center p-16">
+          <div className="relative h-full w-full">
+            <Image
+              src="/Login.png"
+              alt="Shopping illustration"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
         </div>
       </div>
     </div>
