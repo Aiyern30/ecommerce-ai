@@ -60,14 +60,18 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-[calc(100vh-70px)]">
-      <div className="flex w-full items-center justify-center lg:w-1/2">
+      <div className="flex w-full items-center justify-center lg:w-1/2 dark:bg-gray-900">
         <div className="w-full max-w-md p-8">
           <div className="mb-8">
             <h3 className="text-xl font-medium text-[#ff7a5c]">SHOPYTL</h3>
           </div>
 
-          <p className="text-sm text-gray-500">Welcome back !!!</p>
-          <h1 className="mb-6 mt-2 text-4xl font-bold">Sign in</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Welcome back !!!
+          </p>
+          <h1 className="mb-6 mt-2 text-4xl font-bold dark:text-white">
+            Sign in
+          </h1>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -76,12 +80,12 @@ export default function LoginPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem className="space-y-2">
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="dark:text-gray-300">Email</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="test@gmail.com"
                         {...field}
-                        className="bg-[#fff5f3]"
+                        className="bg-[#fff5f3] dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-500"
                       />
                     </FormControl>
                     <FormMessage />
@@ -95,10 +99,12 @@ export default function LoginPage() {
                 render={({ field }) => (
                   <FormItem className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel className="dark:text-gray-300">
+                        Password
+                      </FormLabel>
                       <Link
                         href="#"
-                        className="text-xs text-gray-400 hover:text-[#ff7a5c]"
+                        className="text-xs text-gray-400 hover:text-[#ff7a5c] dark:text-gray-500 dark:hover:text-[#ff7a5c]"
                       >
                         Forgot Password ?
                       </Link>
@@ -109,11 +115,11 @@ export default function LoginPage() {
                           type={showPassword ? "text" : "password"}
                           placeholder="••••••••••••"
                           {...field}
-                          className="bg-[#fff5f3] pr-10"
+                          className="bg-[#fff5f3] pr-10 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-500"
                         />
                         <button
                           type="button"
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                           onClick={() => setShowPassword(!showPassword)}
                         >
                           {showPassword ? (
@@ -131,7 +137,7 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-[#ff7a5c] hover:bg-[#ff6a4c] cursor-pointer"
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-[#ff7a5c] hover:bg-[#ff6a4c] text-white cursor-pointer dark:bg-[#ff7a5c] dark:hover:bg-[#ff6a4c] dark:text-white"
               >
                 SIGN IN
                 <ArrowRight size={16} />
@@ -141,10 +147,10 @@ export default function LoginPage() {
 
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200"></div>
+              <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="bg-white px-2 text-gray-500">
+              <span className="bg-white px-2 text-gray-500 dark:bg-gray-900 dark:text-gray-400">
                 Or continue with
               </span>
             </div>
@@ -153,7 +159,7 @@ export default function LoginPage() {
           <Button
             type="button"
             variant="outline"
-            className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white py-6 hover:bg-gray-50 cursor-pointer"
+            className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white py-6 hover:bg-gray-50 cursor-pointer dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700"
             onClick={handleGoogleLogin}
             disabled={isLoading}
           >
@@ -187,7 +193,7 @@ export default function LoginPage() {
             <span>{isLoading ? "Signing in..." : "Sign in with Google"}</span>
           </Button>
 
-          <p className="mt-8 text-center text-sm text-gray-400">
+          <p className="mt-8 text-center text-sm text-gray-400 dark:text-gray-500">
             I don&apos;t have an account :
             <Link href="/" className="ml-1 text-[#ff7a5c] hover:underline">
               Sign up
@@ -197,7 +203,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right side - Illustration */}
-      <div className="hidden bg-[#fff0e8] lg:block lg:w-1/2">
+      <div className="hidden bg-[#fff0e8] dark:bg-gray-800 lg:block lg:w-1/2">
         <div className="flex h-full items-center justify-center p-16">
           <div className="relative h-full w-full">
             <Image
