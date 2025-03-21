@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, Menu, X, ChevronDown, LogIn } from "lucide-react";
+import { Search, Menu, X, ChevronDown, LogIn, Moon, Sun } from "lucide-react";
 import Link from "next/link";
 import { Input } from "./ui/Input";
 import { Button } from "./ui/Button";
@@ -20,12 +20,14 @@ import {
 import NotificationSheet from "./Notification";
 import { useSession } from "next-auth/react";
 import UserDropdown from "./UserDropdown";
+import { useTheme } from "./ThemeProvider";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
+  const { theme, setTheme } = useTheme();
 
   const isActive = (path: string) => pathname.startsWith(path);
 
@@ -59,12 +61,16 @@ const Header = () => {
       .toUpperCase();
   };
 
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
+
   return (
     <div>
-      <header className="fixed top-0 left-0 w-full bg-white shadow-md border-b z-50">
+      <header className="fixed top-0 left-0 w-full bg-white dark:bg-gray-900 shadow-md border-b z-50 dark:border-gray-800">
         <div className="container mx-auto flex items-center justify-between p-4 flex-nowrap">
           <div className="flex items-center gap-8">
-            <Link href="/" className="text-xl font-bold">
+            <Link href="/" className="text-xl font-bold dark:text-white">
               ShopYTL
             </Link>
 
@@ -74,14 +80,16 @@ const Header = () => {
                   <li key={path} className="relative">
                     <Link
                       href={path}
-                      className={`hover:text-gray-600 ${
-                        isActive(path) ? "text-black font-semibold" : ""
+                      className={`hover:text-gray-600 dark:hover:text-gray-300 ${
+                        isActive(path)
+                          ? "text-black dark:text-white font-semibold"
+                          : "dark:text-gray-300"
                       }`}
                     >
                       {name}
                     </Link>
                     {isActive(path) && (
-                      <div className="absolute left-0 -bottom-1 h-[2px] w-full bg-black rounded-md"></div>
+                      <div className="absolute left-0 -bottom-1 h-[2px] w-full bg-black dark:bg-white rounded-md"></div>
                     )}
                   </li>
                 ))}
@@ -90,8 +98,10 @@ const Header = () => {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button
-                        className={`flex items-center gap-1 hover:text-gray-600 ${
-                          isAnySecondaryActive ? "text-black font-semibold" : ""
+                        className={`flex items-center gap-1 hover:text-gray-600 dark:hover:text-gray-300 ${
+                          isAnySecondaryActive
+                            ? "text-black dark:text-white font-semibold"
+                            : "dark:text-gray-300"
                         }`}
                       >
                         More <ChevronDown className="h-4 w-4" />
@@ -113,7 +123,7 @@ const Header = () => {
                     </DropdownMenuContent>
                   </DropdownMenu>
                   {isAnySecondaryActive && (
-                    <div className="absolute left-0 -bottom-1 h-[2px] w-full bg-black rounded-md"></div>
+                    <div className="absolute left-0 -bottom-1 h-[2px] w-full bg-black dark:bg-white rounded-md"></div>
                   )}
                 </li>
               </ul>
@@ -126,9 +136,24 @@ const Header = () => {
               <Input
                 type="search"
                 placeholder="Search for products..."
-                className="w-[300px] pl-10"
+                className="w-[300px] pl-10 dark:bg-gray-800 dark:border-gray-700"
               />
             </div>
+
+            {/* Theme Toggle Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+            >
+              {theme === "dark" ? (
+                <Sun className="h-[1.2rem] w-[1.2rem]" />
+              ) : (
+                <Moon className="h-[1.2rem] w-[1.2rem]" />
+              )}
+            </Button>
+
             <NotificationSheet />
             <CartSheet />
             <WishlistSheet />
@@ -138,7 +163,7 @@ const Header = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleLoginClick}
-                className="hidden lg:flex items-center gap-2 border-[#ff7a5c] text-[#ff7a5c] hover:bg-[#fff5f3]"
+                className="hidden lg:flex items-center gap-2 border-[#ff7a5c] text-[#ff7a5c] hover:bg-[#fff5f3] dark:hover:bg-[#3a2a27]"
               >
                 <LogIn className="h-4 w-4" />
                 <span>Login</span>
@@ -163,14 +188,14 @@ const Header = () => {
         </div>
 
         {menuOpen && (
-          <nav className="absolute top-full left-0 w-full bg-white shadow-lg border-b lg:hidden">
+          <nav className="absolute top-full left-0 w-full bg-white dark:bg-gray-900 shadow-lg border-b lg:hidden dark:border-gray-800">
             <div className="container mx-auto p-4">
               <div className="relative mb-4">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <Input
                   type="search"
                   placeholder="Search for products..."
-                  className="w-full pl-10"
+                  className="w-full pl-10 dark:bg-gray-800 dark:border-gray-700"
                 />
               </div>
 
@@ -180,8 +205,10 @@ const Header = () => {
                     <li key={path}>
                       <Link
                         href={path}
-                        className={`block w-full hover:font-semibold ${
-                          isActive(path) ? "text-black font-semibold" : ""
+                        className={`block w-full hover:font-semibold dark:text-gray-300 ${
+                          isActive(path)
+                            ? "text-black dark:text-white font-semibold"
+                            : ""
                         }`}
                         onClick={() => setMenuOpen(false)}
                       >
@@ -192,12 +219,12 @@ const Header = () => {
                 )}
 
                 {!session && (
-                  <li className="mt-2 pt-2 border-t">
+                  <li className="mt-2 pt-2 border-t dark:border-gray-700">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={handleLoginClick}
-                      className="w-full flex items-center justify-center gap-2 border-[#ff7a5c] text-[#ff7a5c] hover:bg-[#fff5f3]"
+                      className="w-full flex items-center justify-center gap-2 border-[#ff7a5c] text-[#ff7a5c] hover:bg-[#fff5f3] dark:hover:bg-[#3a2a27]"
                     >
                       <LogIn className="h-4 w-4" />
                       <span>Login / Sign Up</span>
@@ -207,7 +234,7 @@ const Header = () => {
               </ul>
 
               {session && (
-                <div className="mt-4 pt-4 border-t flex items-center gap-3">
+                <div className="mt-4 pt-4 border-t dark:border-gray-700 flex items-center gap-3">
                   <Avatar className="h-9 w-9 border-2 border-[#ff7a5c]">
                     <AvatarImage src={session.user?.image || undefined} />
                     <AvatarFallback>
@@ -217,8 +244,10 @@ const Header = () => {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{session.user?.name}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="font-medium dark:text-white">
+                      {session.user?.name}
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {session.user?.email}
                     </p>
                   </div>
