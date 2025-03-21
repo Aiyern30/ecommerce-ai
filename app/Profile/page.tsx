@@ -19,7 +19,7 @@ export default async function ProfilePage() {
   )) as UserDetails;
 
   return (
-    <div className="max-w-6xl mx-auto p-4 md:p-6">
+    <div className="container mx-auto my-4">
       <h1 className="text-3xl font-bold mb-6">My Account</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6">
