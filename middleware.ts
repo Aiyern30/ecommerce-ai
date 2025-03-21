@@ -5,7 +5,7 @@ import { getToken } from "next-auth/jwt";
 export async function middleware(request: NextRequest) {
   const session = await getToken({ req: request });
 
-  if (!session && request.nextUrl.pathname.startsWith("/Dashboard")) {
+  if (!session && request.nextUrl.pathname.startsWith("/Profile")) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
@@ -13,5 +13,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/:path*"],
+  matcher: ["/profile/:path*"],
 };
