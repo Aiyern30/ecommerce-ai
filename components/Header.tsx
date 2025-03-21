@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/";
 import NotificationSheet from "./Notification";
 import { useSession } from "next-auth/react";
+import UserDropdown from "./UserDropdown";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -143,14 +144,7 @@ const Header = () => {
                 <span>Login</span>
               </Button>
             ) : (
-              <Link href="/" className="hidden lg:block">
-                <Avatar className="h-9 w-9 border-2 border-[#ff7a5c]">
-                  <AvatarImage src={session.user?.image || undefined} />
-                  <AvatarFallback>
-                    {session.user?.name ? getInitials(session.user.name) : "U"}
-                  </AvatarFallback>
-                </Avatar>
-              </Link>
+              <UserDropdown session={session} />
             )}
 
             <Button
