@@ -154,10 +154,6 @@ const Header = () => {
               )}
             </Button>
 
-            <NotificationSheet />
-            <CartSheet />
-            <WishlistSheet />
-
             {!session ? (
               <Button
                 variant="outline"
@@ -169,7 +165,12 @@ const Header = () => {
                 <span>Login</span>
               </Button>
             ) : (
-              <UserDropdown session={session} />
+              <>
+                <NotificationSheet />
+                <CartSheet />
+                <WishlistSheet />
+                <UserDropdown session={session} />
+              </>
             )}
 
             <Button
