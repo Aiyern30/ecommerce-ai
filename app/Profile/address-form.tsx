@@ -33,7 +33,7 @@ const addressSchema = z.object({
 type AddressFormValues = z.infer<typeof addressSchema>;
 
 interface AddressFormProps {
-  address: UserAddress | null;
+  address: UserAddress | null | undefined;
   onCancel: () => void;
   existingAddresses: UserAddress[];
 }
