@@ -4,7 +4,13 @@ type UserProfile = {
   name: string;
   email: string;
   phone?: string;
-  // Add other profile fields as needed
+  preferences?: {
+    emailNotifications: boolean;
+    smsNotifications: boolean;
+    marketingEmails: boolean;
+    orderUpdates: boolean;
+    promotions: boolean;
+  };
 };
 
 type UserPassword = {
