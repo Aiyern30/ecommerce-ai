@@ -26,13 +26,18 @@ export function BreadcrumbNav({
   const pathSegments = pathname.split("/").filter(Boolean);
 
   return (
-    <div className="flex items-center justify-between text-sm text-muted-foreground">
+    <div className="flex items-center justify-between text-sm text-muted-foreground dark:text-gray-400">
       {/* Breadcrumbs */}
       <Breadcrumb>
         <BreadcrumbList className="flex items-center gap-2">
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link href="/">Home</Link>
+              <Link
+                href="/"
+                className="hover:text-gray-900 dark:hover:text-white"
+              >
+                Home
+              </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           {pathSegments.map((segment, index) => {
@@ -45,12 +50,15 @@ export function BreadcrumbNav({
                 </BreadcrumbSeparator>
                 <BreadcrumbItem key={href}>
                   {isLast ? (
-                    <BreadcrumbPage className="capitalize">
+                    <BreadcrumbPage className="capitalize dark:text-gray-300">
                       {decodeURIComponent(segment.replace(/-/g, " "))}
                     </BreadcrumbPage>
                   ) : (
                     <BreadcrumbLink asChild>
-                      <Link href={href} className="capitalize">
+                      <Link
+                        href={href}
+                        className="capitalize hover:text-gray-900 dark:hover:text-white"
+                      >
                         {decodeURIComponent(segment.replace(/-/g, " "))}
                       </Link>
                     </BreadcrumbLink>
@@ -68,7 +76,7 @@ export function BreadcrumbNav({
           <Button
             variant="outline"
             size="sm"
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
             onClick={onFilterClick}
           >
             Filters

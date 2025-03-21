@@ -36,8 +36,8 @@ export default function ProductPage() {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <div className="hidden md:flex w-64 flex-shrink-0 bg-white border-r sticky top-0 h-screen overflow-hidden">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-950 overflow-hidden">
+      <div className="hidden md:flex w-64 flex-shrink-0 bg-white dark:bg-gray-900 border-r dark:border-gray-800 sticky top-0 h-screen overflow-hidden">
         <FiltersSidebar
           isFilterOpen={isFilterOpen}
           setIsFilterOpen={setIsFilterOpen}
@@ -45,14 +45,14 @@ export default function ProductPage() {
       </div>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <div className="sticky top-0 bg-white z-10 border-b px-8 py-5">
+        <div className="sticky top-0 bg-white dark:bg-gray-900 z-10 border-b dark:border-gray-800 px-8 py-5">
           <BreadcrumbNav
             showFilterButton={true}
             onFilterClick={() => setIsFilterOpen(true)}
           />
         </div>
 
-        <div className="flex-1 overflow-auto px-8 py-6">
+        <div className="flex-1 overflow-auto px-8 py-6 dark:bg-gray-950">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {products.map((product, i) => (
               <ProductCard key={i} {...product} />
@@ -60,15 +60,31 @@ export default function ProductPage() {
           </div>
 
           <div className="mt-8 flex items-center justify-center gap-2 pb-6">
-            <Button variant="outline" size="icon">
+            <Button
+              variant="outline"
+              size="icon"
+              className="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            >
               <ChevronLeft className="h-4 w-4" />
             </Button>
             {[1, 2, 3, "...", 8, 9, 10].map((page, i) => (
-              <Button key={i} variant={page === 1 ? "default" : "outline"}>
+              <Button
+                key={i}
+                variant={page === 1 ? "default" : "outline"}
+                className={
+                  page === 1
+                    ? ""
+                    : "dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                }
+              >
                 {page}
               </Button>
             ))}
-            <Button variant="outline" size="icon">
+            <Button
+              variant="outline"
+              size="icon"
+              className="dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            >
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
