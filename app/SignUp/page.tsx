@@ -47,7 +47,7 @@ export default function SignUpPage() {
     },
   });
 
-  function onSubmit(data: FormValues) {
+  async function onSubmit(data: FormValues) {
     console.log(data);
   }
 
