@@ -11,7 +11,7 @@ const page = () => {
   ];
 
   return (
-    <section className="bg-gray-50 mb-4">
+    <section className="bg-gray-50 dark:bg-gray-950 pb-4">
       <div className="p-4 container mx-auto">
         <BreadcrumbNav showFilterButton={false} />
       </div>

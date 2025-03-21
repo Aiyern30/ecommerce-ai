@@ -113,7 +113,7 @@ export default function ComparisonPage() {
           <TabsTrigger value="pricing">Pricing</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="mt-0">
+        <TabsContent value="overview" className="mt-0 ">
           <OverviewTab products={displayedProducts} itemCount={itemCount} />
         </TabsContent>
 

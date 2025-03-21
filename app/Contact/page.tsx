@@ -131,29 +131,29 @@ export default function ContactPage() {
 
             {/* Social Media */}
             <div>
-              <p className="text-sm mb-2">Follow us:</p>
+              <p className="text-sm mb-2 dark:text-black">Follow us:</p>
               <div className="flex gap-2">
                 <Link
                   href="#"
-                  className="p-2 bg-gray-100 rounded-md hover:bg-gray-200"
+                  className="p-2 bg-gray-100 rounded-md hover:bg-gray-200 dark:bg-gray-300 dark:hover:bg-gray-400"
                 >
                   <Facebook className="h-5 w-5" />
                 </Link>
                 <Link
                   href="#"
-                  className="p-2 bg-gray-100 rounded-md hover:bg-gray-200"
+                  className="p-2 bg-gray-100 rounded-md hover:bg-gray-200 dark:bg-gray-300 dark:hover:bg-gray-400"
                 >
                   <Twitter className="h-5 w-5" />
                 </Link>
                 <Link
                   href="#"
-                  className="p-2 bg-gray-100 rounded-md hover:bg-gray-200"
+                  className="p-2 bg-gray-100 rounded-md hover:bg-gray-200 dark:bg-gray-300 dark:hover:bg-gray-400"
                 >
                   <Instagram className="h-5 w-5" />
                 </Link>
                 <Link
                   href="#"
-                  className="p-2 bg-gray-100 rounded-md hover:bg-gray-200"
+                  className="p-2 bg-gray-100 rounded-md hover:bg-gray-200 dark:bg-gray-300 dark:hover:bg-gray-400"
                 >
                   <Linkedin className="h-5 w-5" />
                 </Link>
