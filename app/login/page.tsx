@@ -195,7 +195,10 @@ export default function LoginPage() {
 
           <p className="mt-8 text-center text-sm text-gray-400 dark:text-gray-500">
             I don&apos;t have an account :
-            <Link href="/" className="ml-1 text-[#ff7a5c] hover:underline">
+            <Link
+              href="/SignUp"
+              className="ml-1 text-[#ff7a5c] hover:underline"
+            >
               Sign up
             </Link>
           </p>
