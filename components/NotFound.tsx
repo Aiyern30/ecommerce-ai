@@ -35,12 +35,11 @@ export default function NotFoundPage() {
 
   const handleSearch = (e: { preventDefault: () => void }) => {
     e.preventDefault();
-    // In a real app, you would redirect to search results
     console.log("Searching for:", searchQuery);
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-900 dark:text-white">
       <div className="max-w-3xl w-full text-center">
         <div className="mb-8 relative h-40 w-full">
           <Image
@@ -51,10 +50,10 @@ export default function NotFoundPage() {
           />
         </div>
 
-        <h1 className="text-4xl font-bold text-[#2a3990] mb-4">
+        <h1 className="text-4xl font-bold text-[#2a3990] dark:text-[#f83d92] mb-4">
           Oops! Page Not Found
         </h1>
-        <p className="text-gray-600 mb-8 max-w-lg mx-auto">
+        <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-lg mx-auto">
           We can&apos;t seem to find the page you&apos;re looking for. It might
           have been moved, deleted, or perhaps never existed.
         </p>
@@ -67,9 +66,12 @@ export default function NotFoundPage() {
               placeholder="Search for products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1"
+              className="flex-1 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
             />
-            <Button type="submit" className="bg-[#f83d92] hover:bg-[#e02a7d]">
+            <Button
+              type="submit"
+              className="bg-[#f83d92] hover:bg-[#e02a7d] dark:bg-[#ff66a3] dark:hover:bg-[#e0427f]"
+            >
               <Search className="h-4 w-4" />
             </Button>
           </div>
@@ -77,19 +79,31 @@ export default function NotFoundPage() {
 
         {/* Navigation options */}
         <div className="flex flex-wrap justify-center gap-4 mb-4">
-          <Button asChild variant="outline" className="gap-2">
+          <Button
+            asChild
+            variant="outline"
+            className="gap-2 dark:border-gray-600 dark:text-white"
+          >
             <Link href="/">
               <Home className="h-4 w-4" />
               Back to Home
             </Link>
           </Button>
-          <Button asChild variant="outline" className="gap-2">
+          <Button
+            asChild
+            variant="outline"
+            className="gap-2 dark:border-gray-600 dark:text-white"
+          >
             <Link href="/Product">
               <ShoppingBag className="h-4 w-4" />
               Browse Products
             </Link>
           </Button>
-          <Button asChild variant="outline" className="gap-2">
+          <Button
+            asChild
+            variant="outline"
+            className="gap-2 dark:border-gray-600 dark:text-white"
+          >
             <Link href="/Contact">
               <ArrowLeft className="h-4 w-4" />
               Contact Support
@@ -98,7 +112,7 @@ export default function NotFoundPage() {
         </div>
 
         {!isMobile && (
-          <div className="border-t border-gray-200 pt-4">
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
             <h2 className="text-xl font-semibold mb-6">
               You might be interested in
             </h2>
@@ -107,7 +121,7 @@ export default function NotFoundPage() {
                 <Link
                   href={`/Product/${product.id}`}
                   key={product.id}
-                  className="group p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                  className="group p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow"
                 >
                   <div className="relative h-32 mb-3">
                     <Image
@@ -117,10 +131,12 @@ export default function NotFoundPage() {
                       className="object-contain"
                     />
                   </div>
-                  <h3 className="font-medium group-hover:text-[#f83d92] transition-colors">
+                  <h3 className="font-medium group-hover:text-[#f83d92] dark:group-hover:text-[#ff66a3] transition-colors">
                     {product.name}
                   </h3>
-                  <p className="text-gray-700">{product.price}</p>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    {product.price}
+                  </p>
                 </Link>
               ))}
             </div>
