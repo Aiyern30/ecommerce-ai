@@ -143,7 +143,7 @@ const Header = () => {
                 <span>Login</span>
               </Button>
             ) : (
-              <Link href="/dashboard" className="hidden lg:block">
+              <Link href="/" className="hidden lg:block">
                 <Avatar className="h-9 w-9 border-2 border-[#ff7a5c]">
                   <AvatarImage src={session.user?.image || undefined} />
                   <AvatarFallback>

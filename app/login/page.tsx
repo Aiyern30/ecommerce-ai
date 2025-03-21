@@ -50,7 +50,7 @@ export default function LoginPage() {
     try {
       setIsLoading(true);
       // This will redirect to Google's login page
-      await signIn("google", { callbackUrl: "/dashboard" });
+      await signIn("google", { callbackUrl: "/" });
     } catch (error) {
       console.error("Login failed", error);
     } finally {
