@@ -78,13 +78,13 @@ export default function NotificationSheet() {
   const getTypeColor = (type: string) => {
     switch (type) {
       case "order":
-        return "bg-blue-100 text-blue-800";
+        return "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300";
       case "promotion":
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300";
       case "system":
-        return "bg-amber-100 text-amber-800";
+        return "bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-300";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300";
     }
   };
 
@@ -97,7 +97,7 @@ export default function NotificationSheet() {
           onClick={() => setIsOpen(true)}
           className="relative"
         >
-          <Bell className="h-5 w-5" />
+          <Bell className="h-5 w-5 text-gray-800 dark:text-gray-200" />
           {unreadCount > 0 && (
             <Badge
               className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-red-500"
@@ -108,10 +108,15 @@ export default function NotificationSheet() {
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="flex flex-col h-full p-4 pt-0">
-        <SheetHeader className="px-0 border-b">
+      <SheetContent
+        side="right"
+        className="flex flex-col h-full p-4 pt-0 bg-white dark:bg-gray-900"
+      >
+        <SheetHeader className="px-0 border-b dark:border-gray-700">
           <div className="flex flex-col gap-2">
-            <SheetTitle className="font-bold">Notifications</SheetTitle>
+            <SheetTitle className="font-bold text-gray-900 dark:text-white">
+              Notifications
+            </SheetTitle>
             {notifications.length > 0 && (
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={markAllAsRead}>
@@ -132,9 +137,11 @@ export default function NotificationSheet() {
         <div className="flex-1 overflow-y-auto mt-4 space-y-4">
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center h-full">
-              <Bell className="h-16 w-16 text-gray-300 mb-4" />
-              <p className="text-gray-500 text-xl">No notifications</p>
-              <p className="text-gray-400 text-sm mt-2">
+              <Bell className="h-16 w-16 text-gray-300 dark:text-gray-500 mb-4" />
+              <p className="text-gray-500 dark:text-gray-400 text-xl">
+                No notifications
+              </p>
+              <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">
                 We&apos;ll notify you when something arrives
               </p>
             </div>
@@ -142,8 +149,10 @@ export default function NotificationSheet() {
             notifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`p-4 rounded-lg border ${
-                  notification.read ? "bg-gray-50" : "bg-white"
+                className={`p-4 rounded-lg border dark:border-gray-700 ${
+                  notification.read
+                    ? "bg-gray-50 dark:bg-gray-800"
+                    : "bg-white dark:bg-gray-900"
                 }`}
               >
                 <div className="flex justify-between">
@@ -158,21 +167,23 @@ export default function NotificationSheet() {
                           notification.type.slice(1)}
                       </span>
                       {!notification.read && (
-                        <span className="h-2 w-2 rounded-full bg-blue-500"></span>
+                        <span className="h-2 w-2 rounded-full bg-blue-500 dark:bg-blue-400"></span>
                       )}
                     </div>
-                    <h3 className="font-medium mt-1">{notification.title}</h3>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <h3 className="font-medium mt-1 text-gray-900 dark:text-white">
+                      {notification.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                       {notification.message}
                     </p>
-                    <p className="text-xs text-gray-400 mt-2">
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
                       {notification.time}
                     </p>
                   </div>
                   {!notification.read && (
                     <button
                       onClick={() => markAsRead(notification.id)}
-                      className="text-blue-500 hover:text-blue-600 self-start ml-2"
+                      className="text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 self-start ml-2"
                       title="Mark as read"
                     >
                       <Check className="h-5 w-5" />
@@ -184,7 +195,7 @@ export default function NotificationSheet() {
           )}
         </div>
         {notifications.length > 0 && (
-          <div className="border-t pt-4">
+          <div className="border-t dark:border-gray-700 pt-4">
             <Link href="/Notifications">
               <Button className="w-full mt-4" onClick={() => setIsOpen(false)}>
                 View Notification
