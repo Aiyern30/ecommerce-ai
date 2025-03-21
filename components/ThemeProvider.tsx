@@ -9,6 +9,9 @@ type Theme = "light" | "dark" | "system";
 type ThemeProviderProps = {
   children: React.ReactNode;
   defaultTheme?: Theme;
+  attribute?: string;
+  enableSystem?: boolean;
+  disableTransitionOnChange?: boolean;
 };
 
 type ThemeProviderState = {
@@ -26,33 +29,92 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 export function ThemeProvider({
   children,
   defaultTheme = "system",
+  attribute = "class",
+  enableSystem = true,
+  disableTransitionOnChange = false,
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(defaultTheme);
 
   useEffect(() => {
-    const root = window.document.documentElement;
+    const savedTheme = localStorage.getItem("theme") as Theme | null;
 
-    root.classList.remove("light", "dark");
-
-    if (theme === "system") {
+    if (savedTheme) {
+      setTheme(savedTheme);
+    } else if (enableSystem) {
       const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
         .matches
         ? "dark"
         : "light";
-
-      root.classList.add(systemTheme);
-      return;
+      setTheme(systemTheme);
     }
+  }, [enableSystem]);
 
-    root.classList.add(theme);
-  }, [theme]);
+  useEffect(() => {
+    const root = window.document.documentElement;
+
+    if (attribute === "class") {
+      root.classList.remove("light", "dark");
+
+      if (!disableTransitionOnChange) {
+        root.classList.add("transition-colors", "duration-300");
+      } else {
+        root.classList.remove("transition-colors", "duration-300");
+      }
+
+      if (theme === "system" && enableSystem) {
+        const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
+          .matches
+          ? "dark"
+          : "light";
+        root.classList.add(systemTheme);
+      } else {
+        root.classList.add(theme);
+      }
+    } else {
+      const themeValue =
+        theme === "system" && enableSystem
+          ? window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light"
+          : theme;
+
+      root.setAttribute(attribute, themeValue);
+
+      if (!disableTransitionOnChange) {
+        root.classList.add("transition-colors", "duration-300");
+      } else {
+        root.classList.remove("transition-colors", "duration-300");
+      }
+    }
+  }, [theme, attribute, disableTransitionOnChange, enableSystem]);
+
+  useEffect(() => {
+    if (!enableSystem) return;
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+    const handleChange = () => {
+      if (theme === "system") {
+        const root = window.document.documentElement;
+
+        if (attribute === "class") {
+          root.classList.remove("light", "dark");
+          root.classList.add(mediaQuery.matches ? "dark" : "light");
+        } else {
+          root.setAttribute(attribute, mediaQuery.matches ? "dark" : "light");
+        }
+      }
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, [theme, attribute, enableSystem]);
 
   const value = {
     theme,
     setTheme: (theme: Theme) => {
       setTheme(theme);
-      // Save to localStorage
       localStorage.setItem("theme", theme);
     },
   };
