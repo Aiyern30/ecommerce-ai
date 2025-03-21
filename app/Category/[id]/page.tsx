@@ -80,8 +80,8 @@ export default function CategoryPage() {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <div className="hidden md:flex w-64 flex-shrink-0 bg-white border-r sticky top-0 h-screen overflow-hidden">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
+      <div className="hidden md:flex w-64 flex-shrink-0 bg-white dark:bg-gray-900 border-r dark:border-gray-800 sticky top-0 h-screen overflow-hidden">
         <FiltersSidebar
           isFilterOpen={isFilterOpen}
           setIsFilterOpen={setIsFilterOpen}
@@ -89,7 +89,7 @@ export default function CategoryPage() {
       </div>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <div className="sticky top-0 bg-white z-10 border-b px-8 py-5">
+        <div className="sticky top-0 bg-white dark:bg-gray-900 z-10 border-b dark:border-gray-800 px-8 py-5">
           <BreadcrumbNav
             showFilterButton={true}
             onFilterClick={() => setIsFilterOpen(true)}
