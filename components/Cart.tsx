@@ -72,12 +72,17 @@ export default function CartSheet() {
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" onClick={() => setIsOpen(true)}>
-          <ShoppingCart className="h-5 w-5" />
+          <ShoppingCart className="h-5 w-5 text-gray-800 dark:text-gray-200" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="flex flex-col h-full p-4 pt-0">
-        <SheetHeader className="px-0 border-b">
-          <SheetTitle className="font-bold">Shopping Cart</SheetTitle>
+      <SheetContent
+        side="right"
+        className="flex flex-col h-full p-4 pt-0 bg-white dark:bg-gray-900"
+      >
+        <SheetHeader className="px-0 border-b dark:border-gray-700">
+          <SheetTitle className="font-bold text-gray-900 dark:text-white">
+            Shopping Cart
+          </SheetTitle>
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto mt-4 space-y-4">
@@ -90,7 +95,9 @@ export default function CartSheet() {
                 height={300}
                 className="mb-4"
               />
-              <p className="text-gray-500 text-xl">Your cart is empty.</p>
+              <p className="text-gray-500 dark:text-gray-400 text-xl">
+                Your cart is empty.
+              </p>
               <Link href="/Product">
                 <Button className="mt-4" onClick={() => setIsOpen(false)}>
                   Continue Shopping
@@ -101,7 +108,7 @@ export default function CartSheet() {
             cartItems.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center gap-4 border-b pb-3"
+                className="flex items-center gap-4 border-b pb-3 dark:border-gray-700"
               >
                 <Image
                   src={item.image}
@@ -111,23 +118,27 @@ export default function CartSheet() {
                   className="rounded"
                 />
                 <div className="flex-1">
-                  <p className="text-sm font-medium">{item.name}</p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {item.name}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
                     ${item.price} x {item.quantity}
                   </p>
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      className="p-1 border rounded"
+                      className="p-1 border rounded dark:border-gray-600"
                     >
-                      <Minus className="h-4 w-4" />
+                      <Minus className="h-4 w-4 text-gray-800 dark:text-gray-200" />
                     </button>
-                    <span>{item.quantity}</span>
+                    <span className="text-gray-900 dark:text-white">
+                      {item.quantity}
+                    </span>
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      className="p-1 border rounded"
+                      className="p-1 border rounded dark:border-gray-600"
                     >
-                      <Plus className="h-4 w-4" />
+                      <Plus className="h-4 w-4 text-gray-800 dark:text-gray-200" />
                     </button>
                   </div>
                 </div>
@@ -135,13 +146,13 @@ export default function CartSheet() {
                   <AlertDialogTrigger asChild>
                     <button
                       onClick={() => setSelectedItem(item)}
-                      className="text-red-500 hover:text-red-600"
+                      className="text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300"
                     >
                       <Trash2 className="h-5 w-5" />
                     </button>
                   </AlertDialogTrigger>
                   {selectedItem && (
-                    <AlertDialogContent>
+                    <AlertDialogContent className="dark:bg-gray-800 dark:text-white">
                       <AlertDialogHeader>
                         <AlertDialogTitle>Remove Item</AlertDialogTitle>
                         <AlertDialogDescription>
@@ -150,8 +161,11 @@ export default function CartSheet() {
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel className="dark:bg-gray-700 dark:text-white">
+                          Cancel
+                        </AlertDialogCancel>
                         <AlertDialogAction
+                          className="dark:bg-red-600 dark:text-white"
                           onClick={() => removeItem(selectedItem.id)}
                         >
                           Confirm
@@ -166,8 +180,8 @@ export default function CartSheet() {
         </div>
 
         {cartItems.length > 0 && (
-          <div className="border-t pt-4">
-            <div className="flex justify-between font-medium">
+          <div className="border-t pt-4 dark:border-gray-700">
+            <div className="flex justify-between font-medium text-gray-900 dark:text-white">
               <span>Total:</span>
               <span>
                 $
