@@ -42,4 +42,3 @@ export * from "./Tabs";
 export * from "./Textarea";
 export * from "./Toggle";
 export * from "./Toggle-group";
-export * from "./Tooltip";
