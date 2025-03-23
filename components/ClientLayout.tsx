@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { CustomerLayout } from "@/components/Layout";
 
-export function ClientLayout({ children }: { children: React.ReactNode }) {
+export function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isStaffRoute = pathname.startsWith("/Staff");
 
