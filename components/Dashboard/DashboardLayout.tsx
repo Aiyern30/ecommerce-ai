@@ -1,13 +1,14 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
   BarChart3,
-  Bell,
+  ChevronDown,
   Home,
   Inbox,
   Layers,
+  Menu,
   Package,
   Search,
   Settings,
@@ -15,9 +16,16 @@ import {
   Star,
   Tag,
   Users,
+  X,
 } from "lucide-react";
 
-import { Button } from "@/components/ui/";
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/";
 import { Input } from "@/components/ui/";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/";
 import { Badge } from "@/components/ui/";
@@ -31,14 +39,34 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-  SidebarTrigger,
 } from "@/components/ui/";
-
+import { usePathname } from "next/navigation";
 interface DashboardLayoutProps {
   children: ReactNode;
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const pathname = usePathname();
+  const isActive = (path: string) => pathname.startsWith(path);
+
+  const primaryNavItems = [
+    { name: "Shop", path: "/Product" },
+    { name: "Categories", path: "/Category" },
+    { name: "Compare", path: "/Comparison" },
+  ];
+
+  const secondaryNavItems = [
+    { name: "Blog", path: "/Blog" },
+    { name: "FAQ", path: "/Faq" },
+    { name: "Contact", path: "/Contact" },
+    { name: "About", path: "/About" },
+  ];
+
+  const isAnySecondaryActive = secondaryNavItems.some((item) =>
+    isActive(item.path)
+  );
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
@@ -227,55 +255,127 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
-          <header className="flex h-14 items-center gap-4 border-b bg-gray-50 px-6">
-            <SidebarTrigger className="h-8 w-8 text-gray-500" />
-            <div className="w-full flex-1 flex items-center">
-              <div className="relative w-full md:w-2/3 lg:w-1/3">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                <Input
-                  type="search"
-                  placeholder="Search..."
-                  className="w-full bg-white pl-8 shadow-none border-gray-200"
-                />
-              </div>
-              <div className="ml-auto flex items-center gap-4">
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <Inbox className="h-5 w-5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full relative"
-                >
-                  <Bell className="h-5 w-5" />
-                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-blue-600"></span>
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="rounded-full flex items-center gap-2"
-                >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500 text-white">
-                    R
+          <div>
+            <header className="w-full bg-white dark:bg-gray-900 shadow-md border-b z-50 dark:border-gray-800">
+              <div className="container mx-auto flex items-center justify-between p-4 flex-nowrap">
+                <div className="flex items-center gap-8">
+                  <nav className="hidden lg:block">
+                    <ul className="flex gap-6 whitespace-nowrap items-center">
+                      {primaryNavItems.map(({ name, path }) => (
+                        <li key={path} className="relative">
+                          <Link
+                            href={path}
+                            className={`hover:text-gray-600 dark:hover:text-gray-300 ${
+                              isActive(path)
+                                ? "text-black dark:text-white font-semibold"
+                                : "dark:text-gray-300"
+                            }`}
+                          >
+                            {name}
+                          </Link>
+                          {isActive(path) && (
+                            <div className="absolute left-0 -bottom-1 h-[2px] w-full bg-black dark:bg-white rounded-md"></div>
+                          )}
+                        </li>
+                      ))}
+
+                      <li className="relative">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              className={`flex items-center gap-1 hover:text-gray-600 dark:hover:text-gray-300 ${
+                                isAnySecondaryActive
+                                  ? "text-black dark:text-white font-semibold"
+                                  : "dark:text-gray-300"
+                              }`}
+                            >
+                              More <ChevronDown className="h-4 w-4" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="start" className="w-48">
+                            {secondaryNavItems.map(({ name, path }) => (
+                              <DropdownMenuItem key={path} asChild>
+                                <Link
+                                  href={path}
+                                  className={`w-full ${
+                                    isActive(path) ? "font-semibold" : ""
+                                  }`}
+                                >
+                                  {name}
+                                </Link>
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        {isAnySecondaryActive && (
+                          <div className="absolute left-0 -bottom-1 h-[2px] w-full bg-black dark:bg-white rounded-md"></div>
+                        )}
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="relative hidden lg:block">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <Input
+                      type="search"
+                      placeholder="Search for products..."
+                      className="w-[300px] pl-10 dark:bg-gray-800 dark:border-gray-700"
+                    />
                   </div>
-                  <span>Randhir kumar</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-4"
+
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="lg:hidden"
+                    onClick={() => setMenuOpen(!menuOpen)}
                   >
-                    <path d="m6 9 6 6 6-6"></path>
-                  </svg>
-                </Button>
+                    {menuOpen ? (
+                      <X className="h-6 w-6" />
+                    ) : (
+                      <Menu className="h-6 w-6" />
+                    )}
+                  </Button>
+                </div>
               </div>
-            </div>
-          </header>
+
+              {menuOpen && (
+                <nav className="absolute top-full left-0 w-full bg-white dark:bg-gray-900 shadow-lg border-b lg:hidden dark:border-gray-800">
+                  <div className="container mx-auto p-4">
+                    <div className="relative mb-4">
+                      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                      <Input
+                        type="search"
+                        placeholder="Search for products..."
+                        className="w-full pl-10 dark:bg-gray-800 dark:border-gray-700"
+                      />
+                    </div>
+
+                    <ul className="flex flex-col gap-4">
+                      {[...primaryNavItems, ...secondaryNavItems].map(
+                        ({ name, path }) => (
+                          <li key={path}>
+                            <Link
+                              href={path}
+                              className={`block w-full hover:font-semibold dark:text-gray-300 ${
+                                isActive(path)
+                                  ? "text-black dark:text-white font-semibold"
+                                  : ""
+                              }`}
+                              onClick={() => setMenuOpen(false)}
+                            >
+                              {name}
+                            </Link>
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+                </nav>
+              )}
+            </header>
+          </div>
           <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
             {children}
           </main>
