@@ -28,7 +28,22 @@ const transactions = [
     status: "Pending",
   },
   { name: "Anup S.", date: "22.05.2023", amount: "$70.52", status: "Paid" },
-];
+  {
+    name: "Jagarnath S.",
+    date: "24.05.2023",
+    amount: "$124.97",
+    status: "Paid",
+  },
+  { name: "Anand G.", date: "23.05.2023", amount: "$55.42", status: "Pending" },
+  { name: "Kartik S.", date: "23.05.2023", amount: "$89.90", status: "Paid" },
+  {
+    name: "Rakesh S.",
+    date: "22.05.2023",
+    amount: "$144.94",
+    status: "Pending",
+  },
+  { name: "Anup S.", date: "22.05.2023", amount: "$70.52", status: "Paid" },
+].slice(0, 10); // Ensure max 10 rows
 
 export function RecentTransactions() {
   return (
@@ -39,21 +54,27 @@ export function RecentTransactions() {
           <Table className="w-full">
             <TableHeader>
               <TableRow>
-                <TableHead className="whitespace-nowrap">Name</TableHead>
-                <TableHead className="whitespace-nowrap">Date</TableHead>
-                <TableHead className="whitespace-nowrap">Amount</TableHead>
-                <TableHead className="whitespace-nowrap">Status</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {transactions.map((transaction, index) => (
-                <TableRow key={index}>
-                  <TableCell className="truncate max-w-[150px]">
+                <TableRow key={index} className="h-[60px]">
+                  {" "}
+                  {/* Fixed row height */}
+                  <TableCell className="truncate max-w-[150px] items-center">
                     {transaction.name}
                   </TableCell>
-                  <TableCell>{transaction.date}</TableCell>
-                  <TableCell>{transaction.amount}</TableCell>
-                  <TableCell>
+                  <TableCell className="items-center">
+                    {transaction.date}
+                  </TableCell>
+                  <TableCell className="items-center">
+                    {transaction.amount}
+                  </TableCell>
+                  <TableCell className="items-center">
                     <Badge
                       className={
                         transaction.status === "Paid"

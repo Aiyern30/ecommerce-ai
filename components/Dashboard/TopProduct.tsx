@@ -18,7 +18,12 @@ const products = [
   { name: "Women White T-Shirt", price: "$40.90", units: 120 },
   { name: "Men White T-Shirt", price: "$49.90", units: 204 },
   { name: "Women Red T-Shirt", price: "$34.90", units: 155 },
-];
+  { name: "Men Grey Hoodie", price: "$49.90", units: 204 },
+  { name: "Women Striped T-Shirt", price: "$34.90", units: 155 },
+  { name: "Women White T-Shirt", price: "$40.90", units: 120 },
+  { name: "Men White T-Shirt", price: "$49.90", units: 204 },
+  { name: "Women Red T-Shirt", price: "$34.90", units: 155 },
+].slice(0, 10); // Ensure max 10 rows
 
 export function TopProducts() {
   return (
@@ -29,14 +34,16 @@ export function TopProducts() {
           <Table className="w-full">
             <TableHeader>
               <TableRow>
-                <TableHead className="whitespace-nowrap">Product</TableHead>
-                <TableHead className="whitespace-nowrap">Price</TableHead>
-                <TableHead className="whitespace-nowrap">Units Sold</TableHead>
+                <TableHead>Product</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>Units Sold</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {products.map((product, index) => (
-                <TableRow key={index}>
+                <TableRow key={index} className="h-[60px]">
+                  {" "}
+                  {/* Fixed row height */}
                   <TableCell className="flex items-center gap-2 truncate max-w-[200px]">
                     <div className="h-10 w-10 rounded-md bg-gray-200 flex items-center justify-center overflow-hidden">
                       <Image
@@ -48,8 +55,12 @@ export function TopProducts() {
                     </div>
                     <span className="truncate">{product.name}</span>
                   </TableCell>
-                  <TableCell>{product.price}</TableCell>
-                  <TableCell>{product.units}</TableCell>
+                  <TableCell className="items-center">
+                    {product.price}
+                  </TableCell>
+                  <TableCell className="items-center">
+                    {product.units}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

@@ -51,7 +51,7 @@ export function LastSevenDaysSales() {
             <h3 className="text-lg font-bold">Last 7 Days Sales</h3>
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-6 mb-2">
             <div>
               <h4 className="text-2xl font-bold">1,259</h4>
               <p className="text-sm text-gray-500">Items Sold</p>
