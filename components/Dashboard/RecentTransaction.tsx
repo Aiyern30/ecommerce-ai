@@ -12,7 +12,6 @@ import {
   CardContent,
 } from "@/components/ui/";
 
-// Sample data for the transactions
 const transactions = [
   {
     name: "Jagarnath S.",
@@ -33,39 +32,37 @@ const transactions = [
 
 export function RecentTransactions() {
   return (
-    <Card>
+    <Card className="w-full overflow-hidden">
       <CardContent className="p-6">
-        <div className="flex flex-col gap-4">
-          <h3 className="text-lg font-bold">Recent Transactions</h3>
-
-          <Table>
+        <h3 className="text-lg font-bold mb-4">Recent Transactions</h3>
+        <div className="overflow-x-auto">
+          <Table className="w-full">
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead className="whitespace-nowrap">Name</TableHead>
+                <TableHead className="whitespace-nowrap">Date</TableHead>
+                <TableHead className="whitespace-nowrap">Amount</TableHead>
+                <TableHead className="whitespace-nowrap">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {transactions.map((transaction, index) => (
                 <TableRow key={index}>
-                  <TableCell>{transaction.name}</TableCell>
+                  <TableCell className="truncate max-w-[150px]">
+                    {transaction.name}
+                  </TableCell>
                   <TableCell>{transaction.date}</TableCell>
                   <TableCell>{transaction.amount}</TableCell>
                   <TableCell>
-                    {transaction.status === "Paid" ? (
-                      <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                        Paid
-                      </Badge>
-                    ) : (
-                      <Badge
-                        variant="outline"
-                        className="bg-blue-50 text-blue-800 hover:bg-blue-50"
-                      >
-                        Pending
-                      </Badge>
-                    )}
+                    <Badge
+                      className={
+                        transaction.status === "Paid"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-blue-50 text-blue-800"
+                      }
+                    >
+                      {transaction.status}
+                    </Badge>
                   </TableCell>
                 </TableRow>
               ))}

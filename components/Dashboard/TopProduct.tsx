@@ -22,23 +22,22 @@ const products = [
 
 export function TopProducts() {
   return (
-    <Card>
+    <Card className="w-full overflow-hidden">
       <CardContent className="p-6">
-        <div className="flex flex-col gap-4">
-          <h3 className="text-lg font-bold">Top Products by Units Sold</h3>
-
-          <Table>
+        <h3 className="text-lg font-bold mb-4">Top Products by Units Sold</h3>
+        <div className="overflow-x-auto">
+          <Table className="w-full">
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Units Sold</TableHead>
+                <TableHead className="whitespace-nowrap">Product</TableHead>
+                <TableHead className="whitespace-nowrap">Price</TableHead>
+                <TableHead className="whitespace-nowrap">Units Sold</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {products.map((product, index) => (
                 <TableRow key={index}>
-                  <TableCell className="flex items-center gap-2">
+                  <TableCell className="flex items-center gap-2 truncate max-w-[200px]">
                     <div className="h-10 w-10 rounded-md bg-gray-200 flex items-center justify-center overflow-hidden">
                       <Image
                         src="/placeholder.svg"
@@ -47,7 +46,7 @@ export function TopProducts() {
                         height={40}
                       />
                     </div>
-                    <span>{product.name}</span>
+                    <span className="truncate">{product.name}</span>
                   </TableCell>
                   <TableCell>{product.price}</TableCell>
                   <TableCell>{product.units}</TableCell>
