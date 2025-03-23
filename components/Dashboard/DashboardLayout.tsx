@@ -1,27 +1,26 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import Link from "next/link";
 import {
   BarChart3,
   Home,
   Inbox,
   Layers,
-  Menu,
+  Moon,
   Package,
   Search,
   Settings,
   ShoppingBag,
   Star,
+  Sun,
   Tag,
   Users,
-  X,
 } from "lucide-react";
 
-import { Button } from "@/components/ui/";
+import { Button, SidebarTrigger } from "@/components/ui/";
 import { Input } from "@/components/ui/";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/";
-import { Badge } from "@/components/ui/";
 import {
   Sidebar,
   SidebarContent,
@@ -33,24 +32,28 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from "@/components/ui/";
+import { useTheme } from "../ThemeProvider";
 interface DashboardLayoutProps {
   children: ReactNode;
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
 
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
         <Sidebar className="border-r bg-[#1a2352]">
-          <SidebarHeader className="flex h-14 items-center border-b border-gray-700 px-6">
+          <SidebarHeader className="flex h-[69px] justify-center items-center border-b border-gray-700 px-6">
             <Link
               href="/"
               className="flex items-center gap-2 font-semibold text-white"
             >
               <ShoppingBag className="h-6 w-6 text-yellow-400" />
-              <span className="text-xl font-bold">fastcart</span>
+              <span className="text-xl font-bold ">ShopYTL</span>
             </Link>
           </SidebarHeader>
           <SidebarContent className="py-2">
@@ -76,9 +79,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     <span>Orders</span>
                   </Link>
                 </SidebarMenuButton>
-                <Badge className="absolute right-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600">
-                  16
-                </Badge>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
@@ -228,35 +228,35 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
-          <div>
-            <header className="w-full bg-white dark:bg-gray-900 shadow-md border-b z-50 dark:border-gray-800">
-              <div className="container mx-auto flex items-center justify-between p-4 flex-nowrap">
-                <div className="flex items-center gap-4">
-                  <div className="relative hidden lg:block">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                    <Input
-                      type="search"
-                      placeholder="Search for products..."
-                      className="w-[300px] pl-10 dark:bg-gray-800 dark:border-gray-700"
-                    />
-                  </div>
+          <header className="w-full bg-white dark:bg-gray-900 shadow-md border-b z-50 dark:border-gray-800">
+            <div className="container mx-auto flex items-center justify-between p-4 flex-nowrap">
+              <SidebarTrigger className="h-8 w-8 text-gray-500" />
 
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="lg:hidden"
-                    onClick={() => setMenuOpen(!menuOpen)}
-                  >
-                    {menuOpen ? (
-                      <X className="h-6 w-6" />
-                    ) : (
-                      <Menu className="h-6 w-6" />
-                    )}
-                  </Button>
+              <div className="flex items-center gap-4">
+                <div className="relative hidden lg:block">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                  <Input
+                    type="search"
+                    placeholder="Search for products..."
+                    className="w-[300px] pl-10 dark:bg-gray-800 dark:border-gray-700"
+                  />
                 </div>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleTheme}
+                  aria-label="Toggle theme"
+                >
+                  {theme === "dark" ? (
+                    <Sun className="h-[1.2rem] w-[1.2rem]" />
+                  ) : (
+                    <Moon className="h-[1.2rem] w-[1.2rem]" />
+                  )}
+                </Button>
               </div>
-            </header>
-          </div>
+            </div>
+          </header>
           <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
             {children}
           </main>
