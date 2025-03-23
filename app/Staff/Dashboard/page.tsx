@@ -1,6 +1,5 @@
 "use client";
 
-import DashboardLayout from "@/components/Dashboard/DashboardLayout";
 import { KpiCards } from "@/components/Dashboard/KPICard";
 import { LastSevenDaysSales } from "@/components/Dashboard/LastSeenSevenDays";
 import { OrdersOverTimeChart } from "@/components/Dashboard/OrdersOverTime";
@@ -9,7 +8,7 @@ import { TopProducts } from "@/components/Dashboard/TopProduct";
 
 export default function Dashboard() {
   return (
-    <DashboardLayout>
+    <>
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <div className="flex items-center gap-2">
@@ -45,6 +44,6 @@ export default function Dashboard() {
         <RecentTransactions />
         <TopProducts />
       </div>
-    </DashboardLayout>
+    </>
   );
 }
