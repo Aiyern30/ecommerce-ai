@@ -4,7 +4,6 @@ import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
   BarChart3,
-  ChevronDown,
   Home,
   Inbox,
   Layers,
@@ -19,13 +18,7 @@ import {
   X,
 } from "lucide-react";
 
-import {
-  Button,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/";
+import { Button } from "@/components/ui/";
 import { Input } from "@/components/ui/";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/";
 import { Badge } from "@/components/ui/";
@@ -40,7 +33,6 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from "@/components/ui/";
-import { usePathname } from "next/navigation";
 interface DashboardLayoutProps {
   children: ReactNode;
 }
@@ -48,25 +40,6 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const pathname = usePathname();
-  const isActive = (path: string) => pathname.startsWith(path);
-
-  const primaryNavItems = [
-    { name: "Shop", path: "/Product" },
-    { name: "Categories", path: "/Category" },
-    { name: "Compare", path: "/Comparison" },
-  ];
-
-  const secondaryNavItems = [
-    { name: "Blog", path: "/Blog" },
-    { name: "FAQ", path: "/Faq" },
-    { name: "Contact", path: "/Contact" },
-    { name: "About", path: "/About" },
-  ];
-
-  const isAnySecondaryActive = secondaryNavItems.some((item) =>
-    isActive(item.path)
-  );
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
@@ -258,63 +231,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div>
             <header className="w-full bg-white dark:bg-gray-900 shadow-md border-b z-50 dark:border-gray-800">
               <div className="container mx-auto flex items-center justify-between p-4 flex-nowrap">
-                <div className="flex items-center gap-8">
-                  <nav className="hidden lg:block">
-                    <ul className="flex gap-6 whitespace-nowrap items-center">
-                      {primaryNavItems.map(({ name, path }) => (
-                        <li key={path} className="relative">
-                          <Link
-                            href={path}
-                            className={`hover:text-gray-600 dark:hover:text-gray-300 ${
-                              isActive(path)
-                                ? "text-black dark:text-white font-semibold"
-                                : "dark:text-gray-300"
-                            }`}
-                          >
-                            {name}
-                          </Link>
-                          {isActive(path) && (
-                            <div className="absolute left-0 -bottom-1 h-[2px] w-full bg-black dark:bg-white rounded-md"></div>
-                          )}
-                        </li>
-                      ))}
-
-                      <li className="relative">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button
-                              className={`flex items-center gap-1 hover:text-gray-600 dark:hover:text-gray-300 ${
-                                isAnySecondaryActive
-                                  ? "text-black dark:text-white font-semibold"
-                                  : "dark:text-gray-300"
-                              }`}
-                            >
-                              More <ChevronDown className="h-4 w-4" />
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="start" className="w-48">
-                            {secondaryNavItems.map(({ name, path }) => (
-                              <DropdownMenuItem key={path} asChild>
-                                <Link
-                                  href={path}
-                                  className={`w-full ${
-                                    isActive(path) ? "font-semibold" : ""
-                                  }`}
-                                >
-                                  {name}
-                                </Link>
-                              </DropdownMenuItem>
-                            ))}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                        {isAnySecondaryActive && (
-                          <div className="absolute left-0 -bottom-1 h-[2px] w-full bg-black dark:bg-white rounded-md"></div>
-                        )}
-                      </li>
-                    </ul>
-                  </nav>
-                </div>
-
                 <div className="flex items-center gap-4">
                   <div className="relative hidden lg:block">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -339,41 +255,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   </Button>
                 </div>
               </div>
-
-              {menuOpen && (
-                <nav className="absolute top-full left-0 w-full bg-white dark:bg-gray-900 shadow-lg border-b lg:hidden dark:border-gray-800">
-                  <div className="container mx-auto p-4">
-                    <div className="relative mb-4">
-                      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                      <Input
-                        type="search"
-                        placeholder="Search for products..."
-                        className="w-full pl-10 dark:bg-gray-800 dark:border-gray-700"
-                      />
-                    </div>
-
-                    <ul className="flex flex-col gap-4">
-                      {[...primaryNavItems, ...secondaryNavItems].map(
-                        ({ name, path }) => (
-                          <li key={path}>
-                            <Link
-                              href={path}
-                              className={`block w-full hover:font-semibold dark:text-gray-300 ${
-                                isActive(path)
-                                  ? "text-black dark:text-white font-semibold"
-                                  : ""
-                              }`}
-                              onClick={() => setMenuOpen(false)}
-                            >
-                              {name}
-                            </Link>
-                          </li>
-                        )
-                      )}
-                    </ul>
-                  </div>
-                </nav>
-              )}
             </header>
           </div>
           <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
