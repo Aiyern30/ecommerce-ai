@@ -35,12 +35,12 @@ export default function Dashboard() {
 
       <KpiCards />
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2 w-full">
         <OrdersOverTimeChart />
         <LastSevenDaysSales />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2 w-full">
         <RecentTransactions />
         <TopProducts />
       </div>
