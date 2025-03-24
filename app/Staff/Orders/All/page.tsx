@@ -1,14 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Download,
-  Filter,
-  Plus,
-  Search,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Filter, Plus, Search } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -29,10 +22,93 @@ import {
 } from "@/components/Orders/OrdersFilterContext";
 import { OrdersTableFilters } from "@/components/Orders/OrdersTableFilter";
 import { OrdersTablePaginated } from "@/components/Orders/OrdersPagination";
+import { ExportDialog } from "@/components/Orders/ExportDialog";
+import Link from "next/link";
+import { generateOrders } from "@/components/Orders/OrderData";
 
 function AllOrdersContent() {
+  const allOrders = generateOrders(100);
+
   const [showFilters, setShowFilters] = useState(false);
-  const { filters, updateFilter, applyFilters } = useOrdersFilter();
+  const { filters, updateFilter, applyFilters, isFiltersApplied } =
+    useOrdersFilter();
+  const [currentPage] = useState(1);
+  const itemsPerPage = 10;
+  const filteredOrders = allOrders.filter((order) => {
+    if (!isFiltersApplied) return true;
+
+    // Filter by Order ID
+    if (
+      filters.orderId &&
+      !order.id.toLowerCase().includes(filters.orderId.toLowerCase())
+    ) {
+      return false;
+    }
+
+    // Filter by Customer
+    if (
+      filters.customer &&
+      !order.customer.toLowerCase().includes(filters.customer.toLowerCase())
+    ) {
+      return false;
+    }
+
+    // Filter by Status
+    if (filters.status !== "all" && order.status !== filters.status) {
+      return false;
+    }
+
+    // Filter by Revenue Range
+    if (
+      filters.minRevenue &&
+      order.revenueValue < Number.parseFloat(filters.minRevenue)
+    ) {
+      return false;
+    }
+    if (
+      filters.maxRevenue &&
+      order.revenueValue > Number.parseFloat(filters.maxRevenue)
+    ) {
+      return false;
+    }
+
+    // Filter by Date Range
+    if (filters.startDate && order.dateObj < filters.startDate) {
+      return false;
+    }
+    if (filters.endDate) {
+      const endDateWithTime = new Date(filters.endDate);
+      endDateWithTime.setHours(23, 59, 59, 999);
+      if (order.dateObj > endDateWithTime) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+  // Sort orders
+  const sortedOrders = [...filteredOrders].sort((a, b) => {
+    if (!isFiltersApplied) return 0;
+
+    switch (filters.sortBy) {
+      case "newest":
+        return b.dateObj.getTime() - a.dateObj.getTime();
+      case "oldest":
+        return a.dateObj.getTime() - b.dateObj.getTime();
+      case "revenue-high":
+        return b.revenueValue - a.revenueValue;
+      case "revenue-low":
+        return a.revenueValue - b.revenueValue;
+      default:
+        return 0;
+    }
+  });
+
+  // Get current page data
+  const currentPageData = sortedOrders.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
@@ -56,14 +132,17 @@ function AllOrdersContent() {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">All Orders</h1>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="hidden md:flex">
-              <Download className="mr-2 h-4 w-4" />
-              Export
-            </Button>
-            <Button size="sm">
-              <Plus className="mr-2 h-4 w-4" />
-              New Order
-            </Button>
+            <ExportDialog
+              currentPageData={currentPageData}
+              allFilteredData={sortedOrders}
+              isFiltered={isFiltersApplied}
+            />
+            <Link href="/Staff/Orders/New">
+              <Button size="sm">
+                <Plus className="mr-2 h-4 w-4" />
+                New Order
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
