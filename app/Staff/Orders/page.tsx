@@ -26,6 +26,7 @@ import {
   OrdersFilterProvider,
   useOrdersFilter,
 } from "@/components/Orders/OrdersFilterContext";
+import Link from "next/link";
 
 function OrdersPageContent() {
   const [showFilters, setShowFilters] = useState(false);
@@ -39,10 +40,12 @@ function OrdersPageContent() {
         </Button>
         <h1 className="text-lg font-medium">Orders Update</h1>
         <div className="ml-auto flex items-center gap-2">
-          <Button variant="outline" size="sm" className="text-xs">
-            View Details
-            <ChevronRight className="ml-1 h-4 w-4" />
-          </Button>
+          <Link href="/Staff/Orders/All">
+            <Button variant="outline" size="sm" className="text-xs">
+              View All Orders
+              <ChevronRight className="ml-1 h-4 w-4" />
+            </Button>
+          </Link>
         </div>
       </div>
 
