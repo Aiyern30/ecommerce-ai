@@ -22,9 +22,14 @@ import {
 import { OrdersChart } from "@/components/Orders/OrdersChart";
 import { OrdersTable } from "@/components/Orders/OrdersTable";
 import { OrdersTableFilters } from "@/components/Orders/OrdersTableFilter";
+import {
+  OrdersFilterProvider,
+  useOrdersFilter,
+} from "@/components/Orders/OrdersFilterContext";
 
-export default function OrdersPage() {
+function OrdersPageContent() {
   const [showFilters, setShowFilters] = useState(false);
+  const { filters, updateFilter, applyFilters } = useOrdersFilter();
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
@@ -63,6 +68,13 @@ export default function OrdersPage() {
               type="search"
               placeholder="Search orders..."
               className="pl-8 bg-white"
+              value={filters.orderId}
+              onChange={(e) => updateFilter("orderId", e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  applyFilters();
+                }
+              }}
             />
           </div>
           <div className="flex flex-wrap gap-2">
@@ -76,19 +88,31 @@ export default function OrdersPage() {
               Filters
               <ChevronDown className="ml-1 h-4 w-4" />
             </Button>
-            <Select defaultValue="all">
+            <Select
+              value={filters.status}
+              onValueChange={(value) => {
+                updateFilter("status", value);
+                applyFilters();
+              }}
+            >
               <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="shipping">Shipping</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="hold">On Hold</SelectItem>
+                <SelectItem value="Pending">Pending</SelectItem>
+                <SelectItem value="Shipping">Shipping</SelectItem>
+                <SelectItem value="Completed">Completed</SelectItem>
+                <SelectItem value="On Hold">On Hold</SelectItem>
               </SelectContent>
             </Select>
-            <Select defaultValue="newest">
+            <Select
+              value={filters.sortBy}
+              onValueChange={(value) => {
+                updateFilter("sortBy", value);
+                applyFilters();
+              }}
+            >
               <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
@@ -109,5 +133,13 @@ export default function OrdersPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OrdersPage() {
+  return (
+    <OrdersFilterProvider>
+      <OrdersPageContent />
+    </OrdersFilterProvider>
   );
 }
