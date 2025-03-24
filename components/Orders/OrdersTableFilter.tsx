@@ -27,7 +27,7 @@ export function OrdersTableFilters() {
   return (
     <Card>
       <CardContent className="p-4">
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <div className="grid gap-2">
             <Label htmlFor="order-id">Order ID</Label>
             <Input id="order-id" placeholder="Search by order ID" />
@@ -75,7 +75,7 @@ export function OrdersTableFilters() {
                   {startDate ? format(startDate, "PPP") : "Pick a date"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
+              <PopoverContent className="w-auto p-0" align="start">
                 <CalendarComponent
                   mode="single"
                   selected={startDate}
@@ -98,7 +98,7 @@ export function OrdersTableFilters() {
                   {endDate ? format(endDate, "PPP") : "Pick a date"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
+              <PopoverContent className="w-auto p-0" align="start">
                 <CalendarComponent
                   mode="single"
                   selected={endDate}
@@ -125,9 +125,11 @@ export function OrdersTableFilters() {
           </div>
         </div>
 
-        <div className="mt-4 flex justify-end gap-2">
-          <Button variant="outline">Reset Filters</Button>
-          <Button>Apply Filters</Button>
+        <div className="mt-4 flex flex-wrap justify-end gap-2">
+          <Button variant="outline" className="w-full sm:w-auto">
+            Reset Filters
+          </Button>
+          <Button className="w-full sm:w-auto">Apply Filters</Button>
         </div>
       </CardContent>
     </Card>

@@ -154,70 +154,78 @@ export function OrdersTable() {
   };
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[100px]">Order ID</TableHead>
-            <TableHead>Products</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Customer</TableHead>
-            <TableHead>Revenue</TableHead>
-            <TableHead>Net Profit</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {orders.map((order) => (
-            <TableRow key={order.id}>
-              <TableCell className="font-medium">{order.id}</TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-2">
-                    {order.products.map((product, index) => (
-                      <div
-                        key={index}
-                        className="h-8 w-8 rounded-md border border-white bg-gray-100 overflow-hidden"
-                      >
-                        <Image
-                          src={product.image || "/placeholder.svg"}
-                          alt={product.name}
-                          width={32}
-                          height={32}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                  <span className="text-sm text-gray-500">
-                    {order.itemCount} items
-                  </span>
-                </div>
-              </TableCell>
-              <TableCell>{order.date}</TableCell>
-              <TableCell>{order.customer}</TableCell>
-              <TableCell>{order.revenue}</TableCell>
-              <TableCell>{order.netProfit}</TableCell>
-              <TableCell>
-                <Badge className={getStatusColor(order.status)}>
-                  {order.status}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
+    <div className="w-full overflow-hidden border rounded-md">
+      <div className="w-full overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[100px]">Order ID</TableHead>
+              <TableHead>Products</TableHead>
+              <TableHead className="hidden sm:table-cell">Date</TableHead>
+              <TableHead className="hidden md:table-cell">Customer</TableHead>
+              <TableHead>Revenue</TableHead>
+              <TableHead className="hidden lg:table-cell">Net Profit</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {orders.map((order) => (
+              <TableRow key={order.id}>
+                <TableCell className="font-medium">{order.id}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <div className="flex -space-x-2">
+                      {order.products.map((product, index) => (
+                        <div
+                          key={index}
+                          className="h-8 w-8 rounded-md border border-white bg-gray-100 overflow-hidden"
+                        >
+                          <Image
+                            src={product.image || "/placeholder.svg"}
+                            alt={product.name}
+                            width={32}
+                            height={32}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <span className="text-sm text-gray-500">
+                      {order.itemCount} items
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell className="hidden sm:table-cell">
+                  {order.date}
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {order.customer}
+                </TableCell>
+                <TableCell>{order.revenue}</TableCell>
+                <TableCell className="hidden lg:table-cell">
+                  {order.netProfit}
+                </TableCell>
+                <TableCell>
+                  <Badge className={getStatusColor(order.status)}>
+                    {order.status}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
