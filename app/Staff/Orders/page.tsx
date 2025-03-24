@@ -67,7 +67,7 @@ function OrdersPageContent() {
             <Input
               type="search"
               placeholder="Search orders..."
-              className="pl-8 bg-white"
+              className="pl-8"
               value={filters.orderId}
               onChange={(e) => updateFilter("orderId", e.target.value)}
               onKeyDown={(e) => {
