@@ -4,7 +4,9 @@ import { KpiCards } from "@/components/Dashboard/KPICard";
 import { LastSevenDaysSales } from "@/components/Dashboard/LastSeenSevenDays";
 import { OrdersOverTimeChart } from "@/components/Dashboard/OrdersOverTime";
 import { RecentTransactions } from "@/components/Dashboard/RecentTransaction";
+import { RevenueByDevice } from "@/components/Dashboard/RevenueByDevices";
 import { TopProducts } from "@/components/Dashboard/TopProduct";
+import { TrafficAnalytics } from "@/components/Dashboard/TrafficAnalytics";
 
 export default function Dashboard() {
   return (
@@ -38,6 +40,10 @@ export default function Dashboard() {
       <div className="grid gap-4 lg:grid-cols-2 w-full">
         <OrdersOverTimeChart />
         <LastSevenDaysSales />
+      </div>
+      <div className="grid gap-4 lg:grid-cols-2 w-full">
+        <RevenueByDevice />
+        <TrafficAnalytics />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2 w-full">

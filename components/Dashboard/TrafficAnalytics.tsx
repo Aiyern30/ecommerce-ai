@@ -41,7 +41,6 @@ interface CustomTooltipProps {
   }[];
   label: string;
 }
-// Find the highest point for the reference dot
 const highestPoint = data.reduce(
   (max, point) => (point.visits > max.visits ? point : max),
   data[0]
@@ -51,10 +50,12 @@ export function TrafficAnalytics() {
   const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white border border-gray-200 p-2 rounded-md shadow-md">
-          <p className="font-medium">{`Day ${label}`}</p>
-          <p className="text-gray-600">{`Visits: ${payload[0].value}`}</p>
-        </div>
+        <Card>
+          <CardContent>
+            <p className="font-medium">{`Day ${label}`}</p>
+            <p>{`Visits: ${payload[0].value}`}</p>
+          </CardContent>
+        </Card>
       );
     }
     return null;
@@ -73,24 +74,29 @@ export function TrafficAnalytics() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="flex items-center">
-                <span className="text-green-500 text-xs font-medium">
-                  + 22%
-                </span>
-              </div>
-              <p className="text-sm text-gray-500">Store Visits</p>
-              <p className="text-2xl font-bold">8950</p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="flex items-center">
-                <span className="text-amber-500 text-xs font-medium">
-                  - 24%
-                </span>
-              </div>
-              <p className="text-sm text-gray-500">Visitors</p>
-              <p className="text-2xl font-bold">1520</p>
-            </div>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center">
+                  <div className="text-green-500 text-xs font-medium">
+                    + 22%
+                  </div>
+                </div>
+                <p className="text-sm text-gray-500">Store Visits</p>
+                <p className="text-2xl font-bold">8950</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center">
+                  <div className="text-amber-500 text-xs font-medium">
+                    - 24%
+                  </div>
+                </div>
+                <p className="text-sm text-gray-500">Visitors</p>
+                <p className="text-2xl font-bold">1520</p>
+              </CardContent>
+            </Card>
           </div>
 
           <div className="text-xs text-gray-500">
