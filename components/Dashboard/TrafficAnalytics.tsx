@@ -160,12 +160,6 @@ export function TrafficAnalytics() {
               </LineChart>
             </ResponsiveContainer>
           </div>
-
-          <div className="flex justify-between text-xs text-gray-500 px-2">
-            {[16, 18, 20, 24, 26, 28, 30].map((day) => (
-              <span key={day}>{day}</span>
-            ))}
-          </div>
         </div>
       </CardContent>
     </Card>
