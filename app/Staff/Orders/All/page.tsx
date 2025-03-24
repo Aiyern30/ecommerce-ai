@@ -40,11 +40,11 @@ function AllOrdersContent() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/staff/Dashboard">Dashboard</BreadcrumbLink>
+              <BreadcrumbLink href="/Staff/Dashboard">Dashboard</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href="/staff/Orders">Orders</BreadcrumbLink>
+              <BreadcrumbLink href="/Staff/Orders">Orders</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
