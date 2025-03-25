@@ -19,13 +19,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui";
-import { OrdersChart } from "@/components/Orders/OrdersChart";
-import { OrdersTable } from "@/components/Orders/OrdersTable";
-import { OrdersTableFilters } from "@/components/Orders/OrdersTableFilter";
+import { OrdersChart } from "@/components/Staff/Orders/OrdersChart";
+import { OrdersTable } from "@/components/Staff/Orders/OrdersTable";
+import { OrdersTableFilters } from "@/components/Staff/Orders/OrdersTableFilter";
 import {
   OrdersFilterProvider,
   useOrdersFilter,
-} from "@/components/Orders/OrdersFilterContext";
+} from "@/components/Staff/Orders/OrdersFilterContext";
 import Link from "next/link";
 
 function OrdersPageContent() {
