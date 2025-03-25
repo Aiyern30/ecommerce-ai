@@ -19,12 +19,12 @@ import {
 import {
   useOrdersFilter,
   OrdersFilterProvider,
-} from "@/components/Orders/OrdersFilterContext";
-import { OrdersTableFilters } from "@/components/Orders/OrdersTableFilter";
-import { OrdersTablePaginated } from "@/components/Orders/OrdersPagination";
-import { ExportDialog } from "@/components/Orders/ExportDialog";
+} from "@/components/Staff/Orders/OrdersFilterContext";
+import { OrdersTableFilters } from "@/components/Staff/Orders/OrdersTableFilter";
+import { OrdersTablePaginated } from "@/components/Staff/Orders/OrdersPagination";
+import { ExportDialog } from "@/components/Staff/Orders/ExportDialog";
 import Link from "next/link";
-import { generateOrders } from "@/components/Orders/OrderData";
+import { generateOrders } from "@/components/Staff/Orders/OrderData";
 
 function AllOrdersContent() {
   const allOrders = generateOrders(100);

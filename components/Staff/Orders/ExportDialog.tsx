@@ -20,7 +20,7 @@ import {
   Label,
   RadioGroup,
   RadioGroupItem,
-} from "../ui";
+} from "../../ui";
 
 interface ExportDialogProps {
   currentPageData: any[];

@@ -34,7 +34,7 @@ import {
   TabsTrigger,
   Textarea,
 } from "@/components/ui";
-import { sampleProducts } from "@/components/Orders/OrderData";
+import { sampleProducts } from "@/components/Staff/Orders/OrderData";
 
 export default function NewOrderPage() {
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
