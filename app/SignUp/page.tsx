@@ -72,6 +72,19 @@ export default function SignUpPage() {
     }
   }
 
+  const handleGoogleSignIn = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      alert("Google sign-in failed: " + error.message);
+    }
+  };
+
   return (
     <div className="flex min-h-[calc(100vh-70px)]">
       <div className="flex w-full items-center justify-center lg:w-1/2">
@@ -165,6 +178,21 @@ export default function SignUpPage() {
               </Button>
             </form>
           </Form>
+
+          <div className="my-6 flex items-center justify-center gap-2">
+            <span className="h-px w-full bg-gray-300" />
+            <span className="text-sm text-gray-500">OR</span>
+            <span className="h-px w-full bg-gray-300" />
+          </div>
+
+          <Button
+            type="button"
+            onClick={handleGoogleSignIn}
+            className="flex w-full items-center justify-center gap-2 rounded-full border border-[#ff7a5c] bg-white text-[#ff7a5c] hover:bg-[#fff5f3]"
+          >
+            <Image src="/google-icon.svg" alt="Google" width={20} height={20} />
+            Sign up with Google
+          </Button>
 
           <p className="mt-8 text-center text-sm text-gray-400">
             Already have an account?
