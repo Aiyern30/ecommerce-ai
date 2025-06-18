@@ -6,7 +6,7 @@ import { ArrowRight } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import {
   Form,
@@ -39,7 +39,9 @@ const formSchema = z
 type FormValues = z.infer<typeof formSchema>;
 
 export default function SignUpPage() {
-  const router = useRouter();
+  const [serverError, setServerError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -53,6 +55,9 @@ export default function SignUpPage() {
 
   async function onSubmit(data: FormValues) {
     const { email, password, name } = data;
+    setLoading(true);
+    setServerError("");
+    setSuccessMessage("");
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -64,11 +69,26 @@ export default function SignUpPage() {
       },
     });
 
+    setLoading(false);
+
     if (error) {
-      alert(error.message);
+      const lowerMsg = error.message.toLowerCase();
+      if (
+        lowerMsg.includes("user already registered") ||
+        lowerMsg.includes("email already") ||
+        lowerMsg.includes("duplicate")
+      ) {
+        setServerError(
+          "This email is already registered. Please sign in instead."
+        );
+      } else {
+        setServerError(error.message);
+      }
     } else {
-      alert("Sign up successful! Please check your email for confirmation.");
-      router.push("/"); // or /dashboard
+      setSuccessMessage(
+        "Sign up successful! Please check your email for confirmation."
+      );
+      form.reset();
     }
   }
 
@@ -96,6 +116,18 @@ export default function SignUpPage() {
           <p className="text-sm text-gray-500">Join us today!</p>
           <h1 className="mb-6 mt-2 text-4xl font-bold">Sign up</h1>
 
+          {/* Message Display */}
+          {serverError && (
+            <div className="mb-4 rounded bg-red-100 p-3 text-sm text-red-600">
+              {serverError}
+            </div>
+          )}
+          {successMessage && (
+            <div className="mb-4 rounded bg-green-100 p-3 text-sm text-green-600">
+              {successMessage}
+            </div>
+          )}
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
@@ -105,11 +137,7 @@ export default function SignUpPage() {
                   <FormItem className="space-y-2">
                     <FormLabel>Full Name</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="John Doe"
-                        {...field}
-                        className="bg-[#fff5f3]"
-                      />
+                      <Input placeholder="John Doe" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -122,11 +150,7 @@ export default function SignUpPage() {
                   <FormItem className="space-y-2">
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="test@gmail.com"
-                        {...field}
-                        className="bg-[#fff5f3]"
-                      />
+                      <Input placeholder="test@gmail.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -143,7 +167,6 @@ export default function SignUpPage() {
                         type="password"
                         placeholder="••••••••••••"
                         {...field}
-                        className="bg-[#fff5f3]"
                       />
                     </FormControl>
                     <FormMessage />
@@ -161,7 +184,6 @@ export default function SignUpPage() {
                         type="password"
                         placeholder="••••••••••••"
                         {...field}
-                        className="bg-[#fff5f3]"
                       />
                     </FormControl>
                     <FormMessage />
@@ -171,10 +193,11 @@ export default function SignUpPage() {
 
               <Button
                 type="submit"
-                className="mt-2 flex w-40 items-center justify-center gap-2 rounded-full bg-[#ff7a5c] hover:bg-[#ff6a4c]"
+                disabled={loading}
+                className="mt-2 flex w-40 items-center justify-center gap-2 rounded-full bg-[#ff7a5c] hover:bg-[#ff6a4c] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                SIGN UP
-                <ArrowRight size={16} />
+                {loading ? "Signing Up..." : "SIGN UP"}
+                {!loading && <ArrowRight size={16} />}
               </Button>
             </form>
           </Form>
