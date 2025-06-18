@@ -18,7 +18,7 @@ import {
   Button,
   Input,
 } from "@/components/ui";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/browserClient";
 
 const formSchema = z
   .object({
