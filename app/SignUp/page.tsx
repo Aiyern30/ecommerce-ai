@@ -1,11 +1,12 @@
 "use client";
-import { supabase } from "@/lib/supabaseClient";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { useRouter } from "next/navigation";
 
 import {
   Form,
@@ -16,7 +17,8 @@ import {
   FormMessage,
   Button,
   Input,
-} from "@/components/ui/";
+} from "@/components/ui";
+import { supabase } from "@/lib/supabaseClient";
 
 const formSchema = z
   .object({
@@ -37,6 +39,8 @@ const formSchema = z
 type FormValues = z.infer<typeof formSchema>;
 
 export default function SignUpPage() {
+  const router = useRouter();
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -48,7 +52,7 @@ export default function SignUpPage() {
   });
 
   async function onSubmit(data: FormValues) {
-    const { name, email, password } = data;
+    const { email, password, name } = data;
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -61,10 +65,10 @@ export default function SignUpPage() {
     });
 
     if (error) {
-      console.error("Error signing up:", error.message);
       alert(error.message);
     } else {
-      alert("Sign up successful! Check your email for verification.");
+      alert("Sign up successful! Please check your email for confirmation.");
+      router.push("/"); // or /dashboard
     }
   }
 
@@ -98,7 +102,6 @@ export default function SignUpPage() {
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="email"
@@ -116,7 +119,6 @@ export default function SignUpPage() {
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="password"
@@ -135,7 +137,6 @@ export default function SignUpPage() {
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="confirmPassword"
@@ -178,7 +179,7 @@ export default function SignUpPage() {
         <div className="flex h-full items-center justify-center p-16">
           <div className="relative h-full w-full">
             <Image
-              src="Login.png"
+              src="/Login.png"
               alt="Shopping illustration"
               fill
               className="object-contain"
