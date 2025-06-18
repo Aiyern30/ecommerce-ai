@@ -1,5 +1,5 @@
 "use client";
-
+import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -48,7 +48,24 @@ export default function SignUpPage() {
   });
 
   async function onSubmit(data: FormValues) {
-    console.log(data);
+    const { name, email, password } = data;
+
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: name,
+        },
+      },
+    });
+
+    if (error) {
+      console.error("Error signing up:", error.message);
+      alert(error.message);
+    } else {
+      alert("Sign up successful! Check your email for verification.");
+    }
   }
 
   return (
