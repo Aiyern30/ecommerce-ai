@@ -2,25 +2,24 @@
 
 import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/";
-import { useState } from "react";
 
-interface GoogleAuthButtonProps {
+type GoogleAuthButtonProps = {
   mode: "signin" | "signup";
-  callbackUrl?: string;
-}
+  isLoading: boolean;
+  setIsLoading: (value: boolean) => void;
+};
 
-export function GoogleAuthButton({
+export const GoogleAuthButton = ({
   mode,
-  callbackUrl = "/",
-}: GoogleAuthButtonProps) {
-  const [isLoading, setIsLoading] = useState(false);
-
+  isLoading,
+  setIsLoading,
+}: GoogleAuthButtonProps) => {
   const handleGoogleLogin = async () => {
     try {
       setIsLoading(true);
-      await signIn("google", { callbackUrl });
+      await signIn("google", { callbackUrl: "/" });
     } catch (error) {
-      console.error("Google login failed:", error);
+      console.error("Google login error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -64,10 +63,10 @@ export function GoogleAuthButton({
       <span>
         {isLoading
           ? "Signing in..."
-          : mode === "signin"
-          ? "Sign in with Google"
-          : "Sign up with Google"}
+          : mode === "signup"
+          ? "Sign up with Google"
+          : "Sign in with Google"}
       </span>
     </Button>
   );
-}
+};
