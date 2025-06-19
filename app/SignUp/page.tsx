@@ -65,6 +65,9 @@ export default function SignUpPage() {
       options: {
         data: {
           full_name: name,
+          avatar_url:
+            "https://api.dicebear.com/6.x/initials/svg?seed=" +
+            encodeURIComponent(name),
         },
       },
     });
