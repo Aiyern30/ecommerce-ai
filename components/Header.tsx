@@ -18,16 +18,17 @@ import {
   AvatarImage,
 } from "@/components/ui/";
 import NotificationSheet from "./Notification";
-import { useSession } from "next-auth/react";
-import UserDropdown from "./UserDropdown";
 import { useTheme } from "./ThemeProvider";
+
+// ✅ Supabase auth hooks
+import { useUser } from "@supabase/auth-helpers-react";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
+  const user = useUser();
 
   const isActive = (path: string) => pathname.startsWith(path);
 
@@ -140,7 +141,6 @@ const Header = () => {
               />
             </div>
 
-            {/* Theme Toggle Button */}
             <Button
               variant="ghost"
               size="icon"
@@ -154,7 +154,7 @@ const Header = () => {
               )}
             </Button>
 
-            {!session ? (
+            {!user ? (
               <Button
                 variant="outline"
                 size="sm"
@@ -169,7 +169,29 @@ const Header = () => {
                 <NotificationSheet />
                 <CartSheet />
                 <WishlistSheet />
-                <UserDropdown session={session} />
+                {/* Avatar Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Avatar className="h-9 w-9 cursor-pointer border-2 border-[#ff7a5c]">
+                      <AvatarImage
+                        src={user.user_metadata?.avatar_url || undefined}
+                      />
+                      <AvatarFallback>
+                        {user.user_metadata?.name
+                          ? getInitials(user.user_metadata.name)
+                          : "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile">Profile</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/logout">Logout</Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             )}
 
@@ -187,76 +209,6 @@ const Header = () => {
             </Button>
           </div>
         </div>
-
-        {menuOpen && (
-          <nav className="absolute top-full left-0 w-full bg-white dark:bg-gray-900 shadow-lg border-b lg:hidden dark:border-gray-800">
-            <div className="container mx-auto p-4">
-              <div className="relative mb-4">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                <Input
-                  type="search"
-                  placeholder="Search for products..."
-                  className="w-full pl-10 dark:bg-gray-800 dark:border-gray-700"
-                />
-              </div>
-
-              <ul className="flex flex-col gap-4">
-                {[...primaryNavItems, ...secondaryNavItems].map(
-                  ({ name, path }) => (
-                    <li key={path}>
-                      <Link
-                        href={path}
-                        className={`block w-full hover:font-semibold dark:text-gray-300 ${
-                          isActive(path)
-                            ? "text-black dark:text-white font-semibold"
-                            : ""
-                        }`}
-                        onClick={() => setMenuOpen(false)}
-                      >
-                        {name}
-                      </Link>
-                    </li>
-                  )
-                )}
-
-                {!session && (
-                  <li className="mt-2 pt-2 border-t dark:border-gray-700">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleLoginClick}
-                      className="w-full flex items-center justify-center gap-2 border-[#ff7a5c] text-[#ff7a5c] hover:bg-[#fff5f3] dark:hover:bg-[#3a2a27]"
-                    >
-                      <LogIn className="h-4 w-4" />
-                      <span>Login / Sign Up</span>
-                    </Button>
-                  </li>
-                )}
-              </ul>
-
-              {session && (
-                <div className="mt-4 pt-4 border-t dark:border-gray-700 flex items-center gap-3">
-                  <Avatar className="h-9 w-9 border-2 border-[#ff7a5c]">
-                    <AvatarImage src={session.user?.image || undefined} />
-                    <AvatarFallback>
-                      {session.user?.name
-                        ? getInitials(session.user.name)
-                        : "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium dark:text-white">
-                      {session.user?.name}
-                    </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {session.user?.email}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </nav>
-        )}
       </header>
     </div>
   );
