@@ -1,4 +1,5 @@
 "use client";
+import { supabase } from "@/lib/supabase/browserClient";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -41,9 +42,29 @@ export default function LoginPage() {
   });
 
   async function onSubmit(data: FormValues) {
-    console.log(data);
-    // You would implement email/password login here
-    // This is just a placeholder since we're focusing on Google auth
+    setIsLoading(true);
+    const { email, password } = data;
+
+    const { data: userData, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    setIsLoading(false);
+
+    if (error) {
+      form.setError("email", {
+        message: "Invalid email or password",
+      });
+      form.setError("password", {
+        message: "Invalid email or password",
+      });
+      console.error("Login error:", error.message);
+    } else {
+      console.log("Login successful:", userData);
+      // ✅ Redirect to home or dashboard
+      window.location.href = "/";
+    }
   }
 
   async function handleGoogleLogin() {
