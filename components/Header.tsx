@@ -20,8 +20,8 @@ import {
 import NotificationSheet from "./Notification";
 import { useTheme } from "./ThemeProvider";
 
-// ✅ Supabase auth hooks
 import { useUser } from "@supabase/auth-helpers-react";
+import { supabase } from "@/lib/supabase/browserClient";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -52,6 +52,10 @@ const Header = () => {
   const handleLoginClick = () => {
     router.push("/login");
     setMenuOpen(false);
+  };
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/login");
   };
 
   const getInitials = (name: string) => {
@@ -187,8 +191,8 @@ const Header = () => {
                     <DropdownMenuItem asChild>
                       <Link href="/profile">Profile</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/logout">Logout</Link>
+                    <DropdownMenuItem onClick={handleLogout}>
+                      Logout
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
