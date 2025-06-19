@@ -1,9 +1,10 @@
-import type React from "react";
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+// app/layout.tsx or app/RootLayout.tsx (Server Component)
 import "./globals.css";
 import "./custom.css";
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import { Layout } from "@/components/Layout";
+import { SupabaseProvider } from "@/components/SupabaseProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,29 +20,22 @@ export const metadata: Metadata = {
   title: "ShopYTL",
   description:
     "Your go-to destination for quality products and seamless shopping",
-  icons: [
-    {
-      rel: "icon",
-      type: "image/png",
-      url: "/favicon.png",
-    },
-  ],
+  icons: [{ rel: "icon", type: "image/png", url: "/favicon.png" }],
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="icon" type="image/png" href="/favicon.png" />
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Layout>{children}</Layout>
+        <SupabaseProvider>
+          <Layout>{children}</Layout>
+        </SupabaseProvider>
       </body>
     </html>
   );
