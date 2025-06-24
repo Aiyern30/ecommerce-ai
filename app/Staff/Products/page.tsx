@@ -16,12 +16,12 @@ import {
 import {
   ProductsFilterProvider,
   useProductsFilter,
-} from "@/components/Staff/Product/ProductFilterContext";
-import { allProducts } from "@/components/Staff/Product/ProductData";
-import { ExportProductsDialog } from "@/components/Staff/Product/ExportProductDialog";
-import { ProductsTableFilters } from "@/components/Staff/Product/ProductTableFilter";
-import { DeleteConfirmationDialog } from "@/components/Staff/Product/DeleteConfirmationDialog";
-import { ProductsTablePaginated } from "@/components/Staff/Product/ProductTablePagination";
+} from "@/components/Staff/Products/ProductFilterContext";
+import { allProducts } from "@/components/Staff/Products/ProductData";
+import { ExportProductsDialog } from "@/components/Staff/Products/ExportProductDialog";
+import { ProductsTableFilters } from "@/components/Staff/Products/ProductTableFilter";
+import { DeleteConfirmationDialog } from "@/components/Staff/Products/DeleteConfirmationDialog";
+import { ProductsTablePaginated } from "@/components/Staff/Products/ProductTablePagination";
 
 function ProductsContent() {
   const [showFilters, setShowFilters] = useState(false);
