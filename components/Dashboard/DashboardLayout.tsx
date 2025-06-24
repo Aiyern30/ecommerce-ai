@@ -63,7 +63,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   asChild
                   className="flex items-center gap-3 rounded-lg bg-blue-800 px-3 py-2 text-white transition-all"
                 >
-                  <Link href="#">
+                  <Link href="/Staff/Dashboard">
                     <Home className="h-4 w-4" />
                     <span>Dashboard</span>
                   </Link>
@@ -74,7 +74,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   asChild
                   className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:text-white"
                 >
-                  <Link href="#">
+                  <Link href="/Staff/Orders">
                     <ShoppingBag className="h-4 w-4" />
                     <span>Orders</span>
                   </Link>
@@ -85,7 +85,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   asChild
                   className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:text-white"
                 >
-                  <Link href="#">
+                  <Link href="/Staff/Products">
                     <Package className="h-4 w-4" />
                     <span>Products</span>
                   </Link>
@@ -96,7 +96,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   asChild
                   className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:text-white"
                 >
-                  <Link href="#">
+                  <Link href="/Staff/Categories">
                     <Layers className="h-4 w-4" />
                     <span>Categories</span>
                   </Link>
@@ -107,7 +107,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   asChild
                   className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:text-white"
                 >
-                  <Link href="#">
+                  <Link href="/Staff/Customers">
                     <Users className="h-4 w-4" />
                     <span>Customers</span>
                   </Link>
@@ -118,7 +118,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   asChild
                   className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:text-white"
                 >
-                  <Link href="#">
+                  <Link href="/Staff/Reports">
                     <BarChart3 className="h-4 w-4" />
                     <span>Reports</span>
                   </Link>
