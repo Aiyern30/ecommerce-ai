@@ -2,8 +2,26 @@
 
 import { Card, CardContent } from "@/components/ui/";
 import { ShoppingBag, ChevronUp, ChevronDown } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export function KpiCards() {
+  const [userCount, setUserCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    async function fetchUserCount() {
+      try {
+        const res = await fetch("/api/admin/user-count");
+        const data = await res.json();
+        console.log("User count data:", data);
+        setUserCount(data.count);
+      } catch (error) {
+        console.error("Failed to fetch user count:", error);
+      }
+    }
+
+    fetchUserCount();
+  }, []);
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card>
@@ -78,7 +96,9 @@ export function KpiCards() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">New Users</p>
-                <h3 className="text-2xl font-bold">1,650</h3>
+                <h3 className="text-2xl font-bold">
+                  {userCount !== null ? userCount : 0}
+                </h3>
               </div>
               <div className="flex h-12 w-12 items-center justify-center">
                 <div className="h-6 w-6 bg-green-100 rounded-sm mx-0.5"></div>
