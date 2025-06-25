@@ -18,7 +18,17 @@ import {
   Users,
 } from "lucide-react";
 
-import { Button, SidebarTrigger } from "@/components/ui/";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  SidebarTrigger,
+} from "@/components/ui/";
 import { Input } from "@/components/ui/";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/";
 import {
@@ -33,11 +43,30 @@ import {
   SidebarProvider,
 } from "@/components/ui/";
 import { useTheme } from "../ThemeProvider";
+import { supabase } from "@/lib/supabaseClient";
+import { useUser } from "@supabase/auth-helpers-react";
+import { useRouter } from "next/navigation";
 interface DashboardLayoutProps {
   children: ReactNode;
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  const user = useUser();
+  const router = useRouter();
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
+
   const { theme, setTheme } = useTheme();
 
   const toggleTheme = () => {
@@ -254,6 +283,31 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     <Moon className="h-[1.2rem] w-[1.2rem]" />
                   )}
                 </Button>
+                {user && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Avatar className="h-9 w-9 cursor-pointer border-2 border-[#ff7a5c]">
+                        <AvatarImage
+                          src={user.user_metadata?.avatar_url || undefined}
+                          alt="User avatar"
+                        />
+                        <AvatarFallback>
+                          {user.user_metadata?.full_name
+                            ? getInitials(user.user_metadata.full_name)
+                            : "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem asChild>
+                        <Link href="/profile">Profile</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleLogout}>
+                        Logout
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             </div>
           </header>
