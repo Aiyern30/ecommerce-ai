@@ -68,6 +68,7 @@ export default function SignUpPage() {
           avatar_url:
             "https://api.dicebear.com/6.x/initials/svg?seed=" +
             encodeURIComponent(name),
+          role: "customer",
         },
       },
     });
