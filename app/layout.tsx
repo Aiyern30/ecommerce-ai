@@ -1,10 +1,9 @@
-// app/layout.tsx or app/RootLayout.tsx (Server Component)
 import "./globals.css";
 import "./custom.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Layout } from "@/components/Layout";
 import { SupabaseProvider } from "@/components/SupabaseProvider";
+import { ConditionalLayout } from "@/components/ConditionLayout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,7 +33,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SupabaseProvider>
-          <Layout>{children}</Layout>
+          <ConditionalLayout>{children}</ConditionalLayout>
         </SupabaseProvider>
       </body>
     </html>
