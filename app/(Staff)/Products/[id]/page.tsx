@@ -13,14 +13,12 @@ import {
 import type { Product } from "@/type/product";
 import ProductDetailDisplay from "@/components/ProductDetailDisplay";
 
-interface ProductDetailPageProps {
-  params: { id: string };
-}
-
 export default async function ProductDetailPage({
   params,
-}: ProductDetailPageProps) {
-  const id = params.id;
+}: {
+  params: { id: string };
+}) {
+  const { id } = params;
 
   const { data: product, error } = await supabase
     .from("products")
