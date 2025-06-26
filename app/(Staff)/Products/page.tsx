@@ -40,10 +40,43 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/";
-import Image from "next/image";
-import { Product } from "@/type/product";
-import { ProductFilters } from "@/type/Filter/ProductFilter";
+import Image from "next/image"; // Import Image component
 
+// Define Product type based on your Supabase schema, including joined relations
+export interface Product {
+  id: string;
+  name: string;
+  description: string | null;
+  image_url: string | null; // Main image from products table
+  category: string | null;
+  price: number;
+  unit: string | null;
+  stock_quantity: number | null;
+  created_at: string;
+  updated_at: string;
+  // Nested relations from joins
+  product_images: { image_url: string }[] | null; // Array of image objects
+  product_tags: { tag: string }[] | null; // Array of tag objects
+  product_certificates: { certificate: string }[] | null; // Array of certificate objects
+}
+
+// Define Filter type
+interface ProductFilters {
+  search: string;
+  category: string;
+  stockStatus: "all" | "in-stock" | "out-of-stock";
+  sortBy:
+    | "name-asc"
+    | "name-desc"
+    | "price-low"
+    | "price-high"
+    | "stock-low"
+    | "stock-high";
+  minPrice: string;
+  maxPrice: string;
+}
+
+// Skeleton component for the table
 function ProductTableSkeleton() {
   return (
     <div className="w-full overflow-x-auto rounded-md border">
@@ -106,14 +139,19 @@ export default function ProductsPage() {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]); // Stores product IDs
 
   const itemsPerPage = 10;
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     console.log("Fetching products...");
-    const { data, error } = await supabase.from("products").select("*");
+    // Fetch products and join related tables
+    const { data, error } = await supabase
+      .from("products")
+      .select(
+        "*, product_images(image_url), product_tags(tag), product_certificates(certificate)"
+      );
 
     if (error) {
       console.error("Error fetching products:", error.message);
@@ -132,7 +170,7 @@ export default function ProductsPage() {
 
   const updateFilter = (key: keyof ProductFilters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page on filter change
   };
 
   const handlePageChange = (page: number) => {
@@ -165,7 +203,7 @@ export default function ProductsPage() {
   const handleDeleteProducts = async () => {
     if (selectedProducts.length === 0) return;
 
-    setLoading(true);
+    setLoading(true); // Show loading while deleting
     try {
       const { error } = await supabase
         .from("products")
@@ -178,17 +216,19 @@ export default function ProductsPage() {
       } else {
         alert(`Successfully deleted ${selectedProducts.length} products!`);
         clearProductSelection();
-        fetchProducts();
+        fetchProducts(); // Re-fetch products to update the list
       }
     } catch (error) {
       console.error("Unexpected error during deletion:", error);
-      alert("Error deleting products. Please try again.");
+      alert("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
+  // Filter products based on current filters
   const filteredProducts = products.filter((product) => {
+    // Filter by search term (name or ID)
     if (
       filters.search &&
       !product.name.toLowerCase().includes(filters.search.toLowerCase()) &&
@@ -197,10 +237,12 @@ export default function ProductsPage() {
       return false;
     }
 
+    // Filter by category
     if (filters.category !== "all" && product.category !== filters.category) {
       return false;
     }
 
+    // Filter by price range
     const minPrice = Number.parseFloat(filters.minPrice);
     const maxPrice = Number.parseFloat(filters.maxPrice);
 
@@ -211,6 +253,7 @@ export default function ProductsPage() {
       return false;
     }
 
+    // Filter by stock status
     if (
       filters.stockStatus === "in-stock" &&
       (product.stock_quantity === null || product.stock_quantity <= 0)
@@ -227,6 +270,7 @@ export default function ProductsPage() {
     return true;
   });
 
+  // Sort products
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     switch (filters.sortBy) {
       case "name-asc":
@@ -266,280 +310,279 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 w-full">
-        <div className="flex flex-col sm:flex-row flex-wrap gap-2">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-            <Input
-              type="search"
-              placeholder="Search products by name or ID..."
-              className="pl-8"
-              value={filters.search}
-              onChange={(e) => updateFilter("search", e.target.value)}
-            />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-1 w-full sm:w-auto"
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <Filter className="h-4 w-4" />
-              Filter
-              {showFilters ? (
-                <ChevronLeft className="ml-1 h-4 w-4" />
-              ) : (
-                <ChevronRight className="ml-1 h-4 w-4" />
-              )}
-            </Button>
-            <Select
-              value={filters.category}
-              onValueChange={(value) => {
-                updateFilter("category", value);
-              }}
-            >
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="bagged">Bagged Cement</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              value={filters.stockStatus}
-              onValueChange={(value) => {
-                updateFilter(
-                  "stockStatus",
-                  value as "all" | "in-stock" | "out-of-stock"
-                );
-              }}
-            >
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Stock Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Stock</SelectItem>
-                <SelectItem value="in-stock">In Stock</SelectItem>
-                <SelectItem value="out-of-stock">Out of Stock</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              value={filters.sortBy}
-              onValueChange={(value) => {
-                updateFilter("sortBy", value as ProductFilters["sortBy"]);
-              }}
-            >
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Sort By" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-                <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-                <SelectItem value="price-low">Price (Low to High)</SelectItem>
-                <SelectItem value="price-high">Price (High to Low)</SelectItem>
-                <SelectItem value="stock-low">Stock (Low to High)</SelectItem>
-                <SelectItem value="stock-high">Stock (High to High)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+      <div className="flex flex-col sm:flex-row flex-wrap gap-2">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+          <Input
+            type="search"
+            placeholder="Search products by name or ID..."
+            className="pl-8 bg-white"
+            value={filters.search}
+            onChange={(e) => updateFilter("search", e.target.value)}
+          />
         </div>
-
-        {showFilters && (
-          <Card className="p-4">
-            <CardHeader className="p-0 pb-4">
-              <CardTitle className="text-lg">Advanced Filters</CardTitle>
-              <CardDescription>Refine your product search.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-0">
-              <div>
-                <label
-                  htmlFor="minPrice"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Min Price (RM)
-                </label>
-                <Input
-                  id="minPrice"
-                  type="number"
-                  step="0.01"
-                  placeholder="e.g., 10.00"
-                  value={filters.minPrice}
-                  onChange={(e) => updateFilter("minPrice", e.target.value)}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="maxPrice"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Max Price (RM)
-                </label>
-                <Input
-                  id="maxPrice"
-                  type="number"
-                  step="0.01"
-                  placeholder="e.g., 100.00"
-                  value={filters.maxPrice}
-                  onChange={(e) => updateFilter("maxPrice", e.target.value)}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {selectedProducts.length > 0 && (
-              <>
-                <span className="text-sm text-gray-500">
-                  {selectedProducts.length} selected
-                </span>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="destructive" size="sm">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete Selected ({selectedProducts.length})
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Confirm Deletion</DialogTitle>
-                      <DialogDescription>
-                        Are you sure you want to delete{" "}
-                        {selectedProducts.length} selected products? This action
-                        cannot be undone.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => {}}>
-                        Cancel
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        onClick={handleDeleteProducts}
-                      >
-                        Delete
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={clearProductSelection}
-                >
-                  Clear Selection
-                </Button>
-              </>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-1 w-full sm:w-auto"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <Filter className="h-4 w-4" />
+            Filter
+            {showFilters ? (
+              <ChevronLeft className="ml-1 h-4 w-4" />
+            ) : (
+              <ChevronRight className="ml-1 h-4 w-4" />
             )}
-          </div>
-          <div className="text-sm text-gray-500">
-            {sortedProducts.length} Results
-          </div>
+          </Button>
+          <Select
+            value={filters.category}
+            onValueChange={(value) => {
+              updateFilter("category", value);
+            }}
+          >
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="bagged">Bagged Cement</SelectItem>
+              {/* Add more categories as needed based on your data */}
+            </SelectContent>
+          </Select>
+          <Select
+            value={filters.stockStatus}
+            onValueChange={(value) => {
+              updateFilter(
+                "stockStatus",
+                value as "all" | "in-stock" | "out-of-stock"
+              );
+            }}
+          >
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Stock Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Stock</SelectItem>
+              <SelectItem value="in-stock">In Stock</SelectItem>
+              <SelectItem value="out-of-stock">Out of Stock</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
+            value={filters.sortBy}
+            onValueChange={(value) => {
+              updateFilter("sortBy", value as ProductFilters["sortBy"]);
+            }}
+          >
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Sort By" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+              <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+              <SelectItem value="price-low">Price (Low to High)</SelectItem>
+              <SelectItem value="price-high">Price (High to Low)</SelectItem>
+              <SelectItem value="stock-low">Stock (Low to High)</SelectItem>
+              <SelectItem value="stock-high">Stock (High to High)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
+      </div>
 
-        {loading ? (
-          <ProductTableSkeleton />
-        ) : (
-          <div className="w-full overflow-x-auto rounded-md border">
-            <Table>
-              <TableHeader>
+      {showFilters && (
+        <Card className="p-4">
+          <CardHeader className="p-0 pb-4">
+            <CardTitle className="text-lg">Advanced Filters</CardTitle>
+            <CardDescription>Refine your product search.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-0">
+            <div>
+              <label
+                htmlFor="minPrice"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Min Price (RM)
+              </label>
+              <Input
+                id="minPrice"
+                type="number"
+                step="0.01"
+                placeholder="e.g., 10.00"
+                value={filters.minPrice}
+                onChange={(e) => updateFilter("minPrice", e.target.value)}
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="maxPrice"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Max Price (RM)
+              </label>
+              <Input
+                id="maxPrice"
+                type="number"
+                step="0.01"
+                placeholder="e.g., 100.00"
+                value={filters.maxPrice}
+                onChange={(e) => updateFilter("maxPrice", e.target.value)}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {selectedProducts.length > 0 && (
+            <>
+              <span className="text-sm text-gray-500">
+                {selectedProducts.length} selected
+              </span>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="destructive" size="sm">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete Selected ({selectedProducts.length})
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Confirm Deletion</DialogTitle>
+                    <DialogDescription>
+                      Are you sure you want to delete {selectedProducts.length}{" "}
+                      selected products? This action cannot be undone.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => {}}>
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={handleDeleteProducts}
+                    >
+                      Delete
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearProductSelection}
+              >
+                Clear Selection
+              </Button>
+            </>
+          )}
+        </div>
+        <div className="text-sm text-gray-500">
+          {sortedProducts.length} Results
+        </div>
+      </div>
+
+      {loading ? (
+        <ProductTableSkeleton />
+      ) : (
+        <div className="w-full overflow-x-auto rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[50px]">
+                  <Checkbox
+                    checked={
+                      selectedProducts.length === currentPageData.length &&
+                      currentPageData.length > 0
+                    }
+                    onCheckedChange={toggleSelectAllProducts}
+                    aria-label="Select all"
+                  />
+                </TableHead>
+                <TableHead className="w-[80px]">Image</TableHead>
+                <TableHead>Product Name</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>Stock</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {currentPageData.length === 0 ? (
                 <TableRow>
-                  <TableHead className="w-[50px]">
-                    <Checkbox
-                      checked={
-                        selectedProducts.length === currentPageData.length &&
-                        currentPageData.length > 0
-                      }
-                      onCheckedChange={toggleSelectAllProducts}
-                      aria-label="Select all"
-                    />
-                  </TableHead>
-                  <TableHead className="w-[80px]">Image</TableHead>
-                  <TableHead>Product Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Stock</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableCell colSpan={7} className="h-24 text-center">
+                    No products found.
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {currentPageData.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center">
-                      No products found.
+              ) : (
+                currentPageData.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedProducts.includes(product.id)}
+                        onCheckedChange={() =>
+                          toggleProductSelection(product.id)
+                        }
+                        aria-label={`Select product ${product.name}`}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Image
+                        src={
+                          product.image_url ||
+                          "/placeholder.svg?height=48&width=48"
+                        }
+                        alt={product.name}
+                        className="h-12 w-12 rounded-md object-cover"
+                        width={48}
+                        height={48}
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {product.name}
+                    </TableCell>
+                    <TableCell>{product.category || "N/A"}</TableCell>
+                    <TableCell>RM {product.price.toFixed(2)}</TableCell>
+                    <TableCell>{product.stock_quantity ?? "N/A"}</TableCell>
+                    <TableCell className="text-right">
+                      {/* Placeholder for individual product actions */}
+                      <Button variant="ghost" size="sm">
+                        Edit
+                      </Button>
                     </TableCell>
                   </TableRow>
-                ) : (
-                  currentPageData.map((product) => (
-                    <TableRow key={product.id}>
-                      <TableCell>
-                        <Checkbox
-                          checked={selectedProducts.includes(product.id)}
-                          onCheckedChange={() =>
-                            toggleProductSelection(product.id)
-                          }
-                          aria-label={`Select product ${product.name}`}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Image
-                          src={
-                            product.image_url ||
-                            "/placeholder.svg?height=48&width=48"
-                          }
-                          alt={product.name}
-                          className="h-12 w-12 rounded-md object-cover"
-                          width={48}
-                          height={48}
-                        />
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {product.name}
-                      </TableCell>
-                      <TableCell>{product.category || "N/A"}</TableCell>
-                      <TableCell>RM {product.price.toFixed(2)}</TableCell>
-                      <TableCell>{product.stock_quantity ?? "N/A"}</TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="default" size="sm">
-                          Edit
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        )}
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      )}
 
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-end space-x-2 py-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1 || loading}
-            >
-              Previous
-            </Button>
-            <span className="text-sm text-gray-700">
-              Page {currentPage} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages || loading}
-            >
-              Next
-            </Button>
-          </div>
-        )}
-      </div>
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-end space-x-2 py-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1 || loading}
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-gray-700">
+            Page {currentPage} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages || loading}
+          >
+            Next
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
