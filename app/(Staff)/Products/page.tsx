@@ -511,7 +511,7 @@ export default function ProductsPage() {
                   <TableRow
                     key={product.id}
                     onClick={() => router.push(`/Staff/Products/${product.id}`)}
-                    className="cursor-pointer hover:bg-gray-50"
+                    className="cursor-pointer "
                   >
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <Checkbox
@@ -562,7 +562,7 @@ export default function ProductsPage() {
                       className="text-right"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <Button variant="ghost" size="sm">
+                      <Button variant="default" size="sm">
                         Edit
                       </Button>
                     </TableCell>
