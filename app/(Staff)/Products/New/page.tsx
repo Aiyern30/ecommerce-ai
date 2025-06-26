@@ -1,10 +1,11 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 import Link from "next/link";
 import type React from "react";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus, X } from "lucide-react"; // Added X for remove icon
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form"; // Import useFieldArray
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase"; // Import the singleton Supabase client
@@ -35,6 +36,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Badge, // Added Badge for tags/certificates
 } from "@/components/ui/";
 import Image from "next/image";
 import { toast } from "sonner";
@@ -42,19 +44,29 @@ import { toast } from "sonner";
 // Zod schema for product creation
 const productSchema = z.object({
   name: z.string().min(1, "Product name is required"),
-  description: z.string().nullish(), // Allow null or undefined for optional textareas
-  price: z.coerce.number().min(0.01, "Price must be positive"), // Use coerce to handle string to number conversion
+  description: z.string().nullish(),
+  price: z.coerce.number().min(0.01, "Price must be positive"),
   unit: z.enum(["per bag", "per tonne"], {
     required_error: "Unit is required",
   }),
   stock_quantity: z.coerce
     .number()
     .int()
-    .min(0, "Stock quantity must be non-negative"), // Use coerce
+    .min(0, "Stock quantity must be non-negative"),
   category: z.enum(["bagged", "bulk", "ready-mix"], {
     required_error: "Category is required",
   }),
-  // imageFile is handled separately as a File object, not directly in Zod schema for form fields
+  // Changed tags and certificates to arrays of objects to match useFieldArray's default behavior
+  tags: z
+    .array(z.object({ tag: z.string().min(1, "Tag cannot be empty") }))
+    .optional(),
+  certificates: z
+    .array(
+      z.object({
+        certificate: z.string().min(1, "Certificate cannot be empty"),
+      })
+    )
+    .optional(),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -62,98 +74,254 @@ type ProductFormData = z.infer<typeof productSchema>;
 export default function NewProductPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [selectedImageFiles, setSelectedImageFiles] = useState<File[]>([]); // Changed to array
   const [imageError, setImageError] = useState<string | null>(null);
+  const [tagInput, setTagInput] = useState(""); // State for current tag input
+  const [certificateInput, setCertificateInput] = useState(""); // State for current certificate input
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: "",
       description: null,
-      price: 0, // Default to 0 for number inputs
+      price: 0,
       unit: "per bag",
-      stock_quantity: 0, // Default to 0 for number inputs
+      stock_quantity: 0,
       category: "bagged",
+      tags: [], // Initialize as empty array
+      certificates: [], // Initialize as empty array
     },
   });
 
+  // useFieldArray for dynamic tags and certificates
+  const {
+    fields: tagFields,
+    append: appendTag,
+    remove: removeTag,
+  } = useFieldArray({
+    control: form.control,
+    name: "tags",
+  });
+
+  const {
+    fields: certificateFields,
+    append: appendCertificate,
+    remove: removeCertificate,
+  } = useFieldArray({
+    control: form.control,
+    name: "certificates",
+  });
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      if (!file.type.startsWith("image/")) {
-        setImageError("Only image files are allowed.");
-        setImageFile(null);
-        e.target.value = ""; // Clear the input
-      } else if (file.size > 5 * 1024 * 1024) {
-        // 5MB limit
-        setImageError("Image file size must be less than 5MB.");
-        setImageFile(null);
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      const newFiles: File[] = [];
+      let hasError = false;
+
+      files.forEach((file) => {
+        if (!file.type.startsWith("image/")) {
+          setImageError(`File "${file.name}" is not an image.`);
+          hasError = true;
+        } else if (file.size > 5 * 1024 * 1024) {
+          setImageError(`File "${file.name}" size exceeds 5MB.`);
+          hasError = true;
+        } else {
+          newFiles.push(file);
+        }
+      });
+
+      if (hasError) {
+        setSelectedImageFiles([]); // Clear all if any error
         e.target.value = ""; // Clear the input
       } else {
-        setImageFile(file);
+        setSelectedImageFiles(newFiles);
         setImageError(null);
       }
     } else {
-      setImageFile(null);
-      setImageError("Image is required.");
+      setSelectedImageFiles([]);
+      setImageError(null); // Clear error if no files selected
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setSelectedImageFiles((prevFiles) =>
+      prevFiles.filter((_, i) => i !== index)
+    );
+    // If all images are removed, set error if required
+    if (selectedImageFiles.length === 1) {
+      // If only one image was left and now removed
+      setImageError("At least one product image is required.");
+    } else if (selectedImageFiles.length === 0) {
+      // If no images were selected initially
+      setImageError("At least one product image is required.");
+    }
+  };
+
+  const handleAddTag = () => {
+    if (tagInput.trim() && !tagFields.some((t) => t.tag === tagInput.trim())) {
+      appendTag({ tag: tagInput.trim() });
+      setTagInput("");
+    }
+  };
+
+  const handleAddCertificate = () => {
+    if (
+      certificateInput.trim() &&
+      !certificateFields.some((c) => c.certificate === certificateInput.trim())
+    ) {
+      appendCertificate({ certificate: certificateInput.trim() });
+      setCertificateInput("");
     }
   };
 
   const onSubmit = async (data: ProductFormData) => {
     setIsSubmitting(true);
-    setImageError(null); // Clear previous image errors
+    setImageError(null);
 
-    if (!imageFile) {
-      setImageError("Product image is required.");
+    if (selectedImageFiles.length === 0) {
+      setImageError("At least one product image is required.");
       setIsSubmitting(false);
       return;
     }
 
-    let imageUrl = "";
-
     try {
-      // 1. Upload image
-      const fileExt = imageFile.name.split(".").pop();
-      const filePath = `${Date.now()}-${Math.random()
-        .toString(36)
-        .substring(2, 15)}.${fileExt}`; // Add random string for uniqueness
+      // 1. Insert main product data
+      const { data: productInsertData, error: productInsertError } =
+        await supabase
+          .from("products")
+          .insert({
+            name: data.name,
+            description: data.description,
+            price: data.price,
+            unit: data.unit,
+            stock_quantity: data.stock_quantity,
+            category: data.category,
+            image_url: selectedImageFiles.length > 0 ? "" : null, // Main image will be the first uploaded one
+          })
+          .select("id")
+          .single();
 
-      const { error: uploadError } = await supabase.storage
-        .from("products")
-        .upload(filePath, imageFile, {
-          cacheControl: "3600",
-          upsert: false,
-        });
-
-      if (uploadError) {
-        toast.error("Image upload failed: " + uploadError.message);
-
+      if (productInsertError) {
+        toast.error("Product creation failed: " + productInsertError.message);
         setIsSubmitting(false);
         return;
       }
 
-      const { data: publicData } = supabase.storage
-        .from("products")
-        .getPublicUrl(filePath);
-      imageUrl = publicData.publicUrl;
+      const productId = productInsertData.id;
 
-      const { error: insertError } = await supabase.from("products").insert({
-        name: data.name,
-        description: data.description,
-        price: data.price,
-        unit: data.unit,
-        stock_quantity: data.stock_quantity,
-        category: data.category,
-        image_url: imageUrl,
-      });
+      // 2. Upload multiple images and insert into product_images table
+      const imageUrls: { image_url: string }[] = [];
+      for (const file of selectedImageFiles) {
+        const fileExt = file.name.split(".").pop();
+        const filePath = `${productId}/${Date.now()}-${Math.random()
+          .toString(36)
+          .substring(2, 15)}.${fileExt}`;
 
-      if (insertError) {
-        toast.error("Product insert failed: " + insertError.message);
-      } else {
-        toast.success("Product added successfully!");
-        router.push("/Products");
+        const { error: uploadError } = await supabase.storage
+          .from("products")
+          .upload(filePath, file, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (uploadError) {
+          console.error(
+            `Image upload failed for ${file.name}:`,
+            uploadError.message
+          );
+          toast.error(
+            `Failed to upload image ${file.name}: ${uploadError.message}`
+          );
+          // Decide whether to continue or abort. For now, we'll log and continue.
+          continue;
+        }
+
+        const { data: publicData } = supabase.storage
+          .from("products")
+          .getPublicUrl(filePath);
+        imageUrls.push({ image_url: publicData.publicUrl });
       }
-    } catch {
+
+      if (imageUrls.length > 0) {
+        const { error: imagesInsertError } = await supabase
+          .from("product_images")
+          .insert(
+            imageUrls.map((url) => ({
+              product_id: productId,
+              image_url: url.image_url,
+            }))
+          );
+
+        if (imagesInsertError) {
+          console.error(
+            "Product images insert failed:",
+            imagesInsertError.message
+          );
+          toast.error(
+            "Failed to link product images: " + imagesInsertError.message
+          );
+        } else {
+          // Update the main product's image_url with the first uploaded image
+          const { error: updateMainImageError } = await supabase
+            .from("products")
+            .update({ image_url: imageUrls[0].image_url })
+            .eq("id", productId);
+
+          if (updateMainImageError) {
+            console.error(
+              "Failed to update main product image_url:",
+              updateMainImageError.message
+            );
+            toast.error(
+              "Failed to set main product image: " +
+                updateMainImageError.message
+            );
+          }
+        }
+      }
+
+      // 3. Insert tags into product_tags table
+      if (data.tags && data.tags.length > 0) {
+        const tagsToInsert = data.tags.map((item) => ({
+          product_id: productId,
+          tag: item.tag,
+        })); // Corrected: access item.tag
+        const { error: tagsInsertError } = await supabase
+          .from("product_tags")
+          .insert(tagsToInsert);
+
+        if (tagsInsertError) {
+          console.error("Product tags insert failed:", tagsInsertError.message);
+          toast.error("Failed to add product tags: " + tagsInsertError.message);
+        }
+      }
+
+      // 4. Insert certificates into product_certificates table
+      if (data.certificates && data.certificates.length > 0) {
+        const certificatesToInsert = data.certificates.map((item) => ({
+          product_id: productId,
+          certificate: item.certificate,
+        })); // Corrected: access item.certificate
+        const { error: certificatesInsertError } = await supabase
+          .from("product_certificates")
+          .insert(certificatesToInsert);
+
+        if (certificatesInsertError) {
+          console.error(
+            "Product certificates insert failed:",
+            certificatesInsertError.message
+          );
+          toast.error(
+            "Failed to add product certificates: " +
+              certificatesInsertError.message
+          );
+        }
+      }
+
+      toast.success("Product added successfully!");
+      router.push("/Staff/Products"); // Go back to product list
+    } catch (error) {
+      console.error("Unexpected error during product creation:", error);
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -170,7 +338,7 @@ export default function NewProductPage() {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href="/Products">Products</BreadcrumbLink>
+              <BreadcrumbLink href="/Staff/Products">Products</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
@@ -182,7 +350,7 @@ export default function NewProductPage() {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Add New Product</h1>
           <div className="flex items-center gap-2">
-            <Link href="/Products">
+            <Link href="/Staff/Products">
               <Button variant="outline" size="sm">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Products
@@ -359,46 +527,171 @@ export default function NewProductPage() {
             </CardContent>
           </Card>
 
-          {/* Image Upload */}
+          {/* Multiple Image Upload */}
           <Card>
             <CardHeader>
-              <CardTitle>Product Image</CardTitle>
+              <CardTitle>Product Images</CardTitle>
               <CardDescription>
-                Upload an image for the product.
+                Upload one or more images for the product.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <FormItem>
-                <FormLabel>Image File *</FormLabel>
+                <FormLabel>Image Files *</FormLabel>
                 <FormControl>
                   <Input
                     type="file"
                     accept="image/*"
+                    multiple
                     onChange={handleImageChange}
                   />
                 </FormControl>
                 <FormDescription>
-                  Accepted formats: JPG, PNG, GIF. Max size: 5MB.
+                  Accepted formats: JPG, PNG, GIF. Max size: 5MB per file.
                 </FormDescription>
                 {imageError && <FormMessage>{imageError}</FormMessage>}
               </FormItem>
-              {imageFile && (
-                <div className="mt-4">
-                  <Image
-                    src={URL.createObjectURL(imageFile) || "/placeholder.svg"}
-                    alt="Preview"
-                    className="object-cover rounded-md"
-                    width={128}
-                    height={128}
-                  />
+              {selectedImageFiles.length > 0 && (
+                <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  {selectedImageFiles.map((file, index) => (
+                    <div key={index} className="relative group">
+                      <Image
+                        src={URL.createObjectURL(file) || "/placeholder.svg"}
+                        alt={`Preview ${index + 1}`}
+                        className="object-cover rounded-md aspect-square"
+                        width={128}
+                        height={128}
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-1 right-1 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => handleRemoveImage(index)}
+                      >
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">Remove image</span>
+                      </Button>
+                    </div>
+                  ))}
                 </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Product Tags */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Product Tags</CardTitle>
+              <CardDescription>
+                Add relevant tags to categorize the product (e.g.,
+                "construction", "eco-friendly").
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-2 mb-4">
+                <Input
+                  placeholder="Add a tag"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddTag();
+                    }
+                  }}
+                />
+                <Button type="button" onClick={handleAddTag}>
+                  <Plus className="mr-2 h-4 w-4" /> Add
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {tagFields.map((item, index) => (
+                  <Badge
+                    key={item.id}
+                    variant="secondary"
+                    className="flex items-center gap-1"
+                  >
+                    {item.tag}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-4 w-4 p-0"
+                      onClick={() => removeTag(index)}
+                    >
+                      <X className="h-3 w-3" />
+                      <span className="sr-only">Remove tag</span>
+                    </Button>
+                  </Badge>
+                ))}
+              </div>
+              {/* FormMessage for tags array validation */}
+              {form.formState.errors.tags && (
+                <FormMessage>{form.formState.errors.tags.message}</FormMessage>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Product Certificates */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Product Certificates</CardTitle>
+              <CardDescription>
+                List any certifications the product holds (e.g., "ISO 9001",
+                "Green Mark").
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-2 mb-4">
+                <Input
+                  placeholder="Add a certificate"
+                  value={certificateInput}
+                  onChange={(e) => setCertificateInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddCertificate();
+                    }
+                  }}
+                />
+                <Button type="button" onClick={handleAddCertificate}>
+                  <Plus className="mr-2 h-4 w-4" /> Add
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {certificateFields.map((item, index) => (
+                  <Badge
+                    key={item.id}
+                    variant="secondary"
+                    className="flex items-center gap-1"
+                  >
+                    {item.certificate}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-4 w-4 p-0"
+                      onClick={() => removeCertificate(index)}
+                    >
+                      <X className="h-3 w-3" />
+                      <span className="sr-only">Remove certificate</span>
+                    </Button>
+                  </Badge>
+                ))}
+              </div>
+              {/* FormMessage for certificates array validation */}
+              {form.formState.errors.certificates && (
+                <FormMessage>
+                  {form.formState.errors.certificates.message}
+                </FormMessage>
               )}
             </CardContent>
           </Card>
 
           {/* Submit Button */}
           <div className="flex justify-end gap-4">
-            <Link href="/Products">
+            <Link href="/Staff/Products">
               <Button variant="outline" type="button">
                 Cancel
               </Button>
