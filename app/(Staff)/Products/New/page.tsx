@@ -37,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/";
 import Image from "next/image";
+import { toast } from "sonner";
 
 // Zod schema for product creation
 const productSchema = z.object({
@@ -125,8 +126,8 @@ export default function NewProductPage() {
         });
 
       if (uploadError) {
-        console.error("Image upload failed:", uploadError.message);
-        alert("Image upload failed: " + uploadError.message);
+        toast.error("Image upload failed: " + uploadError.message);
+
         setIsSubmitting(false);
         return;
       }
@@ -136,7 +137,6 @@ export default function NewProductPage() {
         .getPublicUrl(filePath);
       imageUrl = publicData.publicUrl;
 
-      // 2. Insert product into DB
       const { error: insertError } = await supabase.from("products").insert({
         name: data.name,
         description: data.description,
@@ -148,15 +148,13 @@ export default function NewProductPage() {
       });
 
       if (insertError) {
-        console.error("Product insert failed:", insertError.message);
-        alert("Product insert failed: " + insertError.message);
+        toast.error("Product insert failed: " + insertError.message);
       } else {
-        alert("Product added successfully!");
+        toast.success("Product added successfully!");
         router.push("/Products");
       }
-    } catch (error) {
-      console.error("Unexpected error during product creation:", error);
-      alert("An unexpected error occurred. Please try again.");
+    } catch {
+      toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
