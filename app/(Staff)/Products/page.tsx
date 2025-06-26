@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase"; // Import the singleton Supabase client
 import { useRouter } from "next/navigation"; // Import useRouter for navigation
+import { toast } from "sonner"; // Import toast for notifications
 
 import {
   Button,
@@ -43,22 +44,8 @@ import {
   Badge,
 } from "@/components/ui/";
 import Image from "next/image";
-import { Product } from "@/type/product";
-
-interface ProductFilters {
-  search: string;
-  category: string;
-  stockStatus: "all" | "in-stock" | "out-of-stock";
-  sortBy:
-    | "name-asc"
-    | "name-desc"
-    | "price-low"
-    | "price-high"
-    | "stock-low"
-    | "stock-high";
-  minPrice: string;
-  maxPrice: string;
-}
+import type { Product } from "@/type/product";
+import { ProductFilters } from "@/type/Filter/ProductFilter";
 
 function ProductTableSkeleton() {
   return (
@@ -132,12 +119,13 @@ export default function ProductsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [productsToDelete, setProductsToDelete] = useState<Product[]>([]);
 
   const itemsPerPage = 10;
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
-    console.log("Fetching products...");
     const { data, error } = await supabase
       .from("products")
       .select(
@@ -148,11 +136,9 @@ export default function ProductsPage() {
       console.error("Error fetching products:", error.message);
       setProducts([]);
     } else {
-      console.log("Products fetched successfully:", data);
       setProducts(data || []);
     }
     setLoading(false);
-    console.log("Finished fetching products. Loading state:", false);
   }, []);
 
   useEffect(() => {
@@ -191,6 +177,14 @@ export default function ProductsPage() {
     setSelectedProducts([]);
   };
 
+  const openDeleteDialog = () => {
+    const productsToConfirm = products.filter((p) =>
+      selectedProducts.includes(p.id)
+    );
+    setProductsToDelete(productsToConfirm);
+    setIsDeleteDialogOpen(true);
+  };
+
   const handleDeleteProducts = async () => {
     if (selectedProducts.length === 0) return;
 
@@ -203,17 +197,20 @@ export default function ProductsPage() {
 
       if (error) {
         console.error("Error deleting products:", error.message);
-        alert(`Error deleting products: ${error.message}`);
+        toast.error(`Error deleting products: ${error.message}`);
       } else {
-        alert(`Successfully deleted ${selectedProducts.length} products!`);
+        toast.success(
+          `Successfully deleted ${selectedProducts.length} product(s)!`
+        );
         clearProductSelection();
         fetchProducts();
       }
     } catch (error) {
       console.error("Unexpected error during deletion:", error);
-      alert("An unexpected error occurred. Please try again.");
+      toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
+      setIsDeleteDialogOpen(false); // Close dialog after deletion attempt
     }
   };
 
@@ -291,7 +288,7 @@ export default function ProductsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Products</h1>
         <div className="flex items-center gap-2">
-          <Link href="/Staff/Products/New">
+          <Link href="/Products/New">
             <Button size="sm">
               <Plus className="mr-2 h-4 w-4" />
               Add Product
@@ -306,7 +303,7 @@ export default function ProductsPage() {
           <Input
             type="search"
             placeholder="Search products by name or ID..."
-            className="pl-8 bg-white"
+            className="pl-8"
             value={filters.search}
             onChange={(e) => updateFilter("search", e.target.value)}
           />
@@ -429,9 +426,16 @@ export default function ProductsPage() {
               <span className="text-sm text-gray-500">
                 {selectedProducts.length} selected
               </span>
-              <Dialog>
+              <Dialog
+                open={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}
+              >
                 <DialogTrigger asChild>
-                  <Button variant="destructive" size="sm">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={openDeleteDialog}
+                  >
                     <Trash2 className="mr-2 h-4 w-4" />
                     Delete Selected ({selectedProducts.length})
                   </Button>
@@ -440,12 +444,36 @@ export default function ProductsPage() {
                   <DialogHeader>
                     <DialogTitle>Confirm Deletion</DialogTitle>
                     <DialogDescription>
-                      Are you sure you want to delete {selectedProducts.length}{" "}
-                      selected products? This action cannot be undone.
+                      Are you sure you want to delete the following{" "}
+                      {productsToDelete.length} product(s)? This action cannot
+                      be undone.
                     </DialogDescription>
                   </DialogHeader>
+                  <div className="max-h-60 overflow-y-auto space-y-2">
+                    {productsToDelete.map((product) => (
+                      <div
+                        key={product.id}
+                        className="flex items-center gap-3 p-2 border rounded-md"
+                      >
+                        <Image
+                          src={
+                            product.image_url ||
+                            "/placeholder.svg?height=48&width=48"
+                          }
+                          alt={product.name}
+                          width={48}
+                          height={48}
+                          className="rounded-md object-cover"
+                        />
+                        <span className="font-medium">{product.name}</span>
+                      </div>
+                    ))}
+                  </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => {}}>
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsDeleteDialogOpen(false)}
+                    >
                       Cancel
                     </Button>
                     <Button
@@ -510,7 +538,7 @@ export default function ProductsPage() {
                 currentPageData.map((product) => (
                   <TableRow
                     key={product.id}
-                    onClick={() => router.push(`/Staff/Products/${product.id}`)}
+                    onClick={() => router.push(`/Products/${product.id}`)}
                     className="cursor-pointer "
                   >
                     <TableCell onClick={(e) => e.stopPropagation()}>
