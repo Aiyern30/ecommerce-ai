@@ -301,7 +301,7 @@ export default function ProductsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Products</h1>
         <div className="flex items-center gap-2">
-          <Link href="/Staff/Products/New">
+          <Link href="/Products/New">
             <Button size="sm">
               <Plus className="mr-2 h-4 w-4" />
               Add Product

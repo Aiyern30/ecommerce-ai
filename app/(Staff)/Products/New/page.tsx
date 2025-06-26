@@ -319,7 +319,7 @@ export default function NewProductPage() {
       }
 
       toast.success("Product added successfully!");
-      router.push("/Staff/Products"); // Go back to product list
+      router.push("/Products"); // Go back to product list
     } catch (error) {
       console.error("Unexpected error during product creation:", error);
       toast.error("An unexpected error occurred. Please try again.");
@@ -338,7 +338,7 @@ export default function NewProductPage() {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href="/Staff/Products">Products</BreadcrumbLink>
+              <BreadcrumbLink href="/Products">Products</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
@@ -350,7 +350,7 @@ export default function NewProductPage() {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Add New Product</h1>
           <div className="flex items-center gap-2">
-            <Link href="/Staff/Products">
+            <Link href="/Products">
               <Button variant="outline" size="sm">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Products
@@ -626,14 +626,12 @@ export default function NewProductPage() {
                   </Badge>
                 ))}
               </div>
-              {/* FormMessage for tags array validation */}
               {form.formState.errors.tags && (
                 <FormMessage>{form.formState.errors.tags.message}</FormMessage>
               )}
             </CardContent>
           </Card>
 
-          {/* Product Certificates */}
           <Card>
             <CardHeader>
               <CardTitle>Product Certificates</CardTitle>
@@ -680,7 +678,6 @@ export default function NewProductPage() {
                   </Badge>
                 ))}
               </div>
-              {/* FormMessage for certificates array validation */}
               {form.formState.errors.certificates && (
                 <FormMessage>
                   {form.formState.errors.certificates.message}
@@ -689,9 +686,8 @@ export default function NewProductPage() {
             </CardContent>
           </Card>
 
-          {/* Submit Button */}
           <div className="flex justify-end gap-4">
-            <Link href="/Staff/Products">
+            <Link href="/Products">
               <Button variant="outline" type="button">
                 Cancel
               </Button>
