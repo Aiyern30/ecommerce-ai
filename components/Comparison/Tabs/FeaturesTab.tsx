@@ -6,13 +6,34 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/";
-import { Product } from "@/type/product";
+
+interface Feature {
+  name: string;
+  available: boolean;
+}
+
+interface ProductWithFeatures {
+  id: string;
+  name: string;
+  features: Feature[];
+}
 
 interface FeaturesTabProps {
-  products: Product[];
+  products: ProductWithFeatures[];
 }
 
 export function FeaturesTab({ products }: FeaturesTabProps) {
+  if (!products.length || !products[0].features) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Feature Comparison</CardTitle>
+          <CardDescription>No features data available</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -43,7 +64,7 @@ export function FeaturesTab({ products }: FeaturesTabProps) {
                   <td className="py-3 px-4 font-medium">{feature.name}</td>
                   {products.map((product) => (
                     <td key={product.id} className="py-3 px-4">
-                      {product.features[index].available ? (
+                      {product.features[index]?.available ? (
                         <Check className="h-5 w-5 text-green-500" />
                       ) : (
                         <X className="h-5 w-5 text-red-500" />

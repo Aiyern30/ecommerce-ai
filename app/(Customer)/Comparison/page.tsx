@@ -6,7 +6,7 @@ import { ComparisonHeader } from "@/components/Comparison/ComparisonHeader";
 import { ComparisonSummary } from "@/components/Comparison/ComparisonSummary";
 import { OverviewTab } from "@/components/Comparison/Tabs/OverviewTab";
 import { SpecificationsTab } from "@/components/Comparison/Tabs/SpecificationTab";
-import { FeaturesTab } from "@/components/Comparison/Tabs/FeaturesTab";
+// import { FeaturesTab } from "@/components/Comparison/Tabs/FeaturesTab";
 import { PricingTab } from "@/components/Comparison/Tabs/PricingTab";
 import { Product } from "@/type/product";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
@@ -95,7 +95,7 @@ export default function ComparisonPage() {
         </TabsContent>
 
         <TabsContent value="features" className="mt-0">
-          <FeaturesTab products={displayedProducts} />
+          {/* <FeaturesTab products={displayedProducts} /> */}
         </TabsContent>
 
         <TabsContent value="pricing" className="mt-0">
