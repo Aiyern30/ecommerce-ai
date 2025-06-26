@@ -10,7 +10,7 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
-import { createClient } from "@supabase/supabase-js"; // Import createClient
+import { supabase } from "@/lib/supabase"; // Import the singleton Supabase client
 
 import {
   Button,
@@ -40,8 +40,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/";
+import Image from "next/image";
 
-// Define Product type based on your Supabase schema
 interface Product {
   id: string;
   name: string;
@@ -55,7 +55,6 @@ interface Product {
   updated_at: string;
 }
 
-// Define Filter type
 interface ProductFilters {
   search: string;
   category: string;
@@ -71,6 +70,55 @@ interface ProductFilters {
   maxPrice: string;
 }
 
+function ProductTableSkeleton() {
+  return (
+    <div className="w-full overflow-x-auto rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[50px]">
+              <div className="h-4 w-4 rounded-sm bg-gray-200 animate-pulse" />
+            </TableHead>
+            <TableHead className="w-[80px]">Image</TableHead>
+            <TableHead>Product Name</TableHead>
+            <TableHead>Category</TableHead>
+            <TableHead>Price</TableHead>
+            <TableHead>Stock</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <TableRow key={i}>
+              <TableCell>
+                <div className="h-4 w-4 rounded-sm bg-gray-200 animate-pulse" />
+              </TableCell>
+              <TableCell>
+                <div className="h-12 w-12 rounded-md bg-gray-200 animate-pulse" />
+              </TableCell>
+              <TableCell>
+                <div className="h-4 w-3/4 rounded bg-gray-200 animate-pulse" />
+              </TableCell>
+              <TableCell>
+                <div className="h-4 w-1/2 rounded bg-gray-200 animate-pulse" />
+              </TableCell>
+              <TableCell>
+                <div className="h-4 w-1/3 rounded bg-gray-200 animate-pulse" />
+              </TableCell>
+              <TableCell>
+                <div className="h-4 w-1/4 rounded bg-gray-200 animate-pulse" />
+              </TableCell>
+              <TableCell className="text-right">
+                <div className="h-8 w-12 ml-auto rounded bg-gray-200 animate-pulse" />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,27 +132,25 @@ export default function ProductsPage() {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedProducts, setSelectedProducts] = useState<string[]>([]); // Stores product IDs
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
   const itemsPerPage = 10;
 
-  // Initialize Supabase client
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
   const fetchProducts = useCallback(async () => {
     setLoading(true);
+    console.log("Fetching products...");
     const { data, error } = await supabase.from("products").select("*");
 
     if (error) {
       console.error("Error fetching products:", error.message);
+      setProducts([]);
     } else {
+      console.log("Products fetched successfully:", data);
       setProducts(data || []);
     }
     setLoading(false);
-  }, [supabase]);
+    console.log("Finished fetching products. Loading state:", false);
+  }, []);
 
   useEffect(() => {
     fetchProducts();
@@ -112,7 +158,7 @@ export default function ProductsPage() {
 
   const updateFilter = (key: keyof ProductFilters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
-    setCurrentPage(1); // Reset to first page on filter change
+    setCurrentPage(1);
   };
 
   const handlePageChange = (page: number) => {
@@ -128,7 +174,10 @@ export default function ProductsPage() {
   };
 
   const toggleSelectAllProducts = () => {
-    if (selectedProducts.length === currentPageData.length) {
+    if (
+      selectedProducts.length === currentPageData.length &&
+      currentPageData.length > 0
+    ) {
       setSelectedProducts([]);
     } else {
       setSelectedProducts(currentPageData.map((product) => product.id));
@@ -142,7 +191,7 @@ export default function ProductsPage() {
   const handleDeleteProducts = async () => {
     if (selectedProducts.length === 0) return;
 
-    setLoading(true); // Show loading while deleting
+    setLoading(true);
     try {
       const { error } = await supabase
         .from("products")
@@ -155,7 +204,7 @@ export default function ProductsPage() {
       } else {
         alert(`Successfully deleted ${selectedProducts.length} products!`);
         clearProductSelection();
-        fetchProducts(); // Re-fetch products to update the list
+        fetchProducts();
       }
     } catch (error) {
       console.error("Unexpected error during deletion:", error);
@@ -165,9 +214,7 @@ export default function ProductsPage() {
     }
   };
 
-  // Filter products based on current filters
   const filteredProducts = products.filter((product) => {
-    // Filter by search term (name or ID)
     if (
       filters.search &&
       !product.name.toLowerCase().includes(filters.search.toLowerCase()) &&
@@ -176,12 +223,10 @@ export default function ProductsPage() {
       return false;
     }
 
-    // Filter by category
     if (filters.category !== "all" && product.category !== filters.category) {
       return false;
     }
 
-    // Filter by price range
     const minPrice = Number.parseFloat(filters.minPrice);
     const maxPrice = Number.parseFloat(filters.maxPrice);
 
@@ -192,7 +237,6 @@ export default function ProductsPage() {
       return false;
     }
 
-    // Filter by stock status
     if (
       filters.stockStatus === "in-stock" &&
       (product.stock_quantity === null || product.stock_quantity <= 0)
@@ -209,7 +253,6 @@ export default function ProductsPage() {
     return true;
   });
 
-  // Sort products
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     switch (filters.sortBy) {
       case "name-asc":
@@ -235,20 +278,11 @@ export default function ProductsPage() {
     currentPage * itemsPerPage
   );
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        Loading products...
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Products</h1>
         <div className="flex items-center gap-2">
-          {/* ExportProductsDialog and other components removed as per request */}
           <Link href="/Staff/Products/New">
             <Button size="sm">
               <Plus className="mr-2 h-4 w-4" />
@@ -297,7 +331,6 @@ export default function ProductsPage() {
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
                 <SelectItem value="bagged">Bagged Cement</SelectItem>
-                {/* Add more categories as needed based on your data */}
               </SelectContent>
             </Select>
             <Select
@@ -333,7 +366,7 @@ export default function ProductsPage() {
                 <SelectItem value="price-low">Price (Low to High)</SelectItem>
                 <SelectItem value="price-high">Price (High to Low)</SelectItem>
                 <SelectItem value="stock-low">Stock (Low to High)</SelectItem>
-                <SelectItem value="stock-high">Stock (High to Low)</SelectItem>
+                <SelectItem value="stock-high">Stock (High to High)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -433,77 +466,81 @@ export default function ProductsPage() {
           </div>
         </div>
 
-        <div className="w-full overflow-x-auto rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[50px]">
-                  <Checkbox
-                    checked={
-                      selectedProducts.length === currentPageData.length &&
-                      currentPageData.length > 0
-                    }
-                    onCheckedChange={toggleSelectAllProducts}
-                    aria-label="Select all"
-                  />
-                </TableHead>
-                <TableHead className="w-[80px]">Image</TableHead>
-                <TableHead>Product Name</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Stock</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {currentPageData.length === 0 ? (
+        {loading ? (
+          <ProductTableSkeleton />
+        ) : (
+          <div className="w-full overflow-x-auto rounded-md border">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
-                    No products found.
-                  </TableCell>
+                  <TableHead className="w-[50px]">
+                    <Checkbox
+                      checked={
+                        selectedProducts.length === currentPageData.length &&
+                        currentPageData.length > 0
+                      }
+                      onCheckedChange={toggleSelectAllProducts}
+                      aria-label="Select all"
+                    />
+                  </TableHead>
+                  <TableHead className="w-[80px]">Image</TableHead>
+                  <TableHead>Product Name</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Stock</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ) : (
-                currentPageData.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell>
-                      <Checkbox
-                        checked={selectedProducts.includes(product.id)}
-                        onCheckedChange={() =>
-                          toggleProductSelection(product.id)
-                        }
-                        aria-label={`Select product ${product.name}`}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <img
-                        src={
-                          product.image_url ||
-                          "/placeholder.svg?height=48&width=48"
-                        }
-                        alt={product.name}
-                        className="h-12 w-12 rounded-md object-cover"
-                        width={48}
-                        height={48}
-                      />
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {product.name}
-                    </TableCell>
-                    <TableCell>{product.category || "N/A"}</TableCell>
-                    <TableCell>RM {product.price.toFixed(2)}</TableCell>
-                    <TableCell>{product.stock_quantity ?? "N/A"}</TableCell>
-                    <TableCell className="text-right">
-                      {/* Placeholder for individual product actions */}
-                      <Button variant="ghost" size="sm">
-                        Edit
-                      </Button>
+              </TableHeader>
+              <TableBody>
+                {currentPageData.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center">
+                      No products found.
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                ) : (
+                  currentPageData.map((product) => (
+                    <TableRow key={product.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedProducts.includes(product.id)}
+                          onCheckedChange={() =>
+                            toggleProductSelection(product.id)
+                          }
+                          aria-label={`Select product ${product.name}`}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Image
+                          src={
+                            product.image_url ||
+                            "/placeholder.svg?height=48&width=48"
+                          }
+                          alt={product.name}
+                          className="h-12 w-12 rounded-md object-cover"
+                          width={48}
+                          height={48}
+                        />
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {product.name}
+                      </TableCell>
+                      <TableCell>{product.category || "N/A"}</TableCell>
+                      <TableCell>RM {product.price.toFixed(2)}</TableCell>
+                      <TableCell>{product.stock_quantity ?? "N/A"}</TableCell>
+                      <TableCell className="text-right">
+                        {/* Placeholder for individual product actions */}
+                        <Button variant="ghost" size="sm">
+                          Edit
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        )}
 
         {/* Pagination Controls */}
         {totalPages > 1 && (
@@ -512,7 +549,7 @@ export default function ProductsPage() {
               variant="outline"
               size="sm"
               onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
+              disabled={currentPage === 1 || loading}
             >
               Previous
             </Button>
@@ -523,7 +560,7 @@ export default function ProductsPage() {
               variant="outline"
               size="sm"
               onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
+              disabled={currentPage === totalPages || loading}
             >
               Next
             </Button>
