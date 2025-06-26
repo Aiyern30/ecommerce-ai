@@ -299,7 +299,7 @@ export default function ProductsPage() {
             <Input
               type="search"
               placeholder="Search products by name or ID..."
-              className="pl-8 bg-white"
+              className="pl-8"
               value={filters.search}
               onChange={(e) => updateFilter("search", e.target.value)}
             />
@@ -529,8 +529,7 @@ export default function ProductsPage() {
                       <TableCell>RM {product.price.toFixed(2)}</TableCell>
                       <TableCell>{product.stock_quantity ?? "N/A"}</TableCell>
                       <TableCell className="text-right">
-                        {/* Placeholder for individual product actions */}
-                        <Button variant="ghost" size="sm">
+                        <Button variant="default" size="sm">
                           Edit
                         </Button>
                       </TableCell>
