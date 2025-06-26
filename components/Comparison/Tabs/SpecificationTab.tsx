@@ -6,9 +6,17 @@ import {
   CardTitle,
 } from "@/components/ui/";
 import { Product } from "@/type/product";
+interface ProductWithSpecs extends Product {
+  specs: {
+    performance: { value: string; score: number };
+    battery: { value: string; score: number };
+    storage: { value: string; score: number };
+    camera: { value: string; score: number };
+  };
+}
 
 interface SpecificationsTabProps {
-  products: Product[];
+  products: ProductWithSpecs[];
 }
 
 export function SpecificationsTab({ products }: SpecificationsTabProps) {
