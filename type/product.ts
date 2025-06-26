@@ -1,24 +1,12 @@
-export interface ProductSpec {
-  value: string;
-  score: number;
-}
-
-export interface ProductFeature {
-  name: string;
-  available: boolean;
-}
-
 export interface Product {
-  id: number;
+  id: string;
   name: string;
-  price: string;
-  rating: number;
-  image: string;
-  specs: {
-    performance: ProductSpec;
-    battery: ProductSpec;
-    storage: ProductSpec;
-    camera: ProductSpec;
-  };
-  features: ProductFeature[];
+  description: string | null;
+  image_url: string | null;
+  category: string | null;
+  price: number;
+  unit: string | null;
+  stock_quantity: number | null;
+  created_at: string;
+  updated_at: string;
 }
