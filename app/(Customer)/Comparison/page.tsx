@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/";
 import { ComparisonHeader } from "@/components/Comparison/ComparisonHeader";
 import { ComparisonSummary } from "@/components/Comparison/ComparisonSummary";
 import { OverviewTab } from "@/components/Comparison/Tabs/OverviewTab";
-import { SpecificationsTab } from "@/components/Comparison/Tabs/SpecificationTab";
+// import { SpecificationsTab } from "@/components/Comparison/Tabs/SpecificationTab";
 // import { FeaturesTab } from "@/components/Comparison/Tabs/FeaturesTab";
 import { PricingTab } from "@/components/Comparison/Tabs/PricingTab";
 import { Product } from "@/type/product";
@@ -91,7 +91,7 @@ export default function ComparisonPage() {
         </TabsContent>
 
         <TabsContent value="specs" className="mt-0">
-          <SpecificationsTab products={displayedProducts} />
+          {/* <SpecificationsTab products={displayedProducts} /> */}
         </TabsContent>
 
         <TabsContent value="features" className="mt-0">
