@@ -13,8 +13,18 @@ import {
 } from "@/components/ui/";
 import { Product } from "@/type/product";
 
+// Extend the base Product type with mock data for this tab
+interface ProductWithSpecs extends Product {
+  rating?: number;
+  specs?: {
+    performance: { value: string; score: number };
+    battery: { value: string; score: number };
+    storage: { value: string; score: number };
+  };
+}
+
 interface OverviewTabProps {
-  products: Product[];
+  products: ProductWithSpecs[];
   itemCount: "2" | "3" | "4";
 }
 
@@ -35,7 +45,7 @@ export function OverviewTab({ products, itemCount }: OverviewTabProps) {
           <CardHeader>
             <div className="flex justify-center mb-4">
               <Image
-                src={product.image || "/placeholder.svg"}
+                src={product.image_url || "/placeholder.svg"}
                 alt={product.name}
                 width={200}
                 height={200}
@@ -43,34 +53,43 @@ export function OverviewTab({ products, itemCount }: OverviewTabProps) {
               />
             </div>
             <CardTitle>{product.name}</CardTitle>
-            <CardDescription>
-              <div className="flex items-center justify-between mt-2">
-                <span className="font-bold text-xl">{product.price}</span>
+            {product.description && (
+              <CardDescription>{product.description}</CardDescription>
+            )}
+            <div className="flex items-center justify-between mt-2">
+              <span className="font-bold text-xl">RM {product.price}</span>
+              {product.rating && (
                 <Badge variant="outline">Rating: {product.rating}/5</Badge>
-              </div>
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex-grow">
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-medium mb-2">Key Specs</h3>
-                <ul className="space-y-2">
-                  <li className="flex items-center gap-2">
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    <span>Performance: {product.specs.performance.value}</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    <span>Battery: {product.specs.battery.value}</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    <span>Storage: {product.specs.storage.value}</span>
-                  </li>
-                </ul>
-              </div>
+              )}
             </div>
+          </CardHeader>
+
+          <CardContent className="flex-grow">
+            {product.specs && (
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-medium mb-2">Key Specs</h3>
+                  <ul className="space-y-2">
+                    <li className="flex items-center gap-2">
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      <span>
+                        Performance: {product.specs.performance.value}
+                      </span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      <span>Battery: {product.specs.battery.value}</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      <span>Storage: {product.specs.storage.value}</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            )}
           </CardContent>
+
           <CardFooter>
             <Button className="w-full">View Details</Button>
           </CardFooter>
