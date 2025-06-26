@@ -11,6 +11,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase"; // Import the singleton Supabase client
+import { useRouter } from "next/navigation"; // Import useRouter for navigation
 
 import {
   Button,
@@ -39,28 +40,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  Badge,
 } from "@/components/ui/";
-import Image from "next/image"; // Import Image component
+import Image from "next/image";
+import { Product } from "@/type/product";
 
-// Define Product type based on your Supabase schema, including joined relations
-export interface Product {
-  id: string;
-  name: string;
-  description: string | null;
-  image_url: string | null; // Main image from products table
-  category: string | null;
-  price: number;
-  unit: string | null;
-  stock_quantity: number | null;
-  created_at: string;
-  updated_at: string;
-  // Nested relations from joins
-  product_images: { image_url: string }[] | null; // Array of image objects
-  product_tags: { tag: string }[] | null; // Array of tag objects
-  product_certificates: { certificate: string }[] | null; // Array of certificate objects
-}
-
-// Define Filter type
 interface ProductFilters {
   search: string;
   category: string;
@@ -76,7 +60,6 @@ interface ProductFilters {
   maxPrice: string;
 }
 
-// Skeleton component for the table
 function ProductTableSkeleton() {
   return (
     <div className="w-full overflow-x-auto rounded-md border">
@@ -91,6 +74,8 @@ function ProductTableSkeleton() {
             <TableHead>Category</TableHead>
             <TableHead>Price</TableHead>
             <TableHead>Stock</TableHead>
+            <TableHead>Tags</TableHead>
+            <TableHead>Certificates</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -115,6 +100,12 @@ function ProductTableSkeleton() {
               <TableCell>
                 <div className="h-4 w-1/4 rounded bg-gray-200 animate-pulse" />
               </TableCell>
+              <TableCell>
+                <div className="h-4 w-1/2 rounded bg-gray-200 animate-pulse" />
+              </TableCell>
+              <TableCell>
+                <div className="h-4 w-1/2 rounded bg-gray-200 animate-pulse" />
+              </TableCell>
               <TableCell className="text-right">
                 <div className="h-8 w-12 ml-auto rounded bg-gray-200 animate-pulse" />
               </TableCell>
@@ -127,6 +118,7 @@ function ProductTableSkeleton() {
 }
 
 export default function ProductsPage() {
+  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<ProductFilters>({
@@ -139,14 +131,13 @@ export default function ProductsPage() {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedProducts, setSelectedProducts] = useState<string[]>([]); // Stores product IDs
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
   const itemsPerPage = 10;
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     console.log("Fetching products...");
-    // Fetch products and join related tables
     const { data, error } = await supabase
       .from("products")
       .select(
@@ -170,7 +161,7 @@ export default function ProductsPage() {
 
   const updateFilter = (key: keyof ProductFilters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
-    setCurrentPage(1); // Reset to first page on filter change
+    setCurrentPage(1);
   };
 
   const handlePageChange = (page: number) => {
@@ -203,7 +194,7 @@ export default function ProductsPage() {
   const handleDeleteProducts = async () => {
     if (selectedProducts.length === 0) return;
 
-    setLoading(true); // Show loading while deleting
+    setLoading(true);
     try {
       const { error } = await supabase
         .from("products")
@@ -216,7 +207,7 @@ export default function ProductsPage() {
       } else {
         alert(`Successfully deleted ${selectedProducts.length} products!`);
         clearProductSelection();
-        fetchProducts(); // Re-fetch products to update the list
+        fetchProducts();
       }
     } catch (error) {
       console.error("Unexpected error during deletion:", error);
@@ -226,7 +217,6 @@ export default function ProductsPage() {
     }
   };
 
-  // Filter products based on current filters
   const filteredProducts = products.filter((product) => {
     // Filter by search term (name or ID)
     if (
@@ -301,7 +291,7 @@ export default function ProductsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Products</h1>
         <div className="flex items-center gap-2">
-          <Link href="/Products/New">
+          <Link href="/Staff/Products/New">
             <Button size="sm">
               <Plus className="mr-2 h-4 w-4" />
               Add Product
@@ -348,7 +338,6 @@ export default function ProductsPage() {
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
               <SelectItem value="bagged">Bagged Cement</SelectItem>
-              {/* Add more categories as needed based on your data */}
             </SelectContent>
           </Select>
           <Select
@@ -505,20 +494,26 @@ export default function ProductsPage() {
                 <TableHead>Category</TableHead>
                 <TableHead>Price</TableHead>
                 <TableHead>Stock</TableHead>
+                <TableHead>Tags</TableHead>
+                <TableHead>Certificates</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {currentPageData.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
+                  <TableCell colSpan={9} className="h-24 text-center">
                     No products found.
                   </TableCell>
                 </TableRow>
               ) : (
                 currentPageData.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell>
+                  <TableRow
+                    key={product.id}
+                    onClick={() => router.push(`/Staff/Products/${product.id}`)}
+                    className="cursor-pointer hover:bg-gray-50"
+                  >
+                    <TableCell onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         checked={selectedProducts.includes(product.id)}
                         onCheckedChange={() =>
@@ -545,8 +540,28 @@ export default function ProductsPage() {
                     <TableCell>{product.category || "N/A"}</TableCell>
                     <TableCell>RM {product.price.toFixed(2)}</TableCell>
                     <TableCell>{product.stock_quantity ?? "N/A"}</TableCell>
-                    <TableCell className="text-right">
-                      {/* Placeholder for individual product actions */}
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {product.product_tags?.map((t) => (
+                          <Badge key={t.tag} variant="secondary">
+                            {t.tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {product.product_certificates?.map((c) => (
+                          <Badge key={c.certificate} variant="secondary">
+                            {c.certificate}
+                          </Badge>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell
+                      className="text-right"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Button variant="ghost" size="sm">
                         Edit
                       </Button>
@@ -559,7 +574,6 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Pagination Controls */}
       {totalPages > 1 && (
         <div className="flex items-center justify-end space-x-2 py-4">
           <Button
