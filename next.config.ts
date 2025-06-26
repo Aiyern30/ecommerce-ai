@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
     domains: [
       "hebbkx1anhila5yf.public.blob.vercel-storage.com",
       "lh3.googleusercontent.com",
+      "lfiwuapppyfwdxuwpewt.supabase.co",
     ],
   },
 };
