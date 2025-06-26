@@ -10,15 +10,15 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui";
-import type { Product } from "@/type/product";
 import ProductDetailDisplay from "@/components/ProductDetailDisplay";
+import type { Product } from "@/type/product";
 
 export default async function ProductDetailPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const { id } = params;
+  const id = params.id;
 
   const { data: product, error } = await supabase
     .from("products")
@@ -29,6 +29,7 @@ export default async function ProductDetailPage({
     .single();
 
   if (error || !product) {
+    console.error("Product fetch failed:", error);
     notFound();
   }
 
@@ -38,11 +39,11 @@ export default async function ProductDetailPage({
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/staff/Dashboard">Dashboard</BreadcrumbLink>
+              <BreadcrumbLink href="/staff/dashboard">Dashboard</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href="/Staff/Products">Products</BreadcrumbLink>
+              <BreadcrumbLink href="/staff/products">Products</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
@@ -53,14 +54,12 @@ export default async function ProductDetailPage({
 
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Product Details</h1>
-          <div className="flex items-center gap-2">
-            <Link href="/Staff/Products">
-              <Button variant="outline" size="sm">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Products
-              </Button>
-            </Link>
-          </div>
+          <Link href="/staff/products">
+            <Button variant="outline" size="sm">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Products
+            </Button>
+          </Link>
         </div>
       </div>
 
