@@ -72,7 +72,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setImageFile(file); // show preview
+    setImageFile(file);
 
     const reader = new FileReader();
     reader.onloadend = async () => {
@@ -85,29 +85,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           body: JSON.stringify({ imageBase64: base64 }),
         });
 
-        if (!res.ok) {
-          const error = await res.json();
-          console.error("Image API error:", error);
+        const result = await res.json();
+
+        if (!Array.isArray(result)) {
+          console.error("Expected array but got:", result);
           setSearchResults([]);
           setDropdownOpen(false);
           return;
         }
 
-        const json = await res.json();
-
-        if (!Array.isArray(json)) {
-          console.error("Expected array but got:", json);
-          setSearchResults([]);
-          setDropdownOpen(false);
-          return;
-        }
-
-        setSearchResults(json);
+        setSearchResults(result);
         setDropdownOpen(true);
-      } catch (error) {
-        console.error("Image similarity search error:", error);
+      } catch (err) {
+        console.error("Image similarity search error:", err);
         setSearchResults([]);
-        setDropdownOpen(false);
       }
     };
 
@@ -117,7 +108,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // If there's an image uploaded, prioritize image search
     if (imageFile) {
       const reader = new FileReader();
       reader.onloadend = async () => {
@@ -157,10 +147,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       };
 
       reader.readAsDataURL(imageFile);
-      return; // skip keyword search if image is used
+      return;
     }
 
-    // If no image uploaded, fallback to keyword search
     if (searchText.trim()) {
       try {
         const res = await fetch(
