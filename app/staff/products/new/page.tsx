@@ -3,12 +3,12 @@
 import Link from "next/link";
 import type React from "react";
 
-import { ArrowLeft, Plus, X } from "lucide-react"; // Added X for remove icon
+import { ArrowLeft, Plus, X } from "lucide-react";
 import { useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form"; // Import useFieldArray
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase"; // Import the singleton Supabase client
+import { supabase } from "@/lib/supabase";
 import * as z from "zod";
 import {
   Button,
@@ -36,12 +36,11 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Badge, // Added Badge for tags/certificates
+  Badge,
 } from "@/components/ui/";
 import Image from "next/image";
 import { toast } from "sonner";
 
-// Zod schema for product creation
 const productSchema = z.object({
   name: z.string().min(1, "Product name is required"),
   description: z.string().nullish(),
@@ -56,7 +55,6 @@ const productSchema = z.object({
   category: z.enum(["bagged", "bulk", "ready-mix"], {
     required_error: "Category is required",
   }),
-  // Changed tags and certificates to arrays of objects to match useFieldArray's default behavior
   tags: z
     .array(z.object({ tag: z.string().min(1, "Tag cannot be empty") }))
     .optional(),
@@ -74,10 +72,10 @@ type ProductFormData = z.infer<typeof productSchema>;
 export default function NewProductPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedImageFiles, setSelectedImageFiles] = useState<File[]>([]); // Changed to array
+  const [selectedImageFiles, setSelectedImageFiles] = useState<File[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
-  const [tagInput, setTagInput] = useState(""); // State for current tag input
-  const [certificateInput, setCertificateInput] = useState(""); // State for current certificate input
+  const [tagInput, setTagInput] = useState("");
+  const [certificateInput, setCertificateInput] = useState("");
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -88,12 +86,11 @@ export default function NewProductPage() {
       unit: "per bag",
       stock_quantity: 0,
       category: "bagged",
-      tags: [], // Initialize as empty array
-      certificates: [], // Initialize as empty array
+      tags: [],
+      certificates: [],
     },
   });
 
-  // useFieldArray for dynamic tags and certificates
   const {
     fields: tagFields,
     append: appendTag,
@@ -131,15 +128,15 @@ export default function NewProductPage() {
       });
 
       if (hasError) {
-        setSelectedImageFiles([]); // Clear all if any error
-        e.target.value = ""; // Clear the input
+        setSelectedImageFiles([]);
+        e.target.value = "";
       } else {
         setSelectedImageFiles(newFiles);
         setImageError(null);
       }
     } else {
       setSelectedImageFiles([]);
-      setImageError(null); // Clear error if no files selected
+      setImageError(null);
     }
   };
 
@@ -147,12 +144,9 @@ export default function NewProductPage() {
     setSelectedImageFiles((prevFiles) =>
       prevFiles.filter((_, i) => i !== index)
     );
-    // If all images are removed, set error if required
     if (selectedImageFiles.length === 1) {
-      // If only one image was left and now removed
       setImageError("At least one product image is required.");
     } else if (selectedImageFiles.length === 0) {
-      // If no images were selected initially
       setImageError("At least one product image is required.");
     }
   };
@@ -196,7 +190,7 @@ export default function NewProductPage() {
             unit: data.unit,
             stock_quantity: data.stock_quantity,
             category: data.category,
-            image_url: selectedImageFiles.length > 0 ? "" : null, // Main image will be the first uploaded one
+            image_url: selectedImageFiles.length > 0 ? "" : null,
           })
           .select("id")
           .single();
@@ -232,7 +226,6 @@ export default function NewProductPage() {
           toast.error(
             `Failed to upload image ${file.name}: ${uploadError.message}`
           );
-          // Decide whether to continue or abort. For now, we'll log and continue.
           continue;
         }
 
@@ -261,7 +254,6 @@ export default function NewProductPage() {
             "Failed to link product images: " + imagesInsertError.message
           );
         } else {
-          // Update the main product's image_url with the first uploaded image
           const { error: updateMainImageError } = await supabase
             .from("products")
             .update({ image_url: imageUrls[0].image_url })
@@ -280,12 +272,11 @@ export default function NewProductPage() {
         }
       }
 
-      // 3. Insert tags into product_tags table
       if (data.tags && data.tags.length > 0) {
         const tagsToInsert = data.tags.map((item) => ({
           product_id: productId,
           tag: item.tag,
-        })); // Corrected: access item.tag
+        }));
         const { error: tagsInsertError } = await supabase
           .from("product_tags")
           .insert(tagsToInsert);
@@ -301,7 +292,7 @@ export default function NewProductPage() {
         const certificatesToInsert = data.certificates.map((item) => ({
           product_id: productId,
           certificate: item.certificate,
-        })); // Corrected: access item.certificate
+        }));
         const { error: certificatesInsertError } = await supabase
           .from("product_certificates")
           .insert(certificatesToInsert);
@@ -319,7 +310,7 @@ export default function NewProductPage() {
       }
 
       toast.success("Product added successfully!");
-      router.push("/Products"); // Go back to product list
+      router.push("/staff/products");
     } catch (error) {
       console.error("Unexpected error during product creation:", error);
       toast.error("An unexpected error occurred. Please try again.");
@@ -334,11 +325,11 @@ export default function NewProductPage() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/staff/Dashboard">Dashboard</BreadcrumbLink>
+              <BreadcrumbLink href="/staff/dashboard">Dashboard</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href="/Products">Products</BreadcrumbLink>
+              <BreadcrumbLink href="/staff/products">Products</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
@@ -350,7 +341,7 @@ export default function NewProductPage() {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Add New Product</h1>
           <div className="flex items-center gap-2">
-            <Link href="/Products">
+            <Link href="/staff/products">
               <Button variant="outline" size="sm">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Products
@@ -362,7 +353,6 @@ export default function NewProductPage() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Basic Information */}
           <Card>
             <CardHeader>
               <CardTitle>Product Details</CardTitle>
@@ -513,7 +503,7 @@ export default function NewProductPage() {
                           placeholder="High-strength bagged cement suitable for general construction."
                           className="resize-none"
                           {...field}
-                          value={field.value || ""} // Ensure controlled component
+                          value={field.value || ""}
                         />
                       </FormControl>
                       <FormDescription>
@@ -687,7 +677,7 @@ export default function NewProductPage() {
           </Card>
 
           <div className="flex justify-end gap-4">
-            <Link href="/Products">
+            <Link href="/staff/products">
               <Button variant="outline" type="button">
                 Cancel
               </Button>
