@@ -19,6 +19,7 @@ export async function getImageLabels(base64Image: string): Promise<string[]> {
   );
 
   const data = await response.json();
+  console.log("Vision API Response:", JSON.stringify(data, null, 2));
 
   const labels =
     data.responses?.[0]?.labelAnnotations?.map((l: any) => l.description) || [];

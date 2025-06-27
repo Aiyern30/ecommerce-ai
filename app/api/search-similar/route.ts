@@ -10,40 +10,23 @@ const supabase = createClient(
 
 export async function POST(req: NextRequest) {
   try {
-    const { imageBase64, query } = await req.json();
+    const { imageBase64 } = await req.json();
 
-    let searchTerms: string[] = [];
-
-    // If there's an image, extract labels via Vision API
-    if (imageBase64) {
-      const labels = await getImageLabels(imageBase64);
-
-      if (!labels || labels.length === 0) {
-        return NextResponse.json({ error: "No labels found" }, { status: 404 });
-      }
-
-      searchTerms = labels;
+    if (!imageBase64) {
+      return NextResponse.json({ error: "Missing image" }, { status: 400 });
     }
 
-    // If there's a text query, use that instead or combine
-    if (query && typeof query === "string" && query.trim() !== "") {
-      searchTerms.push(query.trim());
-    }
+    const labels = await getImageLabels(imageBase64);
+    console.log("Detected Labels:", labels);
 
-    if (searchTerms.length === 0) {
-      return NextResponse.json(
-        { error: "No image or query provided" },
-        { status: 400 }
-      );
+    if (!labels || labels.length === 0) {
+      return NextResponse.json({ error: "No labels found" }, { status: 404 });
     }
-
-    // Supabase OR condition with ILIKE
-    const ilikeClauses = searchTerms.map((term) => `name.ilike.%${term}%`);
 
     const { data, error } = await supabase
       .from("products")
       .select("*")
-      .or(ilikeClauses.join(","));
+      .or(labels.map((label) => `name.ilike.%${label}%`).join(","));
 
     if (error) {
       console.error("Supabase Error:", error);
@@ -52,7 +35,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(data || []);
   } catch (err: any) {
-    console.error("API Error:", err.message || err);
+    console.error("API Error:", err.message);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
