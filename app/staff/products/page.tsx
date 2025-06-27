@@ -464,6 +464,7 @@ export default function ProductsPage() {
                           width={48}
                           height={48}
                           className="rounded-md object-cover"
+                          priority
                         />
                         <span className="font-medium">{product.name}</span>
                       </div>
@@ -560,6 +561,7 @@ export default function ProductsPage() {
                         className="h-12 w-12 rounded-md object-cover"
                         width={48}
                         height={48}
+                        priority
                       />
                     </TableCell>
                     <TableCell className="font-medium">

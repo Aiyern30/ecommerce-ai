@@ -753,6 +753,7 @@ export default function EditProductPage() {
                       alt="Product image"
                       className="w-full h-full object-cover"
                       fill
+                      priority
                     />
                     {imagesToDelete.includes(image.id) ? (
                       <div className="absolute inset-0 bg-destructive/20 flex items-center justify-center">
@@ -791,6 +792,7 @@ export default function EditProductPage() {
                       alt={`New preview ${index + 1}`}
                       className="w-full h-full object-cover"
                       fill
+                      priority
                     />
                     <Button
                       type="button"
