@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
   BarChart3,
@@ -53,6 +53,25 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const user = useUser();
   const router = useRouter();
+
+  const [searchText, setSearchText] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) setImageFile(file);
+  };
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append("query", searchText);
+    if (imageFile) formData.append("image", imageFile);
+
+    // Navigate to search results page or call API
+    router.push(`/staff/search?query=${encodeURIComponent(searchText)}`);
+  };
 
   const getInitials = (name: string) => {
     return name
@@ -261,16 +280,37 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="container mx-auto flex items-center justify-between p-4 flex-nowrap">
               <SidebarTrigger className="h-8 w-8 text-gray-500" />
 
-              <div className="flex items-center gap-4">
-                <div className="relative hidden lg:block">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                  <Input
-                    type="search"
-                    placeholder="Search for products..."
-                    className="w-[300px] pl-10 dark:bg-gray-800 dark:border-gray-700"
-                  />
-                </div>
-
+              <form
+                onSubmit={handleSearch}
+                className="relative flex items-center gap-2"
+                encType="multipart/form-data"
+              >
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Input
+                  type="text"
+                  name="query"
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  placeholder="Search for products..."
+                  className="w-[300px] pl-10 dark:bg-gray-800 dark:border-gray-700"
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  id="image-upload"
+                />
+                <label htmlFor="image-upload">
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    title="Upload Image"
+                  >
+                    🖼️
+                  </Button>
+                </label>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -308,7 +348,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
-              </div>
+              </form>
             </div>
           </header>
           <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
