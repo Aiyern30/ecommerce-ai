@@ -288,7 +288,7 @@ export default function ProductsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Products</h1>
         <div className="flex items-center gap-2">
-          <Link href="/Products/New">
+          <Link href="/staff/products/New">
             <Button size="sm">
               <Plus className="mr-2 h-4 w-4" />
               Add Product
@@ -538,7 +538,7 @@ export default function ProductsPage() {
                 currentPageData.map((product) => (
                   <TableRow
                     key={product.id}
-                    onClick={() => router.push(`/Products/${product.id}`)}
+                    onClick={() => router.push(`/staff/products/${product.id}`)}
                     className="cursor-pointer "
                   >
                     <TableCell onClick={(e) => e.stopPropagation()}>
