@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -60,10 +60,39 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [searchResults, setSearchResults] = useState([]);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const triggerFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) setImageFile(file);
+    if (file) {
+      setImageFile(file); // for preview
+
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64 = (reader.result as string).split(",")[1];
+
+        try {
+          const res = await fetch("/api/search-similar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ imageBase64: base64 }),
+          });
+
+          const similarProducts = await res.json();
+          setSearchResults(similarProducts);
+          setDropdownOpen(true);
+        } catch (error) {
+          console.error("Image similarity search error:", error);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSearch = async (e: React.FormEvent) => {
@@ -319,6 +348,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 encType="multipart/form-data"
               >
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                {/* Search Input */}
                 <Input
                   type="text"
                   name="query"
@@ -327,6 +357,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   placeholder="Search for products..."
                   className="w-[300px] pl-10 dark:bg-gray-800 dark:border-gray-700"
                 />
+
+                {/* Result Dropdown */}
                 <div className="absolute top-full mt-1 w-[300px] z-50 bg-white dark:bg-gray-800 rounded-md shadow-lg max-h-60 overflow-y-auto">
                   {isDropdownOpen &&
                     searchResults.map((product: Product) => (
@@ -360,24 +392,41 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     ))}
                 </div>
 
+                {/* Hidden File Input */}
                 <input
+                  ref={fileInputRef}
                   type="file"
                   accept="image/*"
                   onChange={handleImageUpload}
                   className="hidden"
-                  id="image-upload"
                 />
 
-                <label htmlFor="image-upload">
+                {/* Upload Button */}
+                <label htmlFor="image-upload-preview">
                   <Button
                     type="button"
                     size="icon"
                     variant="ghost"
                     title="Upload Image"
+                    onClick={triggerFileInput}
                   >
                     🖼️
                   </Button>
                 </label>
+
+                {/* Uploaded Image Preview */}
+                {imageFile && (
+                  <div className="w-10 h-10 relative rounded overflow-hidden">
+                    <Image
+                      src={URL.createObjectURL(imageFile)}
+                      alt="Uploaded"
+                      fill
+                      className="object-cover border rounded"
+                    />
+                  </div>
+                )}
+
+                {/* Theme Toggle */}
                 <Button
                   variant="ghost"
                   size="icon"
@@ -390,6 +439,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     <Moon className="h-[1.2rem] w-[1.2rem]" />
                   )}
                 </Button>
+
+                {/* Avatar & Dropdown */}
                 {user && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -418,6 +469,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </form>
             </div>
           </header>
+
           <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
             {children}
           </main>
