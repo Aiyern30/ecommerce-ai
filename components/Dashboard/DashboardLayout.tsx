@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   BarChart3,
@@ -330,9 +331,28 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         key={product.id}
                         href={`/staff/products/${product.id}`}
                         onClick={() => setDropdownOpen(false)}
-                        className="block px-4 py-2 text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
                       >
-                        {product.name}
+                        <div className="relative w-10 h-10 rounded overflow-hidden bg-gray-200">
+                          <Image
+                            src={
+                              product.image_url ||
+                              product.product_images?.[0]?.image_url ||
+                              "/placeholder.png"
+                            }
+                            alt={product.name}
+                            fill
+                            className="object-cover"
+                            sizes="40px"
+                          />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{product.name}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            RM {product.price.toFixed(2)} /{" "}
+                            {product.unit || "unit"}
+                          </span>
+                        </div>
                       </Link>
                     ))}
                 </div>
