@@ -328,7 +328,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     searchResults.map((product: Product) => (
                       <Link
                         key={product.id}
-                        href={`/Staff/Products/${product.id}`}
+                        href={`/staff/products/${product.id}`}
                         onClick={() => setDropdownOpen(false)}
                         className="block px-4 py-2 text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
                       >
