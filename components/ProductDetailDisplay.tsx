@@ -71,7 +71,7 @@ export default function ProductDetailDisplay({
           src={displayImage}
           alt={product.name}
           fill
-          className="object-contain"
+          className="object-cover rounded-lg"
         />
       </div>
 
