@@ -40,9 +40,9 @@ export default function ProductDetailDisplay({
   const displayImage = hoveredImage || selectedImage;
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6">
+    <div className="flex flex-col xl:flex-row gap-6">
       {/* LEFT: Square Thumbnails (Fixed Width) */}
-      <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-y-auto w-full lg:w-24">
+      <div className="flex xl:flex-col gap-2 overflow-x-auto xl:overflow-y-auto w-full xl:w-24 p-2">
         {allImages.map((img, index) => (
           <div
             key={index}
@@ -76,7 +76,7 @@ export default function ProductDetailDisplay({
       </div>
 
       {/* RIGHT: Product Details */}
-      <div className="lg:w-1/3 space-y-6">
+      <div className="xl:w-1/3 space-y-6">
         <div>
           <p className="text-sm text-gray-500 uppercase font-medium">
             {product.category || "N/A"}{" "}
