@@ -59,6 +59,7 @@ export default function ProductDetailDisplay({
               src={img.image_url || "/placeholder.svg"}
               alt={`Thumbnail ${index + 1}`}
               fill
+              sizes="80px"
               className="object-cover rounded-md"
             />
           </div>
@@ -71,7 +72,8 @@ export default function ProductDetailDisplay({
           src={displayImage}
           alt={product.name}
           fill
-          className="object-cover rounded-lg"
+          sizes="80px"
+          className="object-cover rounded-md"
         />
       </div>
 
