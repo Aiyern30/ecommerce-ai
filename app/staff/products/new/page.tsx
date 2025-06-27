@@ -553,6 +553,7 @@ export default function NewProductPage() {
                       alt={`Preview ${index + 1}`}
                       className="w-full h-full object-cover"
                       fill
+                      priority
                     />
                     <Button
                       type="button"

@@ -61,6 +61,7 @@ export default function ProductDetailDisplay({
               fill
               sizes="80px"
               className="object-cover rounded-md"
+              priority
             />
           </div>
         ))}
@@ -74,6 +75,7 @@ export default function ProductDetailDisplay({
           fill
           sizes="80px"
           className="object-cover rounded-md"
+          priority
         />
       </div>
 
