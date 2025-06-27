@@ -552,18 +552,32 @@ export default function ProductsPage() {
                       />
                     </TableCell>
                     <TableCell>
-                      <Image
-                        src={
-                          product.image_url ||
-                          "/placeholder.svg?height=48&width=48"
-                        }
-                        alt={product.name}
-                        className="h-12 w-12 rounded-md object-cover"
-                        width={48}
-                        height={48}
-                        priority
-                      />
+                      <div className="relative w-16 h-12">
+                        {[
+                          ...(product.image_url ? [product.image_url] : []),
+                          ...(product.product_images?.map(
+                            (img) => img.image_url
+                          ) || []),
+                        ]
+                          .filter((src, i, arr) => arr.indexOf(src) === i)
+                          .slice(0, 4)
+                          .map((src, index) => (
+                            <Image
+                              key={index}
+                              src={src || "/placeholder.svg?height=48&width=48"}
+                              alt={`${product.name} ${index + 1}`}
+                              className={`absolute top-0 left-0 w-10 h-10 rounded-md object-cover border border-white shadow-sm transition-all`}
+                              style={{
+                                zIndex: 10 - index,
+                                transform: `translateX(${index * 12}px)`,
+                              }}
+                              width={40}
+                              height={40}
+                            />
+                          ))}
+                      </div>
                     </TableCell>
+
                     <TableCell className="font-medium">
                       {product.name}
                     </TableCell>
