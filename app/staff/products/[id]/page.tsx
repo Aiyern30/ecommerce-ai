@@ -1,7 +1,10 @@
-import { supabase } from "@/lib/supabase";
-import Link from "next/link";
-import { notFound } from "next/navigation";
+"use client";
+
+import { usePathname } from "next/navigation";
+import { useEffect, useState, useMemo } from "react";
 import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+
 import {
   Button,
   Breadcrumb,
@@ -11,27 +14,44 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui";
 import ProductDetailDisplay from "@/components/ProductDetailDisplay";
+import { supabase } from "@/lib/supabase";
 import type { Product } from "@/type/product";
 
-export default async function ProductDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const id = params.id;
+export default function ProductDetailClient() {
+  const pathname = usePathname();
 
-  const { data: product, error } = await supabase
-    .from("products")
-    .select(
-      "*, product_images(image_url), product_tags(tag), product_certificates(certificate)"
-    )
-    .eq("id", id)
-    .single();
+  const productId = useMemo(() => {
+    const parts = pathname.split("/");
+    return parts[parts.length - 1];
+  }, [pathname]);
 
-  if (error || !product) {
-    console.error("Product fetch failed:", error);
-    notFound();
-  }
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchProduct() {
+      const { data, error } = await supabase
+        .from("products")
+        .select(
+          "*, product_images(image_url), product_tags(tag), product_certificates(certificate)"
+        )
+        .eq("id", productId)
+        .single();
+
+      if (error || !data) {
+        console.error("Product fetch failed:", error);
+        setProduct(null);
+      } else {
+        setProduct(data);
+      }
+      setLoading(false);
+    }
+
+    if (productId) fetchProduct();
+  }, [productId]);
+
+  if (loading) return <div>Loading product...</div>;
+  if (!product) return <div>Product not found.</div>;
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
@@ -63,7 +83,7 @@ export default async function ProductDetailPage({
         </div>
       </div>
 
-      <ProductDetailDisplay product={product as Product} />
+      <ProductDetailDisplay product={product} />
     </div>
   );
 }
