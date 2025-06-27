@@ -46,6 +46,7 @@ import { useTheme } from "../ThemeProvider";
 import { supabase } from "@/lib/supabaseClient";
 import { useUser } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/navigation";
+import { Product } from "@/type/product";
 interface DashboardLayoutProps {
   children: ReactNode;
 }
@@ -56,6 +57,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const [searchText, setSearchText] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [searchResults, setSearchResults] = useState([]);
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -87,7 +90,16 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       }
     }
 
-    router.push(`/staff/search?query=${encodeURIComponent(finalQuery.trim())}`);
+    try {
+      const res = await fetch(
+        `/api/search-products?query=${encodeURIComponent(finalQuery.trim())}`
+      );
+      const products = await res.json();
+      setSearchResults(products);
+      setDropdownOpen(true);
+    } catch (error) {
+      console.error("Product search failed:", error);
+    }
   };
 
   const getInitials = (name: string) => {
@@ -311,6 +323,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   placeholder="Search for products..."
                   className="w-[300px] pl-10 dark:bg-gray-800 dark:border-gray-700"
                 />
+                <div className="absolute top-full mt-1 w-[300px] z-50 bg-white dark:bg-gray-800 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {isDropdownOpen &&
+                    searchResults.map((product: Product) => (
+                      <Link
+                        key={product.id}
+                        href={`/Staff/Products/${product.id}`}
+                        onClick={() => setDropdownOpen(false)}
+                        className="block px-4 py-2 text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                      >
+                        {product.name}
+                      </Link>
+                    ))}
+                </div>
+
                 <input
                   type="file"
                   accept="image/*"
@@ -318,6 +344,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   className="hidden"
                   id="image-upload"
                 />
+
                 <label htmlFor="image-upload">
                   <Button
                     type="button"
