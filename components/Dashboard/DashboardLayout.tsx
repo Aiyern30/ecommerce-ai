@@ -65,12 +65,29 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const formData = new FormData();
-    formData.append("query", searchText);
-    if (imageFile) formData.append("image", imageFile);
+    let finalQuery = searchText;
 
-    // Navigate to search results page or call API
-    router.push(`/staff/search?query=${encodeURIComponent(searchText)}`);
+    if (imageFile) {
+      const formData = new FormData();
+      formData.append("image", imageFile);
+
+      try {
+        const res = await fetch("/api/search-by-image", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await res.json();
+
+        if (data?.labels?.length > 0) {
+          finalQuery += " " + data.labels.join(" ");
+        }
+      } catch (error) {
+        console.error("Image search error:", error);
+      }
+    }
+
+    router.push(`/staff/search?query=${encodeURIComponent(finalQuery.trim())}`);
   };
 
   const getInitials = (name: string) => {
