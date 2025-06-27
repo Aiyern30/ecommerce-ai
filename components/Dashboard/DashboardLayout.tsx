@@ -58,7 +58,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const [searchText, setSearchText] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -70,34 +70,43 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file); // for preview
+    if (!file) return;
 
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64 = (reader.result as string).split(",")[1];
+    setImageFile(file); // for preview
 
-        try {
-          const res = await fetch("/api/search-similar", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ imageBase64: base64 }),
-          });
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64 = (reader.result as string).split(",")[1];
 
-          const similarProducts = await res.json();
-          setSearchResults(similarProducts);
-          setDropdownOpen(true);
-        } catch (error) {
-          console.error("Image similarity search error:", error);
+      try {
+        const res = await fetch("/api/search-similar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imageBase64: base64 }),
+        });
+
+        const json = await res.json();
+        if (!Array.isArray(json)) {
+          console.error("Expected array but got:", json);
+          setSearchResults([]);
+          setDropdownOpen(false);
+          return;
         }
-      };
-      reader.readAsDataURL(file);
-    }
+
+        setSearchResults(json);
+        setDropdownOpen(true);
+      } catch (error) {
+        console.error("Image similarity search error:", error);
+        setSearchResults([]);
+      }
+    };
+
+    reader.readAsDataURL(file);
   };
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    const finalQuery = searchText;
+    const finalQuery = searchText.trim();
 
     if (imageFile) {
       const reader = new FileReader();
@@ -111,27 +120,45 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             body: JSON.stringify({ imageBase64: base64 }),
           });
 
-          const similarProducts = await res.json();
-          setSearchResults(similarProducts);
+          const json = await res.json();
+          if (!Array.isArray(json)) {
+            console.error("Expected array from search-similar:", json);
+            setSearchResults([]);
+            setDropdownOpen(false);
+            return;
+          }
+
+          setSearchResults(json);
           setDropdownOpen(true);
         } catch (error) {
           console.error("Image similarity search error:", error);
+          setSearchResults([]);
         }
       };
+
       reader.readAsDataURL(imageFile);
-      return; // Skip keyword search if image is uploaded
+      return; // Skip text search if image used
     }
 
     // fallback to keyword search
     try {
       const res = await fetch(
-        `/api/search-products?query=${encodeURIComponent(finalQuery.trim())}`
+        `/api/search-products?query=${encodeURIComponent(finalQuery)}`
       );
-      const products = await res.json();
-      setSearchResults(products);
+      const json = await res.json();
+
+      if (!Array.isArray(json)) {
+        console.error("Expected array from search-products:", json);
+        setSearchResults([]);
+        setDropdownOpen(false);
+        return;
+      }
+
+      setSearchResults(json);
       setDropdownOpen(true);
     } catch (error) {
       console.error("Product search failed:", error);
+      setSearchResults([]);
     }
   };
 
