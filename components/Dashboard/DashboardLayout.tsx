@@ -68,29 +68,32 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    let finalQuery = searchText;
+    const finalQuery = searchText;
 
     if (imageFile) {
-      const formData = new FormData();
-      formData.append("image", imageFile);
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64 = (reader.result as string).split(",")[1];
 
-      try {
-        const res = await fetch("/api/search-by-image", {
-          method: "POST",
-          body: formData,
-        });
+        try {
+          const res = await fetch("/api/search-similar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ imageBase64: base64 }),
+          });
 
-        const data = await res.json();
-
-        if (data?.labels?.length > 0) {
-          finalQuery += " " + data.labels.join(" ");
+          const similarProducts = await res.json();
+          setSearchResults(similarProducts);
+          setDropdownOpen(true);
+        } catch (error) {
+          console.error("Image similarity search error:", error);
         }
-      } catch (error) {
-        console.error("Image search error:", error);
-      }
+      };
+      reader.readAsDataURL(imageFile);
+      return; // Skip keyword search if image is uploaded
     }
 
+    // fallback to keyword search
     try {
       const res = await fetch(
         `/api/search-products?query=${encodeURIComponent(finalQuery.trim())}`
