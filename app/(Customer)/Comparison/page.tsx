@@ -25,6 +25,19 @@ export default function ComparisonPage() {
       stock_quantity: 100,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      product_images: [
+        { image_url: "/images/product-a-1.jpg" },
+        { image_url: "/images/product-a-2.jpg" },
+      ],
+      product_tags: [
+        { tag: "high-performance" },
+        { tag: "bagged" },
+        { tag: "durable" },
+      ],
+      product_certificates: [
+        { certificate: "Eco-friendly" },
+        { certificate: "Superior workability" },
+      ],
     },
     {
       id: "2",
@@ -37,6 +50,9 @@ export default function ComparisonPage() {
       stock_quantity: 80,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      product_images: [{ image_url: "/images/product-b-1.jpg" }],
+      product_tags: [{ tag: "bulk" }, { tag: "construction" }],
+      product_certificates: [{ certificate: "ISO 9001" }],
     },
     {
       id: "3",
@@ -49,6 +65,9 @@ export default function ComparisonPage() {
       stock_quantity: 50,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      product_images: [],
+      product_tags: [{ tag: "ready-mix" }, { tag: "quick-apply" }],
+      product_certificates: [{ certificate: "Eco-certified" }],
     },
     {
       id: "4",
@@ -61,6 +80,12 @@ export default function ComparisonPage() {
       stock_quantity: 60,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      product_images: [{ image_url: "/images/product-d-1.jpg" }],
+      product_tags: [{ tag: "premium" }, { tag: "ultra-strength" }],
+      product_certificates: [
+        { certificate: "High durability" },
+        { certificate: "Government-approved" },
+      ],
     },
   ];
 
