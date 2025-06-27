@@ -10,9 +10,9 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
-import { supabase } from "@/lib/supabase"; // Import the singleton Supabase client
-import { useRouter } from "next/navigation"; // Import useRouter for navigation
-import { toast } from "sonner"; // Import toast for notifications
+import { supabase } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import {
   Button,
@@ -590,7 +590,13 @@ export default function ProductsPage() {
                       className="text-right"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <Button variant="default" size="sm">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() =>
+                          router.push(`/staff/products/${product.id}/edit`)
+                        }
+                      >
                         Edit
                       </Button>
                     </TableCell>
