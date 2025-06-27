@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import {
   Badge,
@@ -18,11 +18,8 @@ interface ProductDetailDisplayProps {
 export default function ProductDetailDisplay({
   product,
 }: ProductDetailDisplayProps) {
-  const [mainImage, setMainImage] = useState(
-    product.image_url ||
-      product.product_images?.[0]?.image_url ||
-      "/placeholder.svg"
-  );
+  const [selectedImage, setSelectedImage] = useState<string>("");
+  const [hoveredImage, setHoveredImage] = useState<string | null>(null);
 
   const allImages = [
     ...(product.image_url ? [{ image_url: product.image_url }] : []),
@@ -32,63 +29,72 @@ export default function ProductDetailDisplay({
       index === self.findIndex((t) => t.image_url === img.image_url)
   );
 
+  useEffect(() => {
+    const firstImg =
+      product.image_url ||
+      product.product_images?.[0]?.image_url ||
+      "/placeholder.svg";
+    setSelectedImage(firstImg);
+  }, [product]);
+
+  const displayImage = hoveredImage || selectedImage;
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div className="lg:col-span-1 flex flex-col md:flex-row lg:flex-col gap-4">
-        <div className="relative aspect-square w-full overflow-hidden rounded-lg border">
-          <Image
-            src={mainImage || "/placeholder.svg"}
-            alt={product.name}
-            layout="fill"
-            objectFit="contain"
-            className="rounded-lg"
-          />
-        </div>
-        {allImages.length > 1 && (
-          <div className="flex md:flex-col lg:flex-row xl:flex-col gap-2 overflow-x-auto md:overflow-y-auto lg:overflow-x-auto xl:overflow-y-auto pb-2 md:pb-0 lg:pb-2 xl:pb-0">
-            {allImages.map((img, index) => (
-              <div
-                key={index}
-                className={`relative aspect-square w-20 h-20 flex-shrink-0 cursor-pointer rounded-md border ${
-                  mainImage === img.image_url
-                    ? "border-blue-500 ring-2 ring-blue-500"
-                    : "border-gray-200"
-                }`}
-                onClick={() => setMainImage(img.image_url)}
-              >
-                <Image
-                  src={img.image_url || "/placeholder.svg"}
-                  alt={`Thumbnail ${index + 1}`}
-                  layout="fill"
-                  objectFit="cover"
-                  className="rounded-md"
-                />
-              </div>
-            ))}
+    <div className="flex flex-col lg:flex-row gap-6">
+      {/* LEFT: Square Thumbnails (Fixed Width) */}
+      <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-y-auto w-full lg:w-24">
+        {allImages.map((img, index) => (
+          <div
+            key={index}
+            className={`relative aspect-square w-20 flex-shrink-0 rounded-md border cursor-pointer transition ${
+              selectedImage === img.image_url
+                ? "border-blue-500 ring-2 ring-blue-500"
+                : "border-gray-300"
+            }`}
+            onMouseEnter={() => setHoveredImage(img.image_url)}
+            onMouseLeave={() => setHoveredImage(null)}
+            onClick={() => setSelectedImage(img.image_url)}
+          >
+            <Image
+              src={img.image_url || "/placeholder.svg"}
+              alt={`Thumbnail ${index + 1}`}
+              fill
+              className="object-cover rounded-md"
+            />
           </div>
-        )}
+        ))}
       </div>
 
-      <div className="lg:col-span-2 space-y-6">
+      {/* CENTER: Main Image */}
+      <div className="relative aspect-square flex-grow border rounded-lg overflow-hidden">
+        <Image
+          src={displayImage}
+          alt={product.name}
+          fill
+          className="object-contain"
+        />
+      </div>
+
+      {/* RIGHT: Product Details */}
+      <div className="lg:w-1/3 space-y-6">
         <div>
           <p className="text-sm text-gray-500 uppercase font-medium">
             {product.category || "N/A"}{" "}
             {product.unit ? `(${product.unit})` : ""}
           </p>
-          <h1 className="text-4xl font-bold mt-1">{product.name}</h1>
+          <h1 className="text-2xl font-bold mt-1">{product.name}</h1>
+          <p className="text-gray-700 mt-2">
+            {product.description || "No description provided."}
+          </p>
         </div>
 
-        <div className="text-gray-700 leading-relaxed">
-          <p>{product.description || "No description provided."}</p>
-        </div>
-
+        {/* Certifications */}
         <Card className="shadow-none border-0 p-0">
           <CardHeader className="p-0 pb-2">
             <CardTitle className="text-lg">Certifications</CardTitle>
           </CardHeader>
           <CardContent className="p-0 flex flex-wrap gap-2">
-            {product.product_certificates &&
-            product.product_certificates.length > 0 ? (
+            {product.product_certificates?.length ? (
               product.product_certificates.map((cert, index) => (
                 <Badge
                   key={index}
@@ -104,23 +110,24 @@ export default function ProductDetailDisplay({
           </CardContent>
         </Card>
 
+        {/* Tags */}
         <Card className="shadow-none border-0 p-0">
-          <CardHeader className="p-0">
+          <CardHeader className="p-0 pb-2">
             <CardTitle className="text-lg">Tags</CardTitle>
           </CardHeader>
-          <CardContent className="p-0 text-gray-700 text-sm">
-            {product.product_tags && product.product_tags.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1">
-                {product.product_tags.map((tag, index) => (
-                  <Badge
-                    key={index}
-                    variant="outline"
-                    className="text-xs px-2 py-0.5"
-                  >
-                    {tag.tag}
-                  </Badge>
-                ))}
-              </div>
+          <CardContent className="p-0 flex flex-wrap gap-2">
+            {product.product_tags?.length ? (
+              product.product_tags.map((tag, index) => (
+                <Badge
+                  key={index}
+                  variant="outline"
+                  className="text-xs px-2 py-0.5"
+                >
+                  {tag.tag}
+                </Badge>
+              ))
+            ) : (
+              <p className="text-gray-500 text-sm">No tags listed.</p>
             )}
           </CardContent>
         </Card>
