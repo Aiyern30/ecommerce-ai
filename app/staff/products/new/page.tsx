@@ -109,35 +109,43 @@ export default function NewProductPage() {
     name: "certificates",
   });
 
+  const MAX_IMAGES = 4;
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const files = Array.from(e.target.files);
-      const newFiles: File[] = [];
-      let hasError = false;
+    if (!e.target.files) return;
 
-      files.forEach((file) => {
-        if (!file.type.startsWith("image/")) {
-          setImageError(`File "${file.name}" is not an image.`);
-          hasError = true;
-        } else if (file.size > 5 * 1024 * 1024) {
-          setImageError(`File "${file.name}" size exceeds 5MB.`);
-          hasError = true;
-        } else {
-          newFiles.push(file);
-        }
-      });
+    const files = Array.from(e.target.files);
+    const currentCount = selectedImageFiles.length;
+    const totalSelected = currentCount + files.length;
 
-      if (hasError) {
-        setSelectedImageFiles([]);
-        e.target.value = "";
-      } else {
-        setSelectedImageFiles(newFiles);
-        setImageError(null);
-      }
-    } else {
-      setSelectedImageFiles([]);
-      setImageError(null);
+    if (totalSelected > MAX_IMAGES) {
+      setImageError(`You can only upload up to ${MAX_IMAGES} images.`);
+      e.target.value = "";
+      return;
     }
+
+    const newFiles: File[] = [];
+    let hasError = false;
+
+    files.forEach((file) => {
+      if (!file.type.startsWith("image/")) {
+        setImageError(`File "${file.name}" is not an image.`);
+        hasError = true;
+      } else if (file.size > 5 * 1024 * 1024) {
+        setImageError(`File "${file.name}" exceeds 5MB.`);
+        hasError = true;
+      } else {
+        newFiles.push(file);
+      }
+    });
+
+    if (hasError) {
+      e.target.value = "";
+      return;
+    }
+
+    setSelectedImageFiles((prev) => [...prev, ...newFiles]);
+    setImageError(null);
   };
 
   const handleRemoveImage = (index: number) => {
@@ -528,44 +536,59 @@ export default function NewProductPage() {
             <CardContent>
               <FormItem>
                 <FormLabel>Image Files *</FormLabel>
-                <FormControl>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageChange}
-                  />
-                </FormControl>
                 <FormDescription>
                   Accepted formats: JPG, PNG, GIF. Max size: 5MB per file.
                 </FormDescription>
                 {imageError && <FormMessage>{imageError}</FormMessage>}
               </FormItem>
-              {selectedImageFiles.length > 0 && (
-                <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  {selectedImageFiles.map((file, index) => (
-                    <div key={index} className="relative group">
-                      <Image
-                        src={URL.createObjectURL(file) || "/placeholder.svg"}
-                        alt={`Preview ${index + 1}`}
-                        className="object-cover rounded-md aspect-square"
-                        width={128}
-                        height={128}
-                      />
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-1 right-1 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => handleRemoveImage(index)}
-                      >
-                        <X className="h-4 w-4" />
-                        <span className="sr-only">Remove image</span>
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
+
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {selectedImageFiles.map((file, index) => (
+                  <div
+                    key={index}
+                    className="relative group aspect-square w-full border border-muted rounded-md overflow-hidden"
+                  >
+                    <Image
+                      src={URL.createObjectURL(file)}
+                      alt={`Preview ${index + 1}`}
+                      className="w-full h-full object-cover"
+                      fill
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-1 right-1 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => handleRemoveImage(index)}
+                    >
+                      <X className="h-4 w-4" />
+                      <span className="sr-only">Remove image</span>
+                    </Button>
+                  </div>
+                ))}
+
+                {selectedImageFiles.length < MAX_IMAGES && (
+                  <div className="relative flex items-center justify-center border border-dashed border-muted rounded-md aspect-square w-full cursor-pointer hover:bg-muted transition">
+                    <label
+                      htmlFor="image-upload"
+                      className="flex flex-col items-center justify-center w-full h-full cursor-pointer"
+                    >
+                      <span className="text-4xl font-bold text-muted-foreground">
+                        +
+                      </span>
+                      <span className="sr-only">Add more images</span>
+                    </label>
+                    <input
+                      id="image-upload"
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageChange}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
 
