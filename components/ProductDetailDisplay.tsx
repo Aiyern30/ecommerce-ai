@@ -121,15 +121,17 @@ export default function ProductDetailDisplay({
           </CardHeader>
           <CardContent className="p-0 flex flex-wrap gap-2">
             {product.product_tags?.length ? (
-              product.product_tags.map((tag, index) => (
-                <Badge
-                  key={index}
-                  variant="outline"
-                  className="text-xs px-2 py-0.5"
-                >
-                  {tag.tag}
-                </Badge>
-              ))
+              product.product_tags.map((tag, index) =>
+                tag.tags?.name ? (
+                  <Badge
+                    key={index}
+                    variant="outline"
+                    className="text-xs px-2 py-0.5"
+                  >
+                    {tag.tags.name}
+                  </Badge>
+                ) : null
+              )
             ) : (
               <p className="text-gray-500 text-sm">No tags listed.</p>
             )}
