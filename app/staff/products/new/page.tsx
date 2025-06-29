@@ -154,13 +154,6 @@ export default function NewProductPage() {
     }
   };
 
-  // const handleAddTag = () => {
-  //   if (tagInput.trim() && !tagFields.some((t) => t.tag === tagInput.trim())) {
-  //     appendTag({ tag: tagInput.trim() });
-  //     setTagInput("");
-  //   }
-  // };
-
   const handleAddCertificate = () => {
     if (
       certificateInput.trim() &&
