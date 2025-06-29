@@ -7,46 +7,258 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/components/ui/";
-import { Button } from "@/components/ui/";
-import { ComparisonHeader } from "@/components/Comparison/ComparisonHeader";
-import { ComparisonSummary } from "@/components/Comparison/ComparisonSummary";
-import { PricingTab } from "@/components/Comparison/Tabs/PricingTab";
-import { Product } from "@/type/product";
-import { BreadcrumbNav } from "@/components/BreadcrumbNav";
-import { supabase } from "@/lib/supabase";
-import { Plus } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/";
-import {
+  Button,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Badge,
+  Card,
+  CardContent,
 } from "@/components/ui/";
+import { ComparisonHeader } from "@/components/Comparison/ComparisonHeader";
+import { ComparisonSummary } from "@/components/Comparison/ComparisonSummary";
+import { PricingTab } from "@/components/Comparison/Tabs/PricingTab";
+import type { Product } from "@/type/product";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
+import { supabase } from "@/lib/supabase";
+import { Plus, X } from "lucide-react";
 import Image from "next/image";
 
-function ProductCard({ product }: { product: Product }) {
+function ComparisonProductCard({
+  product,
+  onRemove,
+  showRemove = false,
+}: {
+  product: Product;
+  onRemove?: () => void;
+  showRemove?: boolean;
+}) {
   return (
-    <div className="rounded-xl border p-4 flex flex-col h-full">
-      <Image
-        src={product.product_images?.[0]?.image_url || "/placeholder.svg"}
-        alt={product.name}
-        width={400}
-        height={200}
-        className="w-full h-40 object-cover rounded-md mb-2"
-      />
-      <h3 className="text-sm font-semibold mb-1">{product.name}</h3>
-      <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
-        {product.description}
-      </p>
-      <div className="mt-auto">
-        <p className="text-sm font-semibold mb-2">RM {product.price}</p>
-        <Button variant="outline" size="sm" className="w-full">
-          View Details
+    <div className="flex flex-col items-center text-center relative">
+      {showRemove && (
+        <Button
+          variant="destructive"
+          size="icon"
+          className="absolute -top-2 -right-2 h-6 w-6 rounded-full z-10"
+          onClick={onRemove}
+        >
+          <X className="h-3 w-3" />
         </Button>
+      )}
+
+      {/* Product Name */}
+      <div className="mb-4">
+        <h3 className="text-lg font-semibold">{product.name}</h3>
+        <p className="text-sm text-muted-foreground">{product.category}</p>
       </div>
+
+      {/* Product Image */}
+      <div className="mb-6">
+        <Image
+          src={
+            product.product_images?.[0]?.image_url ||
+            product.image_url ||
+            "/placeholder.svg"
+          }
+          alt={product.name}
+          width={200}
+          height={200}
+          className="w-48 h-48 object-contain rounded-lg"
+        />
+      </div>
+
+      {/* Price */}
+      <div className="mb-4">
+        <p className="text-3xl font-bold">RM{product.price.toFixed(0)}</p>
+        <p className="text-sm text-muted-foreground">{product.unit}</p>
+      </div>
+
+      {/* Action Button */}
+      <Button className="w-32 mb-4">VIEW DETAILS</Button>
+
+      {/* Tags */}
+      {product.product_tags && product.product_tags.length > 0 && (
+        <div className="flex flex-wrap gap-1 justify-center">
+          {product.product_tags.slice(0, 3).map((tag, index) => (
+            <Badge key={index} variant="secondary" className="text-xs">
+              {tag.tags.name}
+            </Badge>
+          ))}
+        </div>
+      )}
     </div>
+  );
+}
+
+function AddProductCard({
+  selectableProducts,
+  onAddProduct,
+}: {
+  selectableProducts: Product[];
+  onAddProduct: (id: string) => void;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center text-center min-h-[400px]">
+      <Popover>
+        <PopoverTrigger asChild>
+          <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-8 cursor-pointer hover:border-gray-400 transition-colors">
+            <Plus className="w-12 h-12 text-gray-400 mb-4" />
+            <p className="text-lg font-medium text-gray-600">Add Product</p>
+            <p className="text-sm text-gray-500">Compare up to 4 products</p>
+          </div>
+        </PopoverTrigger>
+        <PopoverContent className="w-[300px]">
+          <p className="text-sm mb-3 font-medium">Select product to add</p>
+          <Select onValueChange={onAddProduct}>
+            <SelectTrigger>
+              <SelectValue placeholder="Choose product" />
+            </SelectTrigger>
+            <SelectContent>
+              {selectableProducts.map((product) => (
+                <SelectItem key={product.id} value={product.id}>
+                  <div className="flex items-center gap-2">
+                    <Image
+                      src={
+                        product.product_images?.[0]?.image_url ||
+                        product.image_url ||
+                        "/placeholder.svg"
+                      }
+                      alt={product.name}
+                      width={24}
+                      height={24}
+                      className="rounded"
+                    />
+                    {product.name}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
+
+function SpecificationsTable({ products }: { products: Product[] }) {
+  if (products.length === 0) return null;
+
+  return (
+    <Card>
+      <CardContent className="p-0">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b">
+              <th className="text-left p-4 font-semibold bg-gray-50">
+                Specifications
+              </th>
+              {products.map((product) => (
+                <th
+                  key={product.id}
+                  className="text-center p-4 font-medium bg-gray-50 min-w-[200px]"
+                >
+                  {product.name}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-b">
+              <td className="p-4 font-medium bg-gray-50">Category</td>
+              {products.map((product) => (
+                <td key={product.id} className="text-center p-4">
+                  {product.category || "N/A"}
+                </td>
+              ))}
+            </tr>
+            <tr className="border-b">
+              <td className="p-4 font-medium bg-gray-50">Price</td>
+              {products.map((product) => (
+                <td key={product.id} className="text-center p-4">
+                  RM {product.price.toFixed(2)}
+                </td>
+              ))}
+            </tr>
+            <tr className="border-b">
+              <td className="p-4 font-medium bg-gray-50">Unit</td>
+              {products.map((product) => (
+                <td key={product.id} className="text-center p-4">
+                  {product.unit || "N/A"}
+                </td>
+              ))}
+            </tr>
+            <tr className="border-b">
+              <td className="p-4 font-medium bg-gray-50">Stock Quantity</td>
+              {products.map((product) => (
+                <td key={product.id} className="text-center p-4">
+                  {product.stock_quantity ?? "N/A"}
+                </td>
+              ))}
+            </tr>
+            <tr className="border-b">
+              <td className="p-4 font-medium bg-gray-50">Tags</td>
+              {products.map((product) => (
+                <td key={product.id} className="text-center p-4">
+                  <div className="flex flex-wrap gap-1 justify-center">
+                    {product.product_tags && product.product_tags.length > 0 ? (
+                      product.product_tags.map((tag, index) => (
+                        <Badge
+                          key={index}
+                          variant="outline"
+                          className="text-xs"
+                        >
+                          {tag.tags.name}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-gray-500">No tags</span>
+                    )}
+                  </div>
+                </td>
+              ))}
+            </tr>
+            <tr className="border-b">
+              <td className="p-4 font-medium bg-gray-50">Certificates</td>
+              {products.map((product) => (
+                <td key={product.id} className="text-center p-4">
+                  <div className="flex flex-wrap gap-1 justify-center">
+                    {product.product_certificates &&
+                    product.product_certificates.length > 0 ? (
+                      product.product_certificates.map((cert, index) => (
+                        <Badge
+                          key={index}
+                          variant="secondary"
+                          className="text-xs"
+                        >
+                          {cert.certificate}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-gray-500">No certificates</span>
+                    )}
+                  </div>
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <td className="p-4 font-medium bg-gray-50">Description</td>
+              {products.map((product) => (
+                <td key={product.id} className="text-center p-4 max-w-xs">
+                  <p className="text-sm text-gray-600 line-clamp-3">
+                    {product.description || "No description available"}
+                  </p>
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -59,12 +271,12 @@ export default function ComparisonPage() {
   useEffect(() => {
     async function fetchProducts() {
       setLoading(true);
-      const { data, error } = await supabase.from("products").select(
-        `*,
-          product_images(image_url),
-          product_certificates(certificate),
-          product_tags(tags(id, name))`
-      );
+      const { data, error } = await supabase.from("products").select(`
+        *,
+        product_images(image_url),
+        product_certificates(certificate),
+        product_tags(tag)
+      `);
 
       if (error) {
         console.error("Failed to fetch products", error);
@@ -125,7 +337,7 @@ export default function ComparisonPage() {
 
           {showSummary && <ComparisonSummary products={comparedProducts} />}
 
-          <Tabs defaultValue="overview">
+          <Tabs defaultValue="overview" className="w-full">
             <TabsList className="mb-6">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="specs">Specifications</TabsTrigger>
@@ -134,46 +346,36 @@ export default function ComparisonPage() {
             </TabsList>
 
             <TabsContent value="overview" className="mt-0">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {/* Product Comparison Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-8">
                 {comparedProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ComparisonProductCard
+                    key={product.id}
+                    product={product}
+                    onRemove={() => removeProductFromCompare(product.id)}
+                    showRemove={comparedProducts.length > 1}
+                  />
                 ))}
 
                 {comparedIds.length < 4 && selectableProducts.length > 0 && (
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <div className="flex items-center justify-center border rounded-xl min-h-[200px] cursor-pointer">
-                        <Plus className="w-6 h-6" />
-                      </div>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[200px]">
-                      <p className="text-sm mb-2 font-medium">
-                        Select product to add
-                      </p>
-                      <Select onValueChange={addProductToCompare}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Choose product" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {selectableProducts.map((product) => (
-                            <SelectItem key={product.id} value={product.id}>
-                              {product.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </PopoverContent>
-                  </Popover>
+                  <AddProductCard
+                    selectableProducts={selectableProducts}
+                    onAddProduct={addProductToCompare}
+                  />
                 )}
               </div>
             </TabsContent>
 
             <TabsContent value="specs" className="mt-0">
-              {/* <SpecificationsTab products={comparedProducts} /> */}
+              <SpecificationsTable products={comparedProducts} />
             </TabsContent>
 
             <TabsContent value="features" className="mt-0">
-              {/* <FeaturesTab products={comparedProducts} /> */}
+              <div className="text-center py-8">
+                <p className="text-gray-500">
+                  Features comparison coming soon...
+                </p>
+              </div>
             </TabsContent>
 
             <TabsContent value="pricing" className="mt-0">
@@ -183,24 +385,6 @@ export default function ComparisonPage() {
               />
             </TabsContent>
           </Tabs>
-
-          {comparedProducts.length > 1 && (
-            <div className="mt-4">
-              <p className="text-sm font-semibold">Remove product:</p>
-              <div className="flex flex-wrap gap-2">
-                {comparedProducts.map((product) => (
-                  <Button
-                    key={product.id}
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => removeProductFromCompare(product.id)}
-                  >
-                    {product.name}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
         </>
       )}
     </div>
