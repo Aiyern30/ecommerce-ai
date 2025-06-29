@@ -30,9 +30,9 @@ export default function ComparisonPage() {
         { image_url: "/images/product-a-2.jpg" },
       ],
       product_tags: [
-        { tag: "high-performance" },
-        { tag: "bagged" },
-        { tag: "durable" },
+        { tags: { id: "1", name: "high-performance" } },
+        { tags: { id: "2", name: "bagged" } },
+        { tags: { id: "3", name: "durable" } },
       ],
       product_certificates: [
         { certificate: "Eco-friendly" },
@@ -51,7 +51,11 @@ export default function ComparisonPage() {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       product_images: [{ image_url: "/images/product-b-1.jpg" }],
-      product_tags: [{ tag: "bulk" }, { tag: "construction" }],
+      product_tags: [
+        { tags: { id: "1", name: "high-performance" } },
+        { tags: { id: "2", name: "bagged" } },
+        { tags: { id: "3", name: "durable" } },
+      ],
       product_certificates: [{ certificate: "ISO 9001" }],
     },
     {
@@ -66,7 +70,11 @@ export default function ComparisonPage() {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       product_images: [],
-      product_tags: [{ tag: "ready-mix" }, { tag: "quick-apply" }],
+      product_tags: [
+        { tags: { id: "1", name: "high-performance" } },
+        { tags: { id: "2", name: "bagged" } },
+        { tags: { id: "3", name: "durable" } },
+      ],
       product_certificates: [{ certificate: "Eco-certified" }],
     },
     {
@@ -81,7 +89,11 @@ export default function ComparisonPage() {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       product_images: [{ image_url: "/images/product-d-1.jpg" }],
-      product_tags: [{ tag: "premium" }, { tag: "ultra-strength" }],
+      product_tags: [
+        { tags: { id: "1", name: "high-performance" } },
+        { tags: { id: "2", name: "bagged" } },
+        { tags: { id: "3", name: "durable" } },
+      ],
       product_certificates: [
         { certificate: "High durability" },
         { certificate: "Government-approved" },
