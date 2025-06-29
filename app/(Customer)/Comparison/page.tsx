@@ -160,13 +160,11 @@ function SpecificationsTable({ products }: { products: Product[] }) {
         <table className="w-full">
           <thead>
             <tr className="border-b">
-              <th className="text-left p-4 font-semibold bg-gray-50">
-                Specifications
-              </th>
+              <th className="text-left p-4 font-semibold">Specifications</th>
               {products.map((product) => (
                 <th
                   key={product.id}
-                  className="text-center p-4 font-medium bg-gray-50 min-w-[200px]"
+                  className="text-center p-4 font-medium min-w-[200px]"
                 >
                   {product.name}
                 </th>
@@ -175,7 +173,7 @@ function SpecificationsTable({ products }: { products: Product[] }) {
           </thead>
           <tbody>
             <tr className="border-b">
-              <td className="p-4 font-medium bg-gray-50">Category</td>
+              <td className="p-4 font-medium">Category</td>
               {products.map((product) => (
                 <td key={product.id} className="text-center p-4">
                   {product.category || "N/A"}
@@ -183,7 +181,7 @@ function SpecificationsTable({ products }: { products: Product[] }) {
               ))}
             </tr>
             <tr className="border-b">
-              <td className="p-4 font-medium bg-gray-50">Price</td>
+              <td className="p-4 font-medium">Price</td>
               {products.map((product) => (
                 <td key={product.id} className="text-center p-4">
                   RM {product.price.toFixed(2)}
@@ -191,7 +189,7 @@ function SpecificationsTable({ products }: { products: Product[] }) {
               ))}
             </tr>
             <tr className="border-b">
-              <td className="p-4 font-medium bg-gray-50">Unit</td>
+              <td className="p-4 font-medium">Unit</td>
               {products.map((product) => (
                 <td key={product.id} className="text-center p-4">
                   {product.unit || "N/A"}
@@ -199,7 +197,7 @@ function SpecificationsTable({ products }: { products: Product[] }) {
               ))}
             </tr>
             <tr className="border-b">
-              <td className="p-4 font-medium bg-gray-50">Stock Quantity</td>
+              <td className="p-4 font-medium">Stock Quantity</td>
               {products.map((product) => (
                 <td key={product.id} className="text-center p-4">
                   {product.stock_quantity ?? "N/A"}
@@ -207,7 +205,7 @@ function SpecificationsTable({ products }: { products: Product[] }) {
               ))}
             </tr>
             <tr className="border-b">
-              <td className="p-4 font-medium bg-gray-50">Tags</td>
+              <td className="p-4 font-medium">Tags</td>
               {products.map((product) => (
                 <td key={product.id} className="text-center p-4">
                   <div className="flex flex-wrap gap-1 justify-center">
@@ -229,7 +227,7 @@ function SpecificationsTable({ products }: { products: Product[] }) {
               ))}
             </tr>
             <tr className="border-b">
-              <td className="p-4 font-medium bg-gray-50">Certificates</td>
+              <td className="p-4 font-medium">Certificates</td>
               {products.map((product) => (
                 <td key={product.id} className="text-center p-4">
                   <div className="flex flex-wrap gap-1 justify-center">
@@ -252,7 +250,7 @@ function SpecificationsTable({ products }: { products: Product[] }) {
               ))}
             </tr>
             <tr>
-              <td className="p-4 font-medium bg-gray-50">Description</td>
+              <td className="p-4 font-medium">Description</td>
               {products.map((product) => (
                 <td key={product.id} className="text-center p-4 max-w-xs">
                   <p className="text-sm text-gray-600 line-clamp-3">
