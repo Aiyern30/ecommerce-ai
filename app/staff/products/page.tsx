@@ -194,14 +194,41 @@ export default function ProductsPage() {
 
     setLoading(true);
     try {
-      const { error } = await supabase
+      const deleteTags = supabase
+        .from("product_tags")
+        .delete()
+        .in("product_id", selectedProducts);
+
+      const deleteCerts = supabase
+        .from("product_certificates")
+        .delete()
+        .in("product_id", selectedProducts);
+
+      const deleteImages = supabase
+        .from("product_images")
+        .delete()
+        .in("product_id", selectedProducts);
+
+      const [tagsErr, certsErr, imagesErr] = await Promise.all([
+        deleteTags,
+        deleteCerts,
+        deleteImages,
+      ]).then((results) => results.map((res) => res.error));
+
+      if (tagsErr || certsErr || imagesErr) {
+        throw new Error(
+          tagsErr?.message || certsErr?.message || imagesErr?.message
+        );
+      }
+
+      const { error: productError } = await supabase
         .from("products")
         .delete()
         .in("id", selectedProducts);
 
-      if (error) {
-        console.error("Error deleting products:", error.message);
-        toast.error(`Error deleting products: ${error.message}`);
+      if (productError) {
+        console.error("Error deleting products:", productError.message);
+        toast.error(`Error deleting products: ${productError.message}`);
       } else {
         toast.success(
           `Successfully deleted ${selectedProducts.length} product(s)!`
