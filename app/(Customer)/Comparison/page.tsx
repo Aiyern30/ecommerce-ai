@@ -1,144 +1,170 @@
 "use client";
 
-import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/";
+import { useEffect, useState } from "react";
+import {
+  Skeleton,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/";
+import { Button } from "@/components/ui/";
 import { ComparisonHeader } from "@/components/Comparison/ComparisonHeader";
 import { ComparisonSummary } from "@/components/Comparison/ComparisonSummary";
 import { OverviewTab } from "@/components/Comparison/Tabs/OverviewTab";
-// import { SpecificationsTab } from "@/components/Comparison/Tabs/SpecificationTab";
-// import { FeaturesTab } from "@/components/Comparison/Tabs/FeaturesTab";
 import { PricingTab } from "@/components/Comparison/Tabs/PricingTab";
 import { Product } from "@/type/product";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
-export default function ComparisonPage() {
-  const [itemCount, setItemCount] = useState<"2" | "3" | "4">("3");
-  const [showSummary, setShowSummary] = useState(false);
-  const products: Product[] = [
-    {
-      id: "1",
-      name: "Product A",
-      description: "High-performance cement",
-      image_url: "/placeholder.svg?height=200&width=200",
-      category: "bagged",
-      price: 199,
-      unit: "per bag",
-      stock_quantity: 100,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      product_images: [
-        { image_url: "/images/product-a-1.jpg" },
-        { image_url: "/images/product-a-2.jpg" },
-      ],
-      product_tags: [
-        { tags: { id: "1", name: "high-performance" } },
-        { tags: { id: "2", name: "bagged" } },
-        { tags: { id: "3", name: "durable" } },
-      ],
-      product_certificates: [
-        { certificate: "Eco-friendly" },
-        { certificate: "Superior workability" },
-      ],
-    },
-    {
-      id: "2",
-      name: "Product B",
-      description: "Bulk cement for construction",
-      image_url: "/placeholder.svg?height=200&width=200",
-      category: "bulk",
-      price: 249,
-      unit: "per tonne",
-      stock_quantity: 80,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      product_images: [{ image_url: "/images/product-b-1.jpg" }],
-      product_tags: [
-        { tags: { id: "1", name: "high-performance" } },
-        { tags: { id: "2", name: "bagged" } },
-        { tags: { id: "3", name: "durable" } },
-      ],
-      product_certificates: [{ certificate: "ISO 9001" }],
-    },
-    {
-      id: "3",
-      name: "Product C",
-      description: "Ready-mix cement for quick use",
-      image_url: "/placeholder.svg?height=200&width=200",
-      category: "ready-mix",
-      price: 179,
-      unit: "per bag",
-      stock_quantity: 50,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      product_images: [],
-      product_tags: [
-        { tags: { id: "1", name: "high-performance" } },
-        { tags: { id: "2", name: "bagged" } },
-        { tags: { id: "3", name: "durable" } },
-      ],
-      product_certificates: [{ certificate: "Eco-certified" }],
-    },
-    {
-      id: "4",
-      name: "Product D",
-      description: "Premium ultra-strength cement",
-      image_url: "/placeholder.svg?height=200&width=200",
-      category: "bagged",
-      price: 299,
-      unit: "per bag",
-      stock_quantity: 60,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      product_images: [{ image_url: "/images/product-d-1.jpg" }],
-      product_tags: [
-        { tags: { id: "1", name: "high-performance" } },
-        { tags: { id: "2", name: "bagged" } },
-        { tags: { id: "3", name: "durable" } },
-      ],
-      product_certificates: [
-        { certificate: "High durability" },
-        { certificate: "Government-approved" },
-      ],
-    },
-  ];
+import { supabase } from "@/lib/supabase";
 
-  const displayedProducts = products.slice(0, Number.parseInt(itemCount));
+export default function ComparisonPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [comparedIds, setComparedIds] = useState<string[]>([]);
+  const [showSummary, setShowSummary] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch all products
+  useEffect(() => {
+    async function fetchProducts() {
+      setLoading(true);
+      const { data, error } = await supabase.from("products").select(
+        `*,
+          product_images(image_url),
+          product_certificates(certificate),
+          product_tags(tags(id, name))`
+      );
+
+      if (error) {
+        console.error("Failed to fetch products", error);
+      } else {
+        setProducts(data || []);
+        // Show first product by default
+        if (data && data.length > 0) {
+          setComparedIds([data[0].id]);
+        }
+      }
+      setLoading(false);
+    }
+
+    fetchProducts();
+  }, []);
+
+  const addProductToCompare = (id: string) => {
+    if (comparedIds.length < 4 && !comparedIds.includes(id)) {
+      setComparedIds((prev) => [...prev, id]);
+    }
+  };
+
+  const removeProductFromCompare = (id: string) => {
+    setComparedIds((prev) => prev.filter((pid) => pid !== id));
+  };
+
+  const comparedProducts = products.filter((p) => comparedIds.includes(p.id));
+  const selectableProducts = products.filter(
+    (p) => !comparedIds.includes(p.id)
+  );
 
   return (
     <div className="container mx-auto mb-4">
       <div className="p-4 container mx-auto">
         <BreadcrumbNav showFilterButton={false} />
       </div>
-      <ComparisonHeader
-        itemCount={itemCount}
-        setItemCount={setItemCount}
-        showSummary={showSummary}
-        setShowSummary={setShowSummary}
-      />
-      {showSummary && <ComparisonSummary products={displayedProducts} />}
-      <Tabs defaultValue="overview">
-        <TabsList className="mb-6">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="specs">Specifications</TabsTrigger>
-          <TabsTrigger value="features">Features</TabsTrigger>
-          <TabsTrigger value="pricing">Pricing</TabsTrigger>
-        </TabsList>
 
-        <TabsContent value="overview" className="mt-0 ">
-          <OverviewTab products={displayedProducts} itemCount={itemCount} />
-        </TabsContent>
+      {loading ? (
+        <div className="space-y-4">
+          <Skeleton className="h-6 w-40" /> {/* Header Skeleton */}
+          <div className="flex gap-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="space-y-2 w-full">
+                <Skeleton className="h-48 w-full rounded-xl" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <>
+          <ComparisonHeader
+            itemCount={comparedIds.length.toString() as "2" | "3" | "4"}
+            setItemCount={() => {}}
+            showSummary={showSummary}
+            setShowSummary={setShowSummary}
+          />
 
-        <TabsContent value="specs" className="mt-0">
-          {/* <SpecificationsTab products={displayedProducts} /> */}
-        </TabsContent>
+          {showSummary && <ComparisonSummary products={comparedProducts} />}
 
-        <TabsContent value="features" className="mt-0">
-          {/* <FeaturesTab products={displayedProducts} /> */}
-        </TabsContent>
+          <Tabs defaultValue="overview">
+            <TabsList className="mb-6">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="specs">Specifications</TabsTrigger>
+              <TabsTrigger value="features">Features</TabsTrigger>
+              <TabsTrigger value="pricing">Pricing</TabsTrigger>
+            </TabsList>
 
-        <TabsContent value="pricing" className="mt-0">
-          <PricingTab products={displayedProducts} itemCount={itemCount} />
-        </TabsContent>
-      </Tabs>
+            <TabsContent value="overview" className="mt-0">
+              <OverviewTab
+                products={comparedProducts}
+                itemCount={comparedIds.length.toString() as "2" | "3" | "4"}
+              />
+            </TabsContent>
+
+            <TabsContent value="specs" className="mt-0">
+              {/* <SpecificationsTab products={comparedProducts} /> */}
+            </TabsContent>
+
+            <TabsContent value="features" className="mt-0">
+              {/* <FeaturesTab products={comparedProducts} /> */}
+            </TabsContent>
+
+            <TabsContent value="pricing" className="mt-0">
+              <PricingTab
+                products={comparedProducts}
+                itemCount={comparedIds.length.toString() as "2" | "3" | "4"}
+              />
+            </TabsContent>
+          </Tabs>
+
+          {/* Add Product Button */}
+          <div className="mt-6">
+            {comparedIds.length < 4 && selectableProducts.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm font-semibold">Add another product:</p>
+                <div className="flex flex-wrap gap-2">
+                  {selectableProducts.map((product) => (
+                    <Button
+                      key={product.id}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => addProductToCompare(product.id)}
+                    >
+                      {product.name}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {comparedProducts.length > 1 && (
+              <div className="mt-4">
+                <p className="text-sm font-semibold">Remove product:</p>
+                <div className="flex flex-wrap gap-2">
+                  {comparedProducts.map((product) => (
+                    <Button
+                      key={product.id}
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => removeProductFromCompare(product.id)}
+                    >
+                      {product.name}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
