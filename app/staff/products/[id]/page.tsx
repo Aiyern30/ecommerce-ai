@@ -33,8 +33,16 @@ export default function ProductDetailClient() {
       const { data, error } = await supabase
         .from("products")
         .select(
-          "*, product_images(image_url), product_tags(tag), product_certificates(certificate)"
+          `
+  *,
+  product_images(image_url),
+  product_tags(
+    tags(name)
+  ),
+  product_certificates(certificate)
+`
         )
+
         .eq("id", productId)
         .single();
 
