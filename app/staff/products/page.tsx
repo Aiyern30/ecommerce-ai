@@ -126,11 +126,14 @@ export default function ProductsPage() {
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("products")
-      .select(
-        "*, product_images(image_url), product_tags(tag), product_certificates(certificate)"
-      );
+    const { data, error } = await supabase.from("products").select(`
+  *,
+  product_images(image_url),
+  product_certificates(certificate),
+  product_tags(
+    tags(id, name)
+  )
+`);
 
     if (error) {
       console.error("Error fetching products:", error.message);
@@ -586,9 +589,9 @@ export default function ProductsPage() {
                     <TableCell>{product.stock_quantity ?? "N/A"}</TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {product.product_tags?.map((t) => (
-                          <Badge key={t.tag} variant="secondary">
-                            {t.tag}
+                        {product.product_tags?.map((pt) => (
+                          <Badge key={pt.tags.id} variant="secondary">
+                            {pt.tags.name}
                           </Badge>
                         ))}
                       </div>
