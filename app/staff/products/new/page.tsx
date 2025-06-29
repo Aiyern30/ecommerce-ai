@@ -38,6 +38,8 @@ import {
   SelectValue,
   Badge,
 } from "@/components/ui/";
+import TagMultiSelect from "@/components/TagMultiSelect";
+
 import Image from "next/image";
 import { toast } from "sonner";
 
@@ -74,8 +76,10 @@ export default function NewProductPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedImageFiles, setSelectedImageFiles] = useState<File[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
-  const [tagInput, setTagInput] = useState("");
   const [certificateInput, setCertificateInput] = useState("");
+  const [selectedTags, setSelectedTags] = useState<
+    { id: string; name: string }[]
+  >([]);
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -89,15 +93,6 @@ export default function NewProductPage() {
       tags: [],
       certificates: [],
     },
-  });
-
-  const {
-    fields: tagFields,
-    append: appendTag,
-    remove: removeTag,
-  } = useFieldArray({
-    control: form.control,
-    name: "tags",
   });
 
   const {
@@ -159,12 +154,12 @@ export default function NewProductPage() {
     }
   };
 
-  const handleAddTag = () => {
-    if (tagInput.trim() && !tagFields.some((t) => t.tag === tagInput.trim())) {
-      appendTag({ tag: tagInput.trim() });
-      setTagInput("");
-    }
-  };
+  // const handleAddTag = () => {
+  //   if (tagInput.trim() && !tagFields.some((t) => t.tag === tagInput.trim())) {
+  //     appendTag({ tag: tagInput.trim() });
+  //     setTagInput("");
+  //   }
+  // };
 
   const handleAddCertificate = () => {
     if (
@@ -593,56 +588,16 @@ export default function NewProductPage() {
             </CardContent>
           </Card>
 
-          {/* Product Tags */}
           <Card>
             <CardHeader>
               <CardTitle>Product Tags</CardTitle>
-              <CardDescription>
-                Add relevant tags to categorize the product (e.g.,
-                "construction", "eco-friendly").
-              </CardDescription>
+              <CardDescription>Select or create relevant tags.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex gap-2 mb-4">
-                <Input
-                  placeholder="Add a tag"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleAddTag();
-                    }
-                  }}
-                />
-                <Button type="button" onClick={handleAddTag}>
-                  <Plus className="mr-2 h-4 w-4" /> Add
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {tagFields.map((item, index) => (
-                  <Badge
-                    key={item.id}
-                    variant="secondary"
-                    className="flex items-center gap-1"
-                  >
-                    {item.tag}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-4 w-4 p-0"
-                      onClick={() => removeTag(index)}
-                    >
-                      <X className="h-3 w-3" />
-                      <span className="sr-only">Remove tag</span>
-                    </Button>
-                  </Badge>
-                ))}
-              </div>
-              {form.formState.errors.tags && (
-                <FormMessage>{form.formState.errors.tags.message}</FormMessage>
-              )}
+              <TagMultiSelect
+                selectedTags={selectedTags}
+                setSelectedTags={setSelectedTags}
+              />
             </CardContent>
           </Card>
 
