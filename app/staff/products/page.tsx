@@ -134,6 +134,7 @@ export default function ProductsPage() {
     tags(id, name)
   )
 `);
+    console.log("Fetched products:", data);
 
     if (error) {
       console.error("Error fetching products:", error.message);
