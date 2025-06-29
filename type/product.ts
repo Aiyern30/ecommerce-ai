@@ -10,6 +10,13 @@ export interface Product {
   created_at: string;
   updated_at: string;
   product_images: { image_url: string }[] | null;
-  product_tags: { tag: string }[] | null;
+  product_tags:
+    | {
+        tags: {
+          id: string;
+          name: string;
+        };
+      }[]
+    | null;
   product_certificates: { certificate: string }[] | null;
 }
