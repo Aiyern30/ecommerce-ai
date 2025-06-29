@@ -8,9 +8,6 @@ import {
   TabsList,
   TabsTrigger,
   Button,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
   Select,
   SelectContent,
   SelectItem,
@@ -32,14 +29,18 @@ import Image from "next/image";
 function ComparisonProductCard({
   product,
   onRemove,
+  onProductChange,
   showRemove = false,
+  availableProducts = [],
 }: {
   product: Product;
   onRemove?: () => void;
+  onProductChange?: (newProductId: string) => void;
   showRemove?: boolean;
+  availableProducts?: Product[];
 }) {
   return (
-    <div className="flex flex-col items-center text-center relative">
+    <Card className="relative h-full">
       {showRemove && (
         <Button
           variant="destructive"
@@ -51,97 +52,102 @@ function ComparisonProductCard({
         </Button>
       )}
 
-      {/* Product Name */}
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold">{product.name}</h3>
-        <p className="text-sm text-muted-foreground">{product.category}</p>
-      </div>
+      <CardContent className="p-6 flex flex-col h-full">
+        {/* Product Selector - At the top */}
+        {onProductChange && availableProducts.length > 0 && (
+          <div className="mb-4">
+            <Select value={product.id} onValueChange={onProductChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {availableProducts.map((availableProduct) => (
+                  <SelectItem
+                    key={availableProduct.id}
+                    value={availableProduct.id}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Image
+                        src={
+                          availableProduct.product_images?.[0]?.image_url ||
+                          availableProduct.image_url ||
+                          "/placeholder.svg"
+                        }
+                        alt={availableProduct.name}
+                        width={20}
+                        height={20}
+                        className="rounded"
+                      />
+                      <span className="truncate">{availableProduct.name}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
-      {/* Product Image */}
-      <div className="mb-6">
-        <Image
-          src={
-            product.product_images?.[0]?.image_url ||
-            product.image_url ||
-            "/placeholder.svg"
-          }
-          alt={product.name}
-          width={200}
-          height={200}
-          className="w-48 h-48 object-contain rounded-lg"
-        />
-      </div>
-
-      {/* Price */}
-      <div className="mb-4">
-        <p className="text-3xl font-bold">RM{product.price.toFixed(0)}</p>
-        <p className="text-sm text-muted-foreground">{product.unit}</p>
-      </div>
-
-      {/* Action Button */}
-      <Button className="w-32 mb-4">VIEW DETAILS</Button>
-
-      {/* Tags */}
-      {product.product_tags && product.product_tags.length > 0 && (
-        <div className="flex flex-wrap gap-1 justify-center">
-          {product.product_tags.slice(0, 3).map((tag, index) => (
-            <Badge key={index} variant="secondary" className="text-xs">
-              {tag.tags.name}
-            </Badge>
-          ))}
+        {/* Product Name */}
+        <div className="text-center mb-4">
+          <h3 className="text-lg font-semibold">{product.name}</h3>
+          <p className="text-sm text-muted-foreground">{product.category}</p>
         </div>
-      )}
-    </div>
+
+        {/* Product Image */}
+        <div className="flex justify-center mb-4">
+          <Image
+            src={
+              product.product_images?.[0]?.image_url ||
+              product.image_url ||
+              "/placeholder.svg"
+            }
+            alt={product.name}
+            width={200}
+            height={200}
+            className="w-48 h-48 object-contain rounded-lg"
+          />
+        </div>
+
+        {/* Price */}
+        <div className="text-center mb-4">
+          <p className="text-3xl font-bold">RM{product.price.toFixed(0)}</p>
+          <p className="text-sm text-muted-foreground">{product.unit}</p>
+        </div>
+
+        {/* Tags - Above the button */}
+        <div className="flex-grow flex flex-col justify-end">
+          {product.product_tags && product.product_tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 justify-center mb-3">
+              {product.product_tags.slice(0, 3).map((tag, index) => (
+                <Badge key={index} variant="secondary" className="text-xs">
+                  {tag.tags.name}
+                </Badge>
+              ))}
+            </div>
+          )}
+
+          {/* Action Button - At the bottom */}
+          <Button className="w-full">VIEW DETAILS</Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
-function AddProductCard({
-  selectableProducts,
-  onAddProduct,
-}: {
-  selectableProducts: Product[];
-  onAddProduct: (id: string) => void;
-}) {
+function AddProductCard({ onAddProduct }: { onAddProduct: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center text-center min-h-[400px]">
-      <Popover>
-        <PopoverTrigger asChild>
-          <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-8 cursor-pointer hover:border-gray-400 transition-colors">
-            <Plus className="w-12 h-12 text-gray-400 mb-4" />
-            <p className="text-lg font-medium text-gray-600">Add Product</p>
-            <p className="text-sm text-gray-500">Compare up to 4 products</p>
-          </div>
-        </PopoverTrigger>
-        <PopoverContent className="w-[300px]">
-          <p className="text-sm mb-3 font-medium">Select product to add</p>
-          <Select onValueChange={onAddProduct}>
-            <SelectTrigger>
-              <SelectValue placeholder="Choose product" />
-            </SelectTrigger>
-            <SelectContent>
-              {selectableProducts.map((product) => (
-                <SelectItem key={product.id} value={product.id}>
-                  <div className="flex items-center gap-2">
-                    <Image
-                      src={
-                        product.product_images?.[0]?.image_url ||
-                        product.image_url ||
-                        "/placeholder.svg"
-                      }
-                      alt={product.name}
-                      width={24}
-                      height={24}
-                      className="rounded"
-                    />
-                    {product.name}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </PopoverContent>
-      </Popover>
-    </div>
+    <Card className="h-full">
+      <CardContent className="p-6 flex flex-col items-center justify-center text-center h-full min-h-[400px]">
+        <div
+          className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-8 cursor-pointer hover:border-gray-400 transition-colors w-full"
+          onClick={onAddProduct}
+        >
+          <Plus className="w-12 h-12 text-gray-400 mb-4" />
+          <p className="text-lg font-medium text-gray-600">Add Product</p>
+          <p className="text-sm text-gray-500">Compare up to 4 products</p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -275,7 +281,7 @@ export default function ComparisonPage() {
         *,
         product_images(image_url),
         product_certificates(certificate),
-        product_tags(tag)
+        product_tags(tags(name))
       `);
 
       if (error) {
@@ -292,14 +298,21 @@ export default function ComparisonPage() {
     fetchProducts();
   }, []);
 
-  const addProductToCompare = (id: string) => {
-    if (comparedIds.length < 4 && !comparedIds.includes(id)) {
-      setComparedIds((prev) => [...prev, id]);
+  const addProductToCompare = () => {
+    if (comparedIds.length < 4 && selectableProducts.length > 0) {
+      // Add the first available product
+      setComparedIds((prev) => [...prev, selectableProducts[0].id]);
     }
   };
 
   const removeProductFromCompare = (id: string) => {
     setComparedIds((prev) => prev.filter((pid) => pid !== id));
+  };
+
+  const changeProduct = (oldProductId: string, newProductId: string) => {
+    setComparedIds((prev) =>
+      prev.map((id) => (id === oldProductId ? newProductId : id))
+    );
   };
 
   const comparedProducts = products.filter((p) => comparedIds.includes(p.id));
@@ -353,15 +366,16 @@ export default function ComparisonPage() {
                     key={product.id}
                     product={product}
                     onRemove={() => removeProductFromCompare(product.id)}
+                    onProductChange={(newProductId) =>
+                      changeProduct(product.id, newProductId)
+                    }
                     showRemove={comparedProducts.length > 1}
+                    availableProducts={products} // Pass all products for selection
                   />
                 ))}
 
                 {comparedIds.length < 4 && selectableProducts.length > 0 && (
-                  <AddProductCard
-                    selectableProducts={selectableProducts}
-                    onAddProduct={addProductToCompare}
-                  />
+                  <AddProductCard onAddProduct={addProductToCompare} />
                 )}
               </div>
             </TabsContent>
