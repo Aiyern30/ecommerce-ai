@@ -275,11 +275,12 @@ export default function NewProductPage() {
         }
       }
 
-      if (data.tags && data.tags.length > 0) {
-        const tagsToInsert = data.tags.map((item) => ({
+      if (selectedTags && selectedTags.length > 0) {
+        const tagsToInsert = selectedTags.map((tag) => ({
           product_id: productId,
-          tag: item.tag,
+          tag_id: tag.id,
         }));
+
         const { error: tagsInsertError } = await supabase
           .from("product_tags")
           .insert(tagsToInsert);
@@ -290,7 +291,6 @@ export default function NewProductPage() {
         }
       }
 
-      // 4. Insert certificates into product_certificates table
       if (data.certificates && data.certificates.length > 0) {
         const certificatesToInsert = data.certificates.map((item) => ({
           product_id: productId,
