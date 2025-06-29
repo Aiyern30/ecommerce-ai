@@ -16,6 +16,15 @@ import { PricingTab } from "@/components/Comparison/Tabs/PricingTab";
 import { Product } from "@/type/product";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { supabase } from "@/lib/supabase";
+import { Plus } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/";
 
 export default function ComparisonPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -23,7 +32,6 @@ export default function ComparisonPage() {
   const [showSummary, setShowSummary] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Fetch all products
   useEffect(() => {
     async function fetchProducts() {
       setLoading(true);
@@ -38,7 +46,6 @@ export default function ComparisonPage() {
         console.error("Failed to fetch products", error);
       } else {
         setProducts(data || []);
-        // Show first product by default
         if (data && data.length > 0) {
           setComparedIds([data[0].id]);
         }
@@ -72,7 +79,7 @@ export default function ComparisonPage() {
 
       {loading ? (
         <div className="space-y-4">
-          <Skeleton className="h-6 w-40" /> {/* Header Skeleton */}
+          <Skeleton className="h-6 w-40" />
           <div className="flex gap-4">
             {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="space-y-2 w-full">
@@ -125,44 +132,53 @@ export default function ComparisonPage() {
             </TabsContent>
           </Tabs>
 
-          {/* Add Product Button */}
-          <div className="mt-6">
-            {comparedIds.length < 4 && selectableProducts.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-sm font-semibold">Add another product:</p>
-                <div className="flex flex-wrap gap-2">
-                  {selectableProducts.map((product) => (
-                    <Button
-                      key={product.id}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => addProductToCompare(product.id)}
-                    >
-                      {product.name}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
+          {/* Add Button with Dropdown */}
+          {comparedIds.length < 4 && selectableProducts.length > 0 && (
+            <div className="mt-6 flex items-center gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[200px]">
+                  <p className="text-sm mb-2 font-medium">
+                    Select product to add
+                  </p>
+                  <Select onValueChange={addProductToCompare}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose product" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {selectableProducts.map((product) => (
+                        <SelectItem key={product.id} value={product.id}>
+                          {product.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
 
-            {comparedProducts.length > 1 && (
-              <div className="mt-4">
-                <p className="text-sm font-semibold">Remove product:</p>
-                <div className="flex flex-wrap gap-2">
-                  {comparedProducts.map((product) => (
-                    <Button
-                      key={product.id}
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => removeProductFromCompare(product.id)}
-                    >
-                      {product.name}
-                    </Button>
-                  ))}
-                </div>
+          {comparedProducts.length > 1 && (
+            <div className="mt-4">
+              <p className="text-sm font-semibold">Remove product:</p>
+              <div className="flex flex-wrap gap-2">
+                {comparedProducts.map((product) => (
+                  <Button
+                    key={product.id}
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => removeProductFromCompare(product.id)}
+                  >
+                    {product.name}
+                  </Button>
+                ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </>
       )}
     </div>
