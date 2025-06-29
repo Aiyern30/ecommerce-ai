@@ -11,7 +11,6 @@ import {
 import { Button } from "@/components/ui/";
 import { ComparisonHeader } from "@/components/Comparison/ComparisonHeader";
 import { ComparisonSummary } from "@/components/Comparison/ComparisonSummary";
-import { OverviewTab } from "@/components/Comparison/Tabs/OverviewTab";
 import { PricingTab } from "@/components/Comparison/Tabs/PricingTab";
 import { Product } from "@/type/product";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
@@ -25,6 +24,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/";
+import Image from "next/image";
+
+function ProductCard({ product }: { product: Product }) {
+  return (
+    <div className="rounded-xl border p-4 flex flex-col h-full">
+      <Image
+        src={product.product_images?.[0]?.image_url || "/placeholder.svg"}
+        alt={product.name}
+        width={400}
+        height={200}
+        className="w-full h-40 object-cover rounded-md mb-2"
+      />
+      <h3 className="text-sm font-semibold mb-1">{product.name}</h3>
+      <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+        {product.description}
+      </p>
+      <div className="mt-auto">
+        <p className="text-sm font-semibold mb-2">RM {product.price}</p>
+        <Button variant="outline" size="sm" className="w-full">
+          View Details
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 export default function ComparisonPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -110,10 +134,38 @@ export default function ComparisonPage() {
             </TabsList>
 
             <TabsContent value="overview" className="mt-0">
-              <OverviewTab
-                products={comparedProducts}
-                itemCount={comparedIds.length.toString() as "2" | "3" | "4"}
-              />
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {comparedProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+
+                {comparedIds.length < 4 && selectableProducts.length > 0 && (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <div className="flex items-center justify-center border rounded-xl min-h-[200px] cursor-pointer">
+                        <Plus className="w-6 h-6" />
+                      </div>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[200px]">
+                      <p className="text-sm mb-2 font-medium">
+                        Select product to add
+                      </p>
+                      <Select onValueChange={addProductToCompare}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose product" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {selectableProducts.map((product) => (
+                            <SelectItem key={product.id} value={product.id}>
+                              {product.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </div>
             </TabsContent>
 
             <TabsContent value="specs" className="mt-0">
@@ -131,36 +183,6 @@ export default function ComparisonPage() {
               />
             </TabsContent>
           </Tabs>
-
-          {/* Add Button with Dropdown */}
-          {comparedIds.length < 4 && selectableProducts.length > 0 && (
-            <div className="mt-6 flex items-center gap-2">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="icon">
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[200px]">
-                  <p className="text-sm mb-2 font-medium">
-                    Select product to add
-                  </p>
-                  <Select onValueChange={addProductToCompare}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose product" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {selectableProducts.map((product) => (
-                        <SelectItem key={product.id} value={product.id}>
-                          {product.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </PopoverContent>
-              </Popover>
-            </div>
-          )}
 
           {comparedProducts.length > 1 && (
             <div className="mt-4">
