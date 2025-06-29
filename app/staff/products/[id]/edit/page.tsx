@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/";
 import Image from "next/image";
 import { toast } from "sonner";
+import TagMultiSelect from "@/components/TagMultiSelect";
 
 const productSchema = z.object({
   name: z.string().min(1, "Product name is required"),
@@ -56,8 +57,9 @@ const productSchema = z.object({
     required_error: "Category is required",
   }),
   tags: z
-    .array(z.object({ tag: z.string().min(1, "Tag cannot be empty") }))
+    .array(z.object({ id: z.string(), name: z.string().min(1) }))
     .optional(),
+
   certificates: z
     .array(
       z.object({
@@ -85,7 +87,6 @@ export default function EditProductPage() {
   const [existingImages, setExistingImages] = useState<ExistingImage[]>([]);
   const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
-  const [tagInput, setTagInput] = useState("");
   const [certificateInput, setCertificateInput] = useState("");
 
   const form = useForm<ProductFormData>({
@@ -103,16 +104,6 @@ export default function EditProductPage() {
   });
 
   const {
-    fields: tagFields,
-    append: appendTag,
-    remove: removeTag,
-    replace: replaceTags,
-  } = useFieldArray({
-    control: form.control,
-    name: "tags",
-  });
-
-  const {
     fields: certificateFields,
     append: appendCertificate,
     remove: removeCertificate,
@@ -124,7 +115,6 @@ export default function EditProductPage() {
 
   const MAX_IMAGES = 4;
 
-  // Fetch product data on component mount
   useEffect(() => {
     const fetchProductData = async () => {
       if (!productId) return;
@@ -135,7 +125,7 @@ export default function EditProductPage() {
         // Fetch product details
         const { data: product, error: productError } = await supabase
           .from("products")
-          .select("*")
+          .select("*, product_tags:product_tags(tag_id, tags(id, name))")
           .eq("id", productId)
           .single();
 
@@ -157,14 +147,13 @@ export default function EditProductPage() {
           setExistingImages(images);
         }
 
-        // Fetch product tags
-        const { data: tags, error: tagsError } = await supabase
+        const { error: tagError } = await supabase
           .from("product_tags")
-          .select("tag")
+          .select("tags(id, name)")
           .eq("product_id", productId);
 
-        if (tagsError) {
-          console.error("Failed to fetch product tags:", tagsError.message);
+        if (tagError) {
+          console.error("Failed to fetch product tags:", tagError.message);
         }
 
         // Fetch product certificates
@@ -179,8 +168,10 @@ export default function EditProductPage() {
             certificatesError.message
           );
         }
+        const productTags = (product.product_tags ?? []) as {
+          tags: { id: string; name: string };
+        }[];
 
-        // Populate form with fetched data
         form.reset({
           name: product.name,
           description: product.description,
@@ -188,15 +179,15 @@ export default function EditProductPage() {
           unit: product.unit as "per bag" | "per tonne",
           stock_quantity: product.stock_quantity,
           category: product.category as "bagged" | "bulk" | "ready-mix",
-          tags: tags?.map((t) => ({ tag: t.tag })) || [],
+          tags: productTags.map((pt) => ({
+            id: pt.tags.id,
+            name: pt.tags.name,
+          })),
+
           certificates:
             certificates?.map((c) => ({ certificate: c.certificate })) || [],
         });
 
-        // Replace field arrays with fetched data
-        if (tags) {
-          replaceTags(tags.map((t) => ({ tag: t.tag })));
-        }
         if (certificates) {
           replaceCertificates(
             certificates.map((c) => ({ certificate: c.certificate }))
@@ -214,7 +205,7 @@ export default function EditProductPage() {
     };
 
     fetchProductData();
-  }, [productId, form, router, replaceTags, replaceCertificates]);
+  }, [productId, form, router, replaceCertificates]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
@@ -266,13 +257,6 @@ export default function EditProductPage() {
 
   const handleRestoreExistingImage = (imageId: string) => {
     setImagesToDelete((prev) => prev.filter((id) => id !== imageId));
-  };
-
-  const handleAddTag = () => {
-    if (tagInput.trim() && !tagFields.some((t) => t.tag === tagInput.trim())) {
-      appendTag({ tag: tagInput.trim() });
-      setTagInput("");
-    }
   };
 
   const handleAddCertificate = () => {
@@ -451,8 +435,9 @@ export default function EditProductPage() {
       if (data.tags && data.tags.length > 0) {
         const tagsToInsert = data.tags.map((item) => ({
           product_id: productId,
-          tag: item.tag,
+          tag_id: item.id,
         }));
+
         const { error: tagsInsertError } = await supabase
           .from("product_tags")
           .insert(tagsToInsert);
@@ -839,7 +824,6 @@ export default function EditProductPage() {
             </CardContent>
           </Card>
 
-          {/* Product Tags */}
           <Card>
             <CardHeader>
               <CardTitle>Product Tags</CardTitle>
@@ -849,46 +833,25 @@ export default function EditProductPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex gap-2 mb-4">
-                <Input
-                  placeholder="Add a tag"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleAddTag();
-                    }
-                  }}
-                />
-                <Button type="button" onClick={handleAddTag}>
-                  <Plus className="mr-2 h-4 w-4" /> Add
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {tagFields.map((item, index) => (
-                  <Badge
-                    key={item.id}
-                    variant="secondary"
-                    className="flex items-center gap-1"
-                  >
-                    {item.tag}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-4 w-4 p-0"
-                      onClick={() => removeTag(index)}
-                    >
-                      <X className="h-3 w-3" />
-                      <span className="sr-only">Remove tag</span>
-                    </Button>
-                  </Badge>
-                ))}
-              </div>
-              {form.formState.errors.tags && (
-                <FormMessage>{form.formState.errors.tags.message}</FormMessage>
-              )}
+              <FormField
+                control={form.control}
+                name="tags"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tags</FormLabel>
+                    <FormControl>
+                      <TagMultiSelect
+                        selectedTags={field.value || []}
+                        setSelectedTags={field.onChange}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Add or create multiple tags for this product.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </CardContent>
           </Card>
 
