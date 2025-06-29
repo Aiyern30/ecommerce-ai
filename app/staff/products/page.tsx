@@ -214,7 +214,7 @@ export default function ProductsPage() {
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
-      setIsDeleteDialogOpen(false); // Close dialog after deletion attempt
+      setIsDeleteDialogOpen(false);
     }
   };
 
@@ -292,7 +292,7 @@ export default function ProductsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Products</h1>
         <div className="flex items-center gap-2">
-          <Link href="/staff/products/New">
+          <Link href="/staff/products/new">
             <Button size="sm">
               <Plus className="mr-2 h-4 w-4" />
               Add Product
