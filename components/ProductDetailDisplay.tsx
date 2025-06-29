@@ -70,7 +70,7 @@ export default function ProductDetailDisplay({
       {/* CENTER: Main Image */}
       <div className="relative aspect-square flex-grow border rounded-lg overflow-hidden">
         <Image
-          src={displayImage}
+          src={displayImage || "/placeholder.svg"}
           alt={product.name}
           fill
           sizes="80px"
