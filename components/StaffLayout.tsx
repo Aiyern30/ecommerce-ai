@@ -20,7 +20,7 @@ export default function StaffLayout({ children }: LayoutProps) {
     >
       <SessionProvider>
         <DashboardLayout>{children}</DashboardLayout>
-        <Toaster />
+        <Toaster richColors />
       </SessionProvider>
     </ThemeProvider>
   );

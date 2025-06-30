@@ -59,7 +59,7 @@ export function CustomerLayout({ children }: LayoutProps) {
           <Header />
           <main className="flex-1 pt-[70px]">
             {children}
-            <Toaster />
+            <Toaster richColors />
           </main>
           <div className="fixed bottom-0 right-0 z-50 flex items-end p-4">
             {isChatOpen && (
