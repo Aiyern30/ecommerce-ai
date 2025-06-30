@@ -24,7 +24,7 @@ import { PricingTab } from "@/components/Comparison/Tabs/PricingTab";
 import type { Product } from "@/type/product";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { supabase } from "@/lib/supabase";
-import { ArrowLeft, X } from "lucide-react";
+import { X } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 
@@ -373,18 +373,6 @@ export default function CompareProductsContent() {
     <div className="container mx-auto mb-4">
       <div className="p-4 container mx-auto">
         <BreadcrumbNav showFilterButton={false} />
-      </div>
-
-      {/* Back Button */}
-      <div className="mb-4">
-        <Button
-          variant="outline"
-          onClick={() => router.push("/comparison")}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Product Selection
-        </Button>
       </div>
 
       {loading ? (
