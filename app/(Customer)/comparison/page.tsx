@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   Skeleton,
   Tabs,
@@ -23,7 +24,7 @@ import { PricingTab } from "@/components/Comparison/Tabs/PricingTab";
 import type { Product } from "@/type/product";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { supabase } from "@/lib/supabase";
-import { Plus, X } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 import Image from "next/image";
 
 function ComparisonProductCard({
@@ -71,6 +72,7 @@ function ComparisonProductCard({
                         src={
                           availableProduct.product_images?.[0]?.image_url ||
                           availableProduct.image_url ||
+                          "/placeholder.svg" ||
                           "/placeholder.svg"
                         }
                         alt={availableProduct.name}
@@ -99,6 +101,7 @@ function ComparisonProductCard({
             src={
               product.product_images?.[0]?.image_url ||
               product.image_url ||
+              "/placeholder.svg" ||
               "/placeholder.svg"
             }
             alt={product.name}
@@ -128,23 +131,6 @@ function ComparisonProductCard({
 
           {/* Action Button - At the bottom */}
           <Button className="w-full">VIEW DETAILS</Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function AddProductCard({ onAddProduct }: { onAddProduct: () => void }) {
-  return (
-    <Card className="h-full">
-      <CardContent className="p-6 flex flex-col items-center justify-center text-center h-full min-h-[400px]">
-        <div
-          className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-8 cursor-pointer hover:border-gray-400 transition-colors w-full"
-          onClick={onAddProduct}
-        >
-          <Plus className="w-12 h-12 text-gray-400 mb-4" />
-          <p className="text-lg font-medium text-gray-600">Add Product</p>
-          <p className="text-sm text-gray-500">Compare up to 4 products</p>
         </div>
       </CardContent>
     </Card>
@@ -266,15 +252,26 @@ function SpecificationsTable({ products }: { products: Product[] }) {
   );
 }
 
-export default function ComparisonPage() {
+export default function ComparisonComparePage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
-  const [comparedIds, setComparedIds] = useState<string[]>([]);
+  const [comparedProducts, setComparedProducts] = useState<Product[]>([]);
   const [showSummary, setShowSummary] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchProducts() {
       setLoading(true);
+
+      // Get product IDs from URL parameters
+      const productIds = searchParams.getAll("products");
+
+      if (productIds.length === 0) {
+        router.push("/comparison");
+        return;
+      }
+
       const { data, error } = await supabase.from("products").select(`
         *,
         product_images(image_url),
@@ -286,42 +283,59 @@ export default function ComparisonPage() {
         console.error("Failed to fetch products", error);
       } else {
         setProducts(data || []);
-        if (data && data.length > 0) {
-          setComparedIds([data[0].id]);
-        }
+        // Filter products based on URL parameters
+        const selectedProducts = (data || []).filter((p) =>
+          productIds.includes(p.id)
+        );
+        setComparedProducts(selectedProducts);
       }
       setLoading(false);
     }
 
     fetchProducts();
-  }, []);
+  }, [searchParams, router]);
 
-  const addProductToCompare = () => {
-    if (comparedIds.length < 4 && selectableProducts.length > 0) {
-      // Add the first available product
-      setComparedIds((prev) => [...prev, selectableProducts[0].id]);
-    }
+  const updateURL = (productIds: string[]) => {
+    const params = new URLSearchParams();
+    productIds.forEach((id) => params.append("products", id));
+    router.replace(`/comparison/compare?${params.toString()}`);
   };
 
   const removeProductFromCompare = (id: string) => {
-    setComparedIds((prev) => prev.filter((pid) => pid !== id));
+    const newIds = comparedProducts.filter((p) => p.id !== id).map((p) => p.id);
+    if (newIds.length < 2) {
+      router.push("/comparison");
+    } else {
+      setComparedProducts((prev) => prev.filter((p) => p.id !== id));
+      updateURL(newIds);
+    }
   };
 
   const changeProduct = (oldProductId: string, newProductId: string) => {
-    setComparedIds((prev) =>
-      prev.map((id) => (id === oldProductId ? newProductId : id))
+    const newIds = comparedProducts.map((p) =>
+      p.id === oldProductId ? newProductId : p.id
     );
+    const newProducts = products.filter((p) => newIds.includes(p.id));
+    setComparedProducts(newProducts);
+    updateURL(newIds);
   };
-
-  const comparedProducts = products.filter((p) => comparedIds.includes(p.id));
-  const selectableProducts = products.filter(
-    (p) => !comparedIds.includes(p.id)
-  );
 
   return (
     <div className="container mx-auto mb-4">
       <div className="p-4 container mx-auto">
         <BreadcrumbNav showFilterButton={false} />
+      </div>
+
+      {/* Back Button */}
+      <div className="mb-4">
+        <Button
+          variant="outline"
+          onClick={() => router.push("/comparison")}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Product Selection
+        </Button>
       </div>
 
       {loading ? (
@@ -340,7 +354,7 @@ export default function ComparisonPage() {
       ) : (
         <>
           <ComparisonHeader
-            itemCount={comparedIds.length.toString() as "2" | "3" | "4"}
+            itemCount={comparedProducts.length.toString() as "2" | "3" | "4"}
             setItemCount={() => {}}
             showSummary={showSummary}
             setShowSummary={setShowSummary}
@@ -357,7 +371,6 @@ export default function ComparisonPage() {
             </TabsList>
 
             <TabsContent value="overview" className="mt-0">
-              {/* Product Comparison Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-8">
                 {comparedProducts.map((product) => (
                   <ComparisonProductCard
@@ -367,14 +380,10 @@ export default function ComparisonPage() {
                     onProductChange={(newProductId) =>
                       changeProduct(product.id, newProductId)
                     }
-                    showRemove={comparedProducts.length > 1}
-                    availableProducts={products} // Pass all products for selection
+                    showRemove={comparedProducts.length > 2}
+                    availableProducts={products}
                   />
                 ))}
-
-                {comparedIds.length < 4 && selectableProducts.length > 0 && (
-                  <AddProductCard onAddProduct={addProductToCompare} />
-                )}
               </div>
             </TabsContent>
 
@@ -393,7 +402,9 @@ export default function ComparisonPage() {
             <TabsContent value="pricing" className="mt-0">
               <PricingTab
                 products={comparedProducts}
-                itemCount={comparedIds.length.toString() as "2" | "3" | "4"}
+                itemCount={
+                  comparedProducts.length.toString() as "2" | "3" | "4"
+                }
               />
             </TabsContent>
           </Tabs>
