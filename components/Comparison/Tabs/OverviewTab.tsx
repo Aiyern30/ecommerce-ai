@@ -1,100 +1,75 @@
-import Image from "next/image";
-import { ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+"use client";
+
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-  Button,
-  Badge,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/";
-import { Product } from "@/type/product";
+import type { Product } from "@/type/product";
+import Image from "next/image";
 
-// Extend the base Product type with mock data for this tab
-interface ProductWithSpecs extends Product {
-  rating?: number;
-  specs?: {
-    performance: { value: string; score: number };
-    battery: { value: string; score: number };
-    storage: { value: string; score: number };
-  };
+interface OverviewTabsProps {
+  products: Product[];
+  comparedProducts: Product[];
+  onProductChange: (index: number, newProductId: string) => void;
 }
 
-interface OverviewTabProps {
-  products: ProductWithSpecs[];
-  itemCount: "2" | "3" | "4";
-}
-
-export function OverviewTab({ products, itemCount }: OverviewTabProps) {
+export function OverviewTabs({
+  products,
+  comparedProducts,
+  onProductChange,
+}: OverviewTabsProps) {
   return (
-    <div
-      className={cn(
-        "grid gap-6",
-        itemCount === "2"
-          ? "grid-cols-1 md:grid-cols-2"
-          : itemCount === "3"
-          ? "grid-cols-1 md:grid-cols-3"
-          : "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
-      )}
-    >
-      {products.map((product) => (
-        <Card key={product.id} className="h-full flex flex-col">
-          <CardHeader>
-            <div className="flex justify-center mb-4">
-              <Image
-                src={product.image_url || "/placeholder.svg"}
-                alt={product.name}
-                width={200}
-                height={200}
-                className="rounded-md object-cover"
-              />
-            </div>
-            <CardTitle>{product.name}</CardTitle>
-            {product.description && (
-              <CardDescription>{product.description}</CardDescription>
-            )}
-            <div className="flex items-center justify-between mt-2">
-              <span className="font-bold text-xl">RM {product.price}</span>
-              {product.rating && (
-                <Badge variant="outline">Rating: {product.rating}/5</Badge>
-              )}
-            </div>
-          </CardHeader>
-
-          <CardContent className="flex-grow">
-            {product.specs && (
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-medium mb-2">Key Specs</h3>
-                  <ul className="space-y-2">
-                    <li className="flex items-center gap-2">
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                      <span>
-                        Performance: {product.specs.performance.value}
-                      </span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                      <span>Battery: {product.specs.battery.value}</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                      <span>Storage: {product.specs.storage.value}</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            )}
-          </CardContent>
-
-          <CardFooter>
-            <Button className="w-full">View Details</Button>
-          </CardFooter>
-        </Card>
-      ))}
+    <div className="mb-6">
+      <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+        Select Products to Compare
+      </h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {comparedProducts.map((product, index) => (
+          <div key={index} className="space-y-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Product {index + 1}
+            </label>
+            <Select
+              value={product.id}
+              onValueChange={(newProductId) =>
+                onProductChange(index, newProductId)
+              }
+            >
+              <SelectTrigger className="w-full bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
+                {products.map((availableProduct) => (
+                  <SelectItem
+                    key={availableProduct.id}
+                    value={availableProduct.id}
+                    className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Image
+                        src={
+                          availableProduct.product_images?.[0]?.image_url ||
+                          availableProduct.image_url ||
+                          "/placeholder.svg" ||
+                          "/placeholder.svg"
+                        }
+                        alt={availableProduct.name}
+                        width={20}
+                        height={20}
+                        className="rounded bg-gray-50 dark:bg-gray-700"
+                      />
+                      <span className="truncate">{availableProduct.name}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
