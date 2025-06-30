@@ -20,6 +20,7 @@ import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { ComparisonProductCard } from "@/components/Comparison/ComparisonProductCard";
 import { OverviewTabs } from "@/components/Comparison/Tabs/OverviewTab";
+import { SpecificationsTable } from "@/components/Comparison/Tabs/SpecificationTab";
 
 export default function CompareProductsContent() {
   const router = useRouter();
@@ -163,7 +164,7 @@ export default function CompareProductsContent() {
           <Tabs defaultValue="overview" className="w-full">
             <TabsList className="mb-6">
               <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="specs">Specifications</TabsTrigger>
+              <TabsTrigger value="specifications">Specifications</TabsTrigger>
               <TabsTrigger value="features">Features</TabsTrigger>
               <TabsTrigger value="pricing">Pricing</TabsTrigger>
             </TabsList>
@@ -189,7 +190,9 @@ export default function CompareProductsContent() {
               </div>
             </TabsContent>
 
-            <TabsContent value="specs" className="mt-0"></TabsContent>
+            <TabsContent value="specifications" className="mt-0">
+              <SpecificationsTable products={comparedProducts} />
+            </TabsContent>
 
             <TabsContent value="features" className="mt-0">
               <div className="text-center py-8">
