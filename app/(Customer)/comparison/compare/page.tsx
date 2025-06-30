@@ -26,43 +26,37 @@ import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { supabase } from "@/lib/supabase";
 import { ArrowLeft, X } from "lucide-react";
 import Image from "next/image";
+import { toast } from "sonner";
 
-function ComparisonProductCard({
-  product,
-  onRemove,
+function ProductSelector({
+  products,
+  comparedProducts,
   onProductChange,
-  showRemove = false,
-  availableProducts = [],
 }: {
-  product: Product;
-  onRemove?: () => void;
-  onProductChange?: (newProductId: string) => void;
-  showRemove?: boolean;
-  availableProducts?: Product[];
+  products: Product[];
+  comparedProducts: Product[];
+  onProductChange: (index: number, newProductId: string) => void;
 }) {
   return (
-    <Card className="relative h-full">
-      {showRemove && (
-        <Button
-          variant="destructive"
-          size="icon"
-          className="absolute -top-2 -right-2 h-6 w-6 rounded-full z-10"
-          onClick={onRemove}
-        >
-          <X className="h-3 w-3" />
-        </Button>
-      )}
-
-      <CardContent className="p-6 flex flex-col h-full">
-        {/* Product Selector - At the top */}
-        {onProductChange && availableProducts.length > 0 && (
-          <div className="mb-4">
-            <Select value={product.id} onValueChange={onProductChange}>
+    <div className="mb-6">
+      <h3 className="text-lg font-semibold mb-4">Select Products to Compare</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {comparedProducts.map((product, index) => (
+          <div key={index} className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              Product {index + 1}
+            </label>
+            <Select
+              value={product.id}
+              onValueChange={(newProductId) =>
+                onProductChange(index, newProductId)
+              }
+            >
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {availableProducts.map((availableProduct) => (
+                {products.map((availableProduct) => (
                   <SelectItem
                     key={availableProduct.id}
                     value={availableProduct.id}
@@ -87,8 +81,35 @@ function ComparisonProductCard({
               </SelectContent>
             </Select>
           </div>
-        )}
+        ))}
+      </div>
+    </div>
+  );
+}
 
+function ComparisonProductCard({
+  product,
+  onRemove,
+  showRemove = false,
+}: {
+  product: Product;
+  onRemove?: () => void;
+  showRemove?: boolean;
+}) {
+  return (
+    <Card className="relative h-full">
+      {showRemove && (
+        <Button
+          variant="destructive"
+          size="icon"
+          className="absolute -top-2 -right-2 h-6 w-6 rounded-full z-10"
+          onClick={onRemove}
+        >
+          <X className="h-3 w-3" />
+        </Button>
+      )}
+
+      <CardContent className="p-6 flex flex-col h-full">
         {/* Product Name */}
         <div className="text-center mb-4">
           <h3 className="text-lg font-semibold">{product.name}</h3>
@@ -263,12 +284,20 @@ export default function CompareProductsPage() {
     async function fetchProducts() {
       setLoading(true);
 
-      // Get product IDs from URL parameters
-      const productIds = searchParams.getAll("products");
+      // Get product IDs from URL parameters and remove duplicates
+      const productIds = [...new Set(searchParams.getAll("products"))];
 
       if (productIds.length === 0) {
         router.push("/comparison");
         return;
+      }
+
+      // If there are duplicates in URL, clean it up
+      const originalIds = searchParams.getAll("products");
+      if (originalIds.length !== productIds.length) {
+        const params = new URLSearchParams();
+        productIds.forEach((id) => params.append("products", id));
+        router.replace(`/comparison/compare?${params.toString()}`);
       }
 
       const { data, error } = await supabase.from("products").select(`
@@ -295,8 +324,10 @@ export default function CompareProductsPage() {
   }, [searchParams, router]);
 
   const updateURL = (productIds: string[]) => {
+    // Remove duplicates before updating URL
+    const uniqueIds = [...new Set(productIds)];
     const params = new URLSearchParams();
-    productIds.forEach((id) => params.append("products", id));
+    uniqueIds.forEach((id) => params.append("products", id));
     router.replace(`/comparison/compare?${params.toString()}`);
   };
 
@@ -310,12 +341,30 @@ export default function CompareProductsPage() {
     }
   };
 
-  const changeProduct = (oldProductId: string, newProductId: string) => {
-    const newIds = comparedProducts.map((p) =>
-      p.id === oldProductId ? newProductId : p.id
-    );
+  const changeProductAtIndex = (index: number, newProductId: string) => {
+    // Check if the new product is already being compared
+    const currentIds = comparedProducts.map((p) => p.id);
+    if (
+      currentIds.includes(newProductId) &&
+      currentIds[index] !== newProductId
+    ) {
+      toast.warning("This product is already being compared.", {
+        description: "Please select a different product.",
+      });
+
+      return;
+    }
+
+    const newIds = [...currentIds];
+    newIds[index] = newProductId;
     const newProducts = products.filter((p) => newIds.includes(p.id));
-    setComparedProducts(newProducts);
+
+    // Ensure products are in the same order as the IDs
+    const orderedProducts = newIds
+      .map((id) => newProducts.find((p) => p.id === id))
+      .filter(Boolean) as Product[];
+
+    setComparedProducts(orderedProducts);
     updateURL(newIds);
   };
 
@@ -370,17 +419,21 @@ export default function CompareProductsPage() {
             </TabsList>
 
             <TabsContent value="overview" className="mt-0">
+              {/* Product Selectors - Above the cards */}
+              <ProductSelector
+                products={products}
+                comparedProducts={comparedProducts}
+                onProductChange={changeProductAtIndex}
+              />
+
+              {/* Product Comparison Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-8">
-                {comparedProducts.map((product) => (
+                {comparedProducts.map((product, index) => (
                   <ComparisonProductCard
-                    key={product.id}
+                    key={`${product.id}-${index}`}
                     product={product}
                     onRemove={() => removeProductFromCompare(product.id)}
-                    onProductChange={(newProductId) =>
-                      changeProduct(product.id, newProductId)
-                    }
                     showRemove={comparedProducts.length > 2}
-                    availableProducts={products}
                   />
                 ))}
               </div>
