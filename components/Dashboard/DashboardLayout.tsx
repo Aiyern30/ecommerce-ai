@@ -221,9 +221,21 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   asChild
                   className="flex items-center gap-3 rounded-lg bg-blue-800 px-3 py-2 text-white transition-all"
                 >
-                  <Link href="/Staff/Dashboard">
+                  <Link href="/staff/dashboard">
                     <Home className="h-4 w-4" />
                     <span>Dashboard</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:text-white"
+                >
+                  <Link href="/staff/posts">
+                    <ShoppingBag className="h-4 w-4" />
+                    <span>Posts</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -232,7 +244,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   asChild
                   className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:text-white"
                 >
-                  <Link href="/Staff/Orders">
+                  <Link href="/staff/orders">
                     <ShoppingBag className="h-4 w-4" />
                     <span>Orders</span>
                   </Link>
@@ -243,7 +255,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   asChild
                   className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:text-white"
                 >
-                  <Link href="/Staff/Products">
+                  <Link href="/staff/products">
                     <Package className="h-4 w-4" />
                     <span>Products</span>
                   </Link>
@@ -254,7 +266,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   asChild
                   className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:text-white"
                 >
-                  <Link href="/Staff/Categories">
+                  <Link href="/staff/categories">
                     <Layers className="h-4 w-4" />
                     <span>Categories</span>
                   </Link>
@@ -265,7 +277,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   asChild
                   className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:text-white"
                 >
-                  <Link href="/Staff/Customers">
+                  <Link href="/staff/customers">
                     <Users className="h-4 w-4" />
                     <span>Customers</span>
                   </Link>
@@ -276,7 +288,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   asChild
                   className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:text-white"
                 >
-                  <Link href="/Staff/Reports">
+                  <Link href="/staff/reports">
                     <BarChart3 className="h-4 w-4" />
                     <span>Reports</span>
                   </Link>
