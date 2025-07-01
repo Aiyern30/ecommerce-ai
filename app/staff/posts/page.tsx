@@ -10,6 +10,7 @@ import {
   Search,
   Trash2,
   ExternalLink,
+  LinkIcon,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
@@ -42,15 +43,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  Badge,
 } from "@/components/ui/";
 import Image from "next/image";
 
 interface Post {
-  id: number;
+  id: string; // Changed from number to string for uuid
   title: string;
   body: string;
   description: string | null;
+  link_name: string | null; // Added link_name field
   link: string | null;
   image_url: string | null;
   created_at: string;
@@ -125,7 +126,7 @@ export default function PostsPage() {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
+  const [selectedPosts, setSelectedPosts] = useState<string[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [postsToDelete, setPostsToDelete] = useState<Post[]>([]);
 
@@ -161,7 +162,7 @@ export default function PostsPage() {
     setCurrentPage(page);
   };
 
-  const togglePostSelection = (postId: number) => {
+  const togglePostSelection = (postId: string) => {
     setSelectedPosts((prev) =>
       prev.includes(postId)
         ? prev.filter((id) => id !== postId)
@@ -280,6 +281,38 @@ export default function PostsPage() {
     });
   };
 
+  const isExternalLink = (link: string) => {
+    return link.startsWith("http://") || link.startsWith("https://");
+  };
+
+  const renderLinkDisplay = (link: string | null, linkName: string | null) => {
+    if (!link) {
+      return <span className="text-gray-400 text-sm">No link</span>;
+    }
+
+    const external = isExternalLink(link);
+
+    // Show link_name if available, otherwise show a generic label
+    const displayText =
+      linkName || (external ? "External Link" : "Internal Link");
+
+    return (
+      <div className="flex items-center gap-2">
+        {external ? (
+          <ExternalLink className="h-4 w-4 text-blue-500 flex-shrink-0" />
+        ) : (
+          <LinkIcon className="h-4 w-4 text-green-500 flex-shrink-0" />
+        )}
+        <span
+          className="text-sm font-medium truncate max-w-[120px]"
+          title={displayText}
+        >
+          {displayText}
+        </span>
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex items-center justify-between">
@@ -300,7 +333,7 @@ export default function PostsPage() {
           <Input
             type="search"
             placeholder="Search posts by title or description..."
-            className="pl-8 bg-white"
+            className="pl-8"
             value={filters.search}
             onChange={(e) => updateFilter("search", e.target.value)}
           />
@@ -498,7 +531,7 @@ export default function PostsPage() {
                 currentPageData.map((post) => (
                   <TableRow
                     key={post.id}
-                    onClick={() => router.push(`/Staff/Posts/${post.id}`)}
+                    onClick={() => router.push(`/staff/posts/${post.id}`)}
                     className="cursor-pointer"
                   >
                     <TableCell onClick={(e) => e.stopPropagation()}>
@@ -534,14 +567,7 @@ export default function PostsPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {post.link ? (
-                        <div className="flex items-center gap-2">
-                          <ExternalLink className="h-4 w-4 text-blue-500" />
-                          <Badge variant="secondary">Has Link</Badge>
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">No link</span>
-                      )}
+                      {renderLinkDisplay(post.link, post.link_name)}
                     </TableCell>
                     <TableCell>{formatDate(post.created_at)}</TableCell>
                     <TableCell
