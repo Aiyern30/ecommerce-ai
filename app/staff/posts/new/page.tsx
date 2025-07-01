@@ -1,8 +1,9 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 import Link from "next/link";
 import type React from "react";
 
-import { ArrowLeft, X } from "lucide-react";
+import { ArrowLeft, X, ExternalLink, LinkIcon } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,6 +31,11 @@ import {
   FormMessage,
   Input,
   Textarea,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/";
 import Image from "next/image";
 import { toast } from "sonner";
@@ -45,7 +51,12 @@ const postSchema = z.object({
     .string()
     .max(500, "Description must be less than 500 characters")
     .nullish(),
-  link: z.string().url("Must be a valid URL").nullish().or(z.literal("")),
+  link_name: z
+    .string()
+    .max(100, "Link name must be less than 100 characters")
+    .nullish(),
+  link: z.string().nullish().or(z.literal("")),
+  linkType: z.enum(["internal", "external"]),
 });
 
 type PostFormData = z.infer<typeof postSchema>;
@@ -62,9 +73,13 @@ export default function NewPostPage() {
       title: "",
       body: "",
       description: "",
+      link_name: "",
       link: "",
+      linkType: "internal",
     },
   });
+
+  const linkType = form.watch("linkType");
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -104,9 +119,31 @@ export default function NewPostPage() {
     }
   };
 
+  const validateLink = (link: string, type: string) => {
+    if (!link) return true; // Empty link is allowed
+
+    if (type === "external") {
+      return link.startsWith("http://") || link.startsWith("https://");
+    } else {
+      // Internal link should start with / and not be a full URL
+      return link.startsWith("/") && !link.includes("://");
+    }
+  };
+
   const onSubmit = async (data: PostFormData) => {
     setIsSubmitting(true);
     setImageError(null);
+
+    // Validate link based on type
+    if (data.link && !validateLink(data.link, data.linkType)) {
+      if (data.linkType === "external") {
+        toast.error("External links must start with http:// or https://");
+      } else {
+        toast.error("Internal links must start with / (e.g., /staff/products)");
+      }
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       let imageUrl: string | null = null;
@@ -143,6 +180,7 @@ export default function NewPostPage() {
         title: data.title,
         body: data.body,
         description: data.description || null,
+        link_name: data.link_name || null,
         link: data.link || null,
         image_url: imageUrl,
       });
@@ -269,28 +307,134 @@ export default function NewPostPage() {
                   </FormItem>
                 )}
               />
+            </CardContent>
+          </Card>
+
+          {/* Link Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Link (Optional)</CardTitle>
+              <CardDescription>
+                Add an internal page link or external website link.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <FormField
+                control={form.control}
+                name="linkType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Link Type</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select link type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="internal">
+                          <div className="flex items-center gap-2">
+                            <LinkIcon className="h-4 w-4 text-green-500" />
+                            Internal Page
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="external">
+                          <div className="flex items-center gap-2">
+                            <ExternalLink className="h-4 w-4 text-blue-500" />
+                            External Website
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      Choose whether to link to an internal page or external
+                      website.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="link_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Link Display Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder={
+                          linkType === "external"
+                            ? "Visit Our Website"
+                            : "Explore Products"
+                        }
+                        {...field}
+                        value={field.value || ""}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      A human-readable name for the link (e.g., "Explore
+                      Products", "Read More", "Visit Website")
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}
                 name="link"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>External Link</FormLabel>
+                    <FormLabel>
+                      {linkType === "external"
+                        ? "External URL"
+                        : "Internal Page Path"}
+                    </FormLabel>
                     <FormControl>
                       <Input
-                        type="url"
-                        placeholder="https://example.com"
+                        placeholder={
+                          linkType === "external"
+                            ? "https://example.com"
+                            : "/staff/products"
+                        }
                         {...field}
                         value={field.value || ""}
                       />
                     </FormControl>
                     <FormDescription>
-                      Optional external link related to this post.
+                      {linkType === "external"
+                        ? "Full URL starting with http:// or https://"
+                        : "Internal page path starting with / (e.g., /staff/products, /comparison)"}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              {/* Link Preview */}
+              {form.watch("link") && (
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                  <div className="flex items-center gap-2 text-sm">
+                    {linkType === "external" ? (
+                      <ExternalLink className="h-4 w-4 text-blue-500" />
+                    ) : (
+                      <LinkIcon className="h-4 w-4 text-green-500" />
+                    )}
+                    <span className="font-medium">
+                      {linkType === "external"
+                        ? "External Link:"
+                        : "Internal Link:"}
+                    </span>
+                    <code className="bg-white dark:bg-gray-700 px-2 py-1 rounded text-xs">
+                      {form.watch("link")}
+                    </code>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
