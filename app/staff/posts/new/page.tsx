@@ -154,7 +154,7 @@ export default function NewPostPage() {
       }
 
       toast.success("Post created successfully!");
-      router.push("/Staff/Posts");
+      router.push("/staff/posts");
     } catch (error) {
       console.error("Unexpected error during post creation:", error);
       toast.error("An unexpected error occurred. Please try again.");
@@ -169,11 +169,11 @@ export default function NewPostPage() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/staff/Dashboard">Dashboard</BreadcrumbLink>
+              <BreadcrumbLink href="/staff/dashboard">Dashboard</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href="/Staff/Posts">Posts</BreadcrumbLink>
+              <BreadcrumbLink href="/staff/posts">Posts</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
@@ -185,7 +185,7 @@ export default function NewPostPage() {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Create New Post</h1>
           <div className="flex items-center gap-2">
-            <Link href="/Staff/Posts">
+            <Link href="/staff/posts">
               <Button variant="outline" size="sm">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Posts
@@ -348,7 +348,7 @@ export default function NewPostPage() {
 
           {/* Submit Button */}
           <div className="flex justify-end gap-4">
-            <Link href="/Staff/Posts">
+            <Link href="/staff/posts">
               <Button variant="outline" type="button">
                 Cancel
               </Button>
