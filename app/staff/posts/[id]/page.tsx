@@ -23,14 +23,15 @@ import {
 import Image from "next/image";
 
 // interface Post {
-//   id: number;
-//   title: string;
-//   body: string;
-//   description: string | null;
-//   link: string | null;
-//   image_url: string | null;
-//   created_at: string;
-//   updated_at: string;
+//   id: string // Changed to string for uuid
+//   title: string
+//   body: string
+//   description: string | null
+//   link_name: string | null // Added link_name field
+//   link: string | null
+//   image_url: string | null
+//   created_at: string
+//   updated_at: string
 // }
 
 interface PostDetailPageProps {
@@ -45,7 +46,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const { data: post, error } = await supabase
     .from("posts")
     .select("*")
-    .eq("id", Number.parseInt(id))
+    .eq("id", id)
     .single();
 
   if (error || !post) {
@@ -214,25 +215,32 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
                       ? "External Link"
                       : "Internal Link"}
                   </label>
-                  {isExternalLink(post.link) ? (
-                    <a
-                      href={post.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline mt-1"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                      Open External Link
-                    </a>
-                  ) : (
-                    <Link
-                      href={post.link}
-                      className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 hover:underline mt-1"
-                    >
-                      <LinkIcon className="w-4 h-4" />
-                      Go to {post.link}
-                    </Link>
-                  )}
+                  <div className="mt-1">
+                    {post.link_name && (
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
+                        {post.link_name}
+                      </p>
+                    )}
+                    {isExternalLink(post.link) ? (
+                      <a
+                        href={post.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        {post.link}
+                      </a>
+                    ) : (
+                      <Link
+                        href={post.link}
+                        className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 hover:underline"
+                      >
+                        <LinkIcon className="w-4 h-4" />
+                        {post.link}
+                      </Link>
+                    )}
+                  </div>
                 </div>
               )}
             </CardContent>
