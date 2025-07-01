@@ -285,7 +285,7 @@ export default function PostsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Posts</h1>
         <div className="flex items-center gap-2">
-          <Link href="/Staff/Posts/New">
+          <Link href="/staff/posts/new">
             <Button size="sm">
               <Plus className="mr-2 h-4 w-4" />
               Add Post
