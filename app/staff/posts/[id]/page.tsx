@@ -27,6 +27,7 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Post } from "@/type/posts";
+import { formatDate } from "@/lib/format";
 
 export default function PostDetailPage() {
   const pathname = usePathname();
@@ -92,16 +93,6 @@ export default function PostDetailPage() {
   if (loading) return <div>Loading post...</div>;
 
   if (!post) return <div>Post not found.</div>;
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
 
   const isExternalLink = (link: string) => {
     return link.startsWith("http://") || link.startsWith("https://");
