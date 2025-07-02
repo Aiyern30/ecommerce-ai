@@ -191,7 +191,7 @@ export default function ComparisonPage() {
     if (selectedIds.length >= 2) {
       const params = new URLSearchParams();
       selectedIds.forEach((id) => params.append("products", id));
-      router.push(`/comparison/compare?${params.toString()}`);
+      router.push(`/compare?${params.toString()}`);
     }
   };
 
