@@ -1,17 +1,11 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function middleware(request: NextRequest) {
-  const session = await getToken({ req: request });
-
-  if (!session && request.nextUrl.pathname.startsWith("/Profile")) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  return NextResponse.next();
+export function middleware(request: NextRequest) {
+  const response = NextResponse.next();
+  response.headers.set("x-pathname", request.nextUrl.pathname);
+  return response;
 }
 
 export const config = {
-  matcher: ["/profile/:path*"],
+  matcher: ["/((?!api|_next|favicon.ico|images).*)"],
 };
