@@ -6,6 +6,19 @@ import Link from "next/link";
 import { useSwipeable } from "react-swipeable";
 import { Button } from "@/components/ui/";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
+
+interface Post {
+  id: string;
+  title: string;
+  body: string;
+  description: string | null;
+  link_name: string | null;
+  link: string | null;
+  image_url: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
 interface CarouselItem {
   title: string;
@@ -19,49 +32,64 @@ interface CarouselItem {
 export default function HeroCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [carouselItems, setCarouselItems] = useState<CarouselItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const carouselItems: CarouselItem[] = [
+  const fetchPosts = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const { data: posts, error: fetchError } = await supabase
+        .from("posts")
+        .select("*")
+        .not("image_url", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(4);
+      if (fetchError) {
+        throw fetchError;
+      }
+
+      if (!posts || posts.length === 0) {
+        setCarouselItems(getDefaultCarouselItems());
+        return;
+      }
+
+      const transformedItems: CarouselItem[] = posts.map((post: Post) => ({
+        title: post.title,
+        description: post.description || post.body.substring(0, 150) + "...",
+        buttonText: post.link_name || "Read More",
+        buttonLink: post.link || `/staff/posts/${post.id}`,
+        imageSrc: post.image_url || "/placeholder.svg",
+        imageAlt: post.title,
+      }));
+
+      setCarouselItems(transformedItems);
+    } catch (err) {
+      console.error("Error fetching posts for carousel:", err);
+      setError("Failed to load carousel content");
+      setCarouselItems(getDefaultCarouselItems());
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const getDefaultCarouselItems = (): CarouselItem[] => [
     {
-      title: "Transform Your Home with Elegant Furniture",
+      title: "Welcome to Our Platform",
       description:
-        "Discover our curated selection of stylish and durable furniture pieces. Whether you're looking for modern minimalism or classic charm, we have the perfect fit for your space.",
-      buttonText: "Shop Now",
-      buttonLink: "/shop",
-      imageSrc:
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/elegant-living-room-set.png",
-      imageAlt: "Modern living room with stylish furniture",
-    },
-    {
-      title: "Comfort Meets Design in Every Piece",
-      description:
-        "Experience furniture that combines aesthetics with functionality. From cozy sofas to ergonomic chairs, our collection ensures comfort without compromising on style.",
-      buttonText: "Explore Collection",
-      buttonLink: "/collection",
-      imageSrc:
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/cozy-sofa-set.png",
-      imageAlt: "Comfortable sofa set in a well-lit room",
-    },
-    {
-      title: "Sustainable and Eco-Friendly Choices",
-      description:
-        "Our furniture is crafted using sustainable materials, ensuring an eco-conscious choice for your home. Elevate your space while caring for the planet.",
-      buttonText: "Go Green",
-      buttonLink: "/sustainable",
-      imageSrc:
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eco-friendly-furniture.png",
-      imageAlt: "Eco-friendly wooden dining table with chairs",
-    },
-    {
-      title: "Expert Craftsmanship, Built to Last",
-      description:
-        "We take pride in delivering high-quality furniture made by skilled artisans. Every piece is designed for durability, elegance, and everyday comfort.",
-      buttonText: "Learn More",
-      buttonLink: "/about-us",
-      imageSrc:
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/handcrafted-furniture.png",
-      imageAlt: "Artisan working on a wooden furniture piece",
+        "Discover our latest content and stay updated with our newest posts.",
+      buttonText: "Explore",
+      buttonLink: "/staff/posts",
+      imageSrc: "/placeholder.svg?height=500&width=800",
+      imageAlt: "Welcome banner",
     },
   ];
+
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
 
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
@@ -80,7 +108,6 @@ export default function HeroCarousel() {
     );
   };
 
-  // Swipe functionality using react-swipeable
   const handlers = useSwipeable({
     onSwipedLeft: nextSlide,
     onSwipedRight: prevSlide,
@@ -90,11 +117,44 @@ export default function HeroCarousel() {
   });
 
   useEffect(() => {
-    if (!isAutoPlaying) return;
+    if (!isAutoPlaying || carouselItems.length <= 1) return;
 
     const interval = setInterval(nextSlide, 5000);
     return () => clearInterval(interval);
-  }, [isAutoPlaying, nextSlide]);
+  }, [isAutoPlaying, nextSlide, carouselItems.length]);
+
+  if (loading) {
+    return (
+      <div className="relative w-full h-[300px] md:h-[500px] bg-gray-100 dark:bg-gray-800 animate-pulse">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-gray-500 dark:text-gray-400">
+            Loading carousel...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && carouselItems.length === 0) {
+    return (
+      <div className="relative w-full h-[300px] md:h-[500px] bg-gray-100 dark:bg-gray-800">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-gray-500 dark:text-gray-400 mb-2">
+              Unable to load carousel
+            </div>
+            <Button onClick={fetchPosts} variant="outline" size="sm">
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (carouselItems.length === 0) {
+    return null;
+  }
 
   return (
     <div className="relative w-full overflow-hidden" {...handlers}>
@@ -115,13 +175,12 @@ export default function HeroCarousel() {
                   </p>
                   <Button
                     asChild
-                    className="bg-orange-500 hover:bg-orange-600 text-white  font-medium px-6"
+                    className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-6"
                   >
                     <Link href={item.buttonLink}>{item.buttonText}</Link>
                   </Button>
                 </div>
               </div>
-
               <div className="w-full md:w-1/2 h-[300px] md:h-[500px] relative">
                 <Image
                   src={item.imageSrc || "/placeholder.svg"}
@@ -136,22 +195,36 @@ export default function HeroCarousel() {
         ))}
       </div>
 
-      {/* Dot indicators */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
-        {carouselItems.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => goToSlide(index)}
-            className={cn(
-              "w-3 h-3 rounded-full transition-all duration-300",
-              currentSlide === index
-                ? "bg-blue-500 w-8"
-                : "bg-gray-400 hover:bg-gray-600"
-            )}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
-      </div>
+      {carouselItems.length > 1 && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
+          {carouselItems.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              className={cn(
+                "w-3 h-3 rounded-full transition-all duration-300",
+                currentSlide === index
+                  ? "bg-blue-500 w-8"
+                  : "bg-gray-400 hover:bg-gray-600"
+              )}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      )}
+
+      {error && (
+        <div className="absolute top-4 right-4 z-20">
+          <Button
+            onClick={fetchPosts}
+            variant="outline"
+            size="sm"
+            className="bg-white/80 dark:bg-gray-800/80"
+          >
+            Refresh
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
