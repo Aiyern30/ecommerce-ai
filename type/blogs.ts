@@ -5,8 +5,8 @@ export interface Blog {
   external_link: string | null;
   created_at: string;
   updated_at: string;
-  blog_images?: { image_url: string }[] | null;
-  blog_tags?:
+  blog_images: { image_url: string }[] | null;
+  blog_tags:
     | {
         tags: {
           id: string;
