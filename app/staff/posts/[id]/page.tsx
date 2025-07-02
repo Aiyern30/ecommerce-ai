@@ -3,14 +3,7 @@
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  ArrowLeft,
-  ExternalLink,
-  Calendar,
-  Edit,
-  LinkIcon,
-  Trash2,
-} from "lucide-react";
+import { ExternalLink, Calendar, Edit, LinkIcon, Trash2 } from "lucide-react";
 import {
   Button,
   Breadcrumb,
@@ -143,22 +136,6 @@ export default function PostDetailPage() {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Post Details</h1>
-          <div className="flex items-center gap-2">
-            <Link href="/staff/posts">
-              <Button variant="outline" size="sm">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Posts
-              </Button>
-            </Link>
-            <Button size="sm">
-              <Edit className="mr-2 h-4 w-4" />
-              Edit Post
-            </Button>
-          </div>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
