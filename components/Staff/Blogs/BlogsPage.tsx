@@ -517,17 +517,30 @@ export default function BlogsPage() {
                       />
                     </TableCell>
                     <TableCell>
-                      <Image
-                        src={
-                          blog.blog_images?.[0]?.image_url ||
-                          "/placeholder.svg?height=48&width=48"
-                        }
-                        alt={blog.title}
-                        className="h-12 w-12 rounded-md object-cover"
-                        width={48}
-                        height={48}
-                      />
+                      <div className="relative w-16 h-12">
+                        {(blog.blog_images || [])
+                          .map((img) => img.image_url)
+                          .filter(
+                            (src, i, arr) => src && arr.indexOf(src) === i
+                          )
+                          .slice(0, 4)
+                          .map((src, index) => (
+                            <Image
+                              key={index}
+                              src={src}
+                              alt={`${blog.title} ${index + 1}`}
+                              className="absolute top-0 left-0 w-10 h-10 rounded-md object-cover border border-white shadow-sm transition-all"
+                              style={{
+                                zIndex: 10 - index,
+                                transform: `translateX(${index * 12}px)`,
+                              }}
+                              width={40}
+                              height={40}
+                            />
+                          ))}
+                      </div>
                     </TableCell>
+
                     <TableCell className="font-medium max-w-xs">
                       <div className="truncate" title={blog.title}>
                         {blog.title}
