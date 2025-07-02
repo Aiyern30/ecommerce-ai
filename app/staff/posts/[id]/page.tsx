@@ -26,18 +26,7 @@ import {
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-
-interface Post {
-  id: string;
-  title: string;
-  body: string;
-  description: string | null;
-  link_name: string | null;
-  link: string | null;
-  image_url: string | null;
-  created_at: string;
-  updated_at: string;
-}
+import { Post } from "@/type/posts";
 
 export default function PostDetailPage() {
   const pathname = usePathname();

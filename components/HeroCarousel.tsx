@@ -7,18 +7,7 @@ import { useSwipeable } from "react-swipeable";
 import { Button } from "@/components/ui/";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
-
-interface Post {
-  id: string;
-  title: string;
-  body: string;
-  description: string | null;
-  link_name: string | null;
-  link: string | null;
-  image_url: string | null;
-  created_at: string;
-  updated_at: string;
-}
+import { Post } from "@/type/posts";
 
 interface CarouselItem {
   title: string;
