@@ -29,6 +29,56 @@ interface CarouselItem {
   imageAlt: string;
 }
 
+function CarouselSkeleton() {
+  return (
+    <div className="relative w-full overflow-hidden">
+      <div className="flex">
+        <div className="w-full flex-shrink-0">
+          <div className="relative flex flex-col md:flex-row items-center">
+            {/* Content skeleton - shows first on mobile */}
+            <div className="w-full md:w-1/2 h-[50vh] md:h-[500px] p-6 md:p-12 bg-white/90 dark:bg-gray-800/90 order-2 md:order-1">
+              <div className="max-w-xl mx-auto space-y-4">
+                {/* Title skeleton */}
+                <div className="space-y-2">
+                  <div className="h-8 md:h-10 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"></div>
+                  <div className="h-8 md:h-10 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse w-3/4"></div>
+                </div>
+
+                {/* Description skeleton */}
+                <div className="space-y-2">
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-5/6"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-4/6"></div>
+                </div>
+
+                {/* Button skeleton */}
+                <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              </div>
+            </div>
+
+            {/* Image skeleton - shows second on mobile */}
+            <div className="w-full md:w-1/2 h-[50vh] md:h-[500px] relative bg-gray-200 dark:bg-gray-700 animate-pulse order-1 md:order-2">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-16 h-16 bg-gray-300 dark:bg-gray-600 rounded-lg animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Skeleton dots */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
+        {[...Array(3)].map((_, index) => (
+          <div
+            key={index}
+            className="w-3 h-3 rounded-full bg-gray-300 dark:bg-gray-600 animate-pulse"
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function HeroCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
@@ -47,6 +97,7 @@ export default function HeroCarousel() {
         .not("image_url", "is", null)
         .order("created_at", { ascending: false })
         .limit(4);
+
       if (fetchError) {
         throw fetchError;
       }
@@ -124,20 +175,12 @@ export default function HeroCarousel() {
   }, [isAutoPlaying, nextSlide, carouselItems.length]);
 
   if (loading) {
-    return (
-      <div className="relative w-full h-[300px] md:h-[500px] bg-gray-100 dark:bg-gray-800 animate-pulse">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-gray-500 dark:text-gray-400">
-            Loading carousel...
-          </div>
-        </div>
-      </div>
-    );
+    return <CarouselSkeleton />;
   }
 
   if (error && carouselItems.length === 0) {
     return (
-      <div className="relative w-full h-[300px] md:h-[500px] bg-gray-100 dark:bg-gray-800">
+      <div className="relative w-full h-[100vh] md:h-[500px] bg-gray-100 dark:bg-gray-800">
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <div className="text-gray-500 dark:text-gray-400 mb-2">
@@ -165,12 +208,13 @@ export default function HeroCarousel() {
         {carouselItems.map((item, index) => (
           <div key={index} className="w-full flex-shrink-0">
             <div className="relative flex flex-col md:flex-row items-center">
-              <div className="w-full md:w-1/2 p-6 md:p-12 bg-white/90 dark:bg-transparent">
+              {/* Content section - shows second on mobile, first on desktop */}
+              <div className="w-full md:w-1/2 h-[50vh] md:h-[500px] p-6 md:p-12 bg-white/90 dark:bg-transparent order-2 md:order-1 flex items-center">
                 <div className="max-w-xl mx-auto">
-                  <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-4">
+                  <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-800 dark:text-white mb-4">
                     {item.title}
                   </h2>
-                  <p className="text-gray-600 dark:text-white mb-6">
+                  <p className="text-gray-600 dark:text-white mb-6 text-sm md:text-base">
                     {item.description}
                   </p>
                   <Button
@@ -181,7 +225,9 @@ export default function HeroCarousel() {
                   </Button>
                 </div>
               </div>
-              <div className="w-full md:w-1/2 h-[300px] md:h-[500px] relative">
+
+              {/* Image section - shows first on mobile, second on desktop */}
+              <div className="w-full md:w-1/2 h-[50vh] md:h-[500px] relative order-1 md:order-2">
                 <Image
                   src={item.imageSrc || "/placeholder.svg"}
                   alt={item.imageAlt}
