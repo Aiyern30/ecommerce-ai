@@ -1,6 +1,8 @@
+"use client";
+
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   ArrowLeft,
   ExternalLink,
@@ -21,41 +23,53 @@ import {
   CardTitle,
 } from "@/components/ui";
 import Image from "next/image";
+import { useEffect, useMemo, useState } from "react";
 
-// interface Post {
-//   id: string // Changed to string for uuid
-//   title: string
-//   body: string
-//   description: string | null
-//   link_name: string | null // Added link_name field
-//   link: string | null
-//   image_url: string | null
-//   created_at: string
-//   updated_at: string
-// }
-
-interface PostDetailPageProps {
-  params: {
-    id: string;
-  };
+interface Post {
+  id: string; // Changed from number to string for uuid
+  title: string;
+  body: string;
+  description: string | null;
+  link_name: string | null; // Added link_name field
+  link: string | null;
+  image_url: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
-export default async function PostDetailPage({ params }: PostDetailPageProps) {
-  const { id } = params;
+export default function PostDetailPage() {
+  const pathname = usePathname();
 
-  const { data: post, error } = await supabase
-    .from("posts")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const postId = useMemo(() => {
+    const parts = pathname.split("/");
+    return parts[parts.length - 1];
+  }, [pathname]);
 
-  if (error || !post) {
-    console.error(
-      "Error fetching post details:",
-      error?.message || "Post not found"
-    );
-    notFound();
-  }
+  const [post, setPost] = useState<Post | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchPosts() {
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("id", postId)
+        .single();
+
+      if (error || !data) {
+        console.error("post fetch failed:", error);
+        setPost(null);
+      } else {
+        setPost(data);
+      }
+      setLoading(false);
+    }
+
+    if (postId) fetchPosts();
+  }, [postId]);
+
+  if (loading) return <div>Loading product...</div>;
+  if (!post) return <div>Product not found.</div>;
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -144,6 +158,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
                   width={800}
                   height={400}
                   className="w-full h-auto rounded-lg object-cover"
+                  priority
                 />
               </CardContent>
             </Card>
