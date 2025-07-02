@@ -557,25 +557,34 @@ export default function BlogsPage() {
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {blog.blog_tags && blog.blog_tags.length > 0 ? (
-                          blog.blog_tags.slice(0, 2).map((blogTag, index) => (
-                            <Badge
-                              key={index}
-                              variant="secondary"
-                              className="text-xs"
-                            >
-                              {blogTag.tags.name}
-                            </Badge>
-                          ))
+                          blog.blog_tags
+                            .flatMap((bt) => bt.tags)
+                            .slice(0, 2)
+                            .map((tag) => (
+                              <Badge
+                                key={tag.id}
+                                variant="secondary"
+                                className="text-xs"
+                              >
+                                {tag.name}
+                              </Badge>
+                            ))
                         ) : (
                           <span className="text-gray-400 text-sm">No tags</span>
                         )}
-                        {blog.blog_tags && blog.blog_tags.length > 2 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{blog.blog_tags.length - 2}
-                          </Badge>
-                        )}
+
+                        {blog.blog_tags &&
+                          blog.blog_tags.flatMap((bt) => bt.tags).length >
+                            2 && (
+                            <Badge variant="outline" className="text-xs">
+                              +
+                              {blog.blog_tags.flatMap((bt) => bt.tags).length -
+                                2}
+                            </Badge>
+                          )}
                       </div>
                     </TableCell>
+
                     <TableCell>
                       {blog.external_link ? (
                         <div className="flex items-center gap-2">
