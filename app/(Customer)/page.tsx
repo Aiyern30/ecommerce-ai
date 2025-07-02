@@ -14,20 +14,6 @@ export default function Home() {
     <div className="flex min-h-screen flex-col">
       <main>
         <HeroCarousel />
-        {/* Brand Logos */}
-        <div className="border-b py-8">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-wrap items-center justify-center gap-8 grayscale">
-              {["Versace", "Zara", "Gucci", "Prada", "Calvin Klein"].map(
-                (brand) => (
-                  <div key={brand} className="text-xl font-bold tracking-wider">
-                    {brand}
-                  </div>
-                )
-              )}
-            </div>
-          </div>
-        </div>
 
         {/* New Arrivals */}
         <section className="py-16">
