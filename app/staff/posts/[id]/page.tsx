@@ -2,13 +2,14 @@
 
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   ArrowLeft,
   ExternalLink,
   Calendar,
   Edit,
   LinkIcon,
+  Trash2,
 } from "lucide-react";
 import {
   Button,
@@ -21,16 +22,24 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 interface Post {
-  id: string; // Changed from number to string for uuid
+  id: string;
   title: string;
   body: string;
   description: string | null;
-  link_name: string | null; // Added link_name field
+  link_name: string | null;
   link: string | null;
   image_url: string | null;
   created_at: string;
@@ -39,7 +48,7 @@ interface Post {
 
 export default function PostDetailPage() {
   const pathname = usePathname();
-
+  const router = useRouter();
   const postId = useMemo(() => {
     const parts = pathname.split("/");
     return parts[parts.length - 1];
@@ -47,9 +56,11 @@ export default function PostDetailPage() {
 
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    async function fetchPosts() {
+    async function fetchPost() {
       const { data, error } = await supabase
         .from("posts")
         .select("*")
@@ -65,11 +76,40 @@ export default function PostDetailPage() {
       setLoading(false);
     }
 
-    if (postId) fetchPosts();
+    if (postId) fetchPost();
   }, [postId]);
 
-  if (loading) return <div>Loading product...</div>;
-  if (!post) return <div>Product not found.</div>;
+  const openDeleteDialog = () => {
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeletePost = async () => {
+    if (!post) return;
+
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase.from("posts").delete().eq("id", post.id);
+
+      if (error) {
+        console.error("Error deleting post:", error.message);
+        toast.error(`Error deleting post: ${error.message}`);
+      } else {
+        toast.success("Post deleted successfully!");
+        // Navigate back to posts list after successful deletion
+        router.push("/staff/posts");
+      }
+    } catch (error) {
+      console.error("Unexpected error during deletion:", error);
+      toast.error("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
+  if (loading) return <div>Loading post...</div>;
+
+  if (!post) return <div>Post not found.</div>;
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -267,16 +307,86 @@ export default function PostDetailPage() {
               <CardTitle>Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button className="w-full" variant="default">
+              <Button
+                className="w-full"
+                variant="default"
+                onClick={() => router.push(`/staff/posts/${post.id}/edit`)}
+              >
                 <Edit className="mr-2 h-4 w-4" />
                 Edit Post
               </Button>
-              <Button className="w-full bg-transparent" variant="outline">
-                Duplicate Post
-              </Button>
-              <Button className="w-full" variant="destructive">
-                Delete Post
-              </Button>
+
+              {/* Delete Dialog */}
+              <Dialog
+                open={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}
+              >
+                <DialogTrigger asChild>
+                  <Button
+                    className="w-full"
+                    variant="destructive"
+                    onClick={openDeleteDialog}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete Post
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Confirm Deletion</DialogTitle>
+                    <DialogDescription>
+                      Are you sure you want to delete this post? This action
+                      cannot be undone.
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  {/* Post Preview in Dialog */}
+                  <div className="overflow-y-auto p-4 border rounded-md bg-gray-50 dark:bg-gray-800">
+                    <div className="flex items-center gap-3">
+                      <Image
+                        src={
+                          post.image_url ||
+                          "/placeholder.svg?height=48&width=48"
+                        }
+                        alt={post.title}
+                        width={48}
+                        height={48}
+                        className="rounded-md object-cover flex-shrink-0"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-gray-900 dark:text-gray-100">
+                          {post.title}
+                        </p>
+                        {post.description && (
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {post.description}
+                          </p>
+                        )}
+                        <p className="text-xs text-gray-500 dark:text-gray-500">
+                          Created: {formatDate(post.created_at)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsDeleteDialogOpen(false)}
+                      disabled={isDeleting}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={handleDeletePost}
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? "Deleting..." : "Delete Post"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </CardContent>
           </Card>
         </div>
