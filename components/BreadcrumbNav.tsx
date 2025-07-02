@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import React from "react";
 
 interface BreadcrumbNavProps {
   showFilterButton?: boolean;
@@ -44,7 +45,7 @@ export function BreadcrumbNav({
             const href = "/" + pathSegments.slice(0, index + 1).join("/");
             const isLast = index === pathSegments.length - 1;
             return (
-              <>
+              <React.Fragment key={`crumb-${index}`}>
                 <BreadcrumbSeparator key={`sep-${index}`}>
                   <ChevronRight className="h-4 w-4" />
                 </BreadcrumbSeparator>
@@ -64,7 +65,7 @@ export function BreadcrumbNav({
                     </BreadcrumbLink>
                   )}
                 </BreadcrumbItem>
-              </>
+              </React.Fragment>
             );
           })}
         </BreadcrumbList>
