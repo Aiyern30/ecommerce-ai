@@ -199,7 +199,6 @@ export default function BlogDetailPage() {
             </Card>
           )}
 
-          {/* Tags */}
           {blog.blog_tags && blog.blog_tags.length > 0 && (
             <Card>
               <CardHeader>
@@ -207,11 +206,17 @@ export default function BlogDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {blog.blog_tags.map((blogTag, index) => (
-                    <Badge key={index} variant="secondary" className="text-sm">
-                      {blogTag.tags.name}
-                    </Badge>
-                  ))}
+                  {blog.blog_tags
+                    .flatMap((blogTag) => blogTag.tags)
+                    .map((tag) => (
+                      <Badge
+                        key={tag.id}
+                        variant="secondary"
+                        className="text-sm"
+                      >
+                        {tag.name}
+                      </Badge>
+                    ))}
                 </div>
               </CardContent>
             </Card>

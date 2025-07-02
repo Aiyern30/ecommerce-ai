@@ -11,7 +11,7 @@ export interface Blog {
         tags: {
           id: string;
           name: string;
-        };
+        }[];
       }[]
     | null;
 }
