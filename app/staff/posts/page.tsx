@@ -47,6 +47,7 @@ import {
 import Image from "next/image";
 import { PostFilters } from "@/type/Filter/PostFilters";
 import { Post } from "@/type/posts";
+import { formatDate } from "@/lib/format";
 
 function PostTableSkeleton() {
   return (
@@ -255,14 +256,6 @@ export default function PostsPage() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
 
   const isExternalLink = (link: string) => {
     return link.startsWith("http://") || link.startsWith("https://");
