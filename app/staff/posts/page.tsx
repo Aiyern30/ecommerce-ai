@@ -45,6 +45,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/";
 import Image from "next/image";
+import { PostFilters } from "@/type/Filter/PostFilters";
 
 interface Post {
   id: string; // Changed from number to string for uuid
@@ -56,13 +57,6 @@ interface Post {
   image_url: string | null;
   created_at: string;
   updated_at: string;
-}
-
-interface PostFilters {
-  search: string;
-  sortBy: "title-asc" | "title-desc" | "date-new" | "date-old";
-  hasImage: "all" | "with-image" | "without-image";
-  hasLink: "all" | "with-link" | "without-link";
 }
 
 function PostTableSkeleton() {
