@@ -570,14 +570,15 @@ export default function PostsPage() {
                       {renderLinkDisplay(post.link, post.link_name)}
                     </TableCell>
                     <TableCell>{formatDate(post.created_at)}</TableCell>
-                    <TableCell
-                      className="text-right"
-                      onClick={(e) => e.stopPropagation()}
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() =>
+                        router.push(`/staff/posts/${post.id}/edit`)
+                      }
                     >
-                      <Button variant="default" size="sm">
-                        Edit
-                      </Button>
-                    </TableCell>
+                      Edit
+                    </Button>
                   </TableRow>
                 ))
               )}
