@@ -583,7 +583,13 @@ export default function BlogsPage() {
                       className="text-right"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <Button variant="default" size="sm">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() =>
+                          router.push(`/staff/blogs/${blog.id}/edit`)
+                        }
+                      >
                         Edit
                       </Button>
                     </TableCell>
