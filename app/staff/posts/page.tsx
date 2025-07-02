@@ -46,18 +46,7 @@ import {
 } from "@/components/ui/";
 import Image from "next/image";
 import { PostFilters } from "@/type/Filter/PostFilters";
-
-interface Post {
-  id: string; // Changed from number to string for uuid
-  title: string;
-  body: string;
-  description: string | null;
-  link_name: string | null; // Added link_name field
-  link: string | null;
-  image_url: string | null;
-  created_at: string;
-  updated_at: string;
-}
+import { Post } from "@/type/posts";
 
 function PostTableSkeleton() {
   return (

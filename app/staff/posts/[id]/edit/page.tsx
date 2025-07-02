@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/";
 import Image from "next/image";
 import { toast } from "sonner";
+import { Post } from "@/type/posts";
 
 // Zod schema for post editing
 const postSchema = z.object({
@@ -61,24 +62,12 @@ const postSchema = z.object({
 
 type PostFormData = z.infer<typeof postSchema>;
 
-interface Post {
-  id: string;
-  title: string;
-  body: string;
-  description: string | null;
-  link_name: string | null;
-  link: string | null;
-  image_url: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
 export default function EditPostPage() {
   const router = useRouter();
   const pathname = usePathname();
   const postId = useMemo(() => {
     const parts = pathname.split("/");
-    return parts[parts.length - 2]; // Get the ID from the path (before /edit)
+    return parts[parts.length - 2];
   }, [pathname]);
 
   const [post, setPost] = useState<Post | null>(null);
