@@ -251,7 +251,6 @@ export default function EditPostPage() {
           .getPublicUrl(filePath);
         imageUrl = publicData.publicUrl;
 
-        // Delete old image if it exists
         if (post.image_url) {
           const oldImagePath = post.image_url.split("/").pop();
           if (oldImagePath) {
@@ -261,7 +260,6 @@ export default function EditPostPage() {
           }
         }
       } else if (removeCurrentImage) {
-        // Remove current image if requested
         if (post.image_url) {
           const oldImagePath = post.image_url.split("/").pop();
           if (oldImagePath) {
@@ -572,9 +570,8 @@ export default function EditPostPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Current Image */}
               {currentImageUrl && !removeCurrentImage && (
-                <div>
+                <div className="space-x-5">
                   <FormLabel>Current Image</FormLabel>
                   <div className="mt-2 relative inline-block">
                     <Image
@@ -636,7 +633,7 @@ export default function EditPostPage() {
 
               {/* New Image Preview */}
               {selectedImageFile && (
-                <div className="mt-4">
+                <div className="mt-4 space-x-5">
                   <FormLabel>New Image Preview</FormLabel>
                   <div className="mt-2 relative inline-block">
                     <Image
