@@ -8,15 +8,7 @@ import { Button } from "@/components/ui/";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { Post } from "@/type/posts";
-
-interface CarouselItem {
-  title: string;
-  description: string;
-  buttonText: string;
-  buttonLink: string;
-  imageSrc: string;
-  imageAlt: string;
-}
+import { CarouselItem } from "@/type/Carousel";
 
 function CarouselSkeleton() {
   return (
