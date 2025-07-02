@@ -38,7 +38,7 @@ export default function CompareProductsContent() {
       const productIds = [...new Set(searchParams.getAll("products"))];
 
       if (productIds.length === 0) {
-        router.push("/comparison");
+        router.push("/products");
         return;
       }
 
@@ -47,7 +47,7 @@ export default function CompareProductsContent() {
       if (originalIds.length !== productIds.length) {
         const params = new URLSearchParams();
         productIds.forEach((id) => params.append("products", id));
-        router.replace(`/comparison/compare?${params.toString()}`);
+        router.replace(`/products/compare?${params.toString()}`);
       }
 
       const { data, error } = await supabase.from("products").select(`
@@ -79,13 +79,13 @@ export default function CompareProductsContent() {
     const uniqueIds = [...new Set(productIds)];
     const params = new URLSearchParams();
     uniqueIds.forEach((id) => params.append("products", id));
-    router.replace(`/comparison/compare?${params.toString()}`);
+    router.replace(`/products/compare?${params.toString()}`);
   };
 
   const removeProductFromCompare = (id: string) => {
     const newIds = comparedProducts.filter((p) => p.id !== id).map((p) => p.id);
     if (newIds.length < 2) {
-      router.push("/comparison");
+      router.push("/products");
     } else {
       setComparedProducts((prev) => prev.filter((p) => p.id !== id));
       updateURL(newIds);
@@ -129,7 +129,7 @@ export default function CompareProductsContent() {
       <div className="mb-4">
         <Button
           variant="outline"
-          onClick={() => router.push("/comparison")}
+          onClick={() => router.push("/products")}
           className="flex items-center gap-2"
         >
           <ArrowLeft className="w-4 h-4" />
