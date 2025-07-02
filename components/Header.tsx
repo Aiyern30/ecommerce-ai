@@ -33,16 +33,16 @@ const Header = () => {
   const isActive = (path: string) => pathname.startsWith(path);
 
   const primaryNavItems = [
-    { name: "Shop", path: "/Product" },
-    { name: "Categories", path: "/Category" },
-    { name: "Compare", path: "/Comparison" },
+    { name: "Shop", path: "/product" },
+    { name: "Categories", path: "/category" },
+    { name: "Compare", path: "/comparison" },
   ];
 
   const secondaryNavItems = [
-    { name: "Blog", path: "/Blog" },
-    { name: "FAQ", path: "/Faq" },
-    { name: "Contact", path: "/Contact" },
-    { name: "About", path: "/About" },
+    { name: "Blog", path: "/blog" },
+    { name: "FAQ", path: "/faq" },
+    { name: "Contact", path: "/contact" },
+    { name: "About", path: "/about" },
   ];
 
   const isAnySecondaryActive = secondaryNavItems.some((item) =>
