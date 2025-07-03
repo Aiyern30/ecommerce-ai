@@ -111,39 +111,35 @@ export default function BlogPost() {
           </div>
 
           {/* Previous / Next Navigation */}
-          <div className="border-t pt-6 flex justify-between items-center px-6">
-            <div className="flex text-sm text-gray-500">
-              {prevBlog ? (
-                <Link
-                  href={`/blogs/${prevBlog.id}`}
-                  className="flex items-center mr-4"
-                >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  <span>Previous</span>
-                </Link>
-              ) : (
-                <span className="text-muted-foreground mr-4 flex items-center opacity-50">
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  No previous
-                </span>
-              )}
+          {(prevBlog || nextBlog) && (
+            <div className="border-t pt-6 flex justify-between items-center px-6">
+              <div className="flex text-sm text-gray-500 w-full justify-between">
+                {prevBlog ? (
+                  <Link
+                    href={`/blogs/${prevBlog.id}`}
+                    className="flex items-center text-blue-700"
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    <span>Previous</span>
+                  </Link>
+                ) : (
+                  <span />
+                )}
 
-              {nextBlog ? (
-                <Link
-                  href={`/blogs/${nextBlog.id}`}
-                  className="flex items-center"
-                >
-                  <span>Next</span>
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Link>
-              ) : (
-                <span className="text-muted-foreground flex items-center opacity-50">
-                  No next
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </span>
-              )}
+                {nextBlog ? (
+                  <Link
+                    href={`/blogs/${nextBlog.id}`}
+                    className="flex items-center text-blue-700"
+                  >
+                    <span>Next</span>
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Link>
+                ) : (
+                  <span />
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </Card>
       </div>
     </article>
