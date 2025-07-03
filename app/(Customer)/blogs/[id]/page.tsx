@@ -7,7 +7,7 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { Blog } from "@/type/blogs";
-import { Card } from "@/components/ui";
+import { Card, Skeleton } from "@/components/ui";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 export default function BlogPost() {
@@ -79,8 +79,19 @@ export default function BlogPost() {
 
   if (loading || !blog) {
     return (
-      <div className="container mx-auto py-16 text-center text-gray-500">
-        Loading...
+      <div className="container mx-auto py-8">
+        <div className="lg:w-3/4 mx-auto">
+          <Card>
+            <Skeleton className="w-full h-[300px] md:h-[400px] rounded-md mb-6" />
+            <div className="space-y-4 px-6 pb-8">
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="h-4 w-3/4" />
+            </div>
+          </Card>
+        </div>
       </div>
     );
   }
