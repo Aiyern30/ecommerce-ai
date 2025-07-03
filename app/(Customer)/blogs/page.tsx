@@ -13,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
+  Skeleton,
 } from "@/components/ui/";
 import { Button } from "@/components/ui/";
 
@@ -121,7 +122,24 @@ export default function BlogsPage() {
         </div>
 
         {loading && (
-          <p className="mt-6 text-center text-muted-foreground">Loading...</p>
+          <div className={`grid gap-6 sm:grid-cols-2 md:${columnCount}`}>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i} className="overflow-hidden">
+                <CardHeader className="p-0 relative h-52">
+                  <Skeleton className="absolute inset-0 w-full h-full rounded-t-lg" />
+                </CardHeader>
+                <CardContent className="p-4 space-y-2">
+                  <Skeleton className="h-4 w-1/3" />
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-5/6" />
+                </CardContent>
+                <CardFooter className="px-4 pb-4">
+                  <Skeleton className="h-4 w-24" />
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
         )}
 
         {!loading && hasMore && (
