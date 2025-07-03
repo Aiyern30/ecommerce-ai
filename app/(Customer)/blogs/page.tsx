@@ -48,9 +48,13 @@ export default function BlogsPage() {
       (blog) => blog.title && blog.blog_images && blog.blog_images.length > 0
     );
 
-    setBlogs((prev) => [...prev, ...validBlogs]);
+    setBlogs((prev) => {
+      const existingIds = new Set(prev.map((b) => b.id));
+      const uniqueNew = validBlogs.filter((b) => !existingIds.has(b.id));
+      return [...prev, ...uniqueNew];
+    });
     if (validBlogs.length < LIMIT) {
-      setHasMore(false); // no more blogs to fetch
+      setHasMore(false);
     }
   };
 
