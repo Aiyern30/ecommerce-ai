@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Search, Menu, X, ChevronDown, LogIn, Moon, Sun } from "lucide-react";
 import Link from "next/link";
@@ -29,6 +29,7 @@ const Header = () => {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const user = useUser();
+  console.log("User:", user);
 
   const isActive = (path: string) => pathname.startsWith(path);
 
@@ -71,6 +72,15 @@ const Header = () => {
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
+
+  useEffect(() => {
+    // If user is logged in but missing avatar_url, force a reload to get fresh user data
+    if (user && !user.user_metadata?.avatar_url) {
+      supabase.auth.getUser().then(() => {
+        window.location.reload();
+      });
+    }
+  }, [user]);
 
   return (
     <div>
