@@ -59,6 +59,8 @@ const Header = () => {
   };
 
   const getInitials = (name: string) => {
+    if (!name) return "U";
+    if (name.includes("@")) return name[0].toUpperCase();
     return name
       .split(" ")
       .map((n) => n[0])
@@ -181,8 +183,12 @@ const Header = () => {
                         src={user.user_metadata?.avatar_url || undefined}
                       />
                       <AvatarFallback>
-                        {user.user_metadata?.name
+                        {user.user_metadata?.full_name
+                          ? getInitials(user.user_metadata.full_name)
+                          : user.user_metadata?.name
                           ? getInitials(user.user_metadata.name)
+                          : user.email
+                          ? getInitials(user.email)
                           : "U"}
                       </AvatarFallback>
                     </Avatar>
