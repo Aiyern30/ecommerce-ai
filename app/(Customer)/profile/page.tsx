@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
+import { useUser } from "@supabase/auth-helpers-react";
 import { useState } from "react";
 import { getUserDetails } from "@/lib/user";
 import { UserDetails } from "@/type/user";
@@ -79,7 +79,6 @@ export default function ProfilePage() {
   const router = useRouter();
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [loading, setLoading] = useState(true);
-  const supabase = useSupabaseClient();
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState<"input" | "otp" | "done">("input");
@@ -93,23 +92,25 @@ export default function ProfilePage() {
     setError("");
     setIsLoading(true);
 
-    // Format phone number properly
     const fullPhone = countryCode + phone;
 
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: fullPhone,
+      const res = await fetch("/api/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: fullPhone }),
       });
 
-      if (error) {
-        setError(error.message);
-        console.error("OTP Error:", error);
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Failed to send OTP.");
       } else {
         setStep("otp");
       }
     } catch (err) {
       console.error("Unexpected error:", err);
-      setError("An unexpected error occurred. Please try again.");
+      setError("An unexpected error occurred.");
     } finally {
       setIsLoading(false);
     }
@@ -123,44 +124,45 @@ export default function ProfilePage() {
     const fullPhone = countryCode + phone;
 
     try {
-      const { error } = await supabase.auth.verifyOtp({
-        phone: fullPhone,
-        token: otp,
-        type: "sms",
+      const res = await fetch("/api/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: fullPhone,
+          code: otp,
+          user_id: user!.id,
+        }),
       });
 
-      if (error) {
-        setError(error.message);
-        console.error("Verification Error:", error);
-      } else {
-        if (!user) {
-          setError("User not found. Please log in again.");
-          return;
-        }
+      const data = await res.json();
 
-        const res = await fetch("/api/update-phone", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            phone: fullPhone,
-            user_id: user.id,
-          }),
-        });
-
-        if (!res.ok) {
-          const result = await res.json();
-          setError(result.message || "Failed to update phone.");
-          return;
-        }
-
-        setStep("done");
-        window.location.reload();
+      if (!res.ok || !data.success) {
+        setError(data.message || "OTP verification failed.");
+        return;
       }
+
+      if (!user) {
+        setError("User not found. Please log in again.");
+        return;
+      }
+
+      const updateRes = await fetch("/api/update-phone", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: fullPhone, user_id: user.id }),
+      });
+
+      if (!updateRes.ok) {
+        const result = await updateRes.json();
+        setError(result.message || "Failed to update phone.");
+        return;
+      }
+
+      setStep("done");
+      window.location.reload();
     } catch (err) {
       console.error("Unexpected error:", err);
-      setError("An unexpected error occurred. Please try again.");
+      setError("An unexpected error occurred.");
     } finally {
       setIsLoading(false);
     }
