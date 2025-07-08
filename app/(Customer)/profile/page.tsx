@@ -271,7 +271,7 @@ export default function ProfilePage() {
         {/* Phone Section */}
         <div className="w-full flex flex-col items-center mb-2">
           <span className="text-gray-500 text-sm mb-1">Phone Number</span>
-          {user.user_metadata?.phone_verified ? (
+          {user.phone ? (
             <span className="font-medium text-green-600">✓ {user.phone}</span>
           ) : (
             <div className="flex flex-col items-center gap-2 w-full">
