@@ -6,6 +6,7 @@ import { TestimonialCard } from "@/components/TestimonialCard";
 import LatestBlog from "@/components/LatestBlog";
 import HeroCarousel from "@/components/HeroCarousel";
 import { useRouter } from "next/navigation";
+import { WhyChooseUs } from "@/components/WhyChooseUs";
 
 export default function Home() {
   const router = useRouter();
@@ -13,6 +14,7 @@ export default function Home() {
     <div className="flex min-h-screen flex-col">
       <main>
         <HeroCarousel />
+        <WhyChooseUs />
 
         {/* New Arrivals */}
         <section className="py-16">
