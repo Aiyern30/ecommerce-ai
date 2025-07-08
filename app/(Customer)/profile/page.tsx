@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useUser } from "@supabase/auth-helpers-react";
+import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 import { useState } from "react";
 import { getUserDetails } from "@/lib/user";
 import { UserDetails } from "@/type/user";
@@ -15,6 +15,39 @@ export default function ProfilePage() {
   const router = useRouter();
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const supabase = useSupabaseClient();
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [step, setStep] = useState<"input" | "otp" | "done">("input");
+  const [error, setError] = useState("");
+
+  const handleSendOtp = async () => {
+    setError("");
+    const { error } = await supabase.auth.signInWithOtp({
+      phone,
+    });
+    if (error) {
+      setError(error.message);
+    } else {
+      setStep("otp");
+    }
+  };
+
+  // Verify OTP
+  const handleVerifyOtp = async () => {
+    setError("");
+    const { error } = await supabase.auth.verifyOtp({
+      phone,
+      token: otp,
+      type: "sms",
+    });
+    if (error) {
+      setError(error.message);
+    } else {
+      setStep("done");
+      // Optionally, refresh user data here
+    }
+  };
 
   useEffect(() => {
     if (user === null) {
@@ -116,13 +149,46 @@ export default function ProfilePage() {
           {user.user_metadata?.phone_verified ? (
             <span className="font-medium">{user.phone}</span>
           ) : (
-            <button
-              className="px-4 py-2 rounded-full bg-[#ff7a5c] text-white hover:bg-[#ff6a4c] transition"
-              // onClick={handleBindPhone} // implement this later
-              disabled
-            >
-              {user.phone ? "Verify Phone" : "Bind Phone Number"}
-            </button>
+            <div className="flex flex-col items-center gap-2 w-full">
+              {step === "input" && (
+                <>
+                  <input
+                    type="tel"
+                    placeholder="Enter phone number"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="input input-bordered w-full"
+                  />
+                  <button
+                    className="px-4 py-2 rounded-full bg-[#ff7a5c] text-white hover:bg-[#ff6a4c] transition"
+                    onClick={handleSendOtp}
+                  >
+                    Send OTP
+                  </button>
+                </>
+              )}
+              {step === "otp" && (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Enter OTP"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    className="input input-bordered w-full"
+                  />
+                  <button
+                    className="px-4 py-2 rounded-full bg-[#ff7a5c] text-white hover:bg-[#ff6a4c] transition"
+                    onClick={handleVerifyOtp}
+                  >
+                    Verify OTP
+                  </button>
+                </>
+              )}
+              {step === "done" && (
+                <span className="text-green-600">Phone number verified!</span>
+              )}
+              {error && <span className="text-red-500 text-sm">{error}</span>}
+            </div>
           )}
         </div>
       </div>
