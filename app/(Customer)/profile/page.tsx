@@ -1,35 +1,51 @@
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { authOptions } from "@/auth";
-import ProfileTabs from "./profile-tabs";
+// import ProfileTabs from "./profile-tabs";
+import { useUser } from "@supabase/auth-helpers-react";
+import { useState } from "react";
 import { getUserDetails } from "@/lib/user";
 import { UserDetails } from "@/type/user";
 
-export default async function ProfilePage() {
-  const session = await getServerSession(authOptions);
+export default function ProfilePage() {
+  const user = useUser();
+  const router = useRouter();
+  const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!session) {
-    redirect("/login");
+  useEffect(() => {
+    if (user === null) {
+      // Not logged in, redirect to login
+      router.replace("/login");
+    } else if (user) {
+      // Fetch user details
+      (async () => {
+        const details = await getUserDetails(user.email as string);
+        setUserDetails(details as UserDetails);
+        setLoading(false);
+      })();
+    }
+  }, [user, router]);
+
+  if (!user || loading) {
+    return <div>Loading...</div>;
   }
-
-  // Fetch additional user details
-  const userDetails = (await getUserDetails(
-    session.user?.email as string
-  )) as UserDetails;
 
   return (
     <div className="container mx-auto my-4">
       <h1 className="text-3xl font-bold mb-6">My Account</h1>
-
       <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6">
         {/* Profile Summary Card */}
         <div className="bg-card shadow-sm rounded-lg p-6 h-fit">
           <div className="flex flex-col items-center text-center mb-6">
-            {session.user?.image ? (
+            {user.user_metadata?.picture || user.user_metadata?.avatar_url ? (
               <div className="relative w-24 h-24 mb-4">
                 <Image
-                  src={session.user.image || "/placeholder.svg"}
+                  src={
+                    user.user_metadata.picture || user.user_metadata.avatar_url
+                  }
                   alt="Profile Picture"
                   fill
                   className="rounded-full object-cover border-4 border-background"
@@ -39,14 +55,19 @@ export default async function ProfilePage() {
             ) : (
               <div className="w-24 h-24 mb-4 bg-muted rounded-full flex items-center justify-center text-muted-foreground">
                 <span className="text-2xl font-bold">
-                  {session.user?.name?.charAt(0) ||
-                    session.user?.email?.charAt(0) ||
+                  {user.user_metadata?.full_name?.charAt(0) ||
+                    user.user_metadata?.name?.charAt(0) ||
+                    user.email?.charAt(0) ||
                     "?"}
                 </span>
               </div>
             )}
-            <h2 className="text-xl font-semibold">{session.user?.name}</h2>
-            <p className="text-muted-foreground">{session.user?.email}</p>
+            <h2 className="text-xl font-semibold">
+              {user.user_metadata?.full_name ||
+                user.user_metadata?.name ||
+                user.email}
+            </h2>
+            <p className="text-muted-foreground">{user.email}</p>
 
             {userDetails?.memberSince && (
               <p className="text-sm text-muted-foreground mt-2">
@@ -79,9 +100,7 @@ export default async function ProfilePage() {
         </div>
 
         {/* Main Content Area with Tabs */}
-        <div>
-          <ProfileTabs userDetails={userDetails} />
-        </div>
+        <div>{/* <ProfileTabs userDetails={userDetails} /> */}</div>
       </div>
     </div>
   );
