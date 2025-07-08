@@ -7,8 +7,72 @@ import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 import { useState } from "react";
 import { getUserDetails } from "@/lib/user";
 import { UserDetails } from "@/type/user";
+import {
+  Button,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui";
 
 const HEADER_HEIGHT = 64; // px, adjust if your header is taller
+
+// Country codes with proper formatting
+const countries = [
+  { code: "+60", name: "Malaysia", flag: "🇲🇾" },
+  { code: "+65", name: "Singapore", flag: "🇸🇬" },
+  { code: "+1", name: "United States", flag: "🇺🇸" },
+  { code: "+44", name: "United Kingdom", flag: "🇬🇧" },
+  { code: "+81", name: "Japan", flag: "🇯🇵" },
+  { code: "+82", name: "South Korea", flag: "🇰🇷" },
+  { code: "+86", name: "China", flag: "🇨🇳" },
+  { code: "+91", name: "India", flag: "🇮🇳" },
+  { code: "+33", name: "France", flag: "🇫🇷" },
+  { code: "+49", name: "Germany", flag: "🇩🇪" },
+  { code: "+39", name: "Italy", flag: "🇮🇹" },
+  { code: "+34", name: "Spain", flag: "🇪🇸" },
+  { code: "+31", name: "Netherlands", flag: "🇳🇱" },
+  { code: "+41", name: "Switzerland", flag: "🇨🇭" },
+  { code: "+46", name: "Sweden", flag: "🇸🇪" },
+  { code: "+47", name: "Norway", flag: "🇳🇴" },
+  { code: "+45", name: "Denmark", flag: "🇩🇰" },
+  { code: "+358", name: "Finland", flag: "🇫🇮" },
+  { code: "+61", name: "Australia", flag: "🇦🇺" },
+  { code: "+64", name: "New Zealand", flag: "🇳🇿" },
+  { code: "+55", name: "Brazil", flag: "🇧🇷" },
+  { code: "+52", name: "Mexico", flag: "🇲🇽" },
+  { code: "+54", name: "Argentina", flag: "🇦🇷" },
+  { code: "+56", name: "Chile", flag: "🇨🇱" },
+  { code: "+57", name: "Colombia", flag: "🇨🇴" },
+  { code: "+51", name: "Peru", flag: "🇵🇪" },
+  { code: "+27", name: "South Africa", flag: "🇿🇦" },
+  { code: "+20", name: "Egypt", flag: "🇪🇬" },
+  { code: "+971", name: "United Arab Emirates", flag: "🇦🇪" },
+  { code: "+966", name: "Saudi Arabia", flag: "🇸🇦" },
+  { code: "+90", name: "Turkey", flag: "🇹🇷" },
+  { code: "+7", name: "Russia", flag: "🇷🇺" },
+  { code: "+380", name: "Ukraine", flag: "🇺🇦" },
+  { code: "+48", name: "Poland", flag: "🇵🇱" },
+  { code: "+420", name: "Czech Republic", flag: "🇨🇿" },
+  { code: "+36", name: "Hungary", flag: "🇭🇺" },
+  { code: "+40", name: "Romania", flag: "🇷🇴" },
+  { code: "+30", name: "Greece", flag: "🇬🇷" },
+  { code: "+351", name: "Portugal", flag: "🇵🇹" },
+  { code: "+32", name: "Belgium", flag: "🇧🇪" },
+  { code: "+43", name: "Austria", flag: "🇦🇹" },
+  { code: "+353", name: "Ireland", flag: "🇮🇪" },
+  { code: "+66", name: "Thailand", flag: "🇹🇭" },
+  { code: "+84", name: "Vietnam", flag: "🇻🇳" },
+  { code: "+63", name: "Philippines", flag: "🇵🇭" },
+  { code: "+62", name: "Indonesia", flag: "🇮🇩" },
+  { code: "+852", name: "Hong Kong", flag: "🇭🇰" },
+  { code: "+886", name: "Taiwan", flag: "🇹🇼" },
+  { code: "+94", name: "Sri Lanka", flag: "🇱🇰" },
+  { code: "+880", name: "Bangladesh", flag: "🇧🇩" },
+  { code: "+92", name: "Pakistan", flag: "🇵🇰" },
+];
 
 export default function ProfilePage() {
   const user = useUser();
@@ -20,33 +84,71 @@ export default function ProfilePage() {
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState<"input" | "otp" | "done">("input");
   const [error, setError] = useState("");
+  const [countryCode, setCountryCode] = useState("+60");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const isPhoneValid = phone.length >= 8 && /^\d+$/.test(phone);
 
   const handleSendOtp = async () => {
     setError("");
-    const { error } = await supabase.auth.signInWithOtp({
-      phone,
-    });
-    if (error) {
-      setError(error.message);
-    } else {
-      setStep("otp");
+    setIsLoading(true);
+
+    // Format phone number properly
+    const fullPhone = countryCode + phone;
+
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: fullPhone,
+      });
+
+      if (error) {
+        setError(error.message);
+        console.error("OTP Error:", error);
+      } else {
+        setStep("otp");
+      }
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // Verify OTP
   const handleVerifyOtp = async () => {
     setError("");
-    const { error } = await supabase.auth.verifyOtp({
-      phone,
-      token: otp,
-      type: "sms",
-    });
-    if (error) {
-      setError(error.message);
-    } else {
-      setStep("done");
-      // Optionally, refresh user data here
+    setIsLoading(true);
+
+    const fullPhone = countryCode + phone;
+
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        phone: fullPhone,
+        token: otp,
+        type: "sms",
+      });
+
+      if (error) {
+        setError(error.message);
+        console.error("Verification Error:", error);
+      } else {
+        setStep("done");
+        // Refresh user data
+        window.location.reload();
+      }
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const handleBackToInput = () => {
+    setStep("input");
+    setOtp("");
+    setError("");
   };
 
   useEffect(() => {
@@ -64,7 +166,7 @@ export default function ProfilePage() {
   if (!user || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        Loading...
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#ff7a5c]"></div>
       </div>
     );
   }
@@ -147,47 +249,101 @@ export default function ProfilePage() {
         <div className="w-full flex flex-col items-center mb-2">
           <span className="text-gray-500 text-sm mb-1">Phone Number</span>
           {user.user_metadata?.phone_verified ? (
-            <span className="font-medium">{user.phone}</span>
+            <span className="font-medium text-green-600">✓ {user.phone}</span>
           ) : (
             <div className="flex flex-col items-center gap-2 w-full">
               {step === "input" && (
                 <>
-                  <input
-                    type="tel"
-                    placeholder="Enter phone number"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="input input-bordered w-full"
-                  />
-                  <button
-                    className="px-4 py-2 rounded-full bg-[#ff7a5c] text-white hover:bg-[#ff6a4c] transition"
+                  <div className="flex gap-2 w-full">
+                    <Select value={countryCode} onValueChange={setCountryCode}>
+                      <SelectTrigger className="w-40">
+                        <SelectValue placeholder="Country" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-60">
+                        {countries.map((c) => (
+                          <SelectItem key={c.code} value={c.code}>
+                            <div className="flex items-center gap-2">
+                              <span>{c.flag}</span>
+                              <span className="text-xs">{c.code}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      type="tel"
+                      placeholder="Phone number"
+                      value={phone}
+                      onChange={(e) =>
+                        setPhone(e.target.value.replace(/\D/g, ""))
+                      }
+                      className="flex-1"
+                      maxLength={15}
+                    />
+                  </div>
+                  <Button
+                    className="w-full"
                     onClick={handleSendOtp}
+                    disabled={!isPhoneValid || isLoading}
                   >
-                    Send OTP
-                  </button>
+                    {isLoading ? "Sending..." : "Send OTP"}
+                  </Button>
                 </>
               )}
+
               {step === "otp" && (
                 <>
-                  <input
+                  <div className="text-center mb-2">
+                    <p className="text-sm text-gray-600">
+                      We sent an OTP to {countryCode}
+                      {phone}
+                    </p>
+                    <button
+                      onClick={handleBackToInput}
+                      className="text-xs text-[#ff7a5c] hover:underline"
+                    >
+                      Change number
+                    </button>
+                  </div>
+                  <Input
                     type="text"
                     placeholder="Enter OTP"
                     value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    className="input input-bordered w-full"
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                    className="w-full text-center"
+                    maxLength={6}
                   />
-                  <button
-                    className="px-4 py-2 rounded-full bg-[#ff7a5c] text-white hover:bg-[#ff6a4c] transition"
+                  <Button
+                    className="w-full"
                     onClick={handleVerifyOtp}
+                    disabled={otp.length !== 6 || isLoading}
                   >
-                    Verify OTP
-                  </button>
+                    {isLoading ? "Verifying..." : "Verify OTP"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={handleSendOtp}
+                    disabled={isLoading}
+                  >
+                    Resend OTP
+                  </Button>
                 </>
               )}
+
               {step === "done" && (
-                <span className="text-green-600">Phone number verified!</span>
+                <div className="text-center">
+                  <span className="text-green-600 flex items-center gap-1">
+                    ✓ Phone number verified!
+                  </span>
+                </div>
               )}
-              {error && <span className="text-red-500 text-sm">{error}</span>}
+
+              {error && (
+                <div className="text-red-500 text-sm text-center bg-red-50 dark:bg-red-900/20 p-2 rounded">
+                  {error}
+                </div>
+              )}
             </div>
           )}
         </div>
