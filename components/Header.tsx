@@ -190,7 +190,11 @@ const Header = () => {
                   <DropdownMenuTrigger asChild>
                     <Avatar className="h-9 w-9 cursor-pointer border-2 border-[#ff7a5c]">
                       <AvatarImage
-                        src={user.user_metadata?.avatar_url || undefined}
+                        src={
+                          user.user_metadata?.picture ||
+                          user.user_metadata?.avatar_url ||
+                          undefined
+                        }
                       />
                       <AvatarFallback>
                         {user.user_metadata?.full_name
