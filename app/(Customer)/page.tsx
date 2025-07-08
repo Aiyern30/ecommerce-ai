@@ -2,7 +2,6 @@
 
 import { Button, Input } from "@/components/ui";
 import { ProductCard } from "@/components/ProductCards";
-import { StyleCard } from "@/components/StyleCards";
 import { TestimonialCard } from "@/components/TestimonialCard";
 import LatestBlog from "@/components/LatestBlog";
 import HeroCarousel from "@/components/HeroCarousel";
@@ -110,40 +109,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Browse by Style */}
-        <section className="bg-gray-50 py-16">
-          <div className="container mx-auto px-4">
-            <h2 className="mb-8 text-center text-3xl font-bold">
-              BROWSE BY DRESS STYLE
-            </h2>
-            <div className="grid gap-6 sm:grid-cols-2">
-              <div className="grid gap-6">
-                <StyleCard
-                  title="Casual"
-                  image="/placeholder.svg"
-                  path={"/Category/Casual"}
-                />
-                <StyleCard
-                  title="Party"
-                  image="/placeholder.svg"
-                  path={"/Category/Party"}
-                />
-              </div>
-              <div className="grid gap-6">
-                <StyleCard
-                  title="Formal"
-                  image="/placeholder.svg"
-                  path={"/Category/Formal"}
-                />
-                <StyleCard
-                  title="Gym"
-                  image="/placeholder.svg"
-                  path={"/Category/Gym"}
-                />
-              </div>
-            </div>
-          </div>
-        </section>
         <section className="py-16">
           <LatestBlog />
         </section>
