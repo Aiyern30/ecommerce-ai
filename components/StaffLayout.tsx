@@ -24,9 +24,13 @@ export default function StaffLayout({ children }: LayoutProps) {
         error,
       } = await supabase.auth.getUser();
 
-      if (error || !user || user.user_metadata.role !== "staff") {
+      if (error || !user) {
         router.replace("/401");
+      } else if (user.user_metadata?.role !== "staff") {
+        // Logged in but not staff
+        router.replace("/403");
       } else {
+        // Logged in and authorized
         setIsAuthorized(true);
       }
     };
@@ -35,7 +39,7 @@ export default function StaffLayout({ children }: LayoutProps) {
   }, [router]);
 
   if (isAuthorized === null) {
-    return null; // Or loading spinner
+    return null;
   }
 
   return (
