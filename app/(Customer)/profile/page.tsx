@@ -133,8 +133,29 @@ export default function ProfilePage() {
         setError(error.message);
         console.error("Verification Error:", error);
       } else {
+        if (!user) {
+          setError("User not found. Please log in again.");
+          return;
+        }
+
+        const res = await fetch("/api/update-phone", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            phone: fullPhone,
+            user_id: user.id,
+          }),
+        });
+
+        if (!res.ok) {
+          const result = await res.json();
+          setError(result.message || "Failed to update phone.");
+          return;
+        }
+
         setStep("done");
-        // Refresh user data
         window.location.reload();
       }
     } catch (err) {

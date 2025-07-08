@@ -65,6 +65,7 @@
     "sonner": "^2.0.1",
     "tailwind-merge": "^3.0.2",
     "tailwindcss-animate": "^1.0.7",
+    "twilio": "^5.7.2",
     "vaul": "^1.1.2",
     "zod": "^3.24.2"
   },
@@ -75,6 +76,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/twilio": "^3.19.2",
     "eslint": "^9",
     "eslint-config-next": "15.2.0-canary.74",
     "tailwindcss": "^4",
