@@ -4,6 +4,7 @@ import { TestimonialCard } from "@/components/TestimonialCard";
 import LatestBlog from "@/components/LatestBlog";
 import HeroCarousel from "@/components/HeroCarousel";
 import { WhyChooseUs } from "@/components/WhyChooseUs";
+import { UseCases } from "@/components/UseCases";
 
 export default function Home() {
   return (
@@ -11,7 +12,7 @@ export default function Home() {
       <main>
         <HeroCarousel />
         <WhyChooseUs />
-
+        <UseCases />
         <section className="py-16">
           <LatestBlog />
         </section>
