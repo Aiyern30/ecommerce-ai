@@ -48,6 +48,7 @@
     "embla-carousel-react": "^8.5.2",
     "framer-motion": "^12.4.10",
     "input-otp": "^1.4.2",
+    "keen-slider": "^6.8.6",
     "lucide-react": "^0.475.0",
     "mongodb": "^6.14.2",
     "next": "^15.2.3",
