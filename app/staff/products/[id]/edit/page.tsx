@@ -46,24 +46,34 @@ const productSchema = z.object({
   name: z.string().min(1, "Product name is required"),
   description: z.string().nullish(),
   price: z.coerce.number().min(0.01, "Price must be positive"),
-  unit: z.enum(["per bag", "per tonne"], {
+  unit: z.enum(["per bag", "per tonne", "per m³"], {
     required_error: "Unit is required",
   }),
   stock_quantity: z.coerce
     .number()
     .int()
     .min(0, "Stock quantity must be non-negative"),
-  category: z.enum(["bagged", "bulk", "ready-mix"], {
+  category: z.enum(["bagged", "bulk", "ready-mix", "Concrete", "Mortar"], {
     required_error: "Category is required",
   }),
+  // NEW FIELDS
+  grade: z.string().optional(),
   tags: z
-    .array(z.object({ id: z.string(), name: z.string().min(1) }))
+    .array(z.object({ tag: z.string().min(1, "Tag cannot be empty") }))
     .optional(),
-
   certificates: z
     .array(
       z.object({
         certificate: z.string().min(1, "Certificate cannot be empty"),
+      })
+    )
+    .optional(),
+  // NEW: Product variants for different pricing tiers
+  variants: z
+    .array(
+      z.object({
+        variant_type: z.string().min(1, "Variant type is required"),
+        price: z.coerce.number().min(0.01, "Variant price must be positive"),
       })
     )
     .optional(),
@@ -88,6 +98,11 @@ export default function EditProductPage() {
   const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
   const [certificateInput, setCertificateInput] = useState("");
+  const [variantTypeInput, setVariantTypeInput] = useState("");
+  const [variantPriceInput, setVariantPriceInput] = useState("");
+  const [selectedTags, setSelectedTags] = useState<
+    { id: string; name: string }[]
+  >([]);
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -98,8 +113,10 @@ export default function EditProductPage() {
       unit: "per bag",
       stock_quantity: 0,
       category: "bagged",
+      grade: "",
       tags: [],
       certificates: [],
+      variants: [],
     },
   });
 
@@ -111,6 +128,16 @@ export default function EditProductPage() {
   } = useFieldArray({
     control: form.control,
     name: "certificates",
+  });
+
+  const {
+    fields: variantFields,
+    append: appendVariant,
+    remove: removeVariant,
+    replace: replaceVariants,
+  } = useFieldArray({
+    control: form.control,
+    name: "variants",
   });
 
   const MAX_IMAGES = 4;
@@ -168,29 +195,69 @@ export default function EditProductPage() {
             certificatesError.message
           );
         }
+
+        // Fetch product variants
+        const { data: variants, error: variantsError } = await supabase
+          .from("product_variants")
+          .select("variant_type, price")
+          .eq("product_id", productId);
+
+        if (variantsError) {
+          console.error(
+            "Failed to fetch product variants:",
+            variantsError.message
+          );
+        }
+
         const productTags = (product.product_tags ?? []) as {
           tags: { id: string; name: string };
         }[];
+
+        // Set selectedTags for TagMultiSelect component
+        setSelectedTags(
+          productTags.map((pt) => ({
+            id: pt.tags.id,
+            name: pt.tags.name,
+          }))
+        );
 
         form.reset({
           name: product.name,
           description: product.description,
           price: product.price,
-          unit: product.unit as "per bag" | "per tonne",
+          unit: product.unit as "per bag" | "per tonne" | "per m³",
           stock_quantity: product.stock_quantity,
-          category: product.category as "bagged" | "bulk" | "ready-mix",
+          category: product.category as
+            | "bagged"
+            | "bulk"
+            | "ready-mix"
+            | "Concrete"
+            | "Mortar",
+          grade: product.grade || "",
           tags: productTags.map((pt) => ({
-            id: pt.tags.id,
-            name: pt.tags.name,
+            tag: pt.tags.name,
           })),
-
           certificates:
             certificates?.map((c) => ({ certificate: c.certificate })) || [],
+          variants:
+            variants?.map((v) => ({
+              variant_type: v.variant_type,
+              price: v.price,
+            })) || [],
         });
 
         if (certificates) {
           replaceCertificates(
             certificates.map((c) => ({ certificate: c.certificate }))
+          );
+        }
+
+        if (variants) {
+          replaceVariants(
+            variants.map((v) => ({
+              variant_type: v.variant_type,
+              price: v.price,
+            }))
           );
         }
       } catch (error) {
@@ -205,7 +272,7 @@ export default function EditProductPage() {
     };
 
     fetchProductData();
-  }, [productId, form, router, replaceCertificates]);
+  }, [productId, form, router, replaceCertificates, replaceVariants]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
@@ -269,6 +336,21 @@ export default function EditProductPage() {
     }
   };
 
+  const handleAddVariant = () => {
+    if (
+      variantTypeInput.trim() &&
+      variantPriceInput.trim() &&
+      !variantFields.some((v) => v.variant_type === variantTypeInput.trim())
+    ) {
+      appendVariant({
+        variant_type: variantTypeInput.trim(),
+        price: parseFloat(variantPriceInput),
+      });
+      setVariantTypeInput("");
+      setVariantPriceInput("");
+    }
+  };
+
   const onSubmit = async (data: ProductFormData) => {
     setIsSubmitting(true);
     setImageError(null);
@@ -296,6 +378,7 @@ export default function EditProductPage() {
           unit: data.unit,
           stock_quantity: data.stock_quantity,
           category: data.category,
+          grade: data.grade || null,
           updated_at: new Date().toISOString(),
         })
         .eq("id", productId);
@@ -432,10 +515,10 @@ export default function EditProductPage() {
         );
       }
 
-      if (data.tags && data.tags.length > 0) {
-        const tagsToInsert = data.tags.map((item) => ({
+      if (selectedTags && selectedTags.length > 0) {
+        const tagsToInsert = selectedTags.map((tag) => ({
           product_id: productId,
-          tag_id: item.id,
+          tag_id: tag.id,
         }));
 
         const { error: tagsInsertError } = await supabase
@@ -480,6 +563,40 @@ export default function EditProductPage() {
           toast.error(
             "Failed to update product certificates: " +
               certificatesInsertError.message
+          );
+        }
+      }
+
+      // 8. Update variants - delete all existing and insert new ones
+      const { error: deleteVariantsError } = await supabase
+        .from("product_variants")
+        .delete()
+        .eq("product_id", productId);
+
+      if (deleteVariantsError) {
+        console.error(
+          "Failed to delete existing variants:",
+          deleteVariantsError.message
+        );
+      }
+
+      if (data.variants && data.variants.length > 0) {
+        const variantsToInsert = data.variants.map((item) => ({
+          product_id: productId,
+          variant_type: item.variant_type,
+          price: item.price,
+        }));
+        const { error: variantsInsertError } = await supabase
+          .from("product_variants")
+          .insert(variantsToInsert);
+
+        if (variantsInsertError) {
+          console.error(
+            "Product variants insert failed:",
+            variantsInsertError.message
+          );
+          toast.error(
+            "Failed to update product variants: " + variantsInsertError.message
           );
         }
       }
@@ -589,10 +706,34 @@ export default function EditProductPage() {
                           <SelectItem value="bagged">Bagged</SelectItem>
                           <SelectItem value="bulk">Bulk</SelectItem>
                           <SelectItem value="ready-mix">Ready-Mix</SelectItem>
+                          <SelectItem value="Concrete">Concrete</SelectItem>
+                          <SelectItem value="Mortar">Mortar</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormDescription>
                         The type of cement product.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <FormField
+                  control={form.control}
+                  name="grade"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Grade</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g., M25, M30, Grade 42.5"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        The grade or strength of the cement (optional).
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -643,6 +784,7 @@ export default function EditProductPage() {
                         <SelectContent>
                           <SelectItem value="per bag">Per Bag</SelectItem>
                           <SelectItem value="per tonne">Per Tonne</SelectItem>
+                          <SelectItem value="per m³">Per m³</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormDescription>
@@ -827,30 +969,12 @@ export default function EditProductPage() {
           <Card>
             <CardHeader>
               <CardTitle>Product Tags</CardTitle>
-              <CardDescription>
-                Manage relevant tags to categorize the product (e.g.,
-                "construction", "eco-friendly").
-              </CardDescription>
+              <CardDescription>Select or create relevant tags.</CardDescription>
             </CardHeader>
             <CardContent>
-              <FormField
-                control={form.control}
-                name="tags"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tags</FormLabel>
-                    <FormControl>
-                      <TagMultiSelect
-                        selectedTags={field.value || []}
-                        setSelectedTags={field.onChange}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Add or create multiple tags for this product.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
+              <TagMultiSelect
+                selectedTags={selectedTags}
+                setSelectedTags={setSelectedTags}
               />
             </CardContent>
           </Card>
@@ -904,6 +1028,64 @@ export default function EditProductPage() {
               {form.formState.errors.certificates && (
                 <FormMessage>
                   {form.formState.errors.certificates.message}
+                </FormMessage>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* NEW: Product Variants Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Product Variants</CardTitle>
+              <CardDescription>
+                Add different pricing variants for delivery methods (e.g.,
+                "Pump", "Tremie 1", "Tremie 2").
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-2 mb-4">
+                <Input
+                  placeholder="Variant type (e.g., Pump)"
+                  value={variantTypeInput}
+                  onChange={(e) => setVariantTypeInput(e.target.value)}
+                  className="flex-1"
+                />
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="Price (RM)"
+                  value={variantPriceInput}
+                  onChange={(e) => setVariantPriceInput(e.target.value)}
+                  className="flex-1"
+                />
+                <Button type="button" onClick={handleAddVariant}>
+                  <Plus className="mr-2 h-4 w-4" /> Add
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {variantFields.map((item, index) => (
+                  <Badge
+                    key={index}
+                    variant="secondary"
+                    className="flex items-center gap-1"
+                  >
+                    {item.variant_type} - RM {item.price}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-4 w-4 p-0"
+                      onClick={() => removeVariant(index)}
+                    >
+                      <X className="h-3 w-3" />
+                      <span className="sr-only">Remove variant</span>
+                    </Button>
+                  </Badge>
+                ))}
+              </div>
+              {form.formState.errors.variants && (
+                <FormMessage>
+                  {form.formState.errors.variants.message}
                 </FormMessage>
               )}
             </CardContent>
