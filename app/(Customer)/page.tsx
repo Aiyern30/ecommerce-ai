@@ -5,6 +5,7 @@ import LatestBlog from "@/components/LatestBlog";
 import HeroCarousel from "@/components/HeroCarousel";
 import { WhyChooseUs } from "@/components/WhyChooseUs";
 import { UseCases } from "@/components/UseCases";
+import ProductCarousel from "@/components/ProductCarousel";
 
 export default function Home() {
   return (
@@ -16,6 +17,7 @@ export default function Home() {
         <section className="py-16">
           <LatestBlog />
         </section>
+        <ProductCarousel />
 
         {/* Testimonials */}
         <section className="py-16">

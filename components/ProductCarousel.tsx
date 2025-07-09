@@ -18,13 +18,16 @@ export default function ProductCarousel() {
   const [products, setProducts] = useState<Product[]>([]);
   const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>({
     loop: true,
-    slides: { perView: 4, spacing: 16 },
+    slides: { perView: 4, spacing: 24 },
     breakpoints: {
       "(max-width: 1024px)": {
-        slides: { perView: 2, spacing: 12 },
+        slides: { perView: 3, spacing: 20 },
+      },
+      "(max-width: 768px)": {
+        slides: { perView: 2, spacing: 16 },
       },
       "(max-width: 640px)": {
-        slides: { perView: 1, spacing: 8 },
+        slides: { perView: 1, spacing: 12 },
       },
     },
   });
@@ -57,30 +60,36 @@ export default function ProductCarousel() {
           <div ref={sliderRef} className="keen-slider">
             {products.map((product) => (
               <div key={product.id} className="keen-slider__slide">
-                <ProductCard
-                  name={product.name}
-                  price={product.price}
-                  rating={4.5}
-                  reviews={20}
-                  image={product.image_url}
-                />
+                <div className="h-80 w-full">
+                  <ProductCard
+                    name={product.name}
+                    price={product.price}
+                    rating={4.5}
+                    reviews={20}
+                    image={product.image_url}
+                  />
+                </div>
               </div>
             ))}
           </div>
 
-          {/* Navigation buttons */}
-          <button
-            onClick={() => instanceRef.current?.prev()}
-            className="absolute -left-6 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white dark:bg-gray-800 shadow hover:bg-gray-200 z-10"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <button
-            onClick={() => instanceRef.current?.next()}
-            className="absolute -right-6 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white dark:bg-gray-800 shadow hover:bg-gray-200 z-10"
-          >
-            <ChevronRight size={20} />
-          </button>
+          {/* Navigation buttons - only show when more than 4 products */}
+          {products.length > 4 && (
+            <>
+              <button
+                onClick={() => instanceRef.current?.prev()}
+                className="absolute -left-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <button
+                onClick={() => instanceRef.current?.next()}
+                className="absolute -right-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </>
+          )}
         </div>
       </div>
     </section>
