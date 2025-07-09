@@ -56,40 +56,42 @@ export default function ProductCarousel() {
         <h2 className="text-3xl font-bold mb-8 text-center">Our Products</h2>
 
         {/* Carousel */}
-        <div className="relative overflow-hidden">
-          <div ref={sliderRef} className="keen-slider">
-            {products.map((product) => (
-              <div key={product.id} className="keen-slider__slide">
-                <div className="h-80 w-full px-1 sm:px-0">
-                  <ProductCard
-                    name={product.name}
-                    price={product.price}
-                    rating={4.5}
-                    reviews={20}
-                    image={product.image_url}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Navigation buttons - only show when more than 4 products and not on mobile */}
+        <div className="relative">
+          {/* Navigation buttons - positioned outside the carousel */}
           {products.length > 4 && (
             <>
               <button
                 onClick={() => instanceRef.current?.prev()}
-                className="absolute -left-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10 hidden sm:block"
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-16 p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10 hidden lg:block"
               >
                 <ChevronLeft size={20} />
               </button>
               <button
                 onClick={() => instanceRef.current?.next()}
-                className="absolute -right-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10 hidden sm:block"
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-16 p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10 hidden lg:block"
               >
                 <ChevronRight size={20} />
               </button>
             </>
           )}
+
+          <div className="overflow-hidden">
+            <div ref={sliderRef} className="keen-slider">
+              {products.map((product) => (
+                <div key={product.id} className="keen-slider__slide">
+                  <div className="h-80 w-full px-1 sm:px-0">
+                    <ProductCard
+                      name={product.name}
+                      price={product.price}
+                      rating={4.5}
+                      reviews={20}
+                      image={product.image_url}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
           {/* Mobile swipe indicator */}
           <div className="flex justify-center mt-4 sm:hidden">
