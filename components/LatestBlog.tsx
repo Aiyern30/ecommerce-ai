@@ -32,7 +32,7 @@ export default function LatestBlog() {
         `
         )
         .order("created_at", { ascending: false })
-        .limit(4);
+        .limit(3);
 
       if (error) {
         console.error("Failed to fetch blogs:", error.message);
@@ -55,9 +55,7 @@ export default function LatestBlog() {
       ? "grid-cols-1"
       : blogs.length === 2
       ? "grid-cols-2"
-      : blogs.length === 3
-      ? "grid-cols-3"
-      : "grid-cols-4";
+      : "grid-cols-3";
 
   return (
     <section className="py-16">
@@ -113,6 +111,15 @@ export default function LatestBlog() {
                 </CardFooter>
               </Card>
             ))}
+          </div>
+        )}
+
+        {/* View More Button */}
+        {blogs.length > 0 && (
+          <div className="flex justify-center mt-8">
+            <Button asChild variant="outline" size="lg">
+              <Link href="/blogs">View More Blogs</Link>
+            </Button>
           </div>
         )}
       </div>
