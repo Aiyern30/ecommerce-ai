@@ -47,16 +47,18 @@ const productSchema = z.object({
   name: z.string().min(1, "Product name is required"),
   description: z.string().nullish(),
   price: z.coerce.number().min(0.01, "Price must be positive"),
-  unit: z.enum(["per bag", "per tonne"], {
+  unit: z.enum(["per bag", "per tonne", "per m³"], {
     required_error: "Unit is required",
   }),
   stock_quantity: z.coerce
     .number()
     .int()
     .min(0, "Stock quantity must be non-negative"),
-  category: z.enum(["bagged", "bulk", "ready-mix"], {
+  category: z.enum(["bagged", "bulk", "ready-mix", "Concrete", "Mortar"], {
     required_error: "Category is required",
   }),
+  // NEW FIELDS
+  grade: z.string().optional(),
   tags: z
     .array(z.object({ tag: z.string().min(1, "Tag cannot be empty") }))
     .optional(),
@@ -64,6 +66,15 @@ const productSchema = z.object({
     .array(
       z.object({
         certificate: z.string().min(1, "Certificate cannot be empty"),
+      })
+    )
+    .optional(),
+  // NEW: Product variants for different pricing tiers
+  variants: z
+    .array(
+      z.object({
+        variant_type: z.string().min(1, "Variant type is required"),
+        price: z.coerce.number().min(0.01, "Variant price must be positive"),
       })
     )
     .optional(),
@@ -77,6 +88,8 @@ export default function NewProductPage() {
   const [selectedImageFiles, setSelectedImageFiles] = useState<File[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
   const [certificateInput, setCertificateInput] = useState("");
+  const [variantTypeInput, setVariantTypeInput] = useState("");
+  const [variantPriceInput, setVariantPriceInput] = useState("");
   const [selectedTags, setSelectedTags] = useState<
     { id: string; name: string }[]
   >([]);
@@ -90,8 +103,10 @@ export default function NewProductPage() {
       unit: "per bag",
       stock_quantity: 0,
       category: "bagged",
+      grade: "",
       tags: [],
       certificates: [],
+      variants: [],
     },
   });
 
@@ -102,6 +117,15 @@ export default function NewProductPage() {
   } = useFieldArray({
     control: form.control,
     name: "certificates",
+  });
+
+  const {
+    fields: variantFields,
+    append: appendVariant,
+    remove: removeVariant,
+  } = useFieldArray({
+    control: form.control,
+    name: "variants",
   });
 
   const MAX_IMAGES = 4;
@@ -164,6 +188,21 @@ export default function NewProductPage() {
     }
   };
 
+  const handleAddVariant = () => {
+    if (
+      variantTypeInput.trim() &&
+      variantPriceInput.trim() &&
+      !variantFields.some((v) => v.variant_type === variantTypeInput.trim())
+    ) {
+      appendVariant({
+        variant_type: variantTypeInput.trim(),
+        price: parseFloat(variantPriceInput),
+      });
+      setVariantTypeInput("");
+      setVariantPriceInput("");
+    }
+  };
+
   const onSubmit = async (data: ProductFormData) => {
     setIsSubmitting(true);
     setImageError(null);
@@ -186,6 +225,7 @@ export default function NewProductPage() {
             unit: data.unit,
             stock_quantity: data.stock_quantity,
             category: data.category,
+            grade: data.grade || null,
             image_url: selectedImageFiles.length > 0 ? "" : null,
           })
           .select("id")
@@ -268,6 +308,7 @@ export default function NewProductPage() {
         }
       }
 
+      // 3. Insert product tags
       if (selectedTags && selectedTags.length > 0) {
         const tagsToInsert = selectedTags.map((tag) => ({
           product_id: productId,
@@ -284,6 +325,7 @@ export default function NewProductPage() {
         }
       }
 
+      // 4. Insert product certificates
       if (data.certificates && data.certificates.length > 0) {
         const certificatesToInsert = data.certificates.map((item) => ({
           product_id: productId,
@@ -301,6 +343,28 @@ export default function NewProductPage() {
           toast.error(
             "Failed to add product certificates: " +
               certificatesInsertError.message
+          );
+        }
+      }
+
+      // 5. Insert product variants
+      if (data.variants && data.variants.length > 0) {
+        const variantsToInsert = data.variants.map((item) => ({
+          product_id: productId,
+          variant_type: item.variant_type,
+          price: item.price,
+        }));
+        const { error: variantsInsertError } = await supabase
+          .from("product_variants")
+          .insert(variantsToInsert);
+
+        if (variantsInsertError) {
+          console.error(
+            "Product variants insert failed:",
+            variantsInsertError.message
+          );
+          toast.error(
+            "Failed to add product variants: " + variantsInsertError.message
           );
         }
       }
@@ -399,10 +463,31 @@ export default function NewProductPage() {
                           <SelectItem value="bagged">Bagged</SelectItem>
                           <SelectItem value="bulk">Bulk</SelectItem>
                           <SelectItem value="ready-mix">Ready-Mix</SelectItem>
+                          <SelectItem value="Concrete">Concrete</SelectItem>
+                          <SelectItem value="Mortar">Mortar</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormDescription>
                         The type of cement product.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <FormField
+                  control={form.control}
+                  name="grade"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Grade</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., N20, M044, S35" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Product grade (e.g., N20 for concrete, M044 for mortar).
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -426,7 +511,7 @@ export default function NewProductPage() {
                         />
                       </FormControl>
                       <FormDescription>
-                        Price per unit of the product.
+                        Base price per unit of the product.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -453,6 +538,7 @@ export default function NewProductPage() {
                         <SelectContent>
                           <SelectItem value="per bag">Per Bag</SelectItem>
                           <SelectItem value="per tonne">Per Tonne</SelectItem>
+                          <SelectItem value="per m³">Per m³</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormDescription>
@@ -643,6 +729,64 @@ export default function NewProductPage() {
               {form.formState.errors.certificates && (
                 <FormMessage>
                   {form.formState.errors.certificates.message}
+                </FormMessage>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* NEW: Product Variants Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Product Variants</CardTitle>
+              <CardDescription>
+                Add different pricing variants for delivery methods (e.g.,
+                "Pump", "Tremie 1", "Tremie 2").
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-2 mb-4">
+                <Input
+                  placeholder="Variant type (e.g., Pump)"
+                  value={variantTypeInput}
+                  onChange={(e) => setVariantTypeInput(e.target.value)}
+                  className="flex-1"
+                />
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="Price (RM)"
+                  value={variantPriceInput}
+                  onChange={(e) => setVariantPriceInput(e.target.value)}
+                  className="flex-1"
+                />
+                <Button type="button" onClick={handleAddVariant}>
+                  <Plus className="mr-2 h-4 w-4" /> Add
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {variantFields.map((item, index) => (
+                  <Badge
+                    key={item.id}
+                    variant="secondary"
+                    className="flex items-center gap-1"
+                  >
+                    {item.variant_type} - RM {item.price}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-4 w-4 p-0"
+                      onClick={() => removeVariant(index)}
+                    >
+                      <X className="h-3 w-3" />
+                      <span className="sr-only">Remove variant</span>
+                    </Button>
+                  </Badge>
+                ))}
+              </div>
+              {form.formState.errors.variants && (
+                <FormMessage>
+                  {form.formState.errors.variants.message}
                 </FormMessage>
               )}
             </CardContent>
