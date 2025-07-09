@@ -198,7 +198,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
-        <Sidebar className="border-r bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 border-slate-200 dark:border-slate-700 shadow-lg data-[collapsible=icon]:w-16" collapsible="icon">
+        <Sidebar
+          className="border-r bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 border-slate-200 dark:border-slate-700 shadow-lg data-[collapsible=icon]:w-16"
+          collapsible="icon"
+        >
           <SidebarHeader className="flex h-[68px] justify-center items-center border-b border-slate-200/60 dark:border-slate-700/60 px-6 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm shadow-md group-data-[collapsible=icon]:px-4">
             <Link
               href="/"
@@ -219,7 +222,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   Main Navigation
                 </p>
               </div>
-              
+
               <SidebarMenu className="space-y-1">
                 <SidebarMenuItem>
                   <SidebarMenuButton
@@ -231,7 +234,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       <div className="p-1.5 bg-white/20 rounded-lg group-hover:bg-white/30 transition-colors group-data-[collapsible=icon]:p-2">
                         <Home className="h-4 w-4 group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5" />
                       </div>
-                      <span className="font-medium group-data-[collapsible=icon]:hidden">Dashboard</span>
+                      <span className="font-medium group-data-[collapsible=icon]:hidden">
+                        Dashboard
+                      </span>
                       <div className="ml-auto w-2 h-2 bg-white/40 rounded-full group-data-[collapsible=icon]:hidden"></div>
                     </Link>
                   </SidebarMenuButton>
@@ -247,7 +252,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       <div className="p-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors group-data-[collapsible=icon]:p-2">
                         <FileText className="h-4 w-4 group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5" />
                       </div>
-                      <span className="font-medium group-data-[collapsible=icon]:hidden">Posts</span>
+                      <span className="font-medium group-data-[collapsible=icon]:hidden">
+                        Posts
+                      </span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -262,7 +269,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       <div className="p-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors group-data-[collapsible=icon]:p-2">
                         <Package className="h-4 w-4 group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5" />
                       </div>
-                      <span className="font-medium group-data-[collapsible=icon]:hidden">Orders</span>
+                      <span className="font-medium group-data-[collapsible=icon]:hidden">
+                        Orders
+                      </span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -277,7 +286,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       <div className="p-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors group-data-[collapsible=icon]:p-2">
                         <Users className="h-4 w-4 group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5" />
                       </div>
-                      <span className="font-medium group-data-[collapsible=icon]:hidden">Customers</span>
+                      <span className="font-medium group-data-[collapsible=icon]:hidden">
+                        Customers
+                      </span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -288,7 +299,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="flex items-center justify-center">
               <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="group-data-[collapsible=icon]:hidden">System Online</span>
+                <span className="group-data-[collapsible=icon]:hidden">
+                  System Online
+                </span>
               </div>
             </div>
           </SidebarFooter>
