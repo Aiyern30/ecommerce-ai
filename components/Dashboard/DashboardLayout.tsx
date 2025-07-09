@@ -4,19 +4,14 @@ import { useRef, useState, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  BarChart3,
   Home,
-  Inbox,
-  Layers,
   Moon,
   Package,
   Search,
-  Settings,
   ShoppingBag,
-  Star,
   Sun,
-  Tag,
   Users,
+  FileText,
 } from "lucide-react";
 
 import {
@@ -31,7 +26,6 @@ import {
   SidebarTrigger,
 } from "@/components/ui/";
 import { Input } from "@/components/ui/";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/";
 import {
   Sidebar,
   SidebarContent,
@@ -204,197 +198,99 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
-        <Sidebar className="border-r bg-[#1a2352]">
-          <SidebarHeader className="flex h-[69px] justify-center items-center border-b border-gray-700 px-6">
+        <Sidebar className="border-r bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 border-slate-200 dark:border-slate-700 shadow-lg data-[collapsible=icon]:w-16" collapsible="icon">
+          <SidebarHeader className="flex h-[64px] justify-center items-center border-b border-slate-200/60 dark:border-slate-700/60 px-6 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm group-data-[collapsible=icon]:px-4">
             <Link
               href="/"
-              className="flex items-center gap-2 font-semibold text-white"
+              className="flex items-center gap-3 font-semibold text-slate-800 dark:text-white group transition-all duration-200 hover:scale-105"
             >
-              <ShoppingBag className="h-6 w-6 text-yellow-400" />
-              <span className="text-xl font-bold ">ShopYTL</span>
+              <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 dark:from-yellow-400 dark:to-yellow-500 rounded-xl shadow-md group-hover:shadow-lg transition-all duration-200">
+                <ShoppingBag className="h-5 w-5 text-white dark:text-slate-900" />
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 dark:from-yellow-400 dark:to-yellow-300 bg-clip-text text-transparent group-data-[collapsible=icon]:hidden">
+                ShopYTL
+              </span>
             </Link>
           </SidebarHeader>
-          <SidebarContent className="py-2">
-            <SidebarMenu className="grid items-start px-4 text-sm font-medium">
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  className="flex items-center gap-3 rounded-lg bg-blue-800 px-3 py-2 text-white transition-all"
-                >
-                  <Link href="/staff/dashboard">
-                    <Home className="h-4 w-4" />
-                    <span>Dashboard</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:text-white"
-                >
-                  <Link href="/staff/posts">
-                    <ShoppingBag className="h-4 w-4" />
-                    <span>Posts</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:text-white"
-                >
-                  <Link href="/staff/orders">
-                    <ShoppingBag className="h-4 w-4" />
-                    <span>Orders</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:text-white"
-                >
-                  <Link href="/staff/products">
-                    <Package className="h-4 w-4" />
-                    <span>Products</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:text-white"
-                >
-                  <Link href="/staff/categories">
-                    <Layers className="h-4 w-4" />
-                    <span>Categories</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:text-white"
-                >
-                  <Link href="/staff/customers">
-                    <Users className="h-4 w-4" />
-                    <span>Customers</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:text-white"
-                >
-                  <Link href="/staff/reports">
-                    <BarChart3 className="h-4 w-4" />
-                    <span>Reports</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:text-white"
-                >
-                  <Link href="#">
-                    <Star className="h-4 w-4" />
-                    <span>Coupons</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:text-white"
-                >
-                  <Link href="#">
-                    <Inbox className="h-4 w-4" />
-                    <span>Inbox</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-
-            <div className="mt-6">
-              <h3 className="mb-2 px-4 text-xs font-semibold text-gray-400 uppercase">
-                Other Information
-              </h3>
-              <SidebarMenu className="grid items-start px-4 text-sm font-medium">
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:text-white"
-                  >
-                    <Link href="#">
-                      <Tag className="h-4 w-4" />
-                      <span>Knowledge Base</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:text-white"
-                  >
-                    <Link href="#">
-                      <Tag className="h-4 w-4" />
-                      <span>Product Updates</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </div>
-
-            <div className="mt-6">
-              <h3 className="mb-2 px-4 text-xs font-semibold text-gray-400 uppercase">
-                Settings
-              </h3>
-              <SidebarMenu className="grid items-start px-4 text-sm font-medium">
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:text-white"
-                  >
-                    <Link href="#">
-                      <Users className="h-4 w-4" />
-                      <span>Personal Settings</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:text-white"
-                  >
-                    <Link href="#">
-                      <Settings className="h-4 w-4" />
-                      <span>Global Settings</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </div>
-          </SidebarContent>
-          <SidebarFooter className="mt-auto p-4">
-            <Card className="bg-blue-600 text-white border-none">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Grow Business</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-blue-100">
-                  Explore our marketing solutions
+          <SidebarContent className="py-6 px-2">
+            <nav className="space-y-2">
+              <div className="px-3 mb-4 group-data-[collapsible=icon]:hidden">
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Main Navigation
                 </p>
-                <Button
-                  size="sm"
-                  className="mt-4 w-full bg-white text-blue-600 hover:bg-blue-50"
-                >
-                  Read More
-                </Button>
-              </CardContent>
-            </Card>
+              </div>
+              
+              <SidebarMenu className="space-y-1">
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    tooltip="Dashboard"
+                    className="group flex items-center gap-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 px-4 py-3 text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02] border-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:py-3"
+                  >
+                    <Link href="/staff/dashboard">
+                      <div className="p-1.5 bg-white/20 rounded-lg group-hover:bg-white/30 transition-colors group-data-[collapsible=icon]:p-2">
+                        <Home className="h-4 w-4 group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5" />
+                      </div>
+                      <span className="font-medium group-data-[collapsible=icon]:hidden">Dashboard</span>
+                      <div className="ml-auto w-2 h-2 bg-white/40 rounded-full group-data-[collapsible=icon]:hidden"></div>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    tooltip="Posts"
+                    className="group flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 dark:text-slate-300 transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-900/20 dark:hover:to-blue-800/20 hover:text-blue-700 dark:hover:text-blue-300 hover:shadow-sm hover:scale-[1.01] border-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:py-3"
+                  >
+                    <Link href="/staff/posts">
+                      <div className="p-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors group-data-[collapsible=icon]:p-2">
+                        <FileText className="h-4 w-4 group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5" />
+                      </div>
+                      <span className="font-medium group-data-[collapsible=icon]:hidden">Posts</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    tooltip="Orders"
+                    className="group flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 dark:text-slate-300 transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-900/20 dark:hover:to-blue-800/20 hover:text-blue-700 dark:hover:text-blue-300 hover:shadow-sm hover:scale-[1.01] border-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:py-3"
+                  >
+                    <Link href="/staff/orders">
+                      <div className="p-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors group-data-[collapsible=icon]:p-2">
+                        <Package className="h-4 w-4 group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5" />
+                      </div>
+                      <span className="font-medium group-data-[collapsible=icon]:hidden">Orders</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    tooltip="Customers"
+                    className="group flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 dark:text-slate-300 transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-900/20 dark:hover:to-blue-800/20 hover:text-blue-700 dark:hover:text-blue-300 hover:shadow-sm hover:scale-[1.01] border-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:py-3"
+                  >
+                    <Link href="/staff/customers">
+                      <div className="p-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors group-data-[collapsible=icon]:p-2">
+                        <Users className="h-4 w-4 group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5" />
+                      </div>
+                      <span className="font-medium group-data-[collapsible=icon]:hidden">Customers</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </nav>
+          </SidebarContent>
+          <SidebarFooter className="mt-auto p-4 border-t border-slate-200/60 dark:border-slate-700/60 bg-white/30 dark:bg-slate-800/30 backdrop-blur-sm">
+            <div className="flex items-center justify-center">
+              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="group-data-[collapsible=icon]:hidden">System Online</span>
+              </div>
+            </div>
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
