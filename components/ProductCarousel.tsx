@@ -27,7 +27,7 @@ export default function ProductCarousel() {
         slides: { perView: 2, spacing: 16 },
       },
       "(max-width: 640px)": {
-        slides: { perView: 1, spacing: 12 },
+        slides: { perView: 1.25, spacing: 12 }, // Show 1 full + 25% of next
       },
     },
   });
@@ -56,11 +56,11 @@ export default function ProductCarousel() {
         <h2 className="text-3xl font-bold mb-8 text-center">Our Products</h2>
 
         {/* Carousel */}
-        <div className="relative">
+        <div className="relative overflow-hidden">
           <div ref={sliderRef} className="keen-slider">
             {products.map((product) => (
               <div key={product.id} className="keen-slider__slide">
-                <div className="h-80 w-full">
+                <div className="h-80 w-full px-1 sm:px-0">
                   <ProductCard
                     name={product.name}
                     price={product.price}
@@ -73,23 +73,35 @@ export default function ProductCarousel() {
             ))}
           </div>
 
-          {/* Navigation buttons - only show when more than 4 products */}
+          {/* Navigation buttons - only show when more than 4 products and not on mobile */}
           {products.length > 4 && (
             <>
               <button
                 onClick={() => instanceRef.current?.prev()}
-                className="absolute -left-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10"
+                className="absolute -left-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10 hidden sm:block"
               >
                 <ChevronLeft size={20} />
               </button>
               <button
                 onClick={() => instanceRef.current?.next()}
-                className="absolute -right-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10"
+                className="absolute -right-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10 hidden sm:block"
               >
                 <ChevronRight size={20} />
               </button>
             </>
           )}
+
+          {/* Mobile swipe indicator */}
+          <div className="flex justify-center mt-4 sm:hidden">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex gap-1">
+                <div className="w-2 h-2 rounded-full bg-blue-600"></div>
+                <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+                <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+              </div>
+              <span>Swipe to explore more</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>

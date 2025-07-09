@@ -1,6 +1,7 @@
 import { Star, ShoppingCart, Heart, ZoomIn } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Card, CardContent } from "@/components/ui/";
 
 interface ProductCardProps {
   name: string;
@@ -21,9 +22,9 @@ export function ProductCard({
 }: ProductCardProps) {
   return (
     <Link href="#" className="group block relative h-full">
-      <div className="h-full flex flex-col">
-        {/* Product Image */}
-        <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100 mb-3">
+      <Card className="py-0 h-full flex flex-col hover:shadow-lg transition-shadow duration-300 overflow-hidden">
+        {/* Product Image - sticks to card edges */}
+        <div className="relative aspect-square overflow-hidden bg-gray-100">
           <Image
             src={image || "/placeholder.svg"}
             alt={name}
@@ -45,8 +46,8 @@ export function ProductCard({
           </div>
         </div>
 
-        {/* Product Details */}
-        <div className="flex-1 space-y-2">
+        {/* Product Details - with proper padding inside card */}
+        <CardContent className="flex-1 p-4 space-y-2">
           <h3 className="font-medium text-sm line-clamp-2">{name}</h3>
           <div className="flex items-center gap-2">
             <div className="flex">
@@ -77,8 +78,8 @@ export function ProductCard({
               </span>
             )}
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </Link>
   );
 }
