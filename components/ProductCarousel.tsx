@@ -38,7 +38,7 @@ export default function ProductCarousel() {
         .from("products")
         .select("id, name, price, image_url")
         .order("created_at", { ascending: false })
-        .limit(10);
+        .limit(4);
 
       if (error) {
         console.error("Error fetching products:", error.message);
