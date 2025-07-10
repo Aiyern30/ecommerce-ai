@@ -38,7 +38,7 @@ export default function CompareProductsContent() {
       const productIds = [...new Set(searchParams.getAll("products"))];
 
       if (productIds.length === 0) {
-        router.push("/products");
+        setLoading(false);
         return;
       }
 
@@ -148,6 +148,30 @@ export default function CompareProductsContent() {
                 <Skeleton className="h-4 w-1/2" />
               </div>
             ))}
+          </div>
+        </div>
+      ) : comparedProducts.length === 0 ? (
+        <div className="text-center py-16">
+          <div className="max-w-md mx-auto">
+            <div className="mb-6">
+              <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                No Products to Compare
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                You haven&apos;t selected any products to compare yet. Browse our products and select items to start comparing.
+              </p>
+              <Button
+                onClick={() => router.push("/products")}
+                className="inline-flex items-center gap-2"
+              >
+                Browse Products
+              </Button>
+            </div>
           </div>
         </div>
       ) : (
