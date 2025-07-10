@@ -14,53 +14,68 @@ import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 
+interface BreadcrumbItem {
+  label: string;
+  href?: string;
+}
+
 interface BreadcrumbNavProps {
   showFilterButton?: boolean;
   onFilterClick?: () => void;
+  customItems?: BreadcrumbItem[];
 }
 
 export function BreadcrumbNav({
   showFilterButton = false,
   onFilterClick,
+  customItems,
 }: BreadcrumbNavProps) {
   const pathname = usePathname();
-  const pathSegments = pathname.split("/").filter(Boolean);
+  
+  // If custom items are provided, use them; otherwise, use dynamic path generation
+  const breadcrumbItems = customItems || (() => {
+    const pathSegments = pathname.split("/").filter(Boolean);
+    return [
+      { label: "Home", href: "/" },
+      ...pathSegments.map((segment, index) => {
+        const href = "/" + pathSegments.slice(0, index + 1).join("/");
+        const isLast = index === pathSegments.length - 1;
+        return {
+          label: decodeURIComponent(segment.replace(/-/g, " ")),
+          href: isLast ? undefined : href,
+        };
+      }),
+    ];
+  })();
 
   return (
     <div className="flex items-center justify-between text-sm text-muted-foreground dark:text-gray-400">
       {/* Breadcrumbs */}
       <Breadcrumb>
         <BreadcrumbList className="flex items-center gap-2">
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link
-                href="/"
-                className="hover:text-gray-900 dark:hover:text-white"
-              >
-                Home
-              </Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          {pathSegments.map((segment, index) => {
-            const href = "/" + pathSegments.slice(0, index + 1).join("/");
-            const isLast = index === pathSegments.length - 1;
+          {breadcrumbItems.map((item, index) => {
+            const isLast = index === breadcrumbItems.length - 1;
+            const isFirst = index === 0;
+            
             return (
               <React.Fragment key={`crumb-${index}`}>
-                <BreadcrumbSeparator key={`sep-${index}`}>
-                  <ChevronRight className="h-4 w-4" />
-                </BreadcrumbSeparator>
-                <BreadcrumbItem key={href}>
-                  {isLast ? (
+                {!isFirst && (
+                  <BreadcrumbSeparator key={`sep-${index}`}>
+                    <ChevronRight className="h-4 w-4" />
+                  </BreadcrumbSeparator>
+                )}
+                <BreadcrumbItem key={`item-${index}`}>
+                  {isLast || !item.href ? (
                     <BreadcrumbPage className="capitalize dark:text-gray-300">
-                      {decodeURIComponent(segment.replace(/-/g, " "))}
+                      {item.label}
                     </BreadcrumbPage>
                   ) : (
                     <BreadcrumbLink asChild>
                       <Link
-                        href={href}
+                        href={item.href}
                         className="capitalize hover:text-gray-900 dark:hover:text-white"
                       >
-                        {decodeURIComponent(segment.replace(/-/g, " "))}
+                        {item.label}
                       </Link>
                     </BreadcrumbLink>
                   )}
