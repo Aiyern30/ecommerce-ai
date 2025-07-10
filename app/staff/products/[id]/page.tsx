@@ -39,7 +39,12 @@ export default function ProductDetailClient() {
   product_tags(
     tags(name)
   ),
-  product_certificates(certificate)
+  product_certificates(certificate),
+  product_variants(
+    id,
+    variant_type,
+    price
+  )
 `
         )
 
