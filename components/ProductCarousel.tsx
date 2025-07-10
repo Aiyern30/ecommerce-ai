@@ -86,6 +86,7 @@ export default function ProductCarousel() {
                       rating={4.5}
                       reviews={20}
                       image={product.image_url}
+                      href={`/products/${product.id}`}
                     />
                   </div>
                 </div>
