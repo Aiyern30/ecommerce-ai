@@ -13,10 +13,12 @@ import type { Product } from "@/type/product";
 
 interface ProductDetailDisplayProps {
   product: Product;
+  isCustomerView?: boolean;
 }
 
 export default function ProductDetailDisplay({
   product,
+  isCustomerView = false,
 }: ProductDetailDisplayProps) {
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [hoveredImage, setHoveredImage] = useState<string | null>(null);
@@ -217,30 +219,32 @@ export default function ProductDetailDisplay({
           </CardContent>
         </Card>
 
-        {/* Product Metadata */}
-        <Card className="shadow-none border p-4 bg-gray-50">
-          <CardHeader className="p-0 pb-3">
-            <CardTitle className="text-lg">Product Information</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0 space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Product ID:</span>
-              <span className="font-mono text-xs">{product.id}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Created:</span>
-              <span>
-                {new Date(product.created_at).toLocaleDateString()}
-              </span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Last Updated:</span>
-              <span>
-                {new Date(product.updated_at).toLocaleDateString()}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Product Metadata - Only show for staff view */}
+        {!isCustomerView && (
+          <Card className="shadow-none border p-4 bg-gray-50">
+            <CardHeader className="p-0 pb-3">
+              <CardTitle className="text-lg">Product Information</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Product ID:</span>
+                <span className="font-mono text-xs">{product.id}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Created:</span>
+                <span>
+                  {new Date(product.created_at).toLocaleDateString()}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Last Updated:</span>
+                <span>
+                  {new Date(product.updated_at).toLocaleDateString()}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
