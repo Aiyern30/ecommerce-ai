@@ -83,14 +83,93 @@ export default function ProductDetailDisplay({
       <div className="xl:w-1/3 space-y-6">
         <div>
           <p className="text-sm text-gray-500 uppercase font-medium">
-            {product.category || "N/A"}{" "}
-            {product.unit ? `(${product.unit})` : ""}
+            {product.category || "N/A"}
           </p>
           <h1 className="text-2xl font-bold mt-1">{product.name}</h1>
           <p className="text-gray-700 mt-2">
             {product.description || "No description provided."}
           </p>
         </div>
+
+        {/* Price and Basic Info */}
+        <Card className="shadow-none border p-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-gray-500 font-medium">Price</p>
+              <p className="text-xl font-bold text-green-600">
+                RM {product.price?.toFixed(2) || "0.00"}
+              </p>
+              <p className="text-sm text-gray-500">
+                {product.unit || "per unit"}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 font-medium">Stock</p>
+              <p className="text-lg font-semibold">
+                {product.stock_quantity ?? "N/A"}
+              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-gray-500">units available</p>
+                {product.stock_quantity !== null && (
+                  <Badge
+                    variant={
+                      product.stock_quantity > 20
+                        ? "default"
+                        : product.stock_quantity > 5
+                        ? "secondary"
+                        : "destructive"
+                    }
+                    className="text-xs"
+                  >
+                    {product.stock_quantity > 20
+                      ? "In Stock"
+                      : product.stock_quantity > 5
+                      ? "Low Stock"
+                      : "Critical"}
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Grade */}
+        {product.grade && (
+          <Card className="shadow-none border-0 p-0">
+            <CardHeader className="p-0 pb-2">
+              <CardTitle className="text-lg">Grade</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Badge variant="outline" className="text-sm px-3 py-1">
+                {product.grade}
+              </Badge>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Variants */}
+        {product.product_variants?.length && product.product_variants.length > 0 && (
+          <Card className="shadow-none border-0 p-0">
+            <CardHeader className="p-0 pb-2">
+              <CardTitle className="text-lg">Pricing Variants</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 space-y-2">
+              {product.product_variants.map((variant, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center p-2 bg-gray-50 rounded-md"
+                >
+                  <span className="text-sm font-medium">
+                    {variant.variant_type}
+                  </span>
+                  <span className="text-sm font-semibold text-green-600">
+                    RM {variant.price?.toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Certifications */}
         <Card className="shadow-none border-0 p-0">
@@ -135,6 +214,31 @@ export default function ProductDetailDisplay({
             ) : (
               <p className="text-gray-500 text-sm">No tags listed.</p>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Product Metadata */}
+        <Card className="shadow-none border p-4 bg-gray-50">
+          <CardHeader className="p-0 pb-3">
+            <CardTitle className="text-lg">Product Information</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0 space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Product ID:</span>
+              <span className="font-mono text-xs">{product.id}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Created:</span>
+              <span>
+                {new Date(product.created_at).toLocaleDateString()}
+              </span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Last Updated:</span>
+              <span>
+                {new Date(product.updated_at).toLocaleDateString()}
+              </span>
+            </div>
           </CardContent>
         </Card>
       </div>

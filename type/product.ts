@@ -7,6 +7,7 @@ export interface Product {
   price: number;
   unit: string | null;
   stock_quantity: number | null;
+  grade?: string | null;
   created_at: string;
   updated_at: string;
   product_images: { image_url: string }[] | null;
@@ -19,4 +20,9 @@ export interface Product {
       }[]
     | null;
   product_certificates: { certificate: string }[] | null;
+  product_variants?: {
+    id: string;
+    variant_type: string;
+    price: number;
+  }[] | null;
 }
