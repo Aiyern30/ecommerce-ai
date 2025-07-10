@@ -47,7 +47,7 @@ export default function CompareProductsContent() {
       if (originalIds.length !== productIds.length) {
         const params = new URLSearchParams();
         productIds.forEach((id) => params.append("products", id));
-        router.replace(`/products/compare?${params.toString()}`);
+        router.replace(`/compare?${params.toString()}`);
       }
 
       const { data, error } = await supabase.from("products").select(`
@@ -79,7 +79,7 @@ export default function CompareProductsContent() {
     const uniqueIds = [...new Set(productIds)];
     const params = new URLSearchParams();
     uniqueIds.forEach((id) => params.append("products", id));
-    router.replace(`/products/compare?${params.toString()}`);
+    router.replace(`/compare?${params.toString()}`);
   };
 
   const removeProductFromCompare = (id: string) => {
