@@ -88,7 +88,9 @@ export default function LoginPage() {
       <div className="flex w-full items-center justify-center lg:w-1/2 dark:bg-gray-900">
         <div className="w-full max-w-md p-8">
           <div className="mb-8">
-            <h3 className="text-xl font-medium text-[#ff7a5c]">SHOPYTL</h3>
+            <h3 className="text-xl font-medium text-[#ff7a5c]">
+              YTL CONCRETE HUB
+            </h3>
           </div>
 
           <p className="text-sm text-gray-500 dark:text-gray-400">

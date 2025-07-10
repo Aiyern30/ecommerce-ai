@@ -1,7 +1,7 @@
 {
-  "name": "ShopYTL - Building Materials Store",
-  "short_name": "ShopYTL",
-  "description": "Your go-to destination for quality building materials.",
+  "name": "YTL Concrete Hub - Building Materials Store",
+  "short_name": "YTL Concrete Hub",
+  "description": "Your go-to destination for quality concrete and building materials.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

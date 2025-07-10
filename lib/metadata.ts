@@ -19,27 +19,34 @@ const baseMetadata: Metadata = {
   themeColor: "#3B82F6",
   viewport: "width=device-width, initial-scale=1",
   robots: "index, follow",
-  authors: [{ name: "ShopYTL" }],
-  creator: "ShopYTL",
-  publisher: "ShopYTL",
+  authors: [{ name: "YTL Concrete Hub" }],
+  creator: "YTL Concrete Hub",
+  publisher: "YTL Concrete Hub",
   category: "ecommerce",
-  keywords: ["ecommerce", "building materials", "construction", "YTL", "shop"],
+  keywords: [
+    "ecommerce",
+    "building materials",
+    "construction",
+    "YTL",
+    "concrete",
+    "cement",
+  ],
   openGraph: {
     type: "website",
     locale: "en_US",
-    siteName: "ShopYTL",
+    siteName: "YTL Concrete Hub",
     images: [
       {
         url: "/icon-512x512.svg",
         width: 512,
         height: 512,
-        alt: "ShopYTL Logo",
+        alt: "YTL Concrete Hub Logo",
       },
     ],
   },
   twitter: {
     card: "summary",
-    creator: "@ShopYTL",
+    creator: "@YTLConcreteHub",
     images: ["/icon-512x512.svg"],
   },
 };
@@ -49,7 +56,7 @@ export function getMetadataForPath(path: string): Metadata {
   if (path.startsWith("/staff/dashboard")) {
     return {
       ...baseMetadata,
-      title: "Staff Dashboard - ShopYTL",
+      title: "Staff Dashboard - YTL Concrete Hub",
       description: "Overview and key metrics for internal operations.",
     };
   }
@@ -57,7 +64,7 @@ export function getMetadataForPath(path: string): Metadata {
   if (path.startsWith("/staff/products")) {
     return {
       ...baseMetadata,
-      title: "Staff Products Management - ShopYTL",
+      title: "Staff Products Management - YTL Concrete Hub",
       description: "Manage and update products available in the store.",
     };
   }
@@ -65,7 +72,7 @@ export function getMetadataForPath(path: string): Metadata {
   if (path.startsWith("/staff/orders")) {
     return {
       ...baseMetadata,
-      title: "Staff Orders - ShopYTL",
+      title: "Staff Orders - YTL Concrete Hub",
       description: "View and process customer orders efficiently.",
     };
   }
@@ -73,7 +80,7 @@ export function getMetadataForPath(path: string): Metadata {
   if (path.startsWith("/staff/posts")) {
     return {
       ...baseMetadata,
-      title: "Staff Posts - ShopYTL",
+      title: "Staff Posts - YTL Concrete Hub",
       description: "Manage blog posts, news, and company announcements.",
     };
   }
@@ -81,8 +88,8 @@ export function getMetadataForPath(path: string): Metadata {
   if (path.startsWith("/staff")) {
     return {
       ...baseMetadata,
-      title: "Staff Panel - ShopYTL",
-      description: "Internal tools for managing ShopYTL.",
+      title: "Staff Panel - YTL Concrete Hub",
+      description: "Internal tools for managing YTL Concrete Hub.",
     };
   }
 
@@ -90,15 +97,16 @@ export function getMetadataForPath(path: string): Metadata {
   if (path.startsWith("/products")) {
     return {
       ...baseMetadata,
-      title: "Our Products - ShopYTL",
-      description: "Browse our latest building materials and products.",
+      title: "Our Products - YTL Concrete Hub",
+      description:
+        "Browse our latest building materials and concrete products.",
     };
   }
 
   if (path.startsWith("/cart")) {
     return {
       ...baseMetadata,
-      title: "Your Shopping Cart - ShopYTL",
+      title: "Your Shopping Cart - YTL Concrete Hub",
       description: "Review and manage items in your cart before checkout.",
     };
   }
@@ -106,7 +114,7 @@ export function getMetadataForPath(path: string): Metadata {
   if (path.startsWith("/checkout")) {
     return {
       ...baseMetadata,
-      title: "Secure Checkout - ShopYTL",
+      title: "Secure Checkout - YTL Concrete Hub",
       description: "Complete your purchase with our secure checkout system.",
     };
   }
@@ -114,15 +122,16 @@ export function getMetadataForPath(path: string): Metadata {
   if (path.startsWith("/compare")) {
     return {
       ...baseMetadata,
-      title: "Compare Products - ShopYTL",
-      description: "Compare building materials side-by-side.",
+      title: "Compare Products - YTL Concrete Hub",
+      description:
+        "Compare building materials and concrete products side-by-side.",
     };
   }
 
   if (path.startsWith("/wishlist")) {
     return {
       ...baseMetadata,
-      title: "Your Wishlist - ShopYTL",
+      title: "Your Wishlist - YTL Concrete Hub",
       description: "Save products you love for future purchases.",
     };
   }
@@ -130,7 +139,7 @@ export function getMetadataForPath(path: string): Metadata {
   if (path.startsWith("/profile")) {
     return {
       ...baseMetadata,
-      title: "Your Profile - ShopYTL",
+      title: "Your Profile - YTL Concrete Hub",
       description: "Manage your account, orders, and preferences.",
     };
   }
@@ -138,7 +147,7 @@ export function getMetadataForPath(path: string): Metadata {
   if (path.startsWith("/notifications")) {
     return {
       ...baseMetadata,
-      title: "Notifications - ShopYTL",
+      title: "Notifications - YTL Concrete Hub",
       description: "Stay updated with your order and product alerts.",
     };
   }
@@ -146,7 +155,7 @@ export function getMetadataForPath(path: string): Metadata {
   if (path.startsWith("/faq")) {
     return {
       ...baseMetadata,
-      title: "FAQ - ShopYTL",
+      title: "FAQ - YTL Concrete Hub",
       description: "Find answers to frequently asked questions.",
     };
   }
@@ -154,7 +163,7 @@ export function getMetadataForPath(path: string): Metadata {
   if (path.startsWith("/contact")) {
     return {
       ...baseMetadata,
-      title: "Contact Us - ShopYTL",
+      title: "Contact Us - YTL Concrete Hub",
       description: "Get in touch with our support or sales team.",
     };
   }
@@ -162,7 +171,7 @@ export function getMetadataForPath(path: string): Metadata {
   if (path.startsWith("/about")) {
     return {
       ...baseMetadata,
-      title: "About Us - ShopYTL",
+      title: "About Us - YTL Concrete Hub",
       description: "Learn more about our company and mission.",
     };
   }
@@ -170,22 +179,23 @@ export function getMetadataForPath(path: string): Metadata {
   if (path.startsWith("/blog")) {
     return {
       ...baseMetadata,
-      title: "Blog - ShopYTL",
-      description: "Explore insights, tips, and stories from ShopYTL.",
+      title: "Blog - YTL Concrete Hub",
+      description: "Explore insights, tips, and stories from YTL Concrete Hub.",
     };
   }
 
   if (path.startsWith("/category")) {
     return {
       ...baseMetadata,
-      title: "Categories - ShopYTL",
+      title: "Categories - YTL Concrete Hub",
       description: "Explore products by category.",
     };
   }
 
   return {
     ...baseMetadata,
-    title: "ShopYTL",
-    description: "Your go-to destination for quality building materials.",
+    title: "YTL Concrete Hub",
+    description:
+      "Your go-to destination for quality concrete and building materials.",
   };
 }

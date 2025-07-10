@@ -87,7 +87,7 @@ const Header = () => {
         <div className="container mx-auto flex items-center justify-between p-4 flex-nowrap">
           <div className="flex items-center gap-8">
             <Link href="/" className="text-xl font-bold dark:text-white">
-              ShopYTL
+              YTL Concrete Hub
             </Link>
 
             <nav className="hidden lg:block">
