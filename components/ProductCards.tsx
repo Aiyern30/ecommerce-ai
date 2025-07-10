@@ -10,6 +10,7 @@ interface ProductCardProps {
   rating: number;
   reviews: number;
   image: string;
+  href?: string;
 }
 
 export function ProductCard({
@@ -19,9 +20,10 @@ export function ProductCard({
   rating,
   reviews,
   image,
+  href = "#",
 }: ProductCardProps) {
   return (
-    <Link href="#" className="group block relative h-full">
+    <Link href={href} className="group block relative h-full">
       <Card className="py-0 h-full flex flex-col hover:shadow-lg transition-shadow duration-300 overflow-hidden">
         {/* Product Image - sticks to card edges */}
         <div className="relative aspect-square overflow-hidden bg-gray-100">
