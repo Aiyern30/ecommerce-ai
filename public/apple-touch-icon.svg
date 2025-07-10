@@ -1,0 +1,27 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- YTL Cement Brand Colors: Navy Blue #003366 and White -->
+  <rect width="180" height="180" rx="36" fill="#003366"/>
+  
+  <!-- YTL Text -->
+  <text x="90" y="78" 
+        font-family="system-ui, -apple-system, sans-serif" 
+        font-size="39" 
+        font-weight="bold" 
+        text-anchor="middle" 
+        fill="white">YTL</text>
+  
+  <!-- Cement/Building Material Symbol -->
+  <rect x="34" y="102" width="112" height="11" fill="white"/>
+  <rect x="45" y="113" width="90" height="8" fill="white" opacity="0.8"/>
+  <rect x="56" y="124" width="68" height="5" fill="white" opacity="0.6"/>
+  
+  <!-- Small decorative elements -->
+  <circle cx="45" cy="45" r="5" fill="white" opacity="0.7"/>
+  <circle cx="135" cy="45" r="5" fill="white" opacity="0.7"/>
+  <circle cx="45" cy="146" r="5" fill="white" opacity="0.7"/>
+  <circle cx="135" cy="146" r="5" fill="white" opacity="0.7"/>
+  
+  <!-- Additional building material elements -->
+  <rect x="67" y="135" width="46" height="3" fill="white" opacity="0.4"/>
+  <rect x="79" y="141" width="22" height="2" fill="white" opacity="0.3"/>
+</svg>
