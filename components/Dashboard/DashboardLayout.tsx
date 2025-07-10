@@ -8,7 +8,6 @@ import {
   Moon,
   Package,
   Search,
-  ShoppingBag,
   Sun,
   Users,
   FileText,
@@ -202,17 +201,25 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           className="border-r bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 border-slate-200 dark:border-slate-700 shadow-lg data-[collapsible=icon]:w-16"
           collapsible="icon"
         >
-          <SidebarHeader className="flex h-[68px] justify-center items-center border-b border-slate-200/60 dark:border-slate-700/60 px-6 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm shadow-md group-data-[collapsible=icon]:px-4">
+          <SidebarHeader className="flex h-[68px] items-center justify-center border-b border-slate-200/60 dark:border-slate-700/60 px-6 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm shadow-md group-data-[collapsible=icon]:px-4">
             <Link
               href="/"
               className="flex items-center gap-3 font-semibold text-slate-800 dark:text-white group transition-all duration-200 hover:scale-105"
             >
-              <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 dark:from-yellow-400 dark:to-yellow-500 rounded-xl shadow-md group-hover:shadow-lg transition-all duration-200">
-                <ShoppingBag className="h-5 w-5 text-white dark:text-slate-900" />
+              <div className="flex-shrink-0">
+                <Image 
+                  src="/favicon.svg" 
+                  alt="YTL Concrete Hub Logo" 
+                  width={32} 
+                  height={32}
+                  className="group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8"
+                />
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 dark:from-yellow-400 dark:to-yellow-300 bg-clip-text text-transparent group-data-[collapsible=icon]:hidden">
-                YTL Concrete Hub
-              </span>
+              <div className="group-data-[collapsible=icon]:hidden flex items-center">
+                <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-blue-700 dark:from-yellow-400 dark:to-yellow-300 bg-clip-text text-transparent whitespace-nowrap">
+                  YTL Concrete Hub
+                </span>
+              </div>
             </Link>
           </SidebarHeader>
           <SidebarContent className="py-6 px-2">
