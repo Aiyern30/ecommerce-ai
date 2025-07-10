@@ -7,13 +7,9 @@ import Link from "next/link";
 
 import {
   Button,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
 } from "@/components/ui";
 import ProductDetailDisplay from "@/components/ProductDetailDisplay";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { supabase } from "@/lib/supabase";
 import type { Product } from "@/type/product";
 
@@ -69,21 +65,13 @@ export default function PublicProductDetailPage() {
     <div className="container mx-auto px-4 py-6 lg:px-6 lg:py-8">
       <div className="flex flex-col gap-6 w-full max-w-full">
         <div className="flex flex-col gap-2">
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/">Home</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/products">Products</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink>{product.name}</BreadcrumbLink>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+          <BreadcrumbNav 
+            customItems={[
+              { label: "Home", href: "/" },
+              { label: "Products", href: "/products" },
+              { label: product.name }
+            ]}
+          />
 
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold">Product Details</h1>

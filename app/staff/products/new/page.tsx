@@ -12,11 +12,6 @@ import { supabase } from "@/lib/supabase";
 import * as z from "zod";
 import {
   Button,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
   Card,
   CardContent,
   CardDescription,
@@ -39,6 +34,7 @@ import {
   Badge,
 } from "@/components/ui/";
 import TagMultiSelect from "@/components/TagMultiSelect";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 import Image from "next/image";
 import { toast } from "sonner";
@@ -382,21 +378,13 @@ export default function NewProductPage() {
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex flex-col gap-2">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/staff/dashboard">Dashboard</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/staff/products">Products</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink>New Product</BreadcrumbLink>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <BreadcrumbNav 
+          customItems={[
+            { label: "Dashboard", href: "/staff/dashboard" },
+            { label: "Products", href: "/staff/products" },
+            { label: "New Product" }
+          ]}
+        />
 
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Add New Product</h1>
