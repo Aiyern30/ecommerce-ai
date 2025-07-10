@@ -20,9 +20,11 @@ export interface Product {
       }[]
     | null;
   product_certificates: { certificate: string }[] | null;
-  product_variants?: {
-    id: string;
-    variant_type: string;
-    price: number;
-  }[] | null;
+  product_variants?:
+    | {
+        id: string;
+        variant_type: string;
+        price: number;
+      }[]
+    | null;
 }

@@ -31,22 +31,24 @@ export function BreadcrumbNav({
   customItems,
 }: BreadcrumbNavProps) {
   const pathname = usePathname();
-  
+
   // If custom items are provided, use them; otherwise, use dynamic path generation
-  const breadcrumbItems = customItems || (() => {
-    const pathSegments = pathname.split("/").filter(Boolean);
-    return [
-      { label: "Home", href: "/" },
-      ...pathSegments.map((segment, index) => {
-        const href = "/" + pathSegments.slice(0, index + 1).join("/");
-        const isLast = index === pathSegments.length - 1;
-        return {
-          label: decodeURIComponent(segment.replace(/-/g, " ")),
-          href: isLast ? undefined : href,
-        };
-      }),
-    ];
-  })();
+  const breadcrumbItems =
+    customItems ||
+    (() => {
+      const pathSegments = pathname.split("/").filter(Boolean);
+      return [
+        { label: "Home", href: "/" },
+        ...pathSegments.map((segment, index) => {
+          const href = "/" + pathSegments.slice(0, index + 1).join("/");
+          const isLast = index === pathSegments.length - 1;
+          return {
+            label: decodeURIComponent(segment.replace(/-/g, " ")),
+            href: isLast ? undefined : href,
+          };
+        }),
+      ];
+    })();
 
   return (
     <div className="flex items-center justify-between text-sm text-muted-foreground dark:text-gray-400">
@@ -56,7 +58,7 @@ export function BreadcrumbNav({
           {breadcrumbItems.map((item, index) => {
             const isLast = index === breadcrumbItems.length - 1;
             const isFirst = index === 0;
-            
+
             return (
               <React.Fragment key={`crumb-${index}`}>
                 {!isFirst && (

@@ -97,11 +97,11 @@ export default function PostDetailPage() {
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex flex-col gap-2">
-        <BreadcrumbNav 
+        <BreadcrumbNav
           customItems={[
             { label: "Dashboard", href: "/staff/dashboard" },
             { label: "Posts", href: "/staff/posts" },
-            { label: post.title }
+            { label: post.title },
           ]}
         />
       </div>

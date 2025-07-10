@@ -150,28 +150,29 @@ export default function ProductDetailDisplay({
         )}
 
         {/* Variants */}
-        {product.product_variants?.length && product.product_variants.length > 0 && (
-          <Card className="shadow-none border-0 p-0">
-            <CardHeader className="p-0 pb-2">
-              <CardTitle className="text-lg">Pricing Variants</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0 space-y-2">
-              {product.product_variants.map((variant, index) => (
-                <div
-                  key={index}
-                  className="flex justify-between items-center p-2 bg-gray-50 rounded-md"
-                >
-                  <span className="text-sm font-medium">
-                    {variant.variant_type}
-                  </span>
-                  <span className="text-sm font-semibold text-green-600">
-                    RM {variant.price?.toFixed(2)}
-                  </span>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
+        {product.product_variants?.length &&
+          product.product_variants.length > 0 && (
+            <Card className="shadow-none border-0 p-0">
+              <CardHeader className="p-0 pb-2">
+                <CardTitle className="text-lg">Pricing Variants</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0 space-y-2">
+                {product.product_variants.map((variant, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center p-2 bg-gray-50 rounded-md"
+                  >
+                    <span className="text-sm font-medium">
+                      {variant.variant_type}
+                    </span>
+                    <span className="text-sm font-semibold text-green-600">
+                      RM {variant.price?.toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
 
         {/* Certifications */}
         <Card className="shadow-none border-0 p-0">
@@ -232,15 +233,11 @@ export default function ProductDetailDisplay({
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Created:</span>
-                <span>
-                  {new Date(product.created_at).toLocaleDateString()}
-                </span>
+                <span>{new Date(product.created_at).toLocaleDateString()}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Last Updated:</span>
-                <span>
-                  {new Date(product.updated_at).toLocaleDateString()}
-                </span>
+                <span>{new Date(product.updated_at).toLocaleDateString()}</span>
               </div>
             </CardContent>
           </Card>

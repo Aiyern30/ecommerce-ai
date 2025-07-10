@@ -5,9 +5,7 @@ import { useEffect, useState, useMemo } from "react";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
-import {
-  Button,
-} from "@/components/ui";
+import { Button } from "@/components/ui";
 import ProductDetailDisplay from "@/components/ProductDetailDisplay";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { supabase } from "@/lib/supabase";
@@ -65,11 +63,11 @@ export default function ProductDetailClient() {
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex flex-col gap-2">
-        <BreadcrumbNav 
+        <BreadcrumbNav
           customItems={[
             { label: "Dashboard", href: "/staff/dashboard" },
             { label: "Products", href: "/staff/products" },
-            { label: product.name }
+            { label: product.name },
           ]}
         />
 
