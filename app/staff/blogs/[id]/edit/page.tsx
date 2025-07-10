@@ -358,12 +358,12 @@ export default function EditBlogPage() {
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex flex-col gap-2">
-        <BreadcrumbNav 
+        <BreadcrumbNav
           customItems={[
             { label: "Dashboard", href: "/staff/dashboard" },
             { label: "Blogs", href: "/staff/blogs" },
             { label: blog.title, href: `/staff/blogs/${blog.id}` },
-            { label: "Edit" }
+            { label: "Edit" },
           ]}
         />
 

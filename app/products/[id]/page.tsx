@@ -5,13 +5,19 @@ import { useEffect, useState, useMemo } from "react";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
-import { Button } from "@/components/ui";
+import {
+  Button,
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from "@/components/ui";
 import ProductDetailDisplay from "@/components/ProductDetailDisplay";
-import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { supabase } from "@/lib/supabase";
 import type { Product } from "@/type/product";
 
-export default function PublicProductDetailPage() {
+export default function ProductDetailPage() {
   const pathname = usePathname();
 
   const productId = useMemo(() => {
@@ -28,18 +34,18 @@ export default function PublicProductDetailPage() {
         .from("products")
         .select(
           `
-  *,
-  product_images(image_url),
-  product_tags(
-    tags(name)
-  ),
-  product_certificates(certificate),
-  product_variants(
-    id,
-    variant_type,
-    price
-  )
-`
+          *,
+          product_images(image_url),
+          product_tags(
+            tags(name)
+          ),
+          product_certificates(certificate),
+          product_variants(
+            id,
+            variant_type,
+            price
+          )
+        `
         )
         .eq("id", productId)
         .single();
@@ -58,31 +64,35 @@ export default function PublicProductDetailPage() {
 
   if (loading)
     return (
-      <div className="flex justify-center items-center min-h-[400px] px-4">
-        Loading product...
-      </div>
+      <div className="container mx-auto px-4 py-8">Loading product...</div>
     );
   if (!product)
     return (
-      <div className="flex justify-center items-center min-h-[400px] px-4">
-        Product not found.
-      </div>
+      <div className="container mx-auto px-4 py-8">Product not found.</div>
     );
 
   return (
-    <div className="container mx-auto px-4 py-6 lg:px-6 lg:py-8">
+    <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col gap-6 w-full max-w-full">
         <div className="flex flex-col gap-2">
-          <BreadcrumbNav
-            customItems={[
-              { label: "Home", href: "/" },
-              { label: "Products", href: "/products" },
-              { label: product.name },
-            ]}
-          />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/">Home</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/products">Products</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink>{product.name}</BreadcrumbLink>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
 
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">Product Details</h1>
+            <h1 className="text-2xl font-bold">{product.name}</h1>
             <Link href="/products">
               <Button variant="outline" size="sm">
                 <ArrowLeft className="mr-2 h-4 w-4" />
@@ -92,6 +102,7 @@ export default function PublicProductDetailPage() {
           </div>
         </div>
 
+        {/* Customer-focused product display - without admin Product Information section */}
         <ProductDetailDisplay product={product} isCustomerView={true} />
       </div>
     </div>

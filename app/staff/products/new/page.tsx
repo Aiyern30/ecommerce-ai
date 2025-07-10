@@ -378,11 +378,11 @@ export default function NewProductPage() {
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex flex-col gap-2">
-        <BreadcrumbNav 
+        <BreadcrumbNav
           customItems={[
             { label: "Dashboard", href: "/staff/dashboard" },
             { label: "Products", href: "/staff/products" },
-            { label: "New Product" }
+            { label: "New Product" },
           ]}
         />
 
