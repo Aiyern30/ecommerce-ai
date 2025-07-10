@@ -4,4 +4,4 @@ Disallow: /staff/
 Disallow: /api/
 Disallow: /private/
 
-Sitemap: https://shopytl.com/sitemap.xml
+Sitemap: https://ytlconcretehub.com/sitemap.xml

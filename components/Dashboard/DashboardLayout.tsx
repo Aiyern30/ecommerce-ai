@@ -211,7 +211,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <ShoppingBag className="h-5 w-5 text-white dark:text-slate-900" />
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 dark:from-yellow-400 dark:to-yellow-300 bg-clip-text text-transparent group-data-[collapsible=icon]:hidden">
-                ShopYTL
+                YTL Concrete Hub
               </span>
             </Link>
           </SidebarHeader>

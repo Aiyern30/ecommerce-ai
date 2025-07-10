@@ -1,15 +1,15 @@
-import { ImageResponse } from 'next/og'
- 
+import { ImageResponse } from "next/og";
+
 // Route segment config
-export const runtime = 'edge'
- 
+export const runtime = "edge";
+
 // Image metadata
 export const size = {
   width: 180,
   height: 180,
-}
-export const contentType = 'image/png'
- 
+};
+export const contentType = "image/png";
+
 // Image generation
 export default function AppleIcon() {
   return new ImageResponse(
@@ -17,23 +17,23 @@ export default function AppleIcon() {
       <div
         style={{
           fontSize: 64,
-          background: '#3B82F6',
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white',
-          borderRadius: '20%',
-          position: 'relative',
+          background: "#3B82F6",
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "white",
+          borderRadius: "20%",
+          position: "relative",
         }}
       >
         <div
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           {/* Shopping bag */}
@@ -60,9 +60,9 @@ export default function AppleIcon() {
           </svg>
           <div
             style={{
-              fontSize: '24px',
-              fontWeight: 'bold',
-              marginTop: '8px',
+              fontSize: "24px",
+              fontWeight: "bold",
+              marginTop: "8px",
             }}
           >
             YTL
@@ -73,5 +73,5 @@ export default function AppleIcon() {
     {
       ...size,
     }
-  )
+  );
 }
