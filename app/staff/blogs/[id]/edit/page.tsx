@@ -12,11 +12,6 @@ import { supabase } from "@/lib/supabase";
 import * as z from "zod";
 import {
   Button,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
   Card,
   CardContent,
   CardDescription,
@@ -41,6 +36,7 @@ import {
 import Image from "next/image";
 import { toast } from "sonner";
 import { Blog, Tag } from "@/type/blogs";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 // Zod schema for blog editing
 const blogSchema = z.object({
@@ -362,27 +358,14 @@ export default function EditBlogPage() {
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex flex-col gap-2">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/staff/dashboard">Dashboard</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/staff/blogs">Blogs</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href={`/staff/blogs/${blog.id}`}>
-                {blog.title}
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink>Edit</BreadcrumbLink>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <BreadcrumbNav 
+          customItems={[
+            { label: "Dashboard", href: "/staff/dashboard" },
+            { label: "Blogs", href: "/staff/blogs" },
+            { label: blog.title, href: `/staff/blogs/${blog.id}` },
+            { label: "Edit" }
+          ]}
+        />
 
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Edit Blog</h1>

@@ -12,11 +12,6 @@ import { supabase } from "@/lib/supabase";
 import * as z from "zod";
 import {
   Button,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
   Card,
   CardContent,
   CardDescription,
@@ -41,6 +36,7 @@ import {
 import Image from "next/image";
 import { toast } from "sonner";
 import TagMultiSelect from "@/components/TagMultiSelect";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 const productSchema = z.object({
   name: z.string().min(1, "Product name is required"),
@@ -625,21 +621,13 @@ export default function EditProductPage() {
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex flex-col gap-2">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/staff/dashboard">Dashboard</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/staff/products">Products</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink>Edit Product</BreadcrumbLink>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <BreadcrumbNav 
+          customItems={[
+            { label: "Dashboard", href: "/staff/dashboard" },
+            { label: "Products", href: "/staff/products" },
+            { label: "Edit Product" }
+          ]}
+        />
 
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Edit Product</h1>
