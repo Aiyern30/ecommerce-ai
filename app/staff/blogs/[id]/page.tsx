@@ -6,11 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { ArrowLeft, ExternalLink, Calendar, Edit, Trash2 } from "lucide-react";
 import {
   Button,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
   Card,
   CardContent,
   CardHeader,
@@ -28,6 +23,7 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Blog } from "@/type/blogs";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 export default function BlogDetailPage() {
   const pathname = usePathname();
@@ -114,21 +110,13 @@ export default function BlogDetailPage() {
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex flex-col gap-2">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/staff/dashboard">Dashboard</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/staff/blogs">Blogs</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink>{blog.title}</BreadcrumbLink>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <BreadcrumbNav 
+          customItems={[
+            { label: "Dashboard", href: "/staff/dashboard" },
+            { label: "Blogs", href: "/staff/blogs" },
+            { label: blog.title }
+          ]}
+        />
 
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Blog Details</h1>

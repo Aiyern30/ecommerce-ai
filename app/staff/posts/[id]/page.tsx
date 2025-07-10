@@ -6,11 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { ExternalLink, Calendar, Edit, LinkIcon, Trash2 } from "lucide-react";
 import {
   Button,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
   Card,
   CardContent,
   CardHeader,
@@ -28,6 +23,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Post } from "@/type/posts";
 import { formatDate } from "@/lib/format";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 export default function PostDetailPage() {
   const pathname = usePathname();
@@ -101,21 +97,13 @@ export default function PostDetailPage() {
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex flex-col gap-2">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/staff/dashboard">Dashboard</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/staff/posts">Posts</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink>{post.title}</BreadcrumbLink>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <BreadcrumbNav 
+          customItems={[
+            { label: "Dashboard", href: "/staff/dashboard" },
+            { label: "Posts", href: "/staff/posts" },
+            { label: post.title }
+          ]}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
