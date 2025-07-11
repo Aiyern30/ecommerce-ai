@@ -96,7 +96,8 @@ export default function PostDetailPage() {
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
-      <div className="flex flex-col gap-2">
+      {/* Header with Breadcrumb and Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <BreadcrumbNav
           customItems={[
             { label: "Dashboard", href: "/staff/dashboard" },
@@ -104,234 +105,204 @@ export default function PostDetailPage() {
             { label: post.title },
           ]}
         />
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push(`/staff/posts/${post.id}/edit`)}
+            className="flex items-center gap-2"
+          >
+            <Edit className="h-4 w-4" />
+            Edit
+          </Button>
+
+          {/* Delete Dialog */}
+          <Dialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+          >
+            <DialogTrigger asChild>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={openDeleteDialog}
+                className="flex items-center gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Confirm Deletion</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to delete this post? This action cannot
+                  be undone.
+                </DialogDescription>
+              </DialogHeader>
+
+              {/* Post Preview in Dialog */}
+              <div className="overflow-y-auto p-4 border rounded-md bg-gray-50 dark:bg-gray-800">
+                <div className="flex items-center gap-3">
+                  <Image
+                    src={
+                      post.image_url || "/placeholder.svg?height=48&width=48"
+                    }
+                    alt={post.title}
+                    width={48}
+                    height={48}
+                    className="rounded-md object-cover flex-shrink-0"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                      {post.title}
+                    </p>
+                    {post.description && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {post.description}
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-500 dark:text-gray-500">
+                      Created: {formatDate(post.created_at)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsDeleteDialogOpen(false)}
+                  disabled={isDeleting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleDeletePost}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? "Deleting..." : "Delete Post"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
+      {/* Main Content Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Post Header */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-3xl">{post.title}</CardTitle>
-              {post.description && (
-                <p className="text-lg text-gray-600 dark:text-gray-400 mt-2">
-                  {post.description}
-                </p>
-              )}
-              <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mt-4">
-                <div className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4" />
-                  Created: {formatDate(post.created_at)}
-                </div>
-                {post.updated_at !== post.created_at && (
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-4 h-4" />
-                    Updated: {formatDate(post.updated_at)}
-                  </div>
-                )}
-              </div>
-            </CardHeader>
-          </Card>
-
-          {/* Post Image */}
-          {post.image_url && (
-            <Card>
-              <CardContent className="p-6">
-                <Image
-                  src={post.image_url || "/placeholder.svg"}
-                  alt={post.title}
-                  width={800}
-                  height={400}
-                  className="w-full h-auto rounded-lg object-cover"
-                  priority
-                />
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Post Content */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Content</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="prose prose-gray dark:prose-invert max-w-none">
-                <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed">
-                  {post.body}
-                </div>
-              </div>
-            </CardContent>
+        {/* Left Side - Large Image */}
+        <div className="lg:col-span-2">
+          <Card className="overflow-hidden h-fit">
+            <div className="aspect-[16/10] relative">
+              <Image
+                src={post.image_url || "/placeholder.svg"}
+                alt={post.title}
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
           </Card>
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Post Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Post Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Post ID
-                </label>
-                <p className="text-sm font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-                  #{post.id}
+        {/* Right Side - All Content in One Card */}
+        <div className="lg:col-span-1">
+          <Card className="h-fit">
+            <CardHeader className="pb-6">
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <CardTitle className="text-2xl font-bold leading-tight flex-1">
+                  {post.title}
+                </CardTitle>
+                <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 flex-shrink-0">
+                  Published
+                </span>
+              </div>
+
+              {post.description && (
+                <p className="text-base text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+                  {post.description}
                 </p>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Status
-                </label>
-                <p className="text-sm">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                    Published
-                  </span>
-                </p>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Created
-                </label>
-                <p className="text-sm">{formatDate(post.created_at)}</p>
-              </div>
-
-              {post.updated_at !== post.created_at && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Last Updated
-                  </label>
-                  <p className="text-sm">{formatDate(post.updated_at)}</p>
-                </div>
               )}
 
+              {/* Post Meta Information */}
+              <div className="space-y-2 text-sm text-gray-500 dark:text-gray-400 pb-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  <span>Created: {formatDate(post.created_at)}</span>
+                </div>
+                {post.updated_at !== post.created_at && (
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <span>Updated: {formatDate(post.updated_at)}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded font-mono">
+                    ID: #{post.id}
+                  </span>
+                </div>
+              </div>
+            </CardHeader>
+
+            <CardContent className="pt-0 space-y-6">
+              {/* Post Content */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">
+                  Content
+                </h3>
+                <div className="prose prose-sm dark:prose-invert max-w-none">
+                  <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
+                    {post.body}
+                  </div>
+                </div>
+              </div>
+
+              {/* Post Link (if exists) */}
               {post.link && (
                 <div>
-                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">
                     {isExternalLink(post.link)
                       ? "External Link"
                       : "Internal Link"}
-                  </label>
-                  <div className="mt-1">
+                  </h3>
+                  <div className="space-y-2">
                     {post.link_name && (
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
+                      <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">
                         {post.link_name}
                       </p>
                     )}
-                    {isExternalLink(post.link) ? (
-                      <a
-                        href={post.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                        {post.link}
-                      </a>
-                    ) : (
-                      <Link
-                        href={post.link}
-                        className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 hover:underline"
-                      >
-                        <LinkIcon className="w-4 h-4" />
-                        {post.link}
-                      </Link>
-                    )}
+                    <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      {isExternalLink(post.link) ? (
+                        <a
+                          href={post.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline group text-sm"
+                        >
+                          <ExternalLink className="w-4 h-4 flex-shrink-0" />
+                          <span className="break-all group-hover:text-blue-700 dark:group-hover:text-blue-300">
+                            {post.link}
+                          </span>
+                        </a>
+                      ) : (
+                        <Link
+                          href={post.link}
+                          className="flex items-center gap-2 text-green-600 dark:text-green-400 hover:underline group text-sm"
+                        >
+                          <LinkIcon className="w-4 h-4 flex-shrink-0" />
+                          <span className="break-all group-hover:text-green-700 dark:group-hover:text-green-300">
+                            {post.link}
+                          </span>
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
-
-          {/* Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button
-                className="w-full"
-                variant="default"
-                onClick={() => router.push(`/staff/posts/${post.id}/edit`)}
-              >
-                <Edit className="mr-2 h-4 w-4" />
-                Edit Post
-              </Button>
-
-              {/* Delete Dialog */}
-              <Dialog
-                open={isDeleteDialogOpen}
-                onOpenChange={setIsDeleteDialogOpen}
-              >
-                <DialogTrigger asChild>
-                  <Button
-                    className="w-full"
-                    variant="destructive"
-                    onClick={openDeleteDialog}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete Post
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Confirm Deletion</DialogTitle>
-                    <DialogDescription>
-                      Are you sure you want to delete this post? This action
-                      cannot be undone.
-                    </DialogDescription>
-                  </DialogHeader>
-
-                  {/* Post Preview in Dialog */}
-                  <div className="overflow-y-auto p-4 border rounded-md bg-gray-50 dark:bg-gray-800">
-                    <div className="flex items-center gap-3">
-                      <Image
-                        src={
-                          post.image_url ||
-                          "/placeholder.svg?height=48&width=48"
-                        }
-                        alt={post.title}
-                        width={48}
-                        height={48}
-                        className="rounded-md object-cover flex-shrink-0"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-gray-900 dark:text-gray-100">
-                          {post.title}
-                        </p>
-                        {post.description && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {post.description}
-                          </p>
-                        )}
-                        <p className="text-xs text-gray-500 dark:text-gray-500">
-                          Created: {formatDate(post.created_at)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <DialogFooter>
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsDeleteDialogOpen(false)}
-                      disabled={isDeleting}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={handleDeletePost}
-                      disabled={isDeleting}
-                    >
-                      {isDeleting ? "Deleting..." : "Delete Post"}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
             </CardContent>
           </Card>
         </div>
