@@ -19,16 +19,24 @@ export const GoogleAuthButton = ({
   const handleGoogleLogin = async () => {
     try {
       setIsLoading(true);
-      const { error } = await supabase.auth.signInWithOAuth({
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+            hd: "ytlconcretehub.com",
+          },
         },
       });
 
       if (error) {
         console.error("Google login error:", error);
         setIsLoading(false);
+      } else {
+        console.log("OAuth initiated successfully:", data);
       }
     } catch (error) {
       console.error("Google login error:", error);
