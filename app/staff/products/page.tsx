@@ -411,7 +411,7 @@ export default function ProductsPage() {
           <Button
             variant="outline"
             size="sm"
-            className="flex items-center gap-1 w-full sm:w-auto"
+            className="flex items-center gap-1 w-full sm:w-auto h-9"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="h-4 w-4" />
@@ -428,7 +428,7 @@ export default function ProductsPage() {
               updateFilter("category", value);
             }}
           >
-            <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px] h-9">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
@@ -445,7 +445,7 @@ export default function ProductsPage() {
               );
             }}
           >
-            <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px] h-9">
               <SelectValue placeholder="Stock Status" />
             </SelectTrigger>
             <SelectContent>
@@ -460,7 +460,7 @@ export default function ProductsPage() {
               updateFilter("sortBy", value as ProductFilters["sortBy"]);
             }}
           >
-            <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px] h-9">
               <SelectValue placeholder="Sort By" />
             </SelectTrigger>
             <SelectContent>
