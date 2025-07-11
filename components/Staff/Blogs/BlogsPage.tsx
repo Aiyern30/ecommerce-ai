@@ -10,6 +10,7 @@ import {
   Search,
   Trash2,
   ExternalLink,
+  BookOpen,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
@@ -107,6 +108,57 @@ function BlogTableSkeleton() {
   );
 }
 
+function EmptyBlogsState() {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-4">
+      <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
+        <BookOpen className="w-12 h-12 text-gray-400" />
+      </div>
+      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+        No blogs found
+      </h3>
+      <p className="text-gray-500 dark:text-gray-400 text-center mb-6 max-w-sm">
+        Get started by creating your first blog post to share insights and
+        engage with your audience.
+      </p>
+      <Link href="/staff/blogs/new">
+        <Button className="flex items-center gap-2">
+          <Plus className="w-4 h-4" />
+          Create Your First Blog
+        </Button>
+      </Link>
+    </div>
+  );
+}
+
+function NoResultsState({ onClearFilters }: { onClearFilters: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-4">
+      <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
+        <Search className="w-12 h-12 text-gray-400" />
+      </div>
+      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+        No matching blogs
+      </h3>
+      <p className="text-gray-500 dark:text-gray-400 text-center mb-6 max-w-sm">
+        No blogs match your current search criteria. Try adjusting your filters
+        or search terms.
+      </p>
+      <div className="flex items-center gap-2">
+        <Button variant="outline" onClick={onClearFilters}>
+          Clear Filters
+        </Button>
+        <Link href="/staff/blogs/new">
+          <Button>
+            <Plus className="w-4 h-4 mr-2" />
+            Add New Blog
+          </Button>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export default function BlogsPage() {
   const router = useRouter();
   const [blogs, setBlogs] = useState<Blog[]>([]);
@@ -182,6 +234,16 @@ export default function BlogsPage() {
 
   const clearBlogSelection = () => {
     setSelectedBlogs([]);
+  };
+
+  const clearAllFilters = () => {
+    setFilters({
+      search: "",
+      sortBy: "date-new",
+      hasImage: "all",
+      hasLink: "all",
+    });
+    setCurrentPage(1);
   };
 
   const openDeleteDialog = () => {
@@ -471,6 +533,10 @@ export default function BlogsPage() {
 
       {loading ? (
         <BlogTableSkeleton />
+      ) : blogs.length === 0 ? (
+        <EmptyBlogsState />
+      ) : sortedBlogs.length === 0 ? (
+        <NoResultsState onClearFilters={clearAllFilters} />
       ) : (
         <div className="w-full overflow-x-auto rounded-md border">
           <Table>
@@ -496,128 +562,116 @@ export default function BlogsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {currentPageData.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="h-24 text-center">
-                    No blogs found.
+              {currentPageData.map((blog) => (
+                <TableRow
+                  key={blog.id}
+                  onClick={() => router.push(`/staff/blogs/${blog.id}`)}
+                  className="cursor-pointer"
+                >
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={selectedBlogs.includes(blog.id)}
+                      onCheckedChange={() => toggleBlogSelection(blog.id)}
+                      aria-label={`Select blog ${blog.title}`}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <div className="relative w-16 h-12">
+                      {(blog.blog_images || [])
+                        .map((img) => img.image_url)
+                        .filter((src, i, arr) => src && arr.indexOf(src) === i)
+                        .slice(0, 4)
+                        .map((src, index) => (
+                          <Image
+                            key={index}
+                            src={src}
+                            alt={`${blog.title} ${index + 1}`}
+                            className="absolute top-0 left-0 w-10 h-10 rounded-md object-cover border border-white shadow-sm transition-all"
+                            style={{
+                              zIndex: 10 - index,
+                              transform: `translateX(${index * 12}px)`,
+                            }}
+                            width={40}
+                            height={40}
+                          />
+                        ))}
+                    </div>
+                  </TableCell>
+
+                  <TableCell className="font-medium max-w-xs">
+                    <div className="truncate" title={blog.title}>
+                      {blog.title}
+                    </div>
+                  </TableCell>
+                  <TableCell className="max-w-xs">
+                    <div
+                      className="truncate text-gray-600"
+                      title={blog.description || ""}
+                    >
+                      {blog.description || "No description"}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                      {blog.blog_tags && blog.blog_tags.length > 0 ? (
+                        blog.blog_tags
+                          .flatMap((bt) => bt.tags)
+                          .slice(0, 2)
+                          .map((tag) => (
+                            <Badge
+                              key={tag.id}
+                              variant="secondary"
+                              className="text-xs"
+                            >
+                              {tag.name}
+                            </Badge>
+                          ))
+                      ) : (
+                        <span className="text-gray-400 text-sm">No tags</span>
+                      )}
+
+                      {blog.blog_tags &&
+                        blog.blog_tags.flatMap((bt) => bt.tags).length > 2 && (
+                          <Badge variant="outline" className="text-xs">
+                            +
+                            {blog.blog_tags.flatMap((bt) => bt.tags).length - 2}
+                          </Badge>
+                        )}
+                    </div>
+                  </TableCell>
+
+                  <TableCell>
+                    {blog.external_link ? (
+                      <div className="flex items-center gap-2">
+                        <ExternalLink className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                        <span
+                          className="text-sm font-medium truncate max-w-[120px]"
+                          title={blog.external_link}
+                        >
+                          External Link
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-gray-400 text-sm">No link</span>
+                    )}
+                  </TableCell>
+                  <TableCell>{formatDate(blog.created_at)}</TableCell>
+                  <TableCell
+                    className="text-right"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() =>
+                        router.push(`/staff/blogs/${blog.id}/edit`)
+                      }
+                    >
+                      Edit
+                    </Button>
                   </TableCell>
                 </TableRow>
-              ) : (
-                currentPageData.map((blog) => (
-                  <TableRow
-                    key={blog.id}
-                    onClick={() => router.push(`/staff/blogs/${blog.id}`)}
-                    className="cursor-pointer"
-                  >
-                    <TableCell onClick={(e) => e.stopPropagation()}>
-                      <Checkbox
-                        checked={selectedBlogs.includes(blog.id)}
-                        onCheckedChange={() => toggleBlogSelection(blog.id)}
-                        aria-label={`Select blog ${blog.title}`}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <div className="relative w-16 h-12">
-                        {(blog.blog_images || [])
-                          .map((img) => img.image_url)
-                          .filter(
-                            (src, i, arr) => src && arr.indexOf(src) === i
-                          )
-                          .slice(0, 4)
-                          .map((src, index) => (
-                            <Image
-                              key={index}
-                              src={src}
-                              alt={`${blog.title} ${index + 1}`}
-                              className="absolute top-0 left-0 w-10 h-10 rounded-md object-cover border border-white shadow-sm transition-all"
-                              style={{
-                                zIndex: 10 - index,
-                                transform: `translateX(${index * 12}px)`,
-                              }}
-                              width={40}
-                              height={40}
-                            />
-                          ))}
-                      </div>
-                    </TableCell>
-
-                    <TableCell className="font-medium max-w-xs">
-                      <div className="truncate" title={blog.title}>
-                        {blog.title}
-                      </div>
-                    </TableCell>
-                    <TableCell className="max-w-xs">
-                      <div
-                        className="truncate text-gray-600"
-                        title={blog.description || ""}
-                      >
-                        {blog.description || "No description"}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {blog.blog_tags && blog.blog_tags.length > 0 ? (
-                          blog.blog_tags
-                            .flatMap((bt) => bt.tags)
-                            .slice(0, 2)
-                            .map((tag) => (
-                              <Badge
-                                key={tag.id}
-                                variant="secondary"
-                                className="text-xs"
-                              >
-                                {tag.name}
-                              </Badge>
-                            ))
-                        ) : (
-                          <span className="text-gray-400 text-sm">No tags</span>
-                        )}
-
-                        {blog.blog_tags &&
-                          blog.blog_tags.flatMap((bt) => bt.tags).length >
-                            2 && (
-                            <Badge variant="outline" className="text-xs">
-                              +
-                              {blog.blog_tags.flatMap((bt) => bt.tags).length -
-                                2}
-                            </Badge>
-                          )}
-                      </div>
-                    </TableCell>
-
-                    <TableCell>
-                      {blog.external_link ? (
-                        <div className="flex items-center gap-2">
-                          <ExternalLink className="h-4 w-4 text-blue-500 flex-shrink-0" />
-                          <span
-                            className="text-sm font-medium truncate max-w-[120px]"
-                            title={blog.external_link}
-                          >
-                            External Link
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-gray-400 text-sm">No link</span>
-                      )}
-                    </TableCell>
-                    <TableCell>{formatDate(blog.created_at)}</TableCell>
-                    <TableCell
-                      className="text-right"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() =>
-                          router.push(`/staff/blogs/${blog.id}/edit`)
-                        }
-                      >
-                        Edit
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
+              ))}
             </TableBody>
           </Table>
         </div>

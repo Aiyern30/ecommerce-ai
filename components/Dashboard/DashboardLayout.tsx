@@ -215,9 +215,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <SidebarHeader className="flex h-[68px] items-center justify-center border-b border-slate-200/60 dark:border-slate-700/60 px-6 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm shadow-md group-data-[collapsible=icon]:px-4">
             <Link
               href="/"
-              className="flex items-center gap-3 font-semibold text-slate-800 dark:text-white group transition-all duration-200 hover:scale-105 group-data-[collapsible=icon]:justify-center w-full"
+              className="flex items-center gap-3 font-semibold text-slate-800 dark:text-white group transition-all duration-200 hover:scale-105"
             >
-              <div className="flex-shrink-0 group-data-[collapsible=icon]:mx-auto">
+              <div className="flex-shrink-0">
                 <Image
                   src="/favicon.svg"
                   alt="YTL Concrete Hub Logo"
@@ -227,7 +227,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 />
               </div>
               <div className="group-data-[collapsible=icon]:hidden flex items-center">
-                <span className="text-lg font-bold text-slate-800 dark:text-white whitespace-nowrap">
+                <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-blue-700 dark:from-yellow-400 dark:to-yellow-300 bg-clip-text text-transparent whitespace-nowrap">
                   YTL Concrete Hub
                 </span>
               </div>
