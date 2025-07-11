@@ -19,15 +19,19 @@ export const GoogleAuthButton = ({
   const handleGoogleLogin = async () => {
     try {
       setIsLoading(true);
-      await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
+
+      if (error) {
+        console.error("Google login error:", error);
+        setIsLoading(false);
+      }
     } catch (error) {
       console.error("Google login error:", error);
-    } finally {
       setIsLoading(false);
     }
   };
