@@ -378,7 +378,7 @@ export default function BlogsPage() {
           <Button
             variant="outline"
             size="sm"
-            className="flex items-center gap-1 w-full sm:w-auto bg-transparent"
+            className="flex items-center gap-1 w-full sm:w-auto bg-transparent h-9"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="h-4 w-4" />
@@ -395,7 +395,7 @@ export default function BlogsPage() {
               updateFilter("hasImage", value as BlogFilters["hasImage"]);
             }}
           >
-            <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px] h-9">
               <SelectValue placeholder="Image Filter" />
             </SelectTrigger>
             <SelectContent>
@@ -410,7 +410,7 @@ export default function BlogsPage() {
               updateFilter("sortBy", value as BlogFilters["sortBy"]);
             }}
           >
-            <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px] h-9">
               <SelectValue placeholder="Sort By" />
             </SelectTrigger>
             <SelectContent>

@@ -318,7 +318,7 @@ export default function PostsPage() {
           <Button
             variant="outline"
             size="sm"
-            className="flex items-center gap-1 w-full sm:w-auto bg-transparent"
+            className="flex items-center gap-1 w-full sm:w-auto bg-transparent h-9"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="h-4 w-4" />
@@ -335,7 +335,7 @@ export default function PostsPage() {
               updateFilter("hasImage", value as PostFilters["hasImage"]);
             }}
           >
-            <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px] h-9">
               <SelectValue placeholder="Image Filter" />
             </SelectTrigger>
             <SelectContent>
@@ -350,7 +350,7 @@ export default function PostsPage() {
               updateFilter("sortBy", value as PostFilters["sortBy"]);
             }}
           >
-            <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px] h-9">
               <SelectValue placeholder="Sort By" />
             </SelectTrigger>
             <SelectContent>
