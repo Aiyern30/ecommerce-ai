@@ -9,6 +9,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui";
+import { Calendar } from "lucide-react";
+import { formatDate } from "@/lib/format";
 import type { Product } from "@/type/product";
 
 interface ProductDetailDisplayProps {
@@ -42,206 +44,230 @@ export default function ProductDetailDisplay({
   const displayImage = hoveredImage || selectedImage;
 
   return (
-    <div className="flex flex-col xl:flex-row gap-6">
-      {/* LEFT: Square Thumbnails (Fixed Width) */}
-      <div className="flex xl:flex-col gap-2 overflow-x-auto xl:overflow-y-auto w-full xl:w-24 p-2">
-        {allImages.map((img, index) => (
-          <div
-            key={index}
-            className={`relative aspect-square w-20 flex-shrink-0 rounded-md border cursor-pointer transition ${
-              selectedImage === img.image_url
-                ? "border-blue-500 ring-2 ring-blue-500"
-                : "border-gray-300"
-            }`}
-            onMouseEnter={() => setHoveredImage(img.image_url)}
-            onMouseLeave={() => setHoveredImage(null)}
-            onClick={() => setSelectedImage(img.image_url)}
-          >
-            <Image
-              src={img.image_url || "/placeholder.svg"}
-              alt={`Thumbnail ${index + 1}`}
-              fill
-              sizes="80px"
-              className="object-cover rounded-md"
-              priority
-            />
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 xl:gap-6">
+      {/* Left Side - Small Thumbnails (1/12 width) */}
+      <div className="lg:col-span-1">
+        {allImages.length > 1 && (
+          <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-y-auto pb-2 lg:pb-0 scrollbar-hide">
+            {allImages.map((img, index) => (
+              <div
+                key={index}
+                className={`relative aspect-square w-16 lg:w-full flex-shrink-0 rounded-md border-2 cursor-pointer transition-colors duration-200 ${
+                  selectedImage === img.image_url
+                    ? "border-blue-500"
+                    : "border-gray-300 hover:border-gray-400"
+                }`}
+                onMouseEnter={() => setHoveredImage(img.image_url)}
+                onMouseLeave={() => setHoveredImage(null)}
+                onClick={() => setSelectedImage(img.image_url)}
+              >
+                <Image
+                  src={img.image_url || "/placeholder.svg"}
+                  alt={`Thumbnail ${index + 1}`}
+                  fill
+                  sizes="64px"
+                  className="object-cover rounded-md"
+                />
+              </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
 
-      {/* CENTER: Main Image */}
-      <div className="relative aspect-square flex-grow border rounded-lg overflow-hidden">
-        <Image
-          src={displayImage || "/placeholder.svg"}
-          alt={product.name}
-          fill
-          sizes="80px"
-          className="object-cover rounded-md"
-          priority
-        />
-      </div>
-
-      {/* RIGHT: Product Details */}
-      <div className="xl:w-1/3 space-y-6">
-        <div>
-          <p className="text-sm text-gray-500 uppercase font-medium">
-            {product.category || "N/A"}
-          </p>
-          <h1 className="text-2xl font-bold mt-1">{product.name}</h1>
-          <p className="text-gray-700 mt-2">
-            {product.description || "No description provided."}
-          </p>
+      {/* Middle - Large Main Image (responsive width: 6/12 on lg-xl, 7/12 on xl+) */}
+      <div className="lg:col-span-7 xl:col-span-6">
+        <div className="relative w-full h-[500px] lg:h-[600px] rounded-lg overflow-hidden">
+          <Image
+            src={displayImage || "/placeholder.svg"}
+            alt={product.name}
+            fill
+            className="object-fill"
+            priority
+          />
         </div>
+      </div>
 
-        {/* Price and Basic Info */}
-        <Card className="shadow-none border p-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Price</p>
-              <p className="text-xl font-bold text-green-600">
-                RM {product.price?.toFixed(2) || "0.00"}
-              </p>
-              <p className="text-sm text-gray-500">
-                {product.unit || "per unit"}
-              </p>
+      {/* Right Side - Product Information (responsive width: 4/12 on lg-xl, 5/12 on xl+) */}
+      <div className="lg:col-span-4 xl:col-span-5">
+        <Card className="h-fit max-h-[600px] overflow-hidden">
+          <CardHeader className="pb-3">
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <CardTitle className="text-xl xl:text-2xl font-bold leading-tight flex-1">
+                {product.name}
+              </CardTitle>
+              <Badge variant="outline" className="flex-shrink-0 text-xs">
+                {product.category || "N/A"}
+              </Badge>
             </div>
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Stock</p>
-              <p className="text-lg font-semibold">
-                {product.stock_quantity ?? "N/A"}
+
+            {product.description && (
+              <p className="text-sm xl:text-base text-gray-600 dark:text-gray-400 leading-relaxed mb-3">
+                {product.description}
               </p>
+            )}
+
+            {/* Product Meta Information */}
+            <div className="space-y-1 text-xs xl:text-sm text-gray-500 dark:text-gray-400 pb-2 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-2">
-                <p className="text-sm text-gray-500">units available</p>
-                {product.stock_quantity !== null && (
-                  <Badge
-                    variant={
-                      product.stock_quantity > 20
-                        ? "default"
-                        : product.stock_quantity > 5
-                        ? "secondary"
-                        : "destructive"
-                    }
-                    className="text-xs"
-                  >
-                    {product.stock_quantity > 20
-                      ? "In Stock"
-                      : product.stock_quantity > 5
-                      ? "Low Stock"
-                      : "Critical"}
-                  </Badge>
+                <Calendar className="w-3 h-3 xl:w-4 xl:h-4" />
+                <span>Added: {formatDate(product.created_at)}</span>
+              </div>
+              {product.updated_at !== product.created_at && (
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-3 h-3 xl:w-4 xl:h-4" />
+                  <span>Updated: {formatDate(product.updated_at)}</span>
+                </div>
+              )}
+              {!isCustomerView && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded font-mono">
+                    ID: #{product.id}
+                  </span>
+                </div>
+              )}
+            </div>
+          </CardHeader>
+
+          <CardContent className="pt-0 space-y-3 xl:space-y-4 overflow-y-auto max-h-[420px] scrollbar-hide">
+            {/* Price and Stock */}
+            <div>
+              <h3 className="text-base xl:text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
+                Pricing & Stock
+              </h3>
+              <div className="grid grid-cols-2 gap-2 xl:gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                    Price
+                  </p>
+                  <p className="text-lg xl:text-xl font-bold text-green-600">
+                    RM {product.price?.toFixed(2) || "0.00"}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {product.unit || "per unit"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                    Stock
+                  </p>
+                  <p className="text-base xl:text-lg font-semibold">
+                    {product.stock_quantity ?? "N/A"}
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      units
+                    </p>
+                    {product.stock_quantity !== null && (
+                      <Badge
+                        variant={
+                          product.stock_quantity > 20
+                            ? "default"
+                            : product.stock_quantity > 5
+                            ? "secondary"
+                            : "destructive"
+                        }
+                        className="text-xs"
+                      >
+                        {product.stock_quantity > 20
+                          ? "In Stock"
+                          : product.stock_quantity > 5
+                          ? "Low"
+                          : "Critical"}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Grade */}
+            {product.grade && (
+              <div>
+                <h3 className="text-base xl:text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
+                  Grade
+                </h3>
+                <Badge variant="outline" className="text-sm px-3 py-1">
+                  {product.grade}
+                </Badge>
+              </div>
+            )}
+
+            {/* Variants */}
+            {product.product_variants?.length &&
+              product.product_variants.length > 0 && (
+                <div>
+                  <h3 className="text-base xl:text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
+                    Pricing Variants
+                  </h3>
+                  <div className="space-y-2">
+                    {product.product_variants.map((variant, index) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-center p-2 xl:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                      >
+                        <span className="text-sm font-medium">
+                          {variant.variant_type}
+                        </span>
+                        <span className="text-sm font-semibold text-green-600">
+                          RM {variant.price?.toFixed(2)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+            {/* Certifications */}
+            <div>
+              <h3 className="text-base xl:text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
+                Certifications
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {product.product_certificates?.length ? (
+                  product.product_certificates.map((cert, index) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="text-sm px-3 py-1"
+                    >
+                      {cert.certificate}
+                    </Badge>
+                  ))
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">
+                    No certifications listed.
+                  </p>
                 )}
               </div>
             </div>
-          </div>
-        </Card>
 
-        {/* Grade */}
-        {product.grade && (
-          <Card className="shadow-none border-0 p-0">
-            <CardHeader className="p-0 pb-2">
-              <CardTitle className="text-lg">Grade</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <Badge variant="outline" className="text-sm px-3 py-1">
-                {product.grade}
-              </Badge>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Variants */}
-        {product.product_variants?.length &&
-          product.product_variants.length > 0 && (
-            <Card className="shadow-none border-0 p-0">
-              <CardHeader className="p-0 pb-2">
-                <CardTitle className="text-lg">Pricing Variants</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0 space-y-2">
-                {product.product_variants.map((variant, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-between items-center p-2 bg-gray-50 rounded-md"
-                  >
-                    <span className="text-sm font-medium">
-                      {variant.variant_type}
-                    </span>
-                    <span className="text-sm font-semibold text-green-600">
-                      RM {variant.price?.toFixed(2)}
-                    </span>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          )}
-
-        {/* Certifications */}
-        <Card className="shadow-none border-0 p-0">
-          <CardHeader className="p-0 pb-2">
-            <CardTitle className="text-lg">Certifications</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0 flex flex-wrap gap-2">
-            {product.product_certificates?.length ? (
-              product.product_certificates.map((cert, index) => (
-                <Badge
-                  key={index}
-                  variant="secondary"
-                  className="text-sm px-3 py-1"
-                >
-                  {cert.certificate}
-                </Badge>
-              ))
-            ) : (
-              <p className="text-gray-500 text-sm">No certifications listed.</p>
-            )}
+            {/* Tags */}
+            <div>
+              <h3 className="text-base xl:text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
+                Tags
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {product.product_tags?.length ? (
+                  product.product_tags.map((tag, index) =>
+                    tag.tags?.name ? (
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="text-xs px-2 py-0.5"
+                      >
+                        {tag.tags.name}
+                      </Badge>
+                    ) : null
+                  )
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">
+                    No tags listed.
+                  </p>
+                )}
+              </div>
+            </div>
           </CardContent>
         </Card>
-
-        {/* Tags */}
-        <Card className="shadow-none border-0 p-0">
-          <CardHeader className="p-0 pb-2">
-            <CardTitle className="text-lg">Tags</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0 flex flex-wrap gap-2">
-            {product.product_tags?.length ? (
-              product.product_tags.map((tag, index) =>
-                tag.tags?.name ? (
-                  <Badge
-                    key={index}
-                    variant="outline"
-                    className="text-xs px-2 py-0.5"
-                  >
-                    {tag.tags.name}
-                  </Badge>
-                ) : null
-              )
-            ) : (
-              <p className="text-gray-500 text-sm">No tags listed.</p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Product Metadata - Only show for staff view */}
-        {!isCustomerView && (
-          <Card className="shadow-none border p-4 bg-gray-50">
-            <CardHeader className="p-0 pb-3">
-              <CardTitle className="text-lg">Product Information</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Product ID:</span>
-                <span className="font-mono text-xs">{product.id}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Created:</span>
-                <span>{new Date(product.created_at).toLocaleDateString()}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Last Updated:</span>
-                <span>{new Date(product.updated_at).toLocaleDateString()}</span>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   );

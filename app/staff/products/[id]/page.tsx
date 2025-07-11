@@ -1,18 +1,28 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { Edit, Trash2 } from "lucide-react";
 
-import { Button } from "@/components/ui";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui";
 import ProductDetailDisplay from "@/components/ProductDetailDisplay";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 import type { Product } from "@/type/product";
 
 export default function ProductDetailClient() {
   const pathname = usePathname();
+  const router = useRouter();
 
   const productId = useMemo(() => {
     const parts = pathname.split("/");
@@ -21,6 +31,8 @@ export default function ProductDetailClient() {
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -57,32 +69,128 @@ export default function ProductDetailClient() {
     if (productId) fetchProduct();
   }, [productId]);
 
+  const handleDeleteProduct = async () => {
+    if (!product) return;
+
+    setIsDeleting(true);
+    try {
+      // Delete related data first
+      await Promise.all([
+        supabase.from("product_tags").delete().eq("product_id", product.id),
+        supabase
+          .from("product_certificates")
+          .delete()
+          .eq("product_id", product.id),
+        supabase.from("product_variants").delete().eq("product_id", product.id),
+        supabase.from("product_images").delete().eq("product_id", product.id),
+      ]);
+
+      // Delete the product
+      const { error } = await supabase
+        .from("products")
+        .delete()
+        .eq("id", product.id);
+
+      if (error) {
+        console.error("Error deleting product:", error.message);
+        toast.error(`Error deleting product: ${error.message}`);
+      } else {
+        toast.success("Product deleted successfully!");
+        router.push("/staff/products");
+      }
+    } catch (error) {
+      console.error("Unexpected error during deletion:", error);
+      toast.error("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
   if (loading) return <div>Loading product...</div>;
   if (!product) return <div>Product not found.</div>;
 
+  // Check if current path is staff (for action buttons)
+  const isStaffView = pathname.includes("/staff/");
+
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
-      <div className="flex flex-col gap-2">
+      {/* Header with Breadcrumb and Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <BreadcrumbNav
           customItems={[
-            { label: "Dashboard", href: "/staff/dashboard" },
-            { label: "Products", href: "/staff/products" },
+            {
+              label: "Dashboard",
+              href: isStaffView ? "/staff/dashboard" : "/",
+            },
+            {
+              label: "Products",
+              href: isStaffView ? "/staff/products" : "/products",
+            },
             { label: product.name },
           ]}
         />
 
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Product Details</h1>
-          <Link href="/staff/products">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Products
+        {/* Action Buttons - Only show for staff */}
+        {isStaffView && (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push(`/staff/products/${product.id}/edit`)}
+              className="flex items-center gap-2"
+            >
+              <Edit className="h-4 w-4" />
+              Edit
             </Button>
-          </Link>
-        </div>
+
+            {/* Delete Dialog */}
+            <Dialog
+              open={isDeleteDialogOpen}
+              onOpenChange={setIsDeleteDialogOpen}
+            >
+              <DialogTrigger asChild>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Confirm Deletion</DialogTitle>
+                  <DialogDescription>
+                    Are you sure you want to delete this product? This action
+                    cannot be undone.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsDeleteDialogOpen(false)}
+                    disabled={isDeleting}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={handleDeleteProduct}
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? "Deleting..." : "Delete Product"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        )}
       </div>
 
-      <ProductDetailDisplay product={product} />
+      <ProductDetailDisplay product={product} isCustomerView={!isStaffView} />
     </div>
   );
 }
