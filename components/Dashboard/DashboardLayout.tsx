@@ -3,6 +3,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Home,
   Moon,
@@ -11,6 +12,7 @@ import {
   Sun,
   Users,
   FileText,
+  BookOpen,
 } from "lucide-react";
 
 import {
@@ -48,12 +50,21 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const user = useUser();
   const router = useRouter();
+  const pathname = usePathname();
 
   const [searchText, setSearchText] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Helper function to check if a path is active
+  const isActivePath = (path: string) => {
+    if (path === "/staff/dashboard") {
+      return pathname === "/staff/dashboard" || pathname === "/staff";
+    }
+    return pathname.startsWith(path);
+  };
 
   const triggerFileInput = () => {
     if (fileInputRef.current) {
@@ -207,10 +218,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               className="flex items-center gap-3 font-semibold text-slate-800 dark:text-white group transition-all duration-200 hover:scale-105"
             >
               <div className="flex-shrink-0">
-                <Image 
-                  src="/favicon.svg" 
-                  alt="YTL Concrete Hub Logo" 
-                  width={32} 
+                <Image
+                  src="/favicon.svg"
+                  alt="YTL Concrete Hub Logo"
+                  width={32}
                   height={32}
                   className="group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8"
                 />
@@ -235,16 +246,28 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   <SidebarMenuButton
                     asChild
                     tooltip="Dashboard"
-                    className="group flex items-center gap-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 px-4 py-3 text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02] border-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:py-3"
+                    className={`group flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 hover:shadow-lg hover:scale-[1.02] border-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:py-3 ${
+                      isActivePath("/staff/dashboard")
+                        ? "bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white shadow-md"
+                        : "text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-900/20 dark:hover:to-blue-800/20 hover:text-blue-700 dark:hover:text-blue-300 hover:shadow-sm hover:scale-[1.01]"
+                    }`}
                   >
                     <Link href="/staff/dashboard">
-                      <div className="p-1.5 bg-white/20 rounded-lg group-hover:bg-white/30 transition-colors group-data-[collapsible=icon]:p-2">
+                      <div
+                        className={`p-1.5 rounded-lg transition-colors group-data-[collapsible=icon]:p-2 ${
+                          isActivePath("/staff/dashboard")
+                            ? "bg-white/20 group-hover:bg-white/30"
+                            : "bg-slate-100 dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
+                        }`}
+                      >
                         <Home className="h-4 w-4 group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5" />
                       </div>
                       <span className="font-medium group-data-[collapsible=icon]:hidden">
                         Dashboard
                       </span>
-                      <div className="ml-auto w-2 h-2 bg-white/40 rounded-full group-data-[collapsible=icon]:hidden"></div>
+                      {isActivePath("/staff/dashboard") && (
+                        <div className="ml-auto w-2 h-2 bg-white/40 rounded-full group-data-[collapsible=icon]:hidden"></div>
+                      )}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -253,15 +276,58 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   <SidebarMenuButton
                     asChild
                     tooltip="Posts"
-                    className="group flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 dark:text-slate-300 transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-900/20 dark:hover:to-blue-800/20 hover:text-blue-700 dark:hover:text-blue-300 hover:shadow-sm hover:scale-[1.01] border-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:py-3"
+                    className={`group flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 hover:shadow-lg hover:scale-[1.02] border-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:py-3 ${
+                      isActivePath("/staff/posts")
+                        ? "bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white shadow-md"
+                        : "text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-900/20 dark:hover:to-blue-800/20 hover:text-blue-700 dark:hover:text-blue-300 hover:shadow-sm hover:scale-[1.01]"
+                    }`}
                   >
                     <Link href="/staff/posts">
-                      <div className="p-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors group-data-[collapsible=icon]:p-2">
+                      <div
+                        className={`p-1.5 rounded-lg transition-colors group-data-[collapsible=icon]:p-2 ${
+                          isActivePath("/staff/posts")
+                            ? "bg-white/20 group-hover:bg-white/30"
+                            : "bg-slate-100 dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
+                        }`}
+                      >
                         <FileText className="h-4 w-4 group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5" />
                       </div>
                       <span className="font-medium group-data-[collapsible=icon]:hidden">
                         Posts
                       </span>
+                      {isActivePath("/staff/posts") && (
+                        <div className="ml-auto w-2 h-2 bg-white/40 rounded-full group-data-[collapsible=icon]:hidden"></div>
+                      )}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    tooltip="Blogs"
+                    className={`group flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 hover:shadow-lg hover:scale-[1.02] border-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:py-3 ${
+                      isActivePath("/staff/blogs")
+                        ? "bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white shadow-md"
+                        : "text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-900/20 dark:hover:to-blue-800/20 hover:text-blue-700 dark:hover:text-blue-300 hover:shadow-sm hover:scale-[1.01]"
+                    }`}
+                  >
+                    <Link href="/staff/blogs">
+                      <div
+                        className={`p-1.5 rounded-lg transition-colors group-data-[collapsible=icon]:p-2 ${
+                          isActivePath("/staff/blogs")
+                            ? "bg-white/20 group-hover:bg-white/30"
+                            : "bg-slate-100 dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
+                        }`}
+                      >
+                        <BookOpen className="h-4 w-4 group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5" />
+                      </div>
+                      <span className="font-medium group-data-[collapsible=icon]:hidden">
+                        Blogs
+                      </span>
+                      {isActivePath("/staff/blogs") && (
+                        <div className="ml-auto w-2 h-2 bg-white/40 rounded-full group-data-[collapsible=icon]:hidden"></div>
+                      )}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -270,15 +336,28 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   <SidebarMenuButton
                     asChild
                     tooltip="Orders"
-                    className="group flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 dark:text-slate-300 transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-900/20 dark:hover:to-blue-800/20 hover:text-blue-700 dark:hover:text-blue-300 hover:shadow-sm hover:scale-[1.01] border-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:py-3"
+                    className={`group flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 hover:shadow-lg hover:scale-[1.02] border-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:py-3 ${
+                      isActivePath("/staff/orders")
+                        ? "bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white shadow-md"
+                        : "text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-900/20 dark:hover:to-blue-800/20 hover:text-blue-700 dark:hover:text-blue-300 hover:shadow-sm hover:scale-[1.01]"
+                    }`}
                   >
                     <Link href="/staff/orders">
-                      <div className="p-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors group-data-[collapsible=icon]:p-2">
+                      <div
+                        className={`p-1.5 rounded-lg transition-colors group-data-[collapsible=icon]:p-2 ${
+                          isActivePath("/staff/orders")
+                            ? "bg-white/20 group-hover:bg-white/30"
+                            : "bg-slate-100 dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
+                        }`}
+                      >
                         <Package className="h-4 w-4 group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5" />
                       </div>
                       <span className="font-medium group-data-[collapsible=icon]:hidden">
                         Orders
                       </span>
+                      {isActivePath("/staff/orders") && (
+                        <div className="ml-auto w-2 h-2 bg-white/40 rounded-full group-data-[collapsible=icon]:hidden"></div>
+                      )}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -287,15 +366,28 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   <SidebarMenuButton
                     asChild
                     tooltip="Customers"
-                    className="group flex items-center gap-3 rounded-xl px-4 py-3 text-slate-700 dark:text-slate-300 transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-900/20 dark:hover:to-blue-800/20 hover:text-blue-700 dark:hover:text-blue-300 hover:shadow-sm hover:scale-[1.01] border-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:py-3"
+                    className={`group flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 hover:shadow-lg hover:scale-[1.02] border-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:py-3 ${
+                      isActivePath("/staff/customers")
+                        ? "bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white shadow-md"
+                        : "text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-900/20 dark:hover:to-blue-800/20 hover:text-blue-700 dark:hover:text-blue-300 hover:shadow-sm hover:scale-[1.01]"
+                    }`}
                   >
                     <Link href="/staff/customers">
-                      <div className="p-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors group-data-[collapsible=icon]:p-2">
+                      <div
+                        className={`p-1.5 rounded-lg transition-colors group-data-[collapsible=icon]:p-2 ${
+                          isActivePath("/staff/customers")
+                            ? "bg-white/20 group-hover:bg-white/30"
+                            : "bg-slate-100 dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
+                        }`}
+                      >
                         <Users className="h-4 w-4 group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5" />
                       </div>
                       <span className="font-medium group-data-[collapsible=icon]:hidden">
                         Customers
                       </span>
+                      {isActivePath("/staff/customers") && (
+                        <div className="ml-auto w-2 h-2 bg-white/40 rounded-full group-data-[collapsible=icon]:hidden"></div>
+                      )}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
