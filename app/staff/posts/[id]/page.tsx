@@ -196,17 +196,15 @@ export default function PostDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Side - Large Image */}
         <div className="lg:col-span-2">
-          <Card className="overflow-hidden h-fit">
-            <div className="aspect-[16/10] relative">
-              <Image
-                src={post.image_url || "/placeholder.svg"}
-                alt={post.title}
-                fill
-                className="object-cover"
-                priority
-              />
-            </div>
-          </Card>
+          <div className="relative w-full h-[600px] rounded-lg overflow-hidden">
+            <Image
+              src={post.image_url || "/placeholder.svg"}
+              alt={post.title}
+              fill
+              className="object-fill"
+              priority
+            />
+          </div>
         </div>
 
         {/* Right Side - All Content in One Card */}
