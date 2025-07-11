@@ -181,7 +181,10 @@ export default function HeroCarousel() {
   }
 
   return (
-    <div className="relative w-full h-[calc(100vh-4rem)] overflow-hidden" {...handlers}>
+    <div
+      className="relative w-full h-[calc(100vh-4rem)] overflow-hidden"
+      {...handlers}
+    >
       <div
         className="flex transition-transform duration-500 ease-in-out h-full"
         style={{ transform: `translateX(-${currentSlide * 100}%)` }}

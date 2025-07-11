@@ -61,7 +61,9 @@ function ProductTableSkeleton() {
             <TableHead>Product Name</TableHead>
             <TableHead>Category</TableHead>
             <TableHead>Price</TableHead>
+            <TableHead>Unit</TableHead>
             <TableHead>Stock</TableHead>
+            <TableHead>Grade</TableHead>
             <TableHead>Tags</TableHead>
             <TableHead>Certificates</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -87,6 +89,12 @@ function ProductTableSkeleton() {
               </TableCell>
               <TableCell>
                 <div className="h-4 w-1/4 rounded bg-gray-200 animate-pulse" />
+              </TableCell>
+              <TableCell>
+                <div className="h-4 w-1/4 rounded bg-gray-200 animate-pulse" />
+              </TableCell>
+              <TableCell>
+                <div className="h-4 w-1/3 rounded bg-gray-200 animate-pulse" />
               </TableCell>
               <TableCell>
                 <div className="h-4 w-1/2 rounded bg-gray-200 animate-pulse" />
@@ -625,7 +633,9 @@ export default function ProductsPage() {
                 <TableHead>Product Name</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Price</TableHead>
+                <TableHead>Unit</TableHead>
                 <TableHead>Stock</TableHead>
+                <TableHead>Grade</TableHead>
                 <TableHead>Tags</TableHead>
                 <TableHead>Certificates</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -675,7 +685,9 @@ export default function ProductsPage() {
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>{product.category || "N/A"}</TableCell>
                   <TableCell>RM {product.price.toFixed(2)}</TableCell>
+                  <TableCell>{product.unit || "N/A"}</TableCell>
                   <TableCell>{product.stock_quantity ?? "N/A"}</TableCell>
+                  <TableCell>{product.grade || "N/A"}</TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {product.product_tags?.map((pt) => (
