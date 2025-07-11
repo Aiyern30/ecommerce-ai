@@ -116,8 +116,8 @@ export default function NewBlogPage() {
         if (!file.type.startsWith("image/")) {
           setImageError(`File "${file.name}" is not an image.`);
           hasError = true;
-        } else if (file.size > 5 * 1024 * 1024) {
-          setImageError(`File "${file.name}" size exceeds 5MB.`);
+        } else if (file.size > 10 * 1024 * 1024) {
+          setImageError(`File "${file.name}" size exceeds 10MB.`);
           hasError = true;
         } else {
           newFiles.push(file);
@@ -433,7 +433,7 @@ export default function NewBlogPage() {
                   />
                 </FormControl>
                 <FormDescription>
-                  Accepted formats: JPG, PNG, GIF. Max size: 5MB per file.
+                  Accepted formats: JPG, PNG, GIF. Max size: 10MB per file.
                 </FormDescription>
                 {imageError && <FormMessage>{imageError}</FormMessage>}
               </FormItem>
