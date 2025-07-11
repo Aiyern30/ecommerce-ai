@@ -9,6 +9,7 @@ import {
   Plus,
   Search,
   Trash2,
+  Package,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
@@ -104,6 +105,61 @@ function ProductTableSkeleton() {
   );
 }
 
+function EmptyProductsState() {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-4">
+      <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
+        <Package className="w-12 h-12 text-gray-400" />
+      </div>
+      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+        No products found
+      </h3>
+      <p className="text-gray-500 dark:text-gray-400 text-center mb-6 max-w-sm">
+        Start building your inventory by adding your first product to showcase
+        to customers.
+      </p>
+      <Link href="/staff/products/new">
+        <Button className="flex items-center gap-2">
+          <Plus className="w-4 h-4" />
+          Add Your First Product
+        </Button>
+      </Link>
+    </div>
+  );
+}
+
+function NoProductResultsState({
+  onClearFilters,
+}: {
+  onClearFilters: () => void;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-4">
+      <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
+        <Search className="w-12 h-12 text-gray-400" />
+      </div>
+      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+        No matching products
+      </h3>
+      <p className="text-gray-500 dark:text-gray-400 text-center mb-6 max-w-sm">
+        No products match your current search criteria. Try adjusting your
+        filters or search terms.
+      </p>
+      <div className="flex items-center gap-2">
+        <Button variant="outline" onClick={onClearFilters}>
+          Clear Filters
+        </Button>
+        <Link href="/staff/products/new">
+          <Button>
+            <Plus className="w-4 h-4 mr-2" />
+            Add New Product
+          </Button>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export default function ProductsPage() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
@@ -179,6 +235,18 @@ export default function ProductsPage() {
 
   const clearProductSelection = () => {
     setSelectedProducts([]);
+  };
+
+  const clearAllFilters = () => {
+    setFilters({
+      search: "",
+      category: "all",
+      stockStatus: "all",
+      sortBy: "name-asc",
+      minPrice: "",
+      maxPrice: "",
+    });
+    setCurrentPage(1);
   };
 
   const openDeleteDialog = () => {
@@ -534,6 +602,10 @@ export default function ProductsPage() {
 
       {loading ? (
         <ProductTableSkeleton />
+      ) : products.length === 0 ? (
+        <EmptyProductsState />
+      ) : sortedProducts.length === 0 ? (
+        <NoProductResultsState onClearFilters={clearAllFilters} />
       ) : (
         <div className="w-full overflow-x-auto rounded-md border">
           <Table>
@@ -560,96 +632,84 @@ export default function ProductsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {currentPageData.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={9} className="h-24 text-center">
-                    No products found.
+              {currentPageData.map((product) => (
+                <TableRow
+                  key={product.id}
+                  onClick={() => router.push(`/staff/products/${product.id}`)}
+                  className="cursor-pointer "
+                >
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={selectedProducts.includes(product.id)}
+                      onCheckedChange={() => toggleProductSelection(product.id)}
+                      aria-label={`Select product ${product.name}`}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <div className="relative w-16 h-12">
+                      {[
+                        ...(product.image_url ? [product.image_url] : []),
+                        ...(product.product_images?.map(
+                          (img) => img.image_url
+                        ) || []),
+                      ]
+                        .filter((src, i, arr) => arr.indexOf(src) === i)
+                        .slice(0, 4)
+                        .map((src, index) => (
+                          <Image
+                            key={index}
+                            src={src || "/placeholder.svg?height=48&width=48"}
+                            alt={`${product.name} ${index + 1}`}
+                            className={`absolute top-0 left-0 w-10 h-10 rounded-md object-cover border border-white shadow-sm transition-all`}
+                            style={{
+                              zIndex: 10 - index,
+                              transform: `translateX(${index * 12}px)`,
+                            }}
+                            width={40}
+                            height={40}
+                          />
+                        ))}
+                    </div>
+                  </TableCell>
+
+                  <TableCell className="font-medium">{product.name}</TableCell>
+                  <TableCell>{product.category || "N/A"}</TableCell>
+                  <TableCell>RM {product.price.toFixed(2)}</TableCell>
+                  <TableCell>{product.stock_quantity ?? "N/A"}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                      {product.product_tags?.map((pt) => (
+                        <Badge key={pt.tags.id} variant="secondary">
+                          {pt.tags.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                      {product.product_certificates?.map((c) => (
+                        <Badge key={c.certificate} variant="secondary">
+                          {c.certificate}
+                        </Badge>
+                      ))}
+                    </div>
+                  </TableCell>
+                  <TableCell
+                    className="text-right"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() =>
+                        router.push(`/staff/products/${product.id}/edit`)
+                      }
+                    >
+                      Edit
+                    </Button>
                   </TableCell>
                 </TableRow>
-              ) : (
-                currentPageData.map((product) => (
-                  <TableRow
-                    key={product.id}
-                    onClick={() => router.push(`/staff/products/${product.id}`)}
-                    className="cursor-pointer "
-                  >
-                    <TableCell onClick={(e) => e.stopPropagation()}>
-                      <Checkbox
-                        checked={selectedProducts.includes(product.id)}
-                        onCheckedChange={() =>
-                          toggleProductSelection(product.id)
-                        }
-                        aria-label={`Select product ${product.name}`}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <div className="relative w-16 h-12">
-                        {[
-                          ...(product.image_url ? [product.image_url] : []),
-                          ...(product.product_images?.map(
-                            (img) => img.image_url
-                          ) || []),
-                        ]
-                          .filter((src, i, arr) => arr.indexOf(src) === i)
-                          .slice(0, 4)
-                          .map((src, index) => (
-                            <Image
-                              key={index}
-                              src={src || "/placeholder.svg?height=48&width=48"}
-                              alt={`${product.name} ${index + 1}`}
-                              className={`absolute top-0 left-0 w-10 h-10 rounded-md object-cover border border-white shadow-sm transition-all`}
-                              style={{
-                                zIndex: 10 - index,
-                                transform: `translateX(${index * 12}px)`,
-                              }}
-                              width={40}
-                              height={40}
-                            />
-                          ))}
-                      </div>
-                    </TableCell>
-
-                    <TableCell className="font-medium">
-                      {product.name}
-                    </TableCell>
-                    <TableCell>{product.category || "N/A"}</TableCell>
-                    <TableCell>RM {product.price.toFixed(2)}</TableCell>
-                    <TableCell>{product.stock_quantity ?? "N/A"}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {product.product_tags?.map((pt) => (
-                          <Badge key={pt.tags.id} variant="secondary">
-                            {pt.tags.name}
-                          </Badge>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {product.product_certificates?.map((c) => (
-                          <Badge key={c.certificate} variant="secondary">
-                            {c.certificate}
-                          </Badge>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell
-                      className="text-right"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() =>
-                          router.push(`/staff/products/${product.id}/edit`)
-                        }
-                      >
-                        Edit
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
+              ))}
             </TableBody>
           </Table>
         </div>
