@@ -89,7 +89,7 @@ export default function ProductDetailDisplay({
 
       {/* Right Side - Product Information (responsive width: 4/12 on lg-xl, 5/12 on xl+) */}
       <div className="lg:col-span-4 xl:col-span-5">
-        <Card className="h-fit max-h-[600px] overflow-hidden">
+        <Card className="h-fit">
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between gap-2 mb-2">
               <CardTitle className="text-xl xl:text-2xl font-bold leading-tight flex-1">
@@ -101,34 +101,13 @@ export default function ProductDetailDisplay({
             </div>
 
             {product.description && (
-              <p className="text-sm xl:text-base text-gray-600 dark:text-gray-400 leading-relaxed mb-3">
+              <p className="text-sm xl:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
                 {product.description}
               </p>
             )}
-
-            {/* Product Meta Information */}
-            <div className="space-y-1 text-xs xl:text-sm text-gray-500 dark:text-gray-400 pb-2 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-3 h-3 xl:w-4 xl:h-4" />
-                <span>Added: {formatDate(product.created_at)}</span>
-              </div>
-              {product.updated_at !== product.created_at && (
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-3 h-3 xl:w-4 xl:h-4" />
-                  <span>Updated: {formatDate(product.updated_at)}</span>
-                </div>
-              )}
-              {!isCustomerView && (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded font-mono">
-                    ID: #{product.id}
-                  </span>
-                </div>
-              )}
-            </div>
           </CardHeader>
 
-          <CardContent className="pt-0 space-y-3 xl:space-y-4 overflow-y-auto max-h-[420px] scrollbar-hide">
+          <CardContent className="pt-0 space-y-3 xl:space-y-4">
             {/* Price and Stock */}
             <div>
               <h3 className="text-base xl:text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
@@ -263,6 +242,29 @@ export default function ProductDetailDisplay({
                   <p className="text-gray-500 dark:text-gray-400 text-sm">
                     No tags listed.
                   </p>
+                )}
+              </div>
+            </div>
+
+            {/* Product Meta Information - At the bottom */}
+            <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+              <div className="space-y-1 text-xs xl:text-sm text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-3 h-3 xl:w-4 xl:h-4" />
+                  <span>Added: {formatDate(product.created_at)}</span>
+                </div>
+                {product.updated_at !== product.created_at && (
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-3 h-3 xl:w-4 xl:h-4" />
+                    <span>Updated: {formatDate(product.updated_at)}</span>
+                  </div>
+                )}
+                {!isCustomerView && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded font-mono">
+                      ID: #{product.id}
+                    </span>
+                  </div>
                 )}
               </div>
             </div>

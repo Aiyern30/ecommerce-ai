@@ -221,29 +221,10 @@ export default function PostDetailPage() {
               </div>
 
               {post.description && (
-                <p className="text-base text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+                <p className="text-base text-gray-600 dark:text-gray-400 leading-relaxed">
                   {post.description}
                 </p>
               )}
-
-              {/* Post Meta Information */}
-              <div className="space-y-2 text-sm text-gray-500 dark:text-gray-400 pb-4 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  <span>Created: {formatDate(post.created_at)}</span>
-                </div>
-                {post.updated_at !== post.created_at && (
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>Updated: {formatDate(post.updated_at)}</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-2">
-                  <span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded font-mono">
-                    ID: #{post.id}
-                  </span>
-                </div>
-              </div>
             </CardHeader>
 
             <CardContent className="pt-0 space-y-6">
@@ -301,6 +282,27 @@ export default function PostDetailPage() {
                   </div>
                 </div>
               )}
+
+              {/* Post Meta Information - At the bottom */}
+              <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                <div className="space-y-2 text-sm text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <span>Created: {formatDate(post.created_at)}</span>
+                  </div>
+                  {post.updated_at !== post.created_at && (
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      <span>Updated: {formatDate(post.updated_at)}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded font-mono">
+                      ID: #{post.id}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
