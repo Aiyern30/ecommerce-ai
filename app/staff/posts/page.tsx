@@ -11,6 +11,7 @@ import {
   Trash2,
   ExternalLink,
   LinkIcon,
+  FileText,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
@@ -98,6 +99,61 @@ function PostTableSkeleton() {
   );
 }
 
+function EmptyPostsState() {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-4">
+      <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
+        <FileText className="w-12 h-12 text-gray-400" />
+      </div>
+      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+        No posts found
+      </h3>
+      <p className="text-gray-500 dark:text-gray-400 text-center mb-6 max-w-sm">
+        Get started by creating your first post to share updates and engage with
+        your community.
+      </p>
+      <Link href="/staff/posts/new">
+        <Button className="flex items-center gap-2">
+          <Plus className="w-4 h-4" />
+          Create Your First Post
+        </Button>
+      </Link>
+    </div>
+  );
+}
+
+function NoPostResultsState({
+  onClearFilters,
+}: {
+  onClearFilters: () => void;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-4">
+      <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
+        <Search className="w-12 h-12 text-gray-400" />
+      </div>
+      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+        No matching posts
+      </h3>
+      <p className="text-gray-500 dark:text-gray-400 text-center mb-6 max-w-sm">
+        No posts match your current search criteria. Try adjusting your filters
+        or search terms.
+      </p>
+      <div className="flex items-center gap-2">
+        <Button variant="outline" onClick={onClearFilters}>
+          Clear Filters
+        </Button>
+        <Link href="/staff/posts/new">
+          <Button>
+            <Plus className="w-4 h-4 mr-2" />
+            Add New Post
+          </Button>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export default function PostsPage() {
   const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
@@ -139,6 +195,16 @@ export default function PostsPage() {
 
   const updateFilter = (key: keyof PostFilters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
+    setCurrentPage(1);
+  };
+
+  const clearAllFilters = () => {
+    setFilters({
+      search: "",
+      sortBy: "date-new",
+      hasImage: "all",
+      hasLink: "all",
+    });
     setCurrentPage(1);
   };
 
@@ -473,6 +539,10 @@ export default function PostsPage() {
 
       {loading ? (
         <PostTableSkeleton />
+      ) : posts.length === 0 ? (
+        <EmptyPostsState />
+      ) : sortedPosts.length === 0 ? (
+        <NoPostResultsState onClearFilters={clearAllFilters} />
       ) : (
         <div className="w-full overflow-x-auto rounded-md border">
           <Table>
