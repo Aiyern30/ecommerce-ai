@@ -215,7 +215,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <SidebarHeader className="flex h-[68px] items-center justify-center border-b border-slate-200/60 dark:border-slate-700/60 px-6 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm shadow-md group-data-[collapsible=icon]:px-4">
             <Link
               href="/"
-              className="flex items-center gap-3 font-semibold text-slate-800 dark:text-white group transition-all duration-200 hover:scale-105"
+              className="flex items-center gap-3 font-semibold text-slate-800 dark:text-white group transition-all duration-200 hover:scale-105 group-data-[collapsible=icon]:justify-center"
             >
               <div className="flex-shrink-0">
                 <Image
@@ -227,7 +227,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 />
               </div>
               <div className="group-data-[collapsible=icon]:hidden flex items-center">
-                <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-blue-700 dark:from-yellow-400 dark:to-yellow-300 bg-clip-text text-transparent whitespace-nowrap">
+                <span className="text-lg font-bold text-black dark:text-white whitespace-nowrap">
                   YTL Concrete Hub
                 </span>
               </div>
@@ -260,7 +260,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                             : "bg-slate-100 dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
                         }`}
                       >
-                        <Home className="h-4 w-4 group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5" />
+                        <Home className="h-4 w-4" />
                       </div>
                       <span className="font-medium group-data-[collapsible=icon]:hidden">
                         Dashboard
@@ -290,7 +290,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                             : "bg-slate-100 dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
                         }`}
                       >
-                        <FileText className="h-4 w-4 group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5" />
+                        <FileText className="h-4 w-4" />
                       </div>
                       <span className="font-medium group-data-[collapsible=icon]:hidden">
                         Posts
@@ -320,7 +320,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                             : "bg-slate-100 dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
                         }`}
                       >
-                        <BookOpen className="h-4 w-4 group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5" />
+                        <BookOpen className="h-4 w-4" />
                       </div>
                       <span className="font-medium group-data-[collapsible=icon]:hidden">
                         Blogs
@@ -350,7 +350,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                             : "bg-slate-100 dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
                         }`}
                       >
-                        <Package className="h-4 w-4 group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5" />
+                        <Package className="h-4 w-4" />
                       </div>
                       <span className="font-medium group-data-[collapsible=icon]:hidden">
                         Products
@@ -380,7 +380,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                             : "bg-slate-100 dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
                         }`}
                       >
-                        <Package className="h-4 w-4 group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5" />
+                        <Package className="h-4 w-4" />
                       </div>
                       <span className="font-medium group-data-[collapsible=icon]:hidden">
                         Orders
@@ -410,7 +410,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                             : "bg-slate-100 dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
                         }`}
                       >
-                        <Users className="h-4 w-4 group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5" />
+                        <Users className="h-4 w-4" />
                       </div>
                       <span className="font-medium group-data-[collapsible=icon]:hidden">
                         Customers
