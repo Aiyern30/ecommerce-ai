@@ -27,8 +27,12 @@ export default function WhatsAppChat({
   const [message, setMessage] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState("");
-  const [chatMessages, setChatMessages] = useState<Array<{id: number, text: string, isUser: boolean, timestamp: Date}>>([]);
-  const [currentStep, setCurrentStep] = useState<'welcome' | 'name' | 'templates' | 'custom'>('welcome');
+  const [chatMessages, setChatMessages] = useState<
+    Array<{ id: number; text: string; isUser: boolean; timestamp: Date }>
+  >([]);
+  const [currentStep, setCurrentStep] = useState<
+    "welcome" | "name" | "templates" | "custom"
+  >("welcome");
   const [isTyping, setIsTyping] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -43,13 +47,21 @@ export default function WhatsAppChat({
   // Initialize welcome message when chat opens
   useEffect(() => {
     if (isOpen && chatMessages.length === 0) {
-      addMessage(`Hi! 👋 Welcome to ${businessName}. I'm here to help you connect with our team via WhatsApp.`, false, 800);
+      addMessage(
+        `Hi! 👋 Welcome to ${businessName}. I'm here to help you connect with our team via WhatsApp.`,
+        false,
+        800
+      );
       addMessage("What would you like to do today?", false, 1600);
-      setTimeout(() => setCurrentStep('templates'), 2000);
+      setTimeout(() => setCurrentStep("templates"), 2000);
     }
   }, [isOpen, businessName, chatMessages.length]);
 
-  const addMessage = (text: string, isUser: boolean = false, delay: number = 0) => {
+  const addMessage = (
+    text: string,
+    isUser: boolean = false,
+    delay: number = 0
+  ) => {
     if (delay > 0 && !isUser) {
       setIsTyping(true);
       setTimeout(() => {
@@ -58,27 +70,31 @@ export default function WhatsAppChat({
           id: Date.now(),
           text,
           isUser,
-          timestamp: new Date()
+          timestamp: new Date(),
         };
-        setChatMessages(prev => [...prev, newMessage]);
+        setChatMessages((prev) => [...prev, newMessage]);
       }, delay);
     } else {
       const newMessage = {
         id: Date.now(),
         text,
         isUser,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
-      setChatMessages(prev => [...prev, newMessage]);
+      setChatMessages((prev) => [...prev, newMessage]);
     }
   };
 
   const handleTemplateSelect = (template: string) => {
     setSelectedTemplate(template);
     addMessage(template, true);
-    
-    addMessage("Great choice! You can modify this message if needed, or click the green WhatsApp button to send it.", false, 1200);
-    setCurrentStep('custom');
+
+    addMessage(
+      "Great choice! You can modify this message if needed, or click the green WhatsApp button to send it.",
+      false,
+      1200
+    );
+    setCurrentStep("custom");
   };
 
   const handleCustomMessage = () => {
@@ -86,13 +102,17 @@ export default function WhatsAppChat({
       addMessage(message, true);
       setSelectedTemplate(message);
       setMessage(""); // Clear the message input
-      addMessage("Perfect! Click the green WhatsApp button to open the conversation.", false, 800);
+      addMessage(
+        "Perfect! Click the green WhatsApp button to open the conversation.",
+        false,
+        800
+      );
     }
   };
 
   const handleSendWhatsApp = () => {
     if (isProcessing) return; // Prevent multiple calls
-    
+
     setIsProcessing(true);
     const finalMessage = customerName
       ? `Hi, I'm ${customerName}. ${selectedTemplate || message}`
@@ -101,23 +121,25 @@ export default function WhatsAppChat({
     const whatsappUrl = createWhatsAppUrl(whatsappNumber, finalMessage);
 
     // Add final message only if not already processing
-    if (!chatMessages.some(msg => msg.text.includes("Opening WhatsApp now"))) {
+    if (
+      !chatMessages.some((msg) => msg.text.includes("Opening WhatsApp now"))
+    ) {
       addMessage("Opening WhatsApp now... 📱", false, 1000);
     }
 
     setTimeout(() => {
       window.open(whatsappUrl, "_blank");
-      
+
       // Small delay before closing to show the final message
       setTimeout(() => {
         onClose();
-        
+
         // Reset state
         setMessage("");
         setCustomerName("");
         setSelectedTemplate("");
         setChatMessages([]);
-        setCurrentStep('welcome');
+        setCurrentStep("welcome");
         setIsTyping(false);
         setIsProcessing(false);
       }, 1500);
@@ -133,8 +155,8 @@ export default function WhatsAppChat({
         "bg-white dark:bg-slate-900 rounded-lg shadow-2xl overflow-hidden",
         "border border-gray-200 dark:border-slate-700",
         "transform transition-all duration-300 ease-out",
-        isOpen 
-          ? "translate-y-0 opacity-100 scale-100" 
+        isOpen
+          ? "translate-y-0 opacity-100 scale-100"
           : "translate-y-4 opacity-0 scale-95 pointer-events-none"
       )}
     >
@@ -181,11 +203,18 @@ export default function WhatsAppChat({
               )}
             >
               <p className="whitespace-pre-wrap">{msg.text}</p>
-              <p className={cn(
-                "text-xs mt-1 opacity-70",
-                msg.isUser ? "text-green-100" : "text-slate-500 dark:text-slate-400"
-              )}>
-                {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              <p
+                className={cn(
+                  "text-xs mt-1 opacity-70",
+                  msg.isUser
+                    ? "text-green-100"
+                    : "text-slate-500 dark:text-slate-400"
+                )}
+              >
+                {msg.timestamp.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
               </p>
             </div>
           </div>
@@ -195,7 +224,7 @@ export default function WhatsAppChat({
       </div>
 
       {/* Quick Action Buttons */}
-      {currentStep === 'templates' && (
+      {currentStep === "templates" && (
         <div className="p-3 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-700">
           <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto overflow-x-hidden">
             {messageTemplates.slice(0, 4).map((template, index) => (
@@ -221,7 +250,7 @@ export default function WhatsAppChat({
 
       {/* Message Input Area */}
       <div className="p-3 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-700">
-        {currentStep !== 'welcome' && (
+        {currentStep !== "welcome" && (
           <div className="mb-3">
             <Input
               value={customerName}
@@ -231,7 +260,7 @@ export default function WhatsAppChat({
             />
           </div>
         )}
-        
+
         <div className="flex items-end gap-2">
           <div className="flex-1">
             <Textarea
@@ -243,10 +272,14 @@ export default function WhatsAppChat({
                   setMessage(e.target.value);
                 }
               }}
-              placeholder={selectedTemplate ? "Edit your message or keep as is..." : "Type your message..."}
+              placeholder={
+                selectedTemplate
+                  ? "Edit your message or keep as is..."
+                  : "Type your message..."
+              }
               className="min-h-[60px] text-sm resize-none"
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
+                if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   if ((selectedTemplate || message).trim()) {
                     handleSendWhatsApp();
@@ -282,7 +315,8 @@ export default function WhatsAppChat({
         {/* WhatsApp Info */}
         <div className="mt-2 pt-2 border-t border-gray-100 dark:border-slate-700">
           <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
-            Chat with {formatPhoneNumber(whatsappNumber)} • {WHATSAPP_CONFIG.responseTime}
+            Chat with {formatPhoneNumber(whatsappNumber)} •{" "}
+            {WHATSAPP_CONFIG.responseTime}
           </p>
         </div>
       </div>
