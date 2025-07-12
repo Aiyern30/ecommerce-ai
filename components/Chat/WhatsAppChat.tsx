@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button, Input, Textarea } from "@/components/ui";
 import { X, Send, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -9,6 +9,7 @@ import {
   createWhatsAppUrl,
   formatPhoneNumber,
 } from "@/lib/whatsapp-config";
+import TypingIndicator from "./TypingIndicator";
 
 interface WhatsAppChatProps {
   isOpen: boolean;
@@ -26,142 +27,245 @@ export default function WhatsAppChat({
   const [message, setMessage] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState("");
+  const [chatMessages, setChatMessages] = useState<Array<{id: number, text: string, isUser: boolean, timestamp: Date}>>([]);
+  const [currentStep, setCurrentStep] = useState<'welcome' | 'name' | 'templates' | 'custom'>('welcome');
+  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const messageTemplates = WHATSAPP_CONFIG.templates;
 
-  const handleSendWhatsApp = () => {
-    const finalMessage = customerName
-      ? `Hi, I'm ${customerName}. ${message || selectedTemplate}`
-      : message || selectedTemplate;
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
 
-    const whatsappUrl = createWhatsAppUrl(whatsappNumber, finalMessage);
+  // Initialize welcome message when chat opens
+  useEffect(() => {
+    if (isOpen && chatMessages.length === 0) {
+      addMessage(`Hi! 👋 Welcome to ${businessName}. I'm here to help you connect with our team via WhatsApp.`, false, 800);
+      addMessage("What would you like to do today?", false, 1600);
+      setTimeout(() => setCurrentStep('templates'), 2000);
+    }
+  }, [isOpen, businessName, chatMessages.length]);
 
-    // Open WhatsApp
-    window.open(whatsappUrl, "_blank");
-
-    // Close the modal
-    onClose();
-
-    // Reset form
-    setMessage("");
-    setCustomerName("");
-    setSelectedTemplate("");
+  const addMessage = (text: string, isUser: boolean = false, delay: number = 0) => {
+    if (delay > 0 && !isUser) {
+      setIsTyping(true);
+      setTimeout(() => {
+        setIsTyping(false);
+        const newMessage = {
+          id: Date.now(),
+          text,
+          isUser,
+          timestamp: new Date()
+        };
+        setChatMessages(prev => [...prev, newMessage]);
+      }, delay);
+    } else {
+      const newMessage = {
+        id: Date.now(),
+        text,
+        isUser,
+        timestamp: new Date()
+      };
+      setChatMessages(prev => [...prev, newMessage]);
+    }
   };
 
   const handleTemplateSelect = (template: string) => {
     setSelectedTemplate(template);
-    setMessage(template);
+    addMessage(template, true);
+    
+    addMessage("Great choice! You can modify this message if needed, or send it as is to start your WhatsApp conversation.", false, 1200);
+    setCurrentStep('custom');
+  };
+
+  const handleCustomMessage = () => {
+    if (message.trim()) {
+      addMessage(message, true);
+      setSelectedTemplate(message);
+      addMessage("Perfect! I'll now open WhatsApp for you to continue this conversation with our team.", false, 800);
+    }
+  };
+
+  const handleSendWhatsApp = () => {
+    const finalMessage = customerName
+      ? `Hi, I'm ${customerName}. ${selectedTemplate || message}`
+      : selectedTemplate || message;
+
+    const whatsappUrl = createWhatsAppUrl(whatsappNumber, finalMessage);
+
+    // Add final message with typing delay
+    addMessage("Opening WhatsApp now... 📱", false, 1000);
+
+    setTimeout(() => {
+      window.open(whatsappUrl, "_blank");
+      
+      // Small delay before closing to show the final message
+      setTimeout(() => {
+        onClose();
+        
+        // Reset state
+        setMessage("");
+        setCustomerName("");
+        setSelectedTemplate("");
+        setChatMessages([]);
+        setCurrentStep('welcome');
+        setIsTyping(false);
+      }, 1500);
+    }, 2000);
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div
-        className={cn(
-          "bg-white dark:bg-slate-900 rounded-lg shadow-xl overflow-hidden flex flex-col border",
-          "border-gray-300 dark:border-slate-700 w-full max-w-md mx-4"
-        )}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b dark:border-slate-700 bg-green-600 text-white">
-          <div className="flex items-center gap-3">
-            <MessageCircle className="h-6 w-6" />
-            <div>
-              <h2 className="font-semibold">Chat with {businessName}</h2>
-              <p className="text-sm text-green-100">
-                We&apos;ll respond on WhatsApp
+    <div
+      className={cn(
+        "fixed bottom-4 right-4 z-50 w-80 h-96 md:w-96 md:h-[32rem]",
+        "bg-white dark:bg-slate-900 rounded-lg shadow-2xl overflow-hidden",
+        "border border-gray-200 dark:border-slate-700",
+        "transform transition-all duration-300 ease-out",
+        isOpen 
+          ? "translate-y-0 opacity-100 scale-100" 
+          : "translate-y-4 opacity-0 scale-95 pointer-events-none"
+      )}
+    >
+      {/* WhatsApp-style Header */}
+      <div className="flex items-center justify-between p-4 bg-green-600 text-white">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+            <MessageCircle className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-sm">{businessName}</h3>
+            <p className="text-xs text-green-100 flex items-center gap-1">
+              <span className="w-2 h-2 bg-green-300 rounded-full"></span>
+              Usually replies instantly
+            </p>
+          </div>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          className="h-8 w-8 text-white hover:bg-white/20 transition-colors"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* Chat Messages Area */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 dark:bg-slate-800 max-h-64 whatsapp-chat-scroll">
+        {chatMessages.map((msg) => (
+          <div
+            key={msg.id}
+            className={cn(
+              "flex w-full whatsapp-message-enter",
+              msg.isUser ? "justify-end" : "justify-start"
+            )}
+          >
+            <div
+              className={cn(
+                "max-w-[85%] rounded-lg px-3 py-2 text-sm shadow-sm",
+                msg.isUser
+                  ? "bg-green-500 text-white rounded-br-sm"
+                  : "bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-bl-sm border"
+              )}
+            >
+              <p className="whitespace-pre-wrap">{msg.text}</p>
+              <p className={cn(
+                "text-xs mt-1 opacity-70",
+                msg.isUser ? "text-green-100" : "text-slate-500 dark:text-slate-400"
+              )}>
+                {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="h-8 w-8 text-white hover:bg-green-700"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+        ))}
+        {isTyping && <TypingIndicator />}
+        <div ref={messagesEndRef} />
+      </div>
 
-        {/* Content */}
-        <div className="p-4 space-y-4">
-          {/* Customer Name Input */}
-          <div>
-            <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">
-              Your Name (Optional)
-            </label>
+      {/* Quick Action Buttons */}
+      {currentStep === 'templates' && (
+        <div className="p-3 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-700">
+          <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto overflow-x-hidden">
+            {messageTemplates.slice(0, 4).map((template, index) => (
+              <button
+                key={index}
+                onClick={() => handleTemplateSelect(template)}
+                className={cn(
+                  "w-full text-left p-3 text-sm rounded-lg border transition-all duration-200",
+                  "hover:bg-green-50 hover:border-green-300 dark:hover:bg-green-900/20",
+                  "border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800",
+                  "hover:shadow-md transform-gpu min-h-[48px] flex items-center",
+                  "focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
+                )}
+              >
+                <span className="text-slate-700 dark:text-slate-300 line-clamp-2 break-words">
+                  {template}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Message Input Area */}
+      <div className="p-3 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-700">
+        {!customerName && (
+          <div className="mb-3">
             <Input
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
-              placeholder="Enter your name..."
-              className="w-full"
+              placeholder="Your name (optional)"
+              className="text-sm"
             />
           </div>
-
-          {/* Quick Templates */}
-          <div>
-            <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">
-              Quick Messages
-            </label>
-            <div className="space-y-2">
-              {messageTemplates.map((template, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleTemplateSelect(template)}
-                  className={cn(
-                    "w-full text-left p-3 rounded-lg border transition-colors",
-                    "hover:bg-green-50 hover:border-green-200 dark:hover:bg-green-900/20",
-                    selectedTemplate === template
-                      ? "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-700"
-                      : "border-gray-200 dark:border-slate-600"
-                  )}
-                >
-                  <p className="text-sm text-slate-700 dark:text-slate-300">
-                    {template}
-                  </p>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Custom Message */}
-          <div>
-            <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">
-              Custom Message
-            </label>
+        )}
+        
+        <div className="flex items-end gap-2">
+          <div className="flex-1">
             <Textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Type your message here..."
-              className="w-full min-h-[100px]"
+              placeholder="Type your message..."
+              className="min-h-[60px] text-sm resize-none"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleCustomMessage();
+                }
+              }}
             />
           </div>
-
-          {/* WhatsApp Number Display */}
-          <div className="bg-gray-50 dark:bg-slate-800 p-3 rounded-lg">
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              You&apos;ll be redirected to WhatsApp to chat with:
-            </p>
-            <p className="font-medium text-green-600 dark:text-green-400">
-              {formatPhoneNumber(whatsappNumber)}
-            </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              {WHATSAPP_CONFIG.responseTime}
-            </p>
+          <div className="flex flex-col gap-1">
+            {message.trim() && (
+              <Button
+                onClick={handleCustomMessage}
+                size="icon"
+                variant="ghost"
+                className="h-8 w-8 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            )}
+            <Button
+              onClick={handleSendWhatsApp}
+              disabled={!selectedTemplate && !message.trim()}
+              size="icon"
+              className="h-8 w-8 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
+            >
+              <MessageCircle className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="p-4 border-t dark:border-slate-700">
-          <Button
-            onClick={handleSendWhatsApp}
-            disabled={!message.trim() && !selectedTemplate}
-            className="w-full bg-green-600 hover:bg-green-700"
-          >
-            <Send className="h-4 w-4 mr-2" />
-            Open WhatsApp Chat
-          </Button>
+        {/* WhatsApp Info */}
+        <div className="mt-2 pt-2 border-t border-gray-100 dark:border-slate-700">
+          <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
+            Chat with {formatPhoneNumber(whatsappNumber)} • {WHATSAPP_CONFIG.responseTime}
+          </p>
         </div>
       </div>
     </div>
