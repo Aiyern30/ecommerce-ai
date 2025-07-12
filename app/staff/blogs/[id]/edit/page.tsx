@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import type React from "react";
-import { ArrowLeft, X } from "lucide-react";
+import { ArrowLeft, X, BookOpen, Search } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,6 +32,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Skeleton,
 } from "@/components/ui/";
 import Image from "next/image";
 import { toast } from "sonner";
@@ -57,6 +58,202 @@ const blogSchema = z.object({
 });
 
 type BlogFormData = z.infer<typeof blogSchema>;
+
+// Blog Edit Skeleton Component
+function BlogEditSkeleton() {
+  return (
+    <div className="flex flex-col gap-6 w-full max-w-full">
+      {/* Header Skeleton */}
+      <div className="flex flex-col gap-2">
+        {/* Breadcrumb Skeleton */}
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-4 w-20" />
+          <span className="text-gray-400">/</span>
+          <Skeleton className="h-4 w-16" />
+          <span className="text-gray-400">/</span>
+          <Skeleton className="h-4 w-32" />
+          <span className="text-gray-400">/</span>
+          <Skeleton className="h-4 w-12" />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-32" />
+          <Skeleton className="h-9 w-36" />
+        </div>
+      </div>
+
+      {/* Blog Details Card Skeleton */}
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-4 w-48" />
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Title Field */}
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-3 w-64" />
+          </div>
+
+          {/* Description Field */}
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-3 w-56" />
+          </div>
+
+          {/* External Link Field */}
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-3 w-52" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Tags Card Skeleton */}
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-16" />
+          <Skeleton className="h-4 w-44" />
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Skeleton className="h-6 w-16 rounded-full" />
+            <Skeleton className="h-6 w-20 rounded-full" />
+            <Skeleton className="h-6 w-18 rounded-full" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Images Card Skeleton */}
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-28" />
+          <Skeleton className="h-4 w-48" />
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Current Images */}
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="aspect-square rounded-md" />
+              ))}
+            </div>
+          </div>
+
+          {/* Upload Field */}
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-3 w-72" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Submit Buttons Skeleton */}
+      <div className="flex justify-end gap-4">
+        <Skeleton className="h-10 w-20" />
+        <Skeleton className="h-10 w-28" />
+      </div>
+    </div>
+  );
+}
+
+// Blog Not Found Component
+function BlogNotFound() {
+  const router = useRouter();
+
+  return (
+    <div className="flex flex-col gap-6 w-full max-w-full">
+      {/* Header with Breadcrumb */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <span>Dashboard</span>
+          <span>/</span>
+          <span>Blogs</span>
+          <span>/</span>
+          <span>Not Found</span>
+          <span>/</span>
+          <span>Edit</span>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Blog Not Found</h1>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push("/staff/blogs")}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Blogs
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Not Found Content */}
+      <div className="flex flex-col items-center justify-center py-16 px-4 min-h-[500px]">
+        <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
+          <BookOpen className="w-12 h-12 text-gray-400" />
+        </div>
+
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+          Blog Not Found
+        </h2>
+
+        <p className="text-gray-500 dark:text-gray-400 text-center mb-2 max-w-md">
+          The blog you&apos;re trying to edit doesn&apos;t exist or may have
+          been removed.
+        </p>
+
+        <p className="text-sm text-gray-400 dark:text-gray-500 text-center mb-8 max-w-md">
+          Please check the URL or try searching for the blog again.
+        </p>
+
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={() => router.back()}
+            className="flex items-center gap-2 w-full sm:w-auto"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Go Back
+          </Button>
+
+          <Button
+            onClick={() => router.push("/staff/blogs")}
+            className="flex items-center gap-2 w-full sm:w-auto"
+          >
+            <Search className="w-4 h-4" />
+            Browse Blogs
+          </Button>
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 w-full max-w-md">
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-4">
+            Need to create a new blog?
+          </p>
+          <Button
+            variant="default"
+            onClick={() => router.push("/staff/blogs/new")}
+            className="w-full flex items-center gap-2"
+          >
+            <BookOpen className="w-4 h-4" />
+            Create New Blog
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function EditBlogPage() {
   const router = useRouter();
@@ -336,23 +533,11 @@ export default function EditBlogPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex flex-col gap-6 w-full max-w-full">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-lg">Loading blog...</div>
-        </div>
-      </div>
-    );
+    return <BlogEditSkeleton />;
   }
 
   if (!blog) {
-    return (
-      <div className="flex flex-col gap-6 w-full max-w-full">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-lg">Blog not found.</div>
-        </div>
-      </div>
-    );
+    return <BlogNotFound />;
   }
 
   return (
