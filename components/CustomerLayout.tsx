@@ -4,11 +4,12 @@ import type React from "react";
 import Header from "./Header";
 import Footer from "./Footer";
 import { useState, useEffect, useRef } from "react";
-import ChatWindow from "./Chat/ChatWindow";
+import WhatsAppChat from "./Chat/WhatsAppChat";
 import ChatButton from "./Chat/ChatButton";
 import { Toaster } from "./ui";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "./ThemeProvider";
+import { WHATSAPP_CONFIG } from "@/lib/whatsapp-config";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -16,25 +17,20 @@ interface LayoutProps {
 
 export function CustomerLayout({ children }: LayoutProps) {
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
 
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
-    if (isChatOpen) {
-      setIsExpanded(false);
-    }
   };
 
-  const toggleExpand = () => {
-    setIsExpanded(!isExpanded);
+  const closeChat = () => {
+    setIsChatOpen(false);
   };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (chatRef.current && !chatRef.current.contains(event.target as Node)) {
         setIsChatOpen(false);
-        setIsExpanded(false);
       }
     }
 
@@ -62,15 +58,12 @@ export function CustomerLayout({ children }: LayoutProps) {
             <Toaster richColors />
           </main>
           <div className="fixed bottom-0 right-0 z-50 flex items-end p-4">
-            {isChatOpen && (
-              <div ref={chatRef}>
-                <ChatWindow
-                  isExpanded={isExpanded}
-                  onClose={toggleChat}
-                  onExpand={toggleExpand}
-                />
-              </div>
-            )}
+            <WhatsAppChat
+              isOpen={isChatOpen}
+              onClose={closeChat}
+              whatsappNumber={WHATSAPP_CONFIG.businessNumber}
+              businessName={WHATSAPP_CONFIG.businessName}
+            />
             {!isChatOpen && <ChatButton onClick={toggleChat} />}
           </div>
           <Footer />
