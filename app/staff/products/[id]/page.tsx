@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, Package, ArrowLeft, Search } from "lucide-react";
 
 import {
   Button,
@@ -167,6 +167,80 @@ function ProductDetailSkeleton({ isStaffView }: { isStaffView: boolean }) {
   );
 }
 
+// Product Not Found Component
+function ProductNotFound({ isStaffView }: { isStaffView: boolean }) {
+  const router = useRouter();
+
+  return (
+    <div className="flex flex-col gap-6 w-full max-w-full">
+      {/* Header with Breadcrumb */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <span>{isStaffView ? "Dashboard" : "Home"}</span>
+          <span>/</span>
+          <span>Products</span>
+          <span>/</span>
+          <span>Not Found</span>
+        </div>
+      </div>
+
+      {/* Not Found Content */}
+      <div className="flex flex-col items-center justify-center py-16 px-4 min-h-[500px]">
+        <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
+          <Package className="w-12 h-12 text-gray-400" />
+        </div>
+        
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+          Product Not Found
+        </h1>
+        
+        <p className="text-gray-500 dark:text-gray-400 text-center mb-2 max-w-md">
+          The product you&apos;re looking for doesn&apos;t exist or may have been removed.
+        </p>
+        
+        <p className="text-sm text-gray-400 dark:text-gray-500 text-center mb-8 max-w-md">
+          Please check the URL or try searching for the product again.
+        </p>
+
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={() => router.back()}
+            className="flex items-center gap-2 w-full sm:w-auto"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Go Back
+          </Button>
+          
+          <Button
+            onClick={() => router.push(isStaffView ? "/staff/products" : "/products")}
+            className="flex items-center gap-2 w-full sm:w-auto"
+          >
+            <Search className="w-4 h-4" />
+            Browse Products
+          </Button>
+        </div>
+
+        {isStaffView && (
+          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 w-full max-w-md">
+            <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-4">
+              Need to add a new product?
+            </p>
+            <Button
+              variant="default"
+              onClick={() => router.push("/staff/products/new")}
+              className="w-full flex items-center gap-2"
+            >
+              <Package className="w-4 h-4" />
+              Add New Product
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function ProductDetailClient() {
   const pathname = usePathname();
   const router = useRouter();
@@ -258,7 +332,7 @@ export default function ProductDetailClient() {
   const isStaffView = pathname.includes("/staff/");
 
   if (loading) return <ProductDetailSkeleton isStaffView={isStaffView} />;
-  if (!product) return <div>Product not found.</div>;
+  if (!product) return <ProductNotFound isStaffView={isStaffView} />;
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
