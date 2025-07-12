@@ -3,7 +3,16 @@
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ExternalLink, Calendar, Edit, LinkIcon, Trash2 } from "lucide-react";
+import {
+  ExternalLink,
+  Calendar,
+  Edit,
+  LinkIcon,
+  Trash2,
+  FileText,
+  ArrowLeft,
+  Search,
+} from "lucide-react";
 import {
   Button,
   Card,
@@ -17,6 +26,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  Skeleton,
 } from "@/components/ui";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
@@ -24,6 +34,183 @@ import { toast } from "sonner";
 import { Post } from "@/type/posts";
 import { formatDate } from "@/lib/format";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
+
+// Post Detail Skeleton Component
+function PostDetailSkeleton() {
+  return (
+    <div className="flex flex-col gap-6 w-full max-w-full">
+      {/* Header Skeleton */}
+      <div className="flex flex-col gap-2">
+        {/* Breadcrumb Skeleton */}
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-4 w-20" />
+          <span className="text-gray-400">/</span>
+          <Skeleton className="h-4 w-16" />
+          <span className="text-gray-400">/</span>
+          <Skeleton className="h-4 w-32" />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-32" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-9 w-28" />
+            <Skeleton className="h-9 w-24" />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Content Skeleton */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Post Image Skeleton */}
+          <Skeleton className="w-full h-[600px] rounded-lg" />
+        </div>
+
+        {/* Sidebar Skeleton */}
+        <div className="lg:col-span-1">
+          <Card className="h-fit">
+            <CardHeader className="pb-6">
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-6 w-20 rounded-full" />
+              </div>
+              <Skeleton className="h-4 w-full mb-2" />
+              <Skeleton className="h-4 w-5/6" />
+            </CardHeader>
+
+            <CardContent className="pt-0 space-y-6">
+              {/* Content Section */}
+              <div>
+                <Skeleton className="h-6 w-20 mb-3" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                  <Skeleton className="h-4 w-4/5" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
+              </div>
+
+              {/* Link Section */}
+              <div>
+                <Skeleton className="h-6 w-28 mb-3" />
+                <Skeleton className="h-4 w-32 mb-2" />
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-4" />
+                    <Skeleton className="h-4 w-40" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Meta Information */}
+              <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="w-4 h-4" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="w-4 h-4" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                  <Skeleton className="h-6 w-24 rounded" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Post Not Found Component
+function PostNotFound() {
+  const router = useRouter();
+
+  return (
+    <div className="flex flex-col gap-6 w-full max-w-full">
+      {/* Header with Breadcrumb */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <span>Dashboard</span>
+          <span>/</span>
+          <span>Posts</span>
+          <span>/</span>
+          <span>Not Found</span>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Post Not Found</h1>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push("/staff/posts")}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Posts
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Not Found Content */}
+      <div className="flex flex-col items-center justify-center py-16 px-4 min-h-[500px]">
+        <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
+          <FileText className="w-12 h-12 text-gray-400" />
+        </div>
+
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+          Post Not Found
+        </h2>
+
+        <p className="text-gray-500 dark:text-gray-400 text-center mb-2 max-w-md">
+          The post you&apos;re looking for doesn&apos;t exist or may have been
+          removed.
+        </p>
+
+        <p className="text-sm text-gray-400 dark:text-gray-500 text-center mb-8 max-w-md">
+          Please check the URL or try searching for the post again.
+        </p>
+
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={() => router.back()}
+            className="flex items-center gap-2 w-full sm:w-auto"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Go Back
+          </Button>
+
+          <Button
+            onClick={() => router.push("/staff/posts")}
+            className="flex items-center gap-2 w-full sm:w-auto"
+          >
+            <Search className="w-4 h-4" />
+            Browse Posts
+          </Button>
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 w-full max-w-md">
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-4">
+            Need to create a new post?
+          </p>
+          <Button
+            variant="default"
+            onClick={() => router.push("/staff/posts/new")}
+            className="w-full flex items-center gap-2"
+          >
+            <FileText className="w-4 h-4" />
+            Create New Post
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function PostDetailPage() {
   const pathname = usePathname();
@@ -86,9 +273,9 @@ export default function PostDetailPage() {
     }
   };
 
-  if (loading) return <div>Loading post...</div>;
+  if (loading) return <PostDetailSkeleton />;
 
-  if (!post) return <div>Post not found.</div>;
+  if (!post) return <PostNotFound />;
 
   const isExternalLink = (link: string) => {
     return link.startsWith("http://") || link.startsWith("https://");
