@@ -3,7 +3,7 @@
 import type React from "react";
 import Header from "./Header";
 import Footer from "./Footer";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import WhatsAppChat from "./Chat/WhatsAppChat";
 import ChatButton from "./Chat/ChatButton";
 import { Toaster } from "./ui";
@@ -17,7 +17,6 @@ interface LayoutProps {
 
 export function CustomerLayout({ children }: LayoutProps) {
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const chatRef = useRef<HTMLDivElement>(null);
 
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
@@ -26,22 +25,6 @@ export function CustomerLayout({ children }: LayoutProps) {
   const closeChat = () => {
     setIsChatOpen(false);
   };
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (chatRef.current && !chatRef.current.contains(event.target as Node)) {
-        setIsChatOpen(false);
-      }
-    }
-
-    if (isChatOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isChatOpen]);
 
   return (
     <ThemeProvider

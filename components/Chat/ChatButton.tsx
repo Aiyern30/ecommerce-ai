@@ -32,7 +32,7 @@ export default function ChatButton({
     <Button
       onClick={handleWhatsAppClick}
       size="icon"
-      className="h-14 w-14 rounded-full shadow-lg bg-green-600 hover:bg-green-700 transition-all duration-300 animate-fade-in"
+      className="h-14 w-14 rounded-full shadow-lg bg-green-600 hover:bg-green-700 text-white transition-all duration-300 whatsapp-button-pulse"
       title="Chat with us on WhatsApp"
     >
       <MessageCircle className="h-6 w-6" />
