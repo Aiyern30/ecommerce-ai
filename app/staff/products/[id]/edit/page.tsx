@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type React from "react";
 
-import { ArrowLeft, Plus, X, Loader2 } from "lucide-react";
+import { ArrowLeft, Plus, X, Package, Search } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
   Badge,
+  Skeleton,
 } from "@/components/ui/";
 import Image from "next/image";
 import { toast } from "sonner";
@@ -80,6 +81,255 @@ type ProductFormData = z.infer<typeof productSchema>;
 interface ExistingImage {
   id: string;
   image_url: string;
+}
+
+// Product Edit Skeleton Component
+function ProductEditSkeleton() {
+  return (
+    <div className="flex flex-col gap-6 w-full max-w-full">
+      {/* Header Skeleton */}
+      <div className="flex flex-col gap-2">
+        {/* Breadcrumb Skeleton */}
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-4 w-20" />
+          <span className="text-gray-400">/</span>
+          <Skeleton className="h-4 w-20" />
+          <span className="text-gray-400">/</span>
+          <Skeleton className="h-4 w-28" />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-32" />
+          <Skeleton className="h-9 w-40" />
+        </div>
+      </div>
+
+      {/* Product Details Card Skeleton */}
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-4 w-64" />
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Product Name Field */}
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-3 w-48" />
+          </div>
+
+          {/* Category Field */}
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-3 w-44" />
+          </div>
+
+          {/* Grade Field */}
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-3 w-60" />
+          </div>
+
+          {/* Price Field */}
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-3 w-40" />
+          </div>
+
+          {/* Unit Field */}
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-12" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-3 w-52" />
+          </div>
+
+          {/* Stock Quantity Field */}
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-3 w-44" />
+          </div>
+
+          {/* Description Field */}
+          <div className="md:col-span-2 space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-3 w-56" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Product Images Card Skeleton */}
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-4 w-72" />
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2 mb-4">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-3 w-80" />
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="aspect-square rounded-md" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Product Tags Card Skeleton */}
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-28" />
+          <Skeleton className="h-4 w-48" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-10 w-full mb-4" />
+          <div className="flex flex-wrap gap-2">
+            <Skeleton className="h-6 w-16 rounded-full" />
+            <Skeleton className="h-6 w-20 rounded-full" />
+            <Skeleton className="h-6 w-24 rounded-full" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Certificates Card Skeleton */}
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-4 w-68" />
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-2 mb-4">
+            <Skeleton className="h-10 flex-1" />
+            <Skeleton className="h-10 w-20" />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Skeleton className="h-6 w-20 rounded-full" />
+            <Skeleton className="h-6 w-24 rounded-full" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Variants Card Skeleton */}
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-36" />
+          <Skeleton className="h-4 w-76" />
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-2 mb-4">
+            <Skeleton className="h-10 flex-1" />
+            <Skeleton className="h-10 flex-1" />
+            <Skeleton className="h-10 w-20" />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Skeleton className="h-6 w-32 rounded-full" />
+            <Skeleton className="h-6 w-28 rounded-full" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Submit Buttons Skeleton */}
+      <div className="flex justify-end gap-4">
+        <Skeleton className="h-10 w-20" />
+        <Skeleton className="h-10 w-36" />
+      </div>
+    </div>
+  );
+}
+
+// Product Not Found Component
+function ProductNotFound() {
+  const router = useRouter();
+
+  return (
+    <div className="flex flex-col gap-6 w-full max-w-full">
+      {/* Header with Breadcrumb */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <span>Dashboard</span>
+          <span>/</span>
+          <span>Products</span>
+          <span>/</span>
+          <span>Not Found</span>
+          <span>/</span>
+          <span>Edit</span>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Product Not Found</h1>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push("/staff/products")}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Products
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Not Found Content */}
+      <div className="flex flex-col items-center justify-center py-16 px-4 min-h-[500px]">
+        <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
+          <Package className="w-12 h-12 text-gray-400" />
+        </div>
+
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+          Product Not Found
+        </h2>
+
+        <p className="text-gray-500 dark:text-gray-400 text-center mb-2 max-w-md">
+          The product you&apos;re trying to edit doesn&apos;t exist or may have
+          been removed.
+        </p>
+
+        <p className="text-sm text-gray-400 dark:text-gray-500 text-center mb-8 max-w-md">
+          Please check the URL or try searching for the product again.
+        </p>
+
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={() => router.back()}
+            className="flex items-center gap-2 w-full sm:w-auto"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Go Back
+          </Button>
+
+          <Button
+            onClick={() => router.push("/staff/products")}
+            className="flex items-center gap-2 w-full sm:w-auto"
+          >
+            <Search className="w-4 h-4" />
+            Browse Products
+          </Button>
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 w-full max-w-md">
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-4">
+            Need to create a new product?
+          </p>
+          <Button
+            variant="default"
+            onClick={() => router.push("/staff/products/new")}
+            className="w-full flex items-center gap-2"
+          >
+            <Package className="w-4 h-4" />
+            Create New Product
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function EditProductPage() {
@@ -608,14 +858,15 @@ export default function EditProductPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="flex items-center gap-2">
-          <Loader2 className="h-6 w-6 animate-spin" />
-          <span>Loading product data...</span>
-        </div>
-      </div>
-    );
+    return <ProductEditSkeleton />;
+  }
+
+  // Check if product data was not found after loading
+  if (
+    !isLoading &&
+    (!form.getValues("name") || form.getValues("name") === "")
+  ) {
+    return <ProductNotFound />;
   }
 
   return (
