@@ -44,60 +44,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  Skeleton,
 } from "@/components/ui/";
 import Image from "next/image";
 import { PostFilters } from "@/type/Filter/PostFilters";
 import { Post } from "@/type/posts";
 import { formatDate } from "@/lib/format";
-
-function PostTableSkeleton() {
-  return (
-    <div className="w-full overflow-x-auto rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[50px]">
-              <div className="h-4 w-4 rounded-sm bg-gray-200 animate-pulse" />
-            </TableHead>
-            <TableHead className="w-[80px]">Image</TableHead>
-            <TableHead>Title</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Link</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {Array.from({ length: 5 }).map((_, i) => (
-            <TableRow key={i}>
-              <TableCell>
-                <div className="h-4 w-4 rounded-sm bg-gray-200 animate-pulse" />
-              </TableCell>
-              <TableCell>
-                <div className="h-12 w-12 rounded-md bg-gray-200 animate-pulse" />
-              </TableCell>
-              <TableCell>
-                <div className="h-4 w-3/4 rounded bg-gray-200 animate-pulse" />
-              </TableCell>
-              <TableCell>
-                <div className="h-4 w-1/2 rounded bg-gray-200 animate-pulse" />
-              </TableCell>
-              <TableCell>
-                <div className="h-4 w-1/3 rounded bg-gray-200 animate-pulse" />
-              </TableCell>
-              <TableCell>
-                <div className="h-4 w-1/4 rounded bg-gray-200 animate-pulse" />
-              </TableCell>
-              <TableCell className="text-right">
-                <div className="h-8 w-12 ml-auto rounded bg-gray-200 animate-pulse" />
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  );
-}
 
 function EmptyPostsState() {
   return (
@@ -149,6 +101,61 @@ function NoPostResultsState({
             Add New Post
           </Button>
         </Link>
+      </div>
+    </div>
+  );
+}
+
+// Enhanced Post Table Skeleton with better structure
+function PostTableSkeletonEnhanced() {
+  return (
+    <div className="w-full border rounded-md bg-white dark:bg-gray-900 overflow-hidden">
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[50px]">
+                <Skeleton className="h-4 w-4 rounded-sm" />
+              </TableHead>
+              <TableHead className="w-[80px]">Image</TableHead>
+              <TableHead className="min-w-[150px]">Title</TableHead>
+              <TableHead className="min-w-[120px]">Description</TableHead>
+              <TableHead className="min-w-[100px]">Link</TableHead>
+              <TableHead className="min-w-[100px]">Created</TableHead>
+              <TableHead className="text-right min-w-[80px]">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <TableRow key={i}>
+                <TableCell>
+                  <Skeleton className="h-4 w-4 rounded-sm" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-12 w-12 rounded-md" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-full max-w-[200px]" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-full max-w-[150px]" />
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-4" />
+                    <Skeleton className="h-4 w-20" />
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-24" />
+                </TableCell>
+                <TableCell className="text-right">
+                  <Skeleton className="h-8 w-12 ml-auto" />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
@@ -538,7 +545,7 @@ export default function PostsPage() {
       </div>
 
       {loading ? (
-        <PostTableSkeleton />
+        <PostTableSkeletonEnhanced />
       ) : posts.length === 0 ? (
         <EmptyPostsState />
       ) : sortedPosts.length === 0 ? (
