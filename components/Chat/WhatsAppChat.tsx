@@ -30,6 +30,7 @@ export default function WhatsAppChat({
   const [chatMessages, setChatMessages] = useState<Array<{id: number, text: string, isUser: boolean, timestamp: Date}>>([]);
   const [currentStep, setCurrentStep] = useState<'welcome' | 'name' | 'templates' | 'custom'>('welcome');
   const [isTyping, setIsTyping] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const messageTemplates = WHATSAPP_CONFIG.templates;
@@ -76,27 +77,33 @@ export default function WhatsAppChat({
     setSelectedTemplate(template);
     addMessage(template, true);
     
-    addMessage("Great choice! You can modify this message if needed, or send it as is to start your WhatsApp conversation.", false, 1200);
+    addMessage("Great choice! You can modify this message if needed, or click the green WhatsApp button to send it.", false, 1200);
     setCurrentStep('custom');
   };
 
   const handleCustomMessage = () => {
-    if (message.trim()) {
+    if (message.trim() && !isProcessing) {
       addMessage(message, true);
       setSelectedTemplate(message);
-      addMessage("Perfect! I'll now open WhatsApp for you to continue this conversation with our team.", false, 800);
+      setMessage(""); // Clear the message input
+      addMessage("Perfect! Click the green WhatsApp button to open the conversation.", false, 800);
     }
   };
 
   const handleSendWhatsApp = () => {
+    if (isProcessing) return; // Prevent multiple calls
+    
+    setIsProcessing(true);
     const finalMessage = customerName
       ? `Hi, I'm ${customerName}. ${selectedTemplate || message}`
       : selectedTemplate || message;
 
     const whatsappUrl = createWhatsAppUrl(whatsappNumber, finalMessage);
 
-    // Add final message with typing delay
-    addMessage("Opening WhatsApp now... 📱", false, 1000);
+    // Add final message only if not already processing
+    if (!chatMessages.some(msg => msg.text.includes("Opening WhatsApp now"))) {
+      addMessage("Opening WhatsApp now... 📱", false, 1000);
+    }
 
     setTimeout(() => {
       window.open(whatsappUrl, "_blank");
@@ -112,6 +119,7 @@ export default function WhatsAppChat({
         setChatMessages([]);
         setCurrentStep('welcome');
         setIsTyping(false);
+        setIsProcessing(false);
       }, 1500);
     }, 2000);
   };
@@ -213,7 +221,7 @@ export default function WhatsAppChat({
 
       {/* Message Input Area */}
       <div className="p-3 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-700">
-        {!customerName && (
+        {currentStep !== 'welcome' && (
           <div className="mb-3">
             <Input
               value={customerName}
@@ -227,34 +235,44 @@ export default function WhatsAppChat({
         <div className="flex items-end gap-2">
           <div className="flex-1">
             <Textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Type your message..."
+              value={selectedTemplate || message}
+              onChange={(e) => {
+                if (selectedTemplate) {
+                  setSelectedTemplate(e.target.value);
+                } else {
+                  setMessage(e.target.value);
+                }
+              }}
+              placeholder={selectedTemplate ? "Edit your message or keep as is..." : "Type your message..."}
               className="min-h-[60px] text-sm resize-none"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
-                  handleCustomMessage();
+                  if ((selectedTemplate || message).trim()) {
+                    handleSendWhatsApp();
+                  }
                 }
               }}
             />
           </div>
           <div className="flex flex-col gap-1">
-            {message.trim() && (
+            {message.trim() && !selectedTemplate && (
               <Button
                 onClick={handleCustomMessage}
                 size="icon"
                 variant="ghost"
                 className="h-8 w-8 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                title="Send custom message"
               >
                 <Send className="h-4 w-4" />
               </Button>
             )}
             <Button
               onClick={handleSendWhatsApp}
-              disabled={!selectedTemplate && !message.trim()}
+              disabled={(!selectedTemplate && !message.trim()) || isProcessing}
               size="icon"
               className="h-8 w-8 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
+              title="Open WhatsApp"
             >
               <MessageCircle className="h-4 w-4" />
             </Button>
