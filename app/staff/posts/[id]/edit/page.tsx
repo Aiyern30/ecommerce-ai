@@ -3,7 +3,14 @@
 
 import Link from "next/link";
 import type React from "react";
-import { ArrowLeft, X, ExternalLink, LinkIcon } from "lucide-react";
+import {
+  ArrowLeft,
+  X,
+  ExternalLink,
+  LinkIcon,
+  FileText,
+  Search,
+} from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,6 +43,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Skeleton,
 } from "@/components/ui/";
 import Image from "next/image";
 import { toast } from "sonner";
@@ -61,6 +69,218 @@ const postSchema = z.object({
 });
 
 type PostFormData = z.infer<typeof postSchema>;
+
+// Post Edit Skeleton Component
+function PostEditSkeleton() {
+  return (
+    <div className="flex flex-col gap-6 w-full max-w-full">
+      {/* Header Skeleton */}
+      <div className="flex flex-col gap-2">
+        {/* Breadcrumb Skeleton */}
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-4 w-20" />
+          <span className="text-gray-400">/</span>
+          <Skeleton className="h-4 w-16" />
+          <span className="text-gray-400">/</span>
+          <Skeleton className="h-4 w-32" />
+          <span className="text-gray-400">/</span>
+          <Skeleton className="h-4 w-12" />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-28" />
+          <Skeleton className="h-9 w-32" />
+        </div>
+      </div>
+
+      {/* Post Details Card Skeleton */}
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-28" />
+          <Skeleton className="h-4 w-48" />
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Title Field */}
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-3 w-64" />
+          </div>
+
+          {/* Description Field */}
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-3 w-56" />
+          </div>
+
+          {/* Body Content Field */}
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-48 w-full" />
+            <Skeleton className="h-3 w-48" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Link Card Skeleton */}
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-4 w-60" />
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Link Type Field */}
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-3 w-72" />
+          </div>
+
+          {/* Link Name Field */}
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-3 w-80" />
+          </div>
+
+          {/* Link Field */}
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-36" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-3 w-68" />
+          </div>
+
+          {/* Link Preview */}
+          <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-4 w-4" />
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-40" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Image Card Skeleton */}
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-24" />
+          <Skeleton className="h-4 w-52" />
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Current Image */}
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="w-48 h-48 rounded-md" />
+          </div>
+
+          {/* Upload Field */}
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-44" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-3 w-76" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Submit Buttons Skeleton */}
+      <div className="flex justify-end gap-4">
+        <Skeleton className="h-10 w-20" />
+        <Skeleton className="h-10 w-28" />
+      </div>
+    </div>
+  );
+}
+
+// Post Not Found Component
+function PostNotFound() {
+  const router = useRouter();
+
+  return (
+    <div className="flex flex-col gap-6 w-full max-w-full">
+      {/* Header with Breadcrumb */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <span>Dashboard</span>
+          <span>/</span>
+          <span>Posts</span>
+          <span>/</span>
+          <span>Not Found</span>
+          <span>/</span>
+          <span>Edit</span>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Post Not Found</h1>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push("/staff/posts")}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Posts
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Not Found Content */}
+      <div className="flex flex-col items-center justify-center py-16 px-4 min-h-[500px]">
+        <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
+          <FileText className="w-12 h-12 text-gray-400" />
+        </div>
+
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+          Post Not Found
+        </h2>
+
+        <p className="text-gray-500 dark:text-gray-400 text-center mb-2 max-w-md">
+          The post you&apos;re trying to edit doesn&apos;t exist or may have
+          been removed.
+        </p>
+
+        <p className="text-sm text-gray-400 dark:text-gray-500 text-center mb-8 max-w-md">
+          Please check the URL or try searching for the post again.
+        </p>
+
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={() => router.back()}
+            className="flex items-center gap-2 w-full sm:w-auto"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Go Back
+          </Button>
+
+          <Button
+            onClick={() => router.push("/staff/posts")}
+            className="flex items-center gap-2 w-full sm:w-auto"
+          >
+            <Search className="w-4 h-4" />
+            Browse Posts
+          </Button>
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 w-full max-w-md">
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-4">
+            Need to create a new post?
+          </p>
+          <Button
+            variant="default"
+            onClick={() => router.push("/staff/posts/new")}
+            className="w-full flex items-center gap-2"
+          >
+            <FileText className="w-4 h-4" />
+            Create New Post
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function EditPostPage() {
   const router = useRouter();
@@ -291,23 +511,11 @@ export default function EditPostPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex flex-col gap-6 w-full max-w-full">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-lg">Loading post...</div>
-        </div>
-      </div>
-    );
+    return <PostEditSkeleton />;
   }
 
   if (!post) {
-    return (
-      <div className="flex flex-col gap-6 w-full max-w-full">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-lg">Post not found.</div>
-        </div>
-      </div>
-    );
+    return <PostNotFound />;
   }
 
   return (
