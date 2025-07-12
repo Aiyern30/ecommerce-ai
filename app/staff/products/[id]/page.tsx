@@ -189,15 +189,16 @@ function ProductNotFound({ isStaffView }: { isStaffView: boolean }) {
         <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
           <Package className="w-12 h-12 text-gray-400" />
         </div>
-        
+
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
           Product Not Found
         </h1>
-        
+
         <p className="text-gray-500 dark:text-gray-400 text-center mb-2 max-w-md">
-          The product you&apos;re looking for doesn&apos;t exist or may have been removed.
+          The product you&apos;re looking for doesn&apos;t exist or may have
+          been removed.
         </p>
-        
+
         <p className="text-sm text-gray-400 dark:text-gray-500 text-center mb-8 max-w-md">
           Please check the URL or try searching for the product again.
         </p>
@@ -211,9 +212,11 @@ function ProductNotFound({ isStaffView }: { isStaffView: boolean }) {
             <ArrowLeft className="w-4 h-4" />
             Go Back
           </Button>
-          
+
           <Button
-            onClick={() => router.push(isStaffView ? "/staff/products" : "/products")}
+            onClick={() =>
+              router.push(isStaffView ? "/staff/products" : "/products")
+            }
             className="flex items-center gap-2 w-full sm:w-auto"
           >
             <Search className="w-4 h-4" />
