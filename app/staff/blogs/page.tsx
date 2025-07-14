@@ -52,7 +52,6 @@ import {
 } from "@/components/ui/Typography";
 import Image from "next/image";
 import { Blog } from "@/type/blogs";
-import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 interface BlogFilters {
   search: string;
@@ -355,13 +354,6 @@ export default function Page() {
     <div className="flex flex-col gap-6 w-full max-w-full">
       {/* Header with Breadcrumb */}
       <div className="flex flex-col gap-2">
-        <BreadcrumbNav
-          customItems={[
-            { label: "Dashboard", href: "/staff/dashboard" },
-            { label: "Blogs" },
-          ]}
-        />
-
         <div className="flex items-center justify-between">
           <TypographyH2>Blogs</TypographyH2>
           <div className="flex items-center gap-2">
