@@ -117,9 +117,7 @@ interface TypographyTableProps {
 function TypographyTable({ children, className }: TypographyTableProps) {
   return (
     <div className="my-6 w-full overflow-y-auto">
-      <table className={cn("w-full", className)}>
-        {children}
-      </table>
+      <table className={cn("w-full", className)}>{children}</table>
     </div>
   );
 }
@@ -212,18 +210,14 @@ function TypographyInlineCode({ children, className }: TypographyProps) {
 // Lead Component (for intro paragraphs)
 function TypographyLead({ children, className }: TypographyProps) {
   return (
-    <p className={cn("text-xl text-muted-foreground", className)}>
-      {children}
-    </p>
+    <p className={cn("text-xl text-muted-foreground", className)}>{children}</p>
   );
 }
 
 // Large Component
 function TypographyLarge({ children, className }: TypographyProps) {
   return (
-    <div className={cn("text-lg font-semibold", className)}>
-      {children}
-    </div>
+    <div className={cn("text-lg font-semibold", className)}>{children}</div>
   );
 }
 
@@ -239,36 +233,34 @@ function TypographySmall({ children, className }: TypographyProps) {
 // Muted Component
 function TypographyMuted({ children, className }: TypographyProps) {
   return (
-    <p className={cn("text-sm text-muted-foreground", className)}>
-      {children}
-    </p>
+    <p className={cn("text-sm text-muted-foreground", className)}>{children}</p>
   );
 }
 
 // Combined Typography component with all variants
 interface TypographyVariantProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: 
-    | "h1" 
-    | "h2" 
-    | "h3" 
-    | "h4" 
-    | "h5" 
-    | "h6" 
-    | "p" 
-    | "blockquote" 
-    | "lead" 
-    | "large" 
-    | "small" 
-    | "muted" 
+  variant?:
+    | "h1"
+    | "h2"
+    | "h3"
+    | "h4"
+    | "h5"
+    | "h6"
+    | "p"
+    | "blockquote"
+    | "lead"
+    | "large"
+    | "small"
+    | "muted"
     | "code";
   children: React.ReactNode;
 }
 
-export function Typography({ 
-  variant = "p", 
-  children, 
-  className, 
-  ...props 
+export function Typography({
+  variant = "p",
+  children,
+  className,
+  ...props
 }: TypographyVariantProps) {
   const Component = {
     h1: TypographyH1,
@@ -286,7 +278,11 @@ export function Typography({
     code: TypographyInlineCode,
   }[variant];
 
-  return <Component className={className} {...props}>{children}</Component>;
+  return (
+    <Component className={className} {...props}>
+      {children}
+    </Component>
+  );
 }
 
 // Export all components
