@@ -37,6 +37,7 @@ import {
   SelectValue,
   Badge,
 } from "@/components/ui/";
+import { TypographyH2 } from "@/components/ui/Typography";
 import Image from "next/image";
 import { toast } from "sonner";
 import { Tag } from "@/type/blogs";
@@ -269,7 +270,7 @@ export default function Page() {
         </Breadcrumb>
 
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Create New Blog</h1>
+          <TypographyH2>Create New Blog</TypographyH2>
           <div className="flex items-center gap-2">
             <Link href="/staff/blogs">
               <Button variant="outline" size="sm">

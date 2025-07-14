@@ -33,7 +33,7 @@ import {
   SelectValue,
   Badge,
 } from "@/components/ui/";
-import { TypographyH1 } from "@/components/ui/Typography";
+import { TypographyH2 } from "@/components/ui/Typography";
 import TagMultiSelect from "@/components/TagMultiSelect";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
@@ -388,7 +388,7 @@ export default function NewProductPage() {
         />
 
         <div className="flex items-center justify-between">
-          <TypographyH1>Add New Product</TypographyH1>
+          <TypographyH2>Add New Product</TypographyH2>
           <div className="flex items-center gap-2">
             <Link href="/staff/products">
               <Button variant="outline" size="sm">
