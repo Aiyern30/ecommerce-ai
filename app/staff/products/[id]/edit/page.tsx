@@ -34,11 +34,7 @@ import {
   Badge,
   Skeleton,
 } from "@/components/ui/";
-import {
-  TypographyH1,
-  TypographyH2,
-  TypographyP,
-} from "@/components/ui/Typography";
+import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import Image from "next/image";
 import { toast } from "sonner";
 import TagMultiSelect from "@/components/TagMultiSelect";
@@ -267,7 +263,7 @@ function ProductNotFound() {
         </div>
 
         <div className="flex items-center justify-between">
-          <TypographyH1>Product Not Found</TypographyH1>
+          <TypographyH2>Product Not Found</TypographyH2>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -884,7 +880,7 @@ export default function EditProductPage() {
         />
 
         <div className="flex items-center justify-between">
-          <TypographyH1>Edit Product</TypographyH1>
+          <TypographyH2>Edit Product</TypographyH2>
           <div className="flex items-center gap-2">
             <Link href="/staff/products">
               <Button variant="outline" size="sm">
