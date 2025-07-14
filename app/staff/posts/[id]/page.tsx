@@ -29,9 +29,10 @@ import {
   Skeleton,
 } from "@/components/ui";
 import {
-  TypographyH2,
-  TypographyH3,
   TypographyP,
+  TypographySmall,
+  TypographyInlineCode,
+  TypographyH1,
 } from "@/components/ui/Typography";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
@@ -145,22 +146,6 @@ function PostNotFound() {
           <span>/</span>
           <span>Not Found</span>
         </div>
-
-        <div className="flex items-center justify-between">
-          <TypographyH2 className="border-none pb-0">
-            Post Not Found
-          </TypographyH2>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push("/staff/posts")}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Posts
-            </Button>
-          </div>
-        </div>
       </div>
 
       {/* Not Found Content */}
@@ -169,7 +154,7 @@ function PostNotFound() {
           <FileText className="w-12 h-12 text-gray-400" />
         </div>
 
-        <TypographyH3 className="mb-2">Post Not Found</TypographyH3>
+        <TypographyH1 className="mb-2">Post Not Found</TypographyH1>
 
         <TypographyP className="text-muted-foreground text-center mb-2 max-w-md">
           The post you&apos;re looking for doesn&apos;t exist or may have been
@@ -477,21 +462,26 @@ export default function PostDetailPage() {
 
               {/* Post Meta Information - At the bottom */}
               <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
-                <div className="space-y-2 text-sm text-gray-500 dark:text-gray-400">
+                <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>Created: {formatDate(post.created_at)}</span>
+                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                    <TypographySmall className="text-muted-foreground">
+                      Created: {formatDate(post.created_at)}
+                    </TypographySmall>
                   </div>
                   {post.updated_at !== post.created_at && (
                     <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
-                      <span>Updated: {formatDate(post.updated_at)}</span>
+                      <Calendar className="w-4 h-4 text-muted-foreground" />
+                      <TypographySmall className="text-muted-foreground">
+                        Updated: {formatDate(post.updated_at)}
+                      </TypographySmall>
                     </div>
                   )}
                   <div className="flex items-center gap-2">
-                    <span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded font-mono">
-                      ID: #{post.id}
-                    </span>
+                    <TypographySmall className="text-muted-foreground">
+                      Post ID:{" "}
+                      <TypographyInlineCode>#{post.id}</TypographyInlineCode>
+                    </TypographySmall>
                   </div>
                 </div>
               </div>
