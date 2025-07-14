@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui";
+import { TypographyH3, TypographyP, TypographyInlineCode } from "@/components/ui/Typography";
 import { Calendar } from "lucide-react";
 import { formatDate } from "@/lib/format";
 import type { Product } from "@/type/product";
@@ -101,18 +102,18 @@ export default function ProductDetailDisplay({
             </div>
 
             {product.description && (
-              <p className="text-sm xl:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+              <TypographyP className="text-sm xl:text-base text-muted-foreground leading-relaxed">
                 {product.description}
-              </p>
+              </TypographyP>
             )}
           </CardHeader>
 
           <CardContent className="pt-0 space-y-3 xl:space-y-4">
             {/* Price and Stock */}
             <div>
-              <h3 className="text-base xl:text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
+              <TypographyH3 className="text-base xl:text-lg mb-2">
                 Pricing & Stock
-              </h3>
+              </TypographyH3>
               <div className="grid grid-cols-2 gap-2 xl:gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <div>
                   <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
@@ -162,9 +163,9 @@ export default function ProductDetailDisplay({
             {/* Grade */}
             {product.grade && (
               <div>
-                <h3 className="text-base xl:text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
+                <TypographyH3 className="text-base xl:text-lg mb-2">
                   Grade
-                </h3>
+                </TypographyH3>
                 <Badge variant="outline" className="text-sm px-3 py-1">
                   {product.grade}
                 </Badge>
@@ -175,9 +176,9 @@ export default function ProductDetailDisplay({
             {product.product_variants?.length &&
               product.product_variants.length > 0 && (
                 <div>
-                  <h3 className="text-base xl:text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
+                  <TypographyH3 className="text-base xl:text-lg mb-2">
                     Pricing Variants
-                  </h3>
+                  </TypographyH3>
                   <div className="space-y-2">
                     {product.product_variants.map((variant, index) => (
                       <div
@@ -198,9 +199,9 @@ export default function ProductDetailDisplay({
 
             {/* Certifications */}
             <div>
-              <h3 className="text-base xl:text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
+              <TypographyH3 className="text-base xl:text-lg mb-2">
                 Certifications
-              </h3>
+              </TypographyH3>
               <div className="flex flex-wrap gap-2">
                 {product.product_certificates?.length ? (
                   product.product_certificates.map((cert, index) => (
@@ -213,18 +214,18 @@ export default function ProductDetailDisplay({
                     </Badge>
                   ))
                 ) : (
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">
+                  <TypographyP className="text-muted-foreground text-sm">
                     No certifications listed.
-                  </p>
+                  </TypographyP>
                 )}
               </div>
             </div>
 
             {/* Tags */}
             <div>
-              <h3 className="text-base xl:text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
+              <TypographyH3 className="text-base xl:text-lg mb-2">
                 Tags
-              </h3>
+              </TypographyH3>
               <div className="flex flex-wrap gap-2">
                 {product.product_tags?.length ? (
                   product.product_tags.map((tag, index) =>
@@ -239,9 +240,9 @@ export default function ProductDetailDisplay({
                     ) : null
                   )
                 ) : (
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">
+                  <TypographyP className="text-muted-foreground text-sm">
                     No tags listed.
-                  </p>
+                  </TypographyP>
                 )}
               </div>
             </div>
@@ -261,9 +262,9 @@ export default function ProductDetailDisplay({
                 )}
                 {!isCustomerView && (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded font-mono">
+                    <TypographyInlineCode>
                       ID: #{product.id}
-                    </span>
+                    </TypographyInlineCode>
                   </div>
                 )}
               </div>
