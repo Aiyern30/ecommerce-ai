@@ -52,6 +52,7 @@ import {
 } from "@/components/ui/Typography";
 import Image from "next/image";
 import { Blog } from "@/type/blogs";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 interface BlogFilters {
   search: string;
@@ -352,15 +353,95 @@ export default function Page() {
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
-      <div className="flex items-center justify-between">
-        <TypographyH2>Blogs</TypographyH2>
-        <div className="flex items-center gap-2">
-          <Link href="/staff/blogs/new">
-            <Button size="sm">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Blog
-            </Button>
-          </Link>
+      {/* Header with Breadcrumb */}
+      <div className="flex flex-col gap-2">
+        <BreadcrumbNav
+          customItems={[
+            { label: "Dashboard", href: "/staff/dashboard" },
+            { label: "Blogs" },
+          ]}
+        />
+
+        <div className="flex items-center justify-between">
+          <TypographyH2>Blogs</TypographyH2>
+          <div className="flex items-center gap-2">
+            {selectedBlogs.length > 0 && (
+              <>
+                <span className="text-sm text-gray-500">
+                  {selectedBlogs.length} selected
+                </span>
+                <Dialog
+                  open={isDeleteDialogOpen}
+                  onOpenChange={setIsDeleteDialogOpen}
+                >
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={openDeleteDialog}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete Selected ({selectedBlogs.length})
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Confirm Deletion</DialogTitle>
+                      <DialogDescription>
+                        Are you sure you want to delete the following{" "}
+                        {blogsToDelete.length} blog(s)? This action cannot be
+                        undone.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="max-h-60 overflow-y-auto space-y-2">
+                      {blogsToDelete.map((blog) => (
+                        <div
+                          key={blog.id}
+                          className="flex items-center gap-3 p-2 border rounded-md"
+                        >
+                          <Image
+                            src={
+                              blog.blog_images?.[0]?.image_url ||
+                              "/placeholder.svg?height=48&width=48"
+                            }
+                            alt={blog.title}
+                            width={48}
+                            height={48}
+                            className="rounded-md object-cover"
+                          />
+                          <span className="font-medium">{blog.title}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsDeleteDialogOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button variant="destructive" onClick={handleDeleteBlogs}>
+                        Delete
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearBlogSelection}
+                >
+                  Clear Selection
+                </Button>
+              </>
+            )}
+            <Link href="/staff/blogs/new">
+              <Button size="sm">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Blog
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -432,12 +513,9 @@ export default function Page() {
           </CardHeader>
           <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-0">
             <div>
-              <label
-                htmlFor="hasLink"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <TypographyP className="text-sm font-medium mb-2">
                 Link Filter
-              </label>
+              </TypographyP>
               <Select
                 value={filters.hasLink}
                 onValueChange={(value) => {
@@ -458,75 +536,7 @@ export default function Page() {
         </Card>
       )}
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {selectedBlogs.length > 0 && (
-            <>
-              <span className="text-sm text-gray-500">
-                {selectedBlogs.length} selected
-              </span>
-              <Dialog
-                open={isDeleteDialogOpen}
-                onOpenChange={setIsDeleteDialogOpen}
-              >
-                <DialogTrigger asChild>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={openDeleteDialog}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete Selected ({selectedBlogs.length})
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Confirm Deletion</DialogTitle>
-                    <DialogDescription>
-                      Are you sure you want to delete the following{" "}
-                      {blogsToDelete.length} blog(s)? This action cannot be
-                      undone.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="max-h-60 overflow-y-auto space-y-2">
-                    {blogsToDelete.map((blog) => (
-                      <div
-                        key={blog.id}
-                        className="flex items-center gap-3 p-2 border rounded-md"
-                      >
-                        <Image
-                          src={
-                            blog.blog_images?.[0]?.image_url ||
-                            "/placeholder.svg?height=48&width=48"
-                          }
-                          alt={blog.title}
-                          width={48}
-                          height={48}
-                          className="rounded-md object-cover"
-                        />
-                        <span className="font-medium">{blog.title}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <DialogFooter>
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsDeleteDialogOpen(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button variant="destructive" onClick={handleDeleteBlogs}>
-                      Delete
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-              <Button variant="outline" size="sm" onClick={clearBlogSelection}>
-                Clear Selection
-              </Button>
-            </>
-          )}
-        </div>
+      <div className="flex items-center justify-end">
         <div className="text-sm text-gray-500">
           {sortedBlogs.length} Results
         </div>
