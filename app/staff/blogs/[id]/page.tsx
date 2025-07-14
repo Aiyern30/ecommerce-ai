@@ -29,9 +29,10 @@ import {
   Skeleton,
 } from "@/components/ui";
 import {
-  TypographyH1,
   TypographyH2,
   TypographyP,
+  TypographySmall,
+  TypographyInlineCode,
 } from "@/components/ui/Typography";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
@@ -56,7 +57,7 @@ function BlogNotFound() {
         />
 
         <div className="flex items-center justify-between">
-          <TypographyH1>Blog Not Found</TypographyH1>
+          <TypographyH2>Blog Not Found</TypographyH2>
           <div className="flex items-center gap-2">
             <Link href="/staff/blogs">
               <Button variant="outline" size="sm">
@@ -327,7 +328,7 @@ export default function BlogDetailPage() {
         />
 
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Blog Details</h1>
+          <TypographyH2>Blog Details</TypographyH2>
           <div className="flex items-center gap-2">
             <Link href="/staff/blogs">
               <Button variant="outline" size="sm">
@@ -351,22 +352,22 @@ export default function BlogDetailPage() {
           {/* Blog Header */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-3xl">{blog.title}</CardTitle>
+              <TypographyH2>{blog.title}</TypographyH2>
               {blog.description && (
                 <TypographyP className="text-lg text-muted-foreground mt-2">
                   {blog.description}
                 </TypographyP>
               )}
-              <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mt-4">
-                <div className="flex items-center gap-1">
+              <div className="flex items-center gap-4 mt-4">
+                <TypographySmall className="flex items-center gap-1 text-muted-foreground">
                   <Calendar className="w-4 h-4" />
                   Created: {formatDate(blog.created_at)}
-                </div>
+                </TypographySmall>
                 {blog.updated_at !== blog.created_at && (
-                  <div className="flex items-center gap-1">
+                  <TypographySmall className="flex items-center gap-1 text-muted-foreground">
                     <Calendar className="w-4 h-4" />
                     Updated: {formatDate(blog.updated_at)}
-                  </div>
+                  </TypographySmall>
                 )}
               </div>
             </CardHeader>
@@ -428,46 +429,44 @@ export default function BlogDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                <TypographySmall className="font-medium text-muted-foreground">
                   Blog ID
-                </label>
-                <p className="text-sm font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-                  #{blog.id}
-                </p>
+                </TypographySmall>
+                <TypographyInlineCode>#{blog.id}</TypographyInlineCode>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                <TypographySmall className="font-medium text-muted-foreground">
                   Status
-                </label>
-                <p className="text-sm">
+                </TypographySmall>
+                <TypographyP>
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                     Published
                   </span>
-                </p>
+                </TypographyP>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                <TypographySmall className="font-medium text-muted-foreground">
                   Created
-                </label>
-                <p className="text-sm">{formatDate(blog.created_at)}</p>
+                </TypographySmall>
+                <TypographyP>{formatDate(blog.created_at)}</TypographyP>
               </div>
 
               {blog.updated_at !== blog.created_at && (
                 <div>
-                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  <TypographySmall className="font-medium text-muted-foreground">
                     Last Updated
-                  </label>
-                  <p className="text-sm">{formatDate(blog.updated_at)}</p>
+                  </TypographySmall>
+                  <TypographyP>{formatDate(blog.updated_at)}</TypographyP>
                 </div>
               )}
 
               {blog.external_link && (
                 <div>
-                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  <TypographySmall className="font-medium text-muted-foreground">
                     External Link
-                  </label>
+                  </TypographySmall>
                   <a
                     href={blog.external_link}
                     target="_blank"
