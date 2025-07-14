@@ -46,11 +46,7 @@ import {
   DialogTrigger,
   Skeleton,
 } from "@/components/ui/";
-import {
-  TypographyH2,
-  TypographyH3,
-  TypographyP,
-} from "@/components/ui/Typography";
+import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import Image from "next/image";
 import { PostFilters } from "@/type/Filter/PostFilters";
 import { Post } from "@/type/posts";
@@ -62,7 +58,7 @@ function EmptyPostsState() {
       <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
         <FileText className="w-12 h-12 text-gray-400" />
       </div>
-      <TypographyH3 className="mb-2">No posts found</TypographyH3>
+      <TypographyH2 className="mb-2">No posts found</TypographyH2>
       <TypographyP className="text-muted-foreground text-center mb-6 max-w-sm">
         Get started by creating your first post to share updates and engage with
         your community.
@@ -87,7 +83,7 @@ function NoPostResultsState({
       <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
         <Search className="w-12 h-12 text-gray-400" />
       </div>
-      <TypographyH3 className="mb-2">No matching posts</TypographyH3>
+      <TypographyH2 className="mb-2">No matching posts</TypographyH2>
       <TypographyP className="text-muted-foreground text-center mb-6 max-w-sm">
         No posts match your current search criteria. Try adjusting your filters
         or search terms.

@@ -139,13 +139,13 @@ function PostNotFound() {
     <div className="flex flex-col gap-6 w-full max-w-full">
       {/* Header with Breadcrumb */}
       <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <span>Dashboard</span>
-          <span>/</span>
-          <span>Posts</span>
-          <span>/</span>
-          <span>Not Found</span>
-        </div>
+        <BreadcrumbNav
+          customItems={[
+            { label: "Dashboard", href: "/staff/dashboard" },
+            { label: "Posts", href: "/staff/posts" },
+            { label: "Not Found" },
+          ]}
+        />
       </div>
 
       {/* Not Found Content */}
