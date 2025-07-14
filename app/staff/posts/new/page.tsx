@@ -12,11 +12,6 @@ import { supabase } from "@/lib/supabase";
 import * as z from "zod";
 import {
   Button,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
   Card,
   CardContent,
   CardDescription,
@@ -37,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { TypographyH2 } from "@/components/ui/Typography";
 import Image from "next/image";
 import { toast } from "sonner";
@@ -205,21 +201,13 @@ export default function NewPostPage() {
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex flex-col gap-2">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/staff/dashboard">Dashboard</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/staff/posts">Posts</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink>New Post</BreadcrumbLink>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <BreadcrumbNav
+          customItems={[
+            { label: "Dashboard", href: "/staff/dashboard" },
+            { label: "Posts", href: "/staff/posts" },
+            { label: "New Post" },
+          ]}
+        />
 
         <div className="flex items-center justify-between">
           <TypographyH2 className="border-none pb-0">
