@@ -34,6 +34,11 @@ import {
   Badge,
   Skeleton,
 } from "@/components/ui/";
+import {
+  TypographyH1,
+  TypographyH2,
+  TypographyP,
+} from "@/components/ui/Typography";
 import Image from "next/image";
 import { toast } from "sonner";
 import TagMultiSelect from "@/components/TagMultiSelect";
@@ -262,7 +267,7 @@ function ProductNotFound() {
         </div>
 
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Product Not Found</h1>
+          <TypographyH1>Product Not Found</TypographyH1>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -282,18 +287,16 @@ function ProductNotFound() {
           <Package className="w-12 h-12 text-gray-400" />
         </div>
 
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-          Product Not Found
-        </h2>
+        <TypographyH2 className="mb-2">Product Not Found</TypographyH2>
 
-        <p className="text-gray-500 dark:text-gray-400 text-center mb-2 max-w-md">
+        <TypographyP className="text-muted-foreground text-center mb-2 max-w-md">
           The product you&apos;re trying to edit doesn&apos;t exist or may have
           been removed.
-        </p>
+        </TypographyP>
 
-        <p className="text-sm text-gray-400 dark:text-gray-500 text-center mb-8 max-w-md">
+        <TypographyP className="text-sm text-muted-foreground text-center mb-8 max-w-md">
           Please check the URL or try searching for the product again.
-        </p>
+        </TypographyP>
 
         <div className="flex flex-col sm:flex-row items-center gap-3">
           <Button
@@ -315,9 +318,9 @@ function ProductNotFound() {
         </div>
 
         <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 w-full max-w-md">
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-4">
+          <TypographyP className="text-center text-sm text-muted-foreground mb-4">
             Need to create a new product?
-          </p>
+          </TypographyP>
           <Button
             variant="default"
             onClick={() => router.push("/staff/products/new")}
@@ -881,7 +884,7 @@ export default function EditProductPage() {
         />
 
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Edit Product</h1>
+          <TypographyH1>Edit Product</TypographyH1>
           <div className="flex items-center gap-2">
             <Link href="/staff/products">
               <Button variant="outline" size="sm">

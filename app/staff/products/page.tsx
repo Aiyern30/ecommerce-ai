@@ -44,6 +44,11 @@ import {
   DialogTrigger,
   Badge,
 } from "@/components/ui/";
+import {
+  TypographyH2,
+  TypographyH3,
+  TypographyP,
+} from "@/components/ui/Typography";
 import Image from "next/image";
 import type { Product } from "@/type/product";
 import { ProductFilters } from "@/type/Filter/ProductFilter";
@@ -119,13 +124,13 @@ function EmptyProductsState() {
       <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
         <Package className="w-12 h-12 text-gray-400" />
       </div>
-      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+      <TypographyH3 className="text-gray-900 dark:text-gray-100 mb-2">
         No products found
-      </h3>
-      <p className="text-gray-500 dark:text-gray-400 text-center mb-6 max-w-sm">
+      </TypographyH3>
+      <TypographyP className="text-gray-500 dark:text-gray-400 text-center mb-6 max-w-sm">
         Start building your inventory by adding your first product to showcase
         to customers.
-      </p>
+      </TypographyP>
       <Link href="/staff/products/new">
         <Button className="flex items-center gap-2">
           <Plus className="w-4 h-4" />
@@ -146,13 +151,13 @@ function NoProductResultsState({
       <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
         <Search className="w-12 h-12 text-gray-400" />
       </div>
-      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+      <TypographyH3 className="text-gray-900 dark:text-gray-100 mb-2">
         No matching products
-      </h3>
-      <p className="text-gray-500 dark:text-gray-400 text-center mb-6 max-w-sm">
+      </TypographyH3>
+      <TypographyP className="text-gray-500 dark:text-gray-400 text-center mb-6 max-w-sm">
         No products match your current search criteria. Try adjusting your
         filters or search terms.
-      </p>
+      </TypographyP>
       <div className="flex items-center gap-2">
         <Button variant="outline" onClick={onClearFilters}>
           Clear Filters
@@ -393,7 +398,7 @@ export default function ProductsPage() {
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Products</h1>
+        <TypographyH2>Products</TypographyH2>
         <div className="flex items-center gap-2">
           <Link href="/staff/products/new">
             <Button size="sm">
