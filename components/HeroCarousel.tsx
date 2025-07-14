@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSwipeable } from "react-swipeable";
 import { Button } from "@/components/ui/";
+import { TypographyH1, TypographyP } from "@/components/ui/Typography";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { Post } from "@/type/posts";
@@ -195,15 +196,15 @@ export default function HeroCarousel() {
               {/* Content section - shows second on mobile, first on desktop */}
               <div className="w-full md:w-1/2 h-1/2 md:h-full p-6 md:p-12 lg:p-16 bg-white/90 dark:bg-transparent order-2 md:order-1 flex items-center">
                 <div className="max-w-2xl mx-auto">
-                  <h2 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-800 dark:text-white mb-4 md:mb-6 leading-tight">
+                  <TypographyH1 className="text-gray-800 dark:text-white mb-4 md:mb-6 leading-tight">
                     {item.title}
-                  </h2>
-                  <p className="text-gray-600 dark:text-white mb-6 md:mb-8 text-base md:text-lg lg:text-xl leading-relaxed">
+                  </TypographyH1>
+                  <TypographyP className="text-gray-600 dark:text-white mb-6 md:mb-8 text-base md:text-lg lg:text-xl leading-relaxed">
                     {item.description}
-                  </p>
+                  </TypographyP>
                   <Button
                     asChild
-                    className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-8 py-3 md:px-10 md:py-4 text-base md:text-lg rounded-lg transition-all duration-300 hover:scale-105"
+                    className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-8 py-6 text-base md:text-lg rounded-lg transition-all duration-300 hover:scale-105"
                   >
                     <Link href={item.buttonLink}>{item.buttonText}</Link>
                   </Button>
