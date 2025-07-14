@@ -1,7 +1,6 @@
 "use client";
 
 import { supabase } from "@/lib/supabase";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -14,10 +13,6 @@ import {
 } from "lucide-react";
 import {
   Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -47,7 +42,7 @@ function BlogNotFound() {
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
       {/* Header with Breadcrumb */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <BreadcrumbNav
           customItems={[
             { label: "Dashboard", href: "/staff/dashboard" },
@@ -55,18 +50,6 @@ function BlogNotFound() {
             { label: "Not Found" },
           ]}
         />
-
-        <div className="flex items-center justify-between">
-          <TypographyH2>Blog Not Found</TypographyH2>
-          <div className="flex items-center gap-2">
-            <Link href="/staff/blogs">
-              <Button variant="outline" size="sm">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Blogs
-              </Button>
-            </Link>
-          </div>
-        </div>
       </div>
 
       {/* Not Found Content */}
@@ -127,8 +110,8 @@ function BlogNotFound() {
 function BlogDetailSkeleton() {
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
-      {/* Header Skeleton */}
-      <div className="flex flex-col gap-2">
+      {/* Header with Breadcrumb and Actions Skeleton */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         {/* Breadcrumb Skeleton */}
         <div className="flex items-center gap-2">
           <Skeleton className="h-4 w-20" />
@@ -138,96 +121,73 @@ function BlogDetailSkeleton() {
           <Skeleton className="h-4 w-32" />
         </div>
 
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-32" />
-          <div className="flex items-center gap-2">
-            <Skeleton className="h-9 w-28" />
-            <Skeleton className="h-9 w-24" />
-          </div>
+        {/* Action Buttons Skeleton */}
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-9 w-16" />
+          <Skeleton className="h-9 w-20" />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Content Skeleton */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Blog Header Skeleton */}
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-10 w-3/4 mb-4" />
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-5/6 mb-4" />
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1">
-                  <Skeleton className="w-4 h-4" />
-                  <Skeleton className="h-3 w-32" />
-                </div>
-                <div className="flex items-center gap-1">
-                  <Skeleton className="w-4 h-4" />
-                  <Skeleton className="h-3 w-36" />
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 xl:gap-6">
+        {/* Left Side - Images Skeleton */}
+        <div className="lg:col-span-7 xl:col-span-6">
+          <div className="space-y-4">
+            {/* Main Image Skeleton */}
+            <Skeleton className="w-full h-[400px] lg:h-[500px] rounded-lg" />
 
-          {/* Images Skeleton */}
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-16" />
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Array.from({ length: 4 }).map((_, index) => (
-                  <Skeleton
-                    key={index}
-                    className="w-full h-[200px] rounded-lg"
-                  />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Tags Skeleton */}
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-12" />
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {Array.from({ length: 3 }).map((_, index) => (
-                  <Skeleton key={index} className="h-6 w-16" />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+            {/* Additional Images Skeleton */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <Skeleton key={index} className="w-full h-[120px] rounded-md" />
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* Sidebar Skeleton */}
-        <div className="space-y-6">
-          {/* Blog Info Skeleton */}
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-32" />
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <div key={index}>
-                  <Skeleton className="h-4 w-20 mb-2" />
-                  <Skeleton className="h-4 w-32" />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+        {/* Right Side - Blog Information Skeleton */}
+        <div className="lg:col-span-5 xl:col-span-6">
+          <div className="border rounded-lg p-6 h-fit">
+            {/* Header Skeleton */}
+            <div className="pb-6 border-b border-gray-200 dark:border-gray-700">
+              <Skeleton className="h-8 w-3/4 mb-2" />
+              <Skeleton className="h-4 w-full mb-2" />
+              <Skeleton className="h-4 w-5/6 mb-4" />
+              <Skeleton className="h-6 w-20" />
+            </div>
 
-          {/* Actions Skeleton */}
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-16" />
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-            </CardContent>
-          </Card>
+            {/* Content Skeleton */}
+            <div className="pt-6 space-y-6">
+              {/* Publication Details Skeleton */}
+              <div>
+                <Skeleton className="h-4 w-32 mb-3" />
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="w-4 h-4" />
+                    <Skeleton className="h-3 w-40" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="w-4 h-4" />
+                    <Skeleton className="h-3 w-36" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Tags Skeleton */}
+              <div>
+                <Skeleton className="h-4 w-16 mb-3" />
+                <div className="flex flex-wrap gap-2">
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <Skeleton key={index} className="h-6 w-16" />
+                  ))}
+                </div>
+              </div>
+
+              {/* Meta Information Skeleton */}
+              <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+                <Skeleton className="h-3 w-32" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -275,10 +235,6 @@ export default function BlogDetailPage() {
     if (blogId) fetchBlog();
   }, [blogId]);
 
-  const openDeleteDialog = () => {
-    setIsDeleteDialogOpen(true);
-  };
-
   const handleDeleteBlog = async () => {
     if (!blog) return;
 
@@ -318,7 +274,8 @@ export default function BlogDetailPage() {
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
-      <div className="flex flex-col gap-2">
+      {/* Header with Breadcrumb and Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <BreadcrumbNav
           customItems={[
             { label: "Dashboard", href: "/staff/dashboard" },
@@ -327,248 +284,230 @@ export default function BlogDetailPage() {
           ]}
         />
 
-        <div className="flex items-center justify-between">
-          <TypographyH2>Blog Details</TypographyH2>
-          <div className="flex items-center gap-2">
-            <Link href="/staff/blogs">
-              <Button variant="outline" size="sm">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Blogs
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push(`/staff/blogs/${blog.id}/edit`)}
+            className="flex items-center gap-2"
+          >
+            <Edit className="h-4 w-4" />
+            Edit
+          </Button>
+
+          {/* Delete Dialog */}
+          <Dialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+          >
+            <DialogTrigger asChild>
+              <Button
+                variant="destructive"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete
               </Button>
-            </Link>
-            <Link href={`/staff/blogs/${blog.id}/edit`}>
-              <Button size="sm">
-                <Edit className="mr-2 h-4 w-4" />
-                Edit Blog
-              </Button>
-            </Link>
-          </div>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Confirm Deletion</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to delete this blog? This action cannot
+                  be undone.
+                </DialogDescription>
+              </DialogHeader>
+
+              {/* Blog Preview in Dialog */}
+              <div className="p-4 border rounded-md bg-gray-50 dark:bg-gray-800 overflow-y-auto">
+                <div className="flex items-center gap-3">
+                  <Image
+                    src={
+                      blog.blog_images?.[0]?.image_url ||
+                      "/placeholder.svg?height=48&width=48"
+                    }
+                    alt={blog.title}
+                    width={48}
+                    height={48}
+                    className="rounded-md object-cover flex-shrink-0"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                      {blog.title}
+                    </p>
+                    {blog.description && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {blog.description}
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-500 dark:text-gray-500">
+                      Created: {formatDate(blog.created_at)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsDeleteDialogOpen(false)}
+                  disabled={isDeleting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteBlog}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? "Deleting..." : "Delete Blog"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Blog Header */}
-          <Card>
-            <CardHeader>
-              <TypographyH2>{blog.title}</TypographyH2>
-              {blog.description && (
-                <TypographyP className="text-lg text-muted-foreground mt-2">
-                  {blog.description}
-                </TypographyP>
-              )}
-              <div className="flex items-center gap-4 mt-4">
-                <TypographySmall className="flex items-center gap-1 text-muted-foreground">
-                  <Calendar className="w-4 h-4" />
-                  Created: {formatDate(blog.created_at)}
-                </TypographySmall>
-                {blog.updated_at !== blog.created_at && (
-                  <TypographySmall className="flex items-center gap-1 text-muted-foreground">
-                    <Calendar className="w-4 h-4" />
-                    Updated: {formatDate(blog.updated_at)}
-                  </TypographySmall>
-                )}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 xl:gap-6">
+        {/* Left Side - Images */}
+        <div className="lg:col-span-7 xl:col-span-6">
+          {blog.blog_images && blog.blog_images.length > 0 ? (
+            <div className="space-y-4">
+              {/* Main Image */}
+              <div className="w-full">
+                <Image
+                  src={blog.blog_images[0]?.image_url || "/placeholder.svg"}
+                  alt={`${blog.title} - Main Image`}
+                  width={800}
+                  height={600}
+                  className="w-full h-[400px] lg:h-[500px] rounded-lg object-cover"
+                />
               </div>
-            </CardHeader>
-          </Card>
 
-          {/* Blog Images */}
-          {blog.blog_images && blog.blog_images.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Images</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {blog.blog_images.map((image, index) => (
+              {/* Additional Images */}
+              {blog.blog_images.length > 1 && (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  {blog.blog_images.slice(1).map((image, index) => (
                     <Image
-                      key={index}
+                      key={index + 1}
                       src={image.image_url || "/placeholder.svg"}
-                      alt={`${blog.title} - Image ${index + 1}`}
-                      width={400}
-                      height={300}
-                      className="w-full h-auto rounded-lg object-cover"
+                      alt={`${blog.title} - Image ${index + 2}`}
+                      width={200}
+                      height={150}
+                      className="w-full h-[120px] rounded-md object-cover"
                     />
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {blog.blog_tags && blog.blog_tags.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Tags</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {blog.blog_tags
-                    .flatMap((blogTag) => blogTag.tags)
-                    .map((tag) => (
-                      <Badge
-                        key={tag.id}
-                        variant="secondary"
-                        className="text-sm"
-                      >
-                        {tag.name}
-                      </Badge>
-                    ))}
-                </div>
-              </CardContent>
-            </Card>
+              )}
+            </div>
+          ) : (
+            <div className="w-full h-[400px] lg:h-[500px] rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+              <div className="text-center">
+                <FileText className="w-16 h-16 text-gray-400 mx-auto mb-2" />
+                <TypographyP className="text-muted-foreground">
+                  No images available
+                </TypographyP>
+              </div>
+            </div>
           )}
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Blog Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Blog Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <TypographySmall className="font-medium text-muted-foreground">
-                  Blog ID
-                </TypographySmall>
-                <TypographyInlineCode>#{blog.id}</TypographyInlineCode>
-              </div>
-
-              <div>
-                <TypographySmall className="font-medium text-muted-foreground">
-                  Status
-                </TypographySmall>
-                <TypographyP>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                    Published
-                  </span>
+        {/* Right Side - Blog Information */}
+        <div className="lg:col-span-5 xl:col-span-6">
+          <div className="border rounded-lg p-6 h-fit">
+            {/* Blog Header */}
+            <div className="pb-6 border-b border-gray-200 dark:border-gray-700">
+              <TypographyH2 className="mb-2">{blog.title}</TypographyH2>
+              {blog.description && (
+                <TypographyP className="text-muted-foreground mb-4">
+                  {blog.description}
                 </TypographyP>
-              </div>
+              )}
 
+              {/* Status Badge */}
+              <div className="flex items-center gap-2 mb-4">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                  Published
+                </span>
+              </div>
+            </div>
+
+            {/* Blog Details */}
+            <div className="pt-6 space-y-6">
+              {/* Dates */}
               <div>
-                <TypographySmall className="font-medium text-muted-foreground">
-                  Created
+                <TypographySmall className="font-medium text-muted-foreground mb-3">
+                  Publication Details
                 </TypographySmall>
-                <TypographyP>{formatDate(blog.created_at)}</TypographyP>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                    <TypographySmall>
+                      Created: {formatDate(blog.created_at)}
+                    </TypographySmall>
+                  </div>
+                  {blog.updated_at !== blog.created_at && (
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-muted-foreground" />
+                      <TypographySmall>
+                        Updated: {formatDate(blog.updated_at)}
+                      </TypographySmall>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {blog.updated_at !== blog.created_at && (
+              {/* Tags */}
+              {blog.blog_tags && blog.blog_tags.length > 0 && (
                 <div>
-                  <TypographySmall className="font-medium text-muted-foreground">
-                    Last Updated
+                  <TypographySmall className="font-medium text-muted-foreground mb-3">
+                    Tags
                   </TypographySmall>
-                  <TypographyP>{formatDate(blog.updated_at)}</TypographyP>
+                  <div className="flex flex-wrap gap-2">
+                    {blog.blog_tags
+                      .flatMap((blogTag) => blogTag.tags)
+                      .map((tag) => (
+                        <Badge
+                          key={tag.id}
+                          variant="secondary"
+                          className="text-sm"
+                        >
+                          {tag.name}
+                        </Badge>
+                      ))}
+                  </div>
                 </div>
               )}
 
+              {/* External Link */}
               {blog.external_link && (
                 <div>
-                  <TypographySmall className="font-medium text-muted-foreground">
+                  <TypographySmall className="font-medium text-muted-foreground mb-3">
                     External Link
                   </TypographySmall>
                   <a
                     href={blog.external_link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline mt-1"
+                    className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline"
                   >
                     <ExternalLink className="w-4 h-4" />
-                    View Link
+                    <TypographySmall>View External Link</TypographySmall>
                   </a>
                 </div>
               )}
-            </CardContent>
-          </Card>
 
-          {/* Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button
-                className="w-full"
-                variant="default"
-                onClick={() => router.push(`/staff/blogs/${blog.id}/edit`)}
-              >
-                <Edit className="mr-2 h-4 w-4" />
-                Edit Blog
-              </Button>
-
-              {/* Delete Dialog */}
-              <Dialog
-                open={isDeleteDialogOpen}
-                onOpenChange={setIsDeleteDialogOpen}
-              >
-                <DialogTrigger asChild>
-                  <Button
-                    className="w-full"
-                    variant="destructive"
-                    onClick={openDeleteDialog}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete Blog
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Confirm Deletion</DialogTitle>
-                    <DialogDescription>
-                      Are you sure you want to delete this blog? This action
-                      cannot be undone.
-                    </DialogDescription>
-                  </DialogHeader>
-
-                  {/* Blog Preview in Dialog */}
-                  <div className="p-4 border rounded-md bg-gray-50 dark:bg-gray-800 overflow-y-auto">
-                    <div className="flex items-center gap-3">
-                      <Image
-                        src={
-                          blog.blog_images?.[0]?.image_url ||
-                          "/placeholder.svg?height=48&width=48"
-                        }
-                        alt={blog.title}
-                        width={48}
-                        height={48}
-                        className="rounded-md object-cover flex-shrink-0"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-gray-900 dark:text-gray-100">
-                          {blog.title}
-                        </p>
-                        {blog.description && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {blog.description}
-                          </p>
-                        )}
-                        <p className="text-xs text-gray-500 dark:text-gray-500">
-                          Created: {formatDate(blog.created_at)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <DialogFooter>
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsDeleteDialogOpen(false)}
-                      disabled={isDeleting}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={handleDeleteBlog}
-                      disabled={isDeleting}
-                    >
-                      {isDeleting ? "Deleting..." : "Delete Blog"}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </CardContent>
-          </Card>
+              {/* Meta Information */}
+              <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+                <TypographySmall className="text-muted-foreground">
+                  Blog ID:{" "}
+                  <TypographyInlineCode>#{blog.id}</TypographyInlineCode>
+                </TypographySmall>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
