@@ -87,12 +87,15 @@ const Header = () => {
       <header className="fixed top-0 left-0 w-full bg-white dark:bg-gray-900 shadow-md border-b z-50 dark:border-gray-800">
         <div className="container mx-auto flex items-center justify-between p-4 flex-nowrap">
           <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-3 text-xl font-bold dark:text-white hover:opacity-80 transition-opacity">
-              <Image 
-                src="/favicon.svg" 
-                alt="YTL Concrete Hub Logo" 
-                width={40} 
-                height={40} 
+            <Link
+              href="/"
+              className="flex items-center gap-3 text-xl font-bold dark:text-white hover:opacity-80 transition-opacity"
+            >
+              <Image
+                src="/favicon.svg"
+                alt="YTL Concrete Hub Logo"
+                width={40}
+                height={40}
                 className="flex-shrink-0"
               />
               <span className="hidden sm:block">YTL Concrete Hub</span>
