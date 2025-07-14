@@ -9,7 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui";
-import { TypographyH3, TypographyP, TypographyInlineCode } from "@/components/ui/Typography";
+import {
+  TypographyH3,
+  TypographyP,
+  TypographyInlineCode,
+} from "@/components/ui/Typography";
 import { Calendar } from "lucide-react";
 import { formatDate } from "@/lib/format";
 import type { Product } from "@/type/product";

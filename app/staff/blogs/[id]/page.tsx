@@ -28,6 +28,11 @@ import {
   Badge,
   Skeleton,
 } from "@/components/ui";
+import {
+  TypographyH1,
+  TypographyH2,
+  TypographyP,
+} from "@/components/ui/Typography";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -51,7 +56,7 @@ function BlogNotFound() {
         />
 
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Blog Not Found</h1>
+          <TypographyH1>Blog Not Found</TypographyH1>
           <div className="flex items-center gap-2">
             <Link href="/staff/blogs">
               <Button variant="outline" size="sm">
@@ -69,18 +74,16 @@ function BlogNotFound() {
           <FileText className="w-12 h-12 text-gray-400" />
         </div>
 
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-          Blog Not Found
-        </h2>
+        <TypographyH2 className="mb-2">Blog Not Found</TypographyH2>
 
-        <p className="text-gray-500 dark:text-gray-400 text-center mb-2 max-w-md">
+        <TypographyP className="text-muted-foreground text-center mb-2 max-w-md">
           The blog post you&apos;re looking for doesn&apos;t exist or may have
           been removed.
-        </p>
+        </TypographyP>
 
-        <p className="text-sm text-gray-400 dark:text-gray-500 text-center mb-8 max-w-md">
+        <TypographyP className="text-sm text-muted-foreground text-center mb-8 max-w-md">
           Please check the URL or try searching for the blog post again.
-        </p>
+        </TypographyP>
 
         <div className="flex flex-col sm:flex-row items-center gap-3">
           <Button
@@ -102,9 +105,9 @@ function BlogNotFound() {
         </div>
 
         <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 w-full max-w-md">
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-4">
+          <TypographyP className="text-center text-sm text-muted-foreground mb-4">
             Need to create a new blog post?
-          </p>
+          </TypographyP>
           <Button
             variant="default"
             onClick={() => router.push("/staff/blogs/new")}
@@ -350,9 +353,9 @@ export default function BlogDetailPage() {
             <CardHeader>
               <CardTitle className="text-3xl">{blog.title}</CardTitle>
               {blog.description && (
-                <p className="text-lg text-gray-600 dark:text-gray-400 mt-2">
+                <TypographyP className="text-lg text-muted-foreground mt-2">
                   {blog.description}
-                </p>
+                </TypographyP>
               )}
               <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mt-4">
                 <div className="flex items-center gap-1">

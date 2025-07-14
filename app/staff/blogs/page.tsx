@@ -45,6 +45,11 @@ import {
   DialogTrigger,
   Badge,
 } from "@/components/ui/";
+import {
+  TypographyH2,
+  TypographyH3,
+  TypographyP,
+} from "@/components/ui/Typography";
 import Image from "next/image";
 import { Blog } from "@/type/blogs";
 
@@ -114,13 +119,11 @@ function EmptyBlogsState() {
       <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
         <BookOpen className="w-12 h-12 text-gray-400" />
       </div>
-      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-        No blogs found
-      </h3>
-      <p className="text-gray-500 dark:text-gray-400 text-center mb-6 max-w-sm">
+      <TypographyH3 className="mb-2">No blogs found</TypographyH3>
+      <TypographyP className="text-muted-foreground text-center mb-6 max-w-sm">
         Get started by creating your first blog post to share insights and
         engage with your audience.
-      </p>
+      </TypographyP>
       <Link href="/staff/blogs/new">
         <Button className="flex items-center gap-2">
           <Plus className="w-4 h-4" />
@@ -137,13 +140,11 @@ function NoResultsState({ onClearFilters }: { onClearFilters: () => void }) {
       <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
         <Search className="w-12 h-12 text-gray-400" />
       </div>
-      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-        No matching blogs
-      </h3>
-      <p className="text-gray-500 dark:text-gray-400 text-center mb-6 max-w-sm">
+      <TypographyH3 className="mb-2">No matching blogs</TypographyH3>
+      <TypographyP className="text-muted-foreground text-center mb-6 max-w-sm">
         No blogs match your current search criteria. Try adjusting your filters
         or search terms.
-      </p>
+      </TypographyP>
       <div className="flex items-center gap-2">
         <Button variant="outline" onClick={onClearFilters}>
           Clear Filters
@@ -352,7 +353,7 @@ export default function Page() {
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Blogs</h1>
+        <TypographyH2>Blogs</TypographyH2>
         <div className="flex items-center gap-2">
           <Link href="/staff/blogs/new">
             <Button size="sm">
