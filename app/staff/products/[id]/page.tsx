@@ -176,13 +176,19 @@ function ProductNotFound({ isStaffView }: { isStaffView: boolean }) {
     <div className="flex flex-col gap-6 w-full max-w-full">
       {/* Header with Breadcrumb */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <span>{isStaffView ? "Dashboard" : "Home"}</span>
-          <span>/</span>
-          <span>Products</span>
-          <span>/</span>
-          <span>Not Found</span>
-        </div>
+        <BreadcrumbNav
+          customItems={[
+            {
+              label: isStaffView ? "Dashboard" : "Home",
+              href: isStaffView ? "/staff/dashboard" : "/",
+            },
+            {
+              label: "Products",
+              href: isStaffView ? "/staff/products" : "/products",
+            },
+            { label: "Not Found" },
+          ]}
+        />
       </div>
 
       {/* Not Found Content */}
