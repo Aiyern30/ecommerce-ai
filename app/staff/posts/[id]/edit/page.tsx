@@ -45,6 +45,11 @@ import {
   SelectValue,
   Skeleton,
 } from "@/components/ui/";
+import {
+  TypographyH2,
+  TypographyH3,
+  TypographyP,
+} from "@/components/ui/Typography";
 import Image from "next/image";
 import { toast } from "sonner";
 import { Post } from "@/type/posts";
@@ -212,7 +217,9 @@ function PostNotFound() {
         </div>
 
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Post Not Found</h1>
+          <TypographyH2 className="border-none pb-0">
+            Post Not Found
+          </TypographyH2>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -232,18 +239,16 @@ function PostNotFound() {
           <FileText className="w-12 h-12 text-gray-400" />
         </div>
 
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-          Post Not Found
-        </h2>
+        <TypographyH3 className="mb-2">Post Not Found</TypographyH3>
 
-        <p className="text-gray-500 dark:text-gray-400 text-center mb-2 max-w-md">
+        <TypographyP className="text-muted-foreground text-center mb-2 max-w-md">
           The post you&apos;re trying to edit doesn&apos;t exist or may have
           been removed.
-        </p>
+        </TypographyP>
 
-        <p className="text-sm text-gray-400 dark:text-gray-500 text-center mb-8 max-w-md">
+        <TypographyP className="text-sm text-muted-foreground text-center mb-8 max-w-md">
           Please check the URL or try searching for the post again.
-        </p>
+        </TypographyP>
 
         <div className="flex flex-col sm:flex-row items-center gap-3">
           <Button
@@ -265,9 +270,9 @@ function PostNotFound() {
         </div>
 
         <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 w-full max-w-md">
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-4">
+          <TypographyP className="text-center text-sm text-muted-foreground mb-4">
             Need to create a new post?
-          </p>
+          </TypographyP>
           <Button
             variant="default"
             onClick={() => router.push("/staff/posts/new")}
@@ -544,7 +549,7 @@ export default function EditPostPage() {
         </Breadcrumb>
 
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Edit Post</h1>
+          <TypographyH2 className="border-none pb-0">Edit Post</TypographyH2>
           <div className="flex items-center gap-2">
             <Link href={`/staff/posts/${post.id}`}>
               <Button variant="outline" size="sm">

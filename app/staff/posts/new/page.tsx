@@ -37,6 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/";
+import { TypographyH2 } from "@/components/ui/Typography";
 import Image from "next/image";
 import { toast } from "sonner";
 
@@ -221,7 +222,9 @@ export default function NewPostPage() {
         </Breadcrumb>
 
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Create New Post</h1>
+          <TypographyH2 className="border-none pb-0">
+            Create New Post
+          </TypographyH2>
           <div className="flex items-center gap-2">
             <Link href="/staff/posts">
               <Button variant="outline" size="sm">
