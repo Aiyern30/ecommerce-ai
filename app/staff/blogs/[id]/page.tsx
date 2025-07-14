@@ -28,6 +28,7 @@ import {
   TypographyP,
   TypographySmall,
   TypographyInlineCode,
+  TypographyH1,
 } from "@/components/ui/Typography";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
@@ -58,7 +59,7 @@ function BlogNotFound() {
           <FileText className="w-12 h-12 text-gray-400" />
         </div>
 
-        <TypographyH2 className="mb-2">Blog Not Found</TypographyH2>
+        <TypographyH1 className="mb-2">Blog Not Found</TypographyH1>
 
         <TypographyP className="text-muted-foreground text-center mb-2 max-w-md">
           The blog post you&apos;re looking for doesn&apos;t exist or may have

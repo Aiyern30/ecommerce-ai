@@ -19,11 +19,6 @@ import { supabase } from "@/lib/supabase";
 import * as z from "zod";
 import {
   Button,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
   Card,
   CardContent,
   CardDescription,
@@ -45,6 +40,7 @@ import {
   SelectValue,
   Skeleton,
 } from "@/components/ui/";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import {
   TypographyH2,
   TypographyH3,
@@ -206,15 +202,14 @@ function PostNotFound() {
     <div className="flex flex-col gap-6 w-full max-w-full">
       {/* Header with Breadcrumb */}
       <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <span>Dashboard</span>
-          <span>/</span>
-          <span>Posts</span>
-          <span>/</span>
-          <span>Not Found</span>
-          <span>/</span>
-          <span>Edit</span>
-        </div>
+        <BreadcrumbNav
+          customItems={[
+            { label: "Dashboard", href: "/staff/dashboard" },
+            { label: "Posts", href: "/staff/posts" },
+            { label: "Not Found" },
+            { label: "Edit" },
+          ]}
+        />
 
         <div className="flex items-center justify-between">
           <TypographyH2 className="border-none pb-0">
@@ -526,27 +521,14 @@ export default function EditPostPage() {
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex flex-col gap-2">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/staff/dashboard">Dashboard</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/staff/posts">Posts</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href={`/staff/posts/${post.id}`}>
-                {post.title}
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink>Edit</BreadcrumbLink>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <BreadcrumbNav
+          customItems={[
+            { label: "Dashboard", href: "/staff/dashboard" },
+            { label: "Posts", href: "/staff/posts" },
+            { label: post.title, href: `/staff/posts/${post.id}` },
+            { label: "Edit" },
+          ]}
+        />
 
         <div className="flex items-center justify-between">
           <TypographyH2 className="border-none pb-0">Edit Post</TypographyH2>
