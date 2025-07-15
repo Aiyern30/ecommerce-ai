@@ -413,32 +413,75 @@ export default function PrivacyPolicy() {
               </div>
             </div>
 
-            <Separator className="my-6" />
+            <Separator className="my-8" />
 
-            {/* Footer */}
-            <div className="text-center space-y-4">
-              <TypographySmall>Last updated: July 15, 2025</TypographySmall>
-              <div className="flex gap-3 justify-center flex-wrap sm:gap-4">
-                <Button
-                  variant="outline"
-                  onClick={() => router.back()}
-                  className="min-w-[100px]"
-                >
-                  Go Back
-                </Button>
-                <Button
-                  onClick={() => router.push("/")}
-                  className="min-w-[120px]"
-                >
-                  Return to Home
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => router.push("/terms")}
-                  className="min-w-[140px]"
-                >
-                  View Terms & Conditions
-                </Button>
+            {/* Enhanced Footer */}
+            <div className="bg-gradient-to-r from-muted/50 to-muted/80 p-6 rounded-lg border">
+              <div className="text-center space-y-6">
+                {/* Last Updated Info */}
+                <div className="flex items-center justify-center gap-2">
+                  <Shield className="h-4 w-4 text-muted-foreground" />
+                  <TypographySmall className="text-muted-foreground">
+                    Last updated: July 15, 2025
+                  </TypographySmall>
+                </div>
+                
+                {/* Call to Action */}
+                <div className="space-y-2">
+                  <TypographyP className="font-medium">
+                    Questions about your privacy and data protection?
+                  </TypographyP>
+                  <TypographyMuted>
+                    Your privacy matters to us. Contact us for any privacy-related concerns.
+                  </TypographyMuted>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl mx-auto">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => router.back()}
+                    className="w-full"
+                  >
+                    Go Back
+                  </Button>
+                  <Button 
+                    onClick={() => router.push("/")}
+                    className="w-full"
+                  >
+                    Return to Home
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => router.push("/terms")}
+                    className="w-full"
+                  >
+                    Terms & Conditions
+                  </Button>
+                </div>
+
+                {/* Privacy-Specific Links */}
+                <div className="pt-4 border-t border-border/50">
+                  <div className="flex flex-wrap justify-center gap-4 text-sm">
+                    <a 
+                      href="mailto:privacy@ytlconcretehub.com" 
+                      className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
+                    >
+                      🛡️ Privacy Officer
+                    </a>
+                    <span className="text-muted-foreground/50">•</span>
+                    <a 
+                      href="mailto:dpo@ytlconcretehub.com" 
+                      className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
+                    >
+                      📋 Data Protection
+                    </a>
+                    <span className="text-muted-foreground/50">•</span>
+                    <span className="text-muted-foreground">
+                      🔒 GDPR Compliant
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </CardContent>
