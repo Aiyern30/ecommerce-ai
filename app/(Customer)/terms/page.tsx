@@ -268,21 +268,47 @@ export default function TermsAndConditions() {
             <Separator />
 
             {/* Section 11 */}
-            <div>
-              <h3 className="text-lg font-semibold mb-3">11. Contact Us</h3>
-              <p className="mb-4">
-                If you have any questions or concerns about these Terms, please
-                contact us at:
-              </p>
-              <div className="bg-muted p-4 rounded-lg space-y-2">
-                <p className="flex items-center gap-2">
-                  📧 <strong>Email:</strong> support@ytlconcretehub.com
-                </p>
-                <p className="flex items-center gap-2">
-                  📍 <strong>Address:</strong> Level 15, 205, Jln Bukit Bintang,
-                  Bukit Bintang, 55100 Kuala Lumpur, Federal Territory of Kuala
-                  Lumpur
-                </p>
+            <div className="bg-muted p-4 rounded-lg">
+              <div className="space-y-3">
+                <div className="flex items-start gap-2">
+                  <span className="text-lg">📧</span>
+                  <div className="min-w-0 flex-1">
+                    <strong>Privacy Email:</strong>
+                    <br />
+                    <a
+                      href="mailto:privacy@ytlconcretehub.com"
+                      className="text-primary hover:underline break-all"
+                    >
+                      privacy@ytlconcretehub.com
+                    </a>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <span className="text-lg">📧</span>
+                  <div className="min-w-0 flex-1">
+                    <strong>General Support:</strong>
+                    <br />
+                    <a
+                      href="mailto:support@ytlconcretehub.com"
+                      className="text-primary hover:underline break-all"
+                    >
+                      support@ytlconcretehub.com
+                    </a>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <span className="text-lg">📍</span>
+                  <div className="min-w-0 flex-1">
+                    <strong>Address:</strong>
+                    <br />
+                    <address className="not-italic text-muted-foreground mt-1 leading-relaxed">
+                      Level 15, 205, Jln Bukit Bintang, Bukit Bintang, 55100
+                      Kuala Lumpur, Federal Territory Malaysia
+                    </address>
+                  </div>
+                </div>
               </div>
             </div>
 

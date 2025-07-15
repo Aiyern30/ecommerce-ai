@@ -404,13 +404,8 @@ export default function PrivacyPolicy() {
                       <strong>Address:</strong>
                       <br />
                       <address className="not-italic text-muted-foreground mt-1 leading-relaxed">
-                        Level 15, 205, Jln Bukit Bintang,
-                        <br />
-                        Bukit Bintang, 55100
-                        <br />
-                        Kuala Lumpur, Federal Territory
-                        <br />
-                        Malaysia
+                        Level 15, 205, Jln Bukit Bintang, Bukit Bintang, 55100
+                        Kuala Lumpur, Federal Territory Malaysia
                       </address>
                     </div>
                   </div>
