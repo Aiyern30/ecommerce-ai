@@ -425,30 +425,28 @@ export default function PrivacyPolicy() {
                     Last updated: July 15, 2025
                   </TypographySmall>
                 </div>
-                
+
                 {/* Call to Action */}
                 <div className="space-y-2">
                   <TypographyP className="font-medium">
                     Questions about your privacy and data protection?
                   </TypographyP>
                   <TypographyMuted>
-                    Your privacy matters to us. Contact us for any privacy-related concerns.
+                    Your privacy matters to us. Contact us for any
+                    privacy-related concerns.
                   </TypographyMuted>
                 </div>
 
                 {/* Action Buttons */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl mx-auto">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => router.back()}
                     className="w-full"
                   >
                     Go Back
                   </Button>
-                  <Button 
-                    onClick={() => router.push("/")}
-                    className="w-full"
-                  >
+                  <Button onClick={() => router.push("/")} className="w-full">
                     Return to Home
                   </Button>
                   <Button
@@ -463,15 +461,15 @@ export default function PrivacyPolicy() {
                 {/* Privacy-Specific Links */}
                 <div className="pt-4 border-t border-border/50">
                   <div className="flex flex-wrap justify-center gap-4 text-sm">
-                    <a 
-                      href="mailto:privacy@ytlconcretehub.com" 
+                    <a
+                      href="mailto:privacy@ytlconcretehub.com"
                       className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
                     >
                       🛡️ Privacy Officer
                     </a>
                     <span className="text-muted-foreground/50">•</span>
-                    <a 
-                      href="mailto:dpo@ytlconcretehub.com" 
+                    <a
+                      href="mailto:dpo@ytlconcretehub.com"
                       className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
                     >
                       📋 Data Protection
