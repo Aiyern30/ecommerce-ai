@@ -4,6 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/";
 import { Separator } from "@/components/ui/";
 import { Badge } from "@/components/ui/";
 import { Button } from "@/components/ui/";
+import {
+  TypographyH1,
+  TypographyH3,
+  TypographyP,
+  TypographyList,
+  TypographyListItem,
+  TypographyLead,
+  TypographyMuted,
+  TypographySmall,
+} from "@/components/ui/Typography";
 import { useRouter } from "next/navigation";
 import { FileText, AlertTriangle } from "lucide-react";
 
@@ -16,16 +26,16 @@ export default function TermsAndConditions() {
       <div className="text-center mb-8">
         <div className="flex items-center justify-center gap-2 mb-4">
           <FileText className="h-8 w-8 text-primary" />
-          <h1 className="text-4xl font-bold">Terms & Conditions</h1>
+          <TypographyH1>Terms & Conditions</TypographyH1>
         </div>
-        <Badge variant="outline" className="mb-4">
-          Effective Date: July 15, 2025
-        </Badge>
-        <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+        <TypographyLead>
           Welcome to YTL Concrete Hub. These Terms & Conditions govern your use
           of our website and AI-powered services. By accessing our platform, you
           agree to these terms.
-        </p>
+        </TypographyLead>
+        <div className="flex gap-2 justify-center mt-4">
+          <Badge variant="outline">Effective Date: July 15, 2025</Badge>
+        </div>
       </div>
 
       <div className="max-w-4xl mx-auto">
@@ -36,73 +46,79 @@ export default function TermsAndConditions() {
           <CardContent className="space-y-6">
             {/* Section 1 */}
             <div>
-              <h3 className="text-lg font-semibold mb-3">1. About Us</h3>
-              <p className="text-muted-foreground">
+              <TypographyH3 className="mb-3">1. About Us</TypographyH3>
+              <TypographyP>
                 YTL Concrete Hub is an online platform operated by YTL that
                 enables users to discover, compare, and purchase concrete
                 products using advanced AI tools including image search, smart
                 product comparison, and chatbot assistance.
-              </p>
+              </TypographyP>
             </div>
 
             <Separator />
 
             {/* Section 2 */}
             <div>
-              <h3 className="text-lg font-semibold mb-3">2. Eligibility</h3>
-              <p className="text-muted-foreground">
+              <TypographyH3 className="mb-3">2. Eligibility</TypographyH3>
+              <TypographyP>
                 You must be at least 18 years old, or legally capable of
                 entering into binding contracts under applicable laws, to use
                 our Services.
-              </p>
+              </TypographyP>
             </div>
 
             <Separator />
 
             {/* Section 3 */}
             <div>
-              <h3 className="text-lg font-semibold mb-3">
+              <TypographyH3 className="mb-3">
                 3. User Content & Image Uploads
-              </h3>
+              </TypographyH3>
               <div className="space-y-4">
-                <p className="text-muted-foreground">
+                <TypographyP>
                   You may upload images and other content to use features like
                   AI product search.
-                </p>
+                </TypographyP>
 
                 <div className="bg-muted p-4 rounded-lg">
-                  <p className="font-medium mb-2">
+                  <TypographyP className="font-medium mb-2">
                     By uploading content, you grant YTL Concrete Hub:
-                  </p>
-                  <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
-                    <li>A worldwide, non-exclusive, royalty-free license</li>
-                    <li>
+                  </TypographyP>
+                  <TypographyList>
+                    <TypographyListItem>
+                      A worldwide, non-exclusive, royalty-free license
+                    </TypographyListItem>
+                    <TypographyListItem>
                       Rights to store, process, analyze, and display content
-                    </li>
-                    <li>Usage solely to provide and improve our Services</li>
-                  </ul>
+                    </TypographyListItem>
+                    <TypographyListItem>
+                      Usage solely to provide and improve our Services
+                    </TypographyListItem>
+                  </TypographyList>
                 </div>
 
                 <div>
-                  <p className="font-medium mb-2">Your responsibilities:</p>
-                  <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
-                    <li>
+                  <TypographyP className="font-medium mb-2">
+                    Your responsibilities:
+                  </TypographyP>
+                  <TypographyList>
+                    <TypographyListItem>
                       You represent that you own or have rights to any content
                       you upload
-                    </li>
-                    <li>
+                    </TypographyListItem>
+                    <TypographyListItem>
                       You must not upload images that are unlawful or infringe
                       intellectual property
-                    </li>
-                    <li>
+                    </TypographyListItem>
+                    <TypographyListItem>
                       Content must not contain harmful or offensive material
-                    </li>
-                  </ul>
+                    </TypographyListItem>
+                  </TypographyList>
                 </div>
 
-                <p className="text-sm text-muted-foreground">
+                <TypographyMuted>
                   We may remove any content that violates these Terms.
-                </p>
+                </TypographyMuted>
               </div>
             </div>
 
@@ -110,36 +126,36 @@ export default function TermsAndConditions() {
 
             {/* Section 4 */}
             <div>
-              <h3 className="text-lg font-semibold mb-3">
+              <TypographyH3 className="mb-3">
                 4. AI Tools & Limitations
-              </h3>
+              </TypographyH3>
               <div className="space-y-4">
-                <p className="text-muted-foreground">
+                <TypographyP>
                   Our AI-based features (including image product search, smart
                   comparison, and chatbot) are provided to assist you.
-                </p>
+                </TypographyP>
 
                 <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 dark:bg-yellow-950/20">
                   <div className="flex items-start">
                     <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5 mr-2 flex-shrink-0" />
                     <div>
-                      <p className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">
+                      <TypographyP className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">
                         Important Limitations:
-                      </p>
-                      <ul className="list-disc pl-5 space-y-1 text-yellow-700 dark:text-yellow-300">
-                        <li>
+                      </TypographyP>
+                      <TypographyList className="text-yellow-700 dark:text-yellow-300">
+                        <TypographyListItem>
                           AI may not always produce accurate, complete, or
                           up-to-date results
-                        </li>
-                        <li>
+                        </TypographyListItem>
+                        <TypographyListItem>
                           You should verify product details independently before
                           purchasing
-                        </li>
-                        <li>
+                        </TypographyListItem>
+                        <TypographyListItem>
                           We do not accept liability for decisions made solely
                           based on AI-generated content
-                        </li>
-                      </ul>
+                        </TypographyListItem>
+                      </TypographyList>
                     </div>
                   </div>
                 </div>
@@ -150,65 +166,68 @@ export default function TermsAndConditions() {
 
             {/* Section 5 */}
             <div>
-              <h3 className="text-lg font-semibold mb-3">
+              <TypographyH3 className="mb-3">
                 5. Purchases & Pricing
-              </h3>
-              <ul className="space-y-2 text-muted-foreground">
-                <li>
-                  • Product prices, availability, and specifications may change
+              </TypographyH3>
+              <TypographyList>
+                <TypographyListItem>
+                  Product prices, availability, and specifications may change
                   without notice
-                </li>
-                <li>• Orders are only confirmed upon successful payment</li>
-                <li>
-                  • All purchases are subject to our Shipping & Delivery Policy
+                </TypographyListItem>
+                <TypographyListItem>
+                  Orders are only confirmed upon successful payment
+                </TypographyListItem>
+                <TypographyListItem>
+                  All purchases are subject to our Shipping & Delivery Policy
                   and Refund & Return Policy
-                </li>
-                <li>
-                  • We may limit or cancel quantities purchased per person, per
+                </TypographyListItem>
+                <TypographyListItem>
+                  We may limit or cancel quantities purchased per person, per
                   company, or per order
-                </li>
-              </ul>
+                </TypographyListItem>
+              </TypographyList>
             </div>
 
             <Separator />
 
             {/* Section 6 */}
             <div>
-              <h3 className="text-lg font-semibold mb-3">6. Prohibited Uses</h3>
-              <p className="mb-3">You agree not to:</p>
-              <ul className="space-y-2 text-muted-foreground">
-                <li>• Use the Services for unlawful purposes</li>
-                <li>
-                  • Upload or distribute harmful, offensive, or infringing
-                  content
-                </li>
-                <li>
-                  • Reverse-engineer, decompile, or misuse our AI tools and
+              <TypographyH3 className="mb-3">6. Prohibited Uses</TypographyH3>
+              <TypographyP className="mb-3">You agree not to:</TypographyP>
+              <TypographyList>
+                <TypographyListItem>
+                  Use the Services for unlawful purposes
+                </TypographyListItem>
+                <TypographyListItem>
+                  Upload or distribute harmful, offensive, or infringing content
+                </TypographyListItem>
+                <TypographyListItem>
+                  Reverse-engineer, decompile, or misuse our AI tools and
                   website systems
-                </li>
-                <li>
-                  • Interfere with the operation or security of the Services
-                </li>
-              </ul>
+                </TypographyListItem>
+                <TypographyListItem>
+                  Interfere with the operation or security of the Services
+                </TypographyListItem>
+              </TypographyList>
             </div>
 
             <Separator />
 
             {/* Section 7 */}
             <div>
-              <h3 className="text-lg font-semibold mb-3">
+              <TypographyH3 className="mb-3">
                 7. Intellectual Property
-              </h3>
-              <div className="space-y-3 text-muted-foreground">
-                <p>
+              </TypographyH3>
+              <div className="space-y-3">
+                <TypographyP>
                   All content on YTL Concrete Hub, including AI models, product
                   data, logos, text, graphics, and software, is owned by or
                   licensed to us and is protected by intellectual property laws.
-                </p>
-                <p>
+                </TypographyP>
+                <TypographyP>
                   You may not reproduce, distribute, or modify this content
                   without prior written permission.
-                </p>
+                </TypographyP>
               </div>
             </div>
 
@@ -216,52 +235,56 @@ export default function TermsAndConditions() {
 
             {/* Section 8 */}
             <div>
-              <h3 className="text-lg font-semibold mb-3">
+              <TypographyH3 className="mb-3">
                 8. Limitation of Liability
-              </h3>
-              <p className="mb-3">To the fullest extent permitted by law:</p>
-              <ul className="space-y-2 text-muted-foreground">
-                <li>
-                  • We do not guarantee the accuracy, completeness, or
-                  reliability of AI-generated or website content
-                </li>
-                <li>
-                  • We shall not be liable for any indirect, incidental,
+              </TypographyH3>
+              <TypographyP className="mb-3">
+                To the fullest extent permitted by law:
+              </TypographyP>
+              <TypographyList>
+                <TypographyListItem>
+                  We do not guarantee the accuracy, completeness, or reliability
+                  of AI-generated or website content
+                </TypographyListItem>
+                <TypographyListItem>
+                  We shall not be liable for any indirect, incidental,
                   consequential, or punitive damages arising from your use of
                   the Services
-                </li>
-              </ul>
+                </TypographyListItem>
+              </TypographyList>
             </div>
 
             <Separator />
 
             {/* Section 9 */}
             <div>
-              <h3 className="text-lg font-semibold mb-3">
-                9. Changes to Terms
-              </h3>
-              <ul className="space-y-2 text-muted-foreground">
-                <li>• We may update these Terms from time to time</li>
-                <li>• Material changes will be posted on our website</li>
-                <li>
-                  • Your continued use of the Services after changes means you
+              <TypographyH3 className="mb-3">9. Changes to Terms</TypographyH3>
+              <TypographyList>
+                <TypographyListItem>
+                  We may update these Terms from time to time
+                </TypographyListItem>
+                <TypographyListItem>
+                  Material changes will be posted on our website
+                </TypographyListItem>
+                <TypographyListItem>
+                  Your continued use of the Services after changes means you
                   accept the new Terms
-                </li>
-              </ul>
+                </TypographyListItem>
+              </TypographyList>
             </div>
 
             <Separator />
 
             {/* Section 10 */}
             <div>
-              <h3 className="text-lg font-semibold mb-3">10. Privacy</h3>
-              <div className="space-y-3 text-muted-foreground">
-                <p>Your privacy is important to us.</p>
-                <p>
+              <TypographyH3 className="mb-3">10. Privacy</TypographyH3>
+              <div className="space-y-3">
+                <TypographyP>Your privacy is important to us.</TypographyP>
+                <TypographyP>
                   Please read our Privacy Policy to understand how we collect,
                   use, and protect your data, including uploaded images and chat
                   data.
-                </p>
+                </TypographyP>
               </div>
             </div>
 
@@ -316,9 +339,7 @@ export default function TermsAndConditions() {
 
             {/* Footer */}
             <div className="text-center space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Last updated: July 15, 2025
-              </p>
+              <TypographySmall>Last updated: July 15, 2025</TypographySmall>
               <div className="flex gap-4 justify-center flex-wrap">
                 <Button variant="outline" onClick={() => router.back()}>
                   Go Back
