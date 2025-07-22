@@ -2,6 +2,8 @@
 "use client";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { Card, CardContent } from "@/components/ui/";
+import { Typography } from "@/components/ui/Typography";
 
 const useCases = [
   {
@@ -80,26 +82,34 @@ export function UseCases() {
             viewport={{ once: true, amount: 0.3 }}
             variants={containerVariants}
           >
-            <motion.h2
-              className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 dark:text-white mb-6 lg:mb-8 text-center lg:text-left"
+            <motion.div
               initial={{ opacity: 0, y: -20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              Common Use Cases
-            </motion.h2>
+              <Typography
+                variant="h1"
+                className="text-gray-800 dark:text-white mb-6 lg:mb-8 text-center lg:text-left"
+              >
+                Common Use Cases
+              </Typography>
+            </motion.div>
 
-            <motion.p
-              className="text-gray-600 dark:text-gray-200 mb-8 lg:mb-12 text-base lg:text-lg leading-relaxed text-center lg:text-left"
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              Discover the versatile applications of our premium cement across
-              various construction projects and industries.
-            </motion.p>
+              <Typography
+                variant="lead"
+                className="text-gray-600 dark:text-gray-200 mb-8 lg:mb-12 text-center lg:text-left"
+              >
+                Discover the versatile applications of our premium cement across
+                various construction projects and industries.
+              </Typography>
+            </motion.div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
               {useCases.map((useCase, index) => (
@@ -112,30 +122,38 @@ export function UseCases() {
                   }}
                   className="group"
                 >
-                  <div className="bg-white/80 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl lg:rounded-2xl p-6 lg:p-8 h-full shadow-lg hover:shadow-xl transition-all duration-300 border border-white/20 dark:border-gray-700/50">
-                    <motion.div
-                      className={`text-3xl lg:text-4xl font-bold ${useCase.color} dark:text-blue-400 mb-4`}
-                      initial={{ scale: 0 }}
-                      whileInView={{ scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{
-                        duration: 0.5,
-                        delay: 0.2 + index * 0.1,
-                        type: "spring",
-                        stiffness: 200,
-                      }}
-                    >
-                      {useCase.number}
-                    </motion.div>
+                  <Card className="bg-white/80 dark:bg-gray-800/90 backdrop-blur-sm h-full shadow-lg hover:shadow-xl transition-all duration-300 border border-white/20 dark:border-gray-700/50">
+                    <CardContent className="p-6 lg:p-8">
+                      <motion.div
+                        className={`text-3xl lg:text-4xl font-bold ${useCase.color} dark:text-blue-400 mb-4`}
+                        initial={{ scale: 0 }}
+                        whileInView={{ scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{
+                          duration: 0.5,
+                          delay: 0.2 + index * 0.1,
+                          type: "spring",
+                          stiffness: 200,
+                        }}
+                      >
+                        {useCase.number}
+                      </motion.div>
 
-                    <h3 className="text-xl lg:text-2xl font-bold text-gray-800 dark:text-white mb-3 lg:mb-4 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
-                      {useCase.title}
-                    </h3>
+                      <Typography
+                        variant="h3"
+                        className="text-gray-800 dark:text-white mb-3 lg:mb-4 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300"
+                      >
+                        {useCase.title}
+                      </Typography>
 
-                    <p className="text-sm lg:text-base text-gray-600 dark:text-gray-200 leading-relaxed">
-                      {useCase.description}
-                    </p>
-                  </div>
+                      <Typography
+                        variant="muted"
+                        className="text-gray-600 dark:text-gray-200 leading-relaxed"
+                      >
+                        {useCase.description}
+                      </Typography>
+                    </CardContent>
+                  </Card>
                 </motion.div>
               ))}
             </div>
