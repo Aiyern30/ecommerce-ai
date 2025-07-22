@@ -69,6 +69,7 @@ function ProductTableSkeleton() {
             <TableHead>Unit</TableHead>
             <TableHead>Stock</TableHead>
             <TableHead>Grade</TableHead>
+            <TableHead>Status</TableHead>
             <TableHead>Tags</TableHead>
             <TableHead>Certificates</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -100,6 +101,9 @@ function ProductTableSkeleton() {
               </TableCell>
               <TableCell>
                 <div className="h-4 w-1/3 rounded bg-gray-200 animate-pulse" />
+              </TableCell>
+              <TableCell>
+                <div className="h-4 w-1/4 rounded bg-gray-200 animate-pulse" />
               </TableCell>
               <TableCell>
                 <div className="h-4 w-1/2 rounded bg-gray-200 animate-pulse" />
@@ -181,6 +185,7 @@ export default function ProductsPage() {
     search: "",
     category: "all",
     stockStatus: "all",
+    status: "all",
     sortBy: "name-asc",
     minPrice: "",
     maxPrice: "",
@@ -255,6 +260,7 @@ export default function ProductsPage() {
       search: "",
       category: "all",
       stockStatus: "all",
+      status: "all",
       sortBy: "name-asc",
       minPrice: "",
       maxPrice: "",
@@ -366,6 +372,11 @@ export default function ProductsPage() {
       return false;
     }
 
+    // Filter by status
+    if (filters.status !== "all" && product.status !== filters.status) {
+      return false;
+    }
+
     return true;
   });
 
@@ -465,6 +476,24 @@ export default function ProductsPage() {
               <SelectItem value="all">All Stock</SelectItem>
               <SelectItem value="in-stock">In Stock</SelectItem>
               <SelectItem value="out-of-stock">Out of Stock</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
+            value={filters.status}
+            onValueChange={(value) => {
+              updateFilter(
+                "status",
+                value as "all" | "draft" | "published"
+              );
+            }}
+          >
+            <SelectTrigger className="w-full sm:w-[180px] h-9">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="draft">Draft</SelectItem>
+              <SelectItem value="published">Published</SelectItem>
             </SelectContent>
           </Select>
           <Select
@@ -637,13 +666,13 @@ export default function ProductsPage() {
                 <TableHead className="w-[80px]">Image</TableHead>
                 <TableHead>Product Name</TableHead>
                 <TableHead>Category</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Unit</TableHead>
-                <TableHead>Stock</TableHead>
-                <TableHead>Grade</TableHead>
-                <TableHead>Tags</TableHead>
-                <TableHead>Certificates</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>Price</TableHead>            <TableHead>Unit</TableHead>
+            <TableHead>Stock</TableHead>
+            <TableHead>Grade</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Tags</TableHead>
+            <TableHead>Certificates</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -693,6 +722,14 @@ export default function ProductsPage() {
                   <TableCell>{product.unit || "N/A"}</TableCell>
                   <TableCell>{product.stock_quantity ?? "N/A"}</TableCell>
                   <TableCell>{product.grade || "N/A"}</TableCell>
+                  <TableCell>
+                    <Badge 
+                      variant={product.status === 'published' ? 'default' : 'secondary'}
+                      className={product.status === 'published' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-yellow-100 text-yellow-800 border-yellow-200'}
+                    >
+                      {product.status === 'published' ? 'Published' : 'Draft'}
+                    </Badge>
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {product.product_tags?.map((pt) => (
