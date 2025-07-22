@@ -110,140 +110,163 @@ function ProductEditSkeleton() {
         </div>
       </div>
 
-      {/* Product Details Card Skeleton */}
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-32" />
-          <Skeleton className="h-4 w-64" />
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Product Name Field */}
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-28" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-3 w-48" />
-          </div>
+      {/* Main Product Information - Two Column Layout Skeleton */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Side - General Information Skeleton */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-48" /> {/* General Information */}
+            <Skeleton className="h-4 w-64" /> {/* Description */}
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Product Name Field */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-3 w-10" /> {/* min-h container */}
+            </div>
 
-          {/* Category Field */}
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-3 w-44" />
-          </div>
+            {/* Description Field */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-24 w-full" /> {/* Textarea */}
+              <Skeleton className="h-3 w-10" />
+            </div>
 
-          {/* Grade Field */}
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-3 w-60" />
-          </div>
+            {/* Category and Grade Fields - Grid */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-3 w-10" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-3 w-10" />
+              </div>
+            </div>
 
-          {/* Price Field */}
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-3 w-40" />
-          </div>
+            {/* Pricing and Stock Section */}
+            <div className="space-y-4">
+              <Skeleton className="h-4 w-32" /> {/* Section Title */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-3 w-10" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-3 w-10" />
+                </div>
+              </div>
+              {/* Unit Field */}
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-12" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-3 w-10" />
+              </div>
+            </div>
 
-          {/* Unit Field */}
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-12" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-3 w-52" />
-          </div>
+            {/* Additional Information Section */}
+            <div className="space-y-6 pt-6 border-t">
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-44" /> {/* Additional Information */}
+                <Skeleton className="h-4 w-64" />
+              </div>
 
-          {/* Stock Quantity Field */}
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-28" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-3 w-44" />
-          </div>
+              {/* Product Tags Section */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-3 w-56" />
+                </div>
+                <Skeleton className="h-10 w-full" /> {/* TagMultiSelect */}
+              </div>
 
-          {/* Description Field */}
-          <div className="md:col-span-2 space-y-2">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-3 w-56" />
-          </div>
-        </CardContent>
-      </Card>
+              {/* Product Certificates Section */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-36" />
+                  <Skeleton className="h-3 w-64" />
+                </div>
+                <div className="flex gap-2">
+                  <Skeleton className="h-10 flex-1" />
+                  <Skeleton className="h-10 w-16" />
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                  <Skeleton className="h-6 w-24 rounded-full" />
+                </div>
+              </div>
 
-      {/* Product Images Card Skeleton */}
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-32" />
-          <Skeleton className="h-4 w-72" />
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2 mb-4">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-3 w-80" />
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="aspect-square rounded-md" />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              {/* Product Variants Section */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-72" />
+                </div>
+                <div className="flex gap-2">
+                  <Skeleton className="h-10 flex-1" />
+                  <Skeleton className="h-10 flex-1" />
+                  <Skeleton className="h-10 w-16" />
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Skeleton className="h-6 w-32 rounded-full" />
+                  <Skeleton className="h-6 w-28 rounded-full" />
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Product Tags Card Skeleton */}
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-28" />
-          <Skeleton className="h-4 w-48" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-10 w-full mb-4" />
-          <div className="flex flex-wrap gap-2">
-            <Skeleton className="h-6 w-16 rounded-full" />
-            <Skeleton className="h-6 w-20 rounded-full" />
-            <Skeleton className="h-6 w-24 rounded-full" />
-          </div>
-        </CardContent>
-      </Card>
+        {/* Right Side - Upload Images Skeleton */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-32" /> {/* Upload Images */}
+            <Skeleton className="h-4 w-48" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 mb-4">
+              <Skeleton className="h-4 w-24" /> {/* Image Files label */}
+              <Skeleton className="h-3 w-80" /> {/* Description */}
+              <Skeleton className="h-3 w-10" /> {/* Error container */}
+            </div>
 
-      {/* Certificates Card Skeleton */}
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-40" />
-          <Skeleton className="h-4 w-68" />
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-2 mb-4">
-            <Skeleton className="h-10 flex-1" />
-            <Skeleton className="h-10 w-20" />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Skeleton className="h-6 w-20 rounded-full" />
-            <Skeleton className="h-6 w-24 rounded-full" />
-          </div>
-        </CardContent>
-      </Card>
+            <div className="space-y-4">
+              {/* Main Image Skeleton */}
+              <div className="mb-4">
+                <Skeleton className="w-full aspect-[4/3] rounded-lg" />
+              </div>
 
-      {/* Variants Card Skeleton */}
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-36" />
-          <Skeleton className="h-4 w-76" />
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-2 mb-4">
-            <Skeleton className="h-10 flex-1" />
-            <Skeleton className="h-10 flex-1" />
-            <Skeleton className="h-10 w-20" />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Skeleton className="h-6 w-32 rounded-full" />
-            <Skeleton className="h-6 w-28 rounded-full" />
-          </div>
-        </CardContent>
-      </Card>
+              {/* Additional Images Section */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+                {/* Additional Images Grid */}
+                <div className="grid grid-cols-4 gap-3">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <Skeleton key={i} className="aspect-square rounded-md" />
+                  ))}
+                </div>
+                <Skeleton className="h-3 w-72" /> {/* Bottom description */}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Submit Buttons Skeleton */}
-      <div className="flex justify-end gap-4">
+      <div className="flex justify-between items-center pt-6 border-t">
         <Skeleton className="h-10 w-20" />
-        <Skeleton className="h-10 w-36" />
+        <div className="flex gap-3">
+          <Skeleton className="h-10 w-24" />
+          <Skeleton className="h-10 w-36" />
+        </div>
       </div>
     </div>
   );
@@ -257,15 +280,14 @@ function ProductNotFound() {
     <div className="flex flex-col gap-6 w-full max-w-full">
       {/* Header with Breadcrumb */}
       <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <span>Dashboard</span>
-          <span>/</span>
-          <span>Products</span>
-          <span>/</span>
-          <span>Not Found</span>
-          <span>/</span>
-          <span>Edit</span>
-        </div>
+        <BreadcrumbNav
+          customItems={[
+            { label: "Dashboard", href: "/staff/dashboard" },
+            { label: "Products", href: "/staff/products" },
+            { label: "Not Found" },
+            { label: "Edit" },
+          ]}
+        />
 
         <div className="flex items-center justify-between">
           <TypographyH2>Product Not Found</TypographyH2>
@@ -531,7 +553,9 @@ export default function EditProductPage() {
     const totalSelected = currentCount + files.length;
 
     if (totalSelected > 5) {
-      setImageError(`You can only have up to 5 images total (1 main + 4 additional).`);
+      setImageError(
+        `You can only have up to 5 images total (1 main + 4 additional).`
+      );
       e.target.value = "";
       return;
     }
@@ -1260,12 +1284,17 @@ export default function EditProductPage() {
                         const availableExisting = existingImages.filter(
                           (img) => !imagesToDelete.includes(img.id)
                         );
-                        const allImages = [...selectedImageFiles, ...availableExisting];
+                        const allImages = [
+                          ...selectedImageFiles,
+                          ...availableExisting,
+                        ];
                         const mainImage = allImages[0];
 
                         if (mainImage) {
-                          const isNewFile = selectedImageFiles.includes(mainImage as File);
-                          const imageSrc = isNewFile 
+                          const isNewFile = selectedImageFiles.includes(
+                            mainImage as File
+                          );
+                          const imageSrc = isNewFile
                             ? URL.createObjectURL(mainImage as File)
                             : (mainImage as ExistingImage).image_url;
 
@@ -1287,7 +1316,9 @@ export default function EditProductPage() {
                                   if (isNewFile) {
                                     handleRemoveImage(0);
                                   } else {
-                                    handleRemoveExistingImage((mainImage as ExistingImage).id);
+                                    handleRemoveExistingImage(
+                                      (mainImage as ExistingImage).id
+                                    );
                                   }
                                 }}
                               >
@@ -1352,8 +1383,14 @@ export default function EditProductPage() {
                         const availableExisting = existingImages.filter(
                           (img) => !imagesToDelete.includes(img.id)
                         );
-                        const allImages = [...selectedImageFiles, ...availableExisting];
-                        const additionalCount = Math.max(0, allImages.length - 1);
+                        const allImages = [
+                          ...selectedImageFiles,
+                          ...availableExisting,
+                        ];
+                        const additionalCount = Math.max(
+                          0,
+                          allImages.length - 1
+                        );
                         return (
                           <span className="text-xs text-muted-foreground">
                             {additionalCount} of 4 uploaded
@@ -1368,12 +1405,17 @@ export default function EditProductPage() {
                         const availableExisting = existingImages.filter(
                           (img) => !imagesToDelete.includes(img.id)
                         );
-                        const allImages = [...selectedImageFiles, ...availableExisting];
+                        const allImages = [
+                          ...selectedImageFiles,
+                          ...availableExisting,
+                        ];
                         const additionalImages = allImages.slice(1);
 
                         return additionalImages.map((image, index) => {
-                          const isNewFile = selectedImageFiles.includes(image as File);
-                          const imageSrc = isNewFile 
+                          const isNewFile = selectedImageFiles.includes(
+                            image as File
+                          );
+                          const imageSrc = isNewFile
                             ? URL.createObjectURL(image as File)
                             : (image as ExistingImage).image_url;
                           const actualIndex = index + 1; // Actual index in the full array
@@ -1396,7 +1438,9 @@ export default function EditProductPage() {
                                     if (isNewFile) {
                                       handleRemoveImage(actualIndex);
                                     } else {
-                                      handleRemoveExistingImage((image as ExistingImage).id);
+                                      handleRemoveExistingImage(
+                                        (image as ExistingImage).id
+                                      );
                                     }
                                   }}
                                 >
@@ -1413,32 +1457,41 @@ export default function EditProductPage() {
                         const availableExisting = existingImages.filter(
                           (img) => !imagesToDelete.includes(img.id)
                         );
-                        const allImages = [...selectedImageFiles, ...availableExisting];
-                        const additionalCount = Math.max(0, allImages.length - 1);
+                        const allImages = [
+                          ...selectedImageFiles,
+                          ...availableExisting,
+                        ];
+                        const additionalCount = Math.max(
+                          0,
+                          allImages.length - 1
+                        );
                         const emptySlots = Math.max(0, 4 - additionalCount);
 
-                        return Array.from({ length: emptySlots }, (_, index) => (
-                          <AspectRatio key={`empty-${index}`} ratio={1}>
-                            <div className="relative w-full h-full border-2 border-dashed border-muted rounded-md bg-input hover:bg-input/80 transition-colors cursor-pointer">
-                              <label
-                                htmlFor={`additional-image-upload-${index}`}
-                                className="flex items-center justify-center w-full h-full cursor-pointer"
-                              >
-                                <Plus className="h-6 w-6 text-muted-foreground" />
-                                <span className="sr-only">
-                                  Add additional image
-                                </span>
-                              </label>
-                              <input
-                                id={`additional-image-upload-${index}`}
-                                type="file"
-                                accept="image/*"
-                                onChange={handleImageChange}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                              />
-                            </div>
-                          </AspectRatio>
-                        ));
+                        return Array.from(
+                          { length: emptySlots },
+                          (_, index) => (
+                            <AspectRatio key={`empty-${index}`} ratio={1}>
+                              <div className="relative w-full h-full border-2 border-dashed border-muted rounded-md bg-input hover:bg-input/80 transition-colors cursor-pointer">
+                                <label
+                                  htmlFor={`additional-image-upload-${index}`}
+                                  className="flex items-center justify-center w-full h-full cursor-pointer"
+                                >
+                                  <Plus className="h-6 w-6 text-muted-foreground" />
+                                  <span className="sr-only">
+                                    Add additional image
+                                  </span>
+                                </label>
+                                <input
+                                  id={`additional-image-upload-${index}`}
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleImageChange}
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                />
+                              </div>
+                            </AspectRatio>
+                          )
+                        );
                       })()}
                     </div>
 
