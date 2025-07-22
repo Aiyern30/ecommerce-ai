@@ -33,8 +33,13 @@ import {
   SelectValue,
   Badge,
   Skeleton,
+  AspectRatio,
 } from "@/components/ui/";
-import { TypographyH2, TypographyP } from "@/components/ui/Typography";
+import {
+  TypographyH2,
+  TypographyH3,
+  TypographyP,
+} from "@/components/ui/Typography";
 import Image from "next/image";
 import { toast } from "sonner";
 import TagMultiSelect from "@/components/TagMultiSelect";
@@ -385,8 +390,6 @@ export default function EditProductPage() {
     name: "variants",
   });
 
-  const MAX_IMAGES = 4;
-
   useEffect(() => {
     const fetchProductData = async () => {
       if (!productId) return;
@@ -527,8 +530,8 @@ export default function EditProductPage() {
       selectedImageFiles.length + existingImages.length - imagesToDelete.length;
     const totalSelected = currentCount + files.length;
 
-    if (totalSelected > MAX_IMAGES) {
-      setImageError(`You can only have up to ${MAX_IMAGES} images total.`);
+    if (totalSelected > 5) {
+      setImageError(`You can only have up to 5 images total (1 main + 4 additional).`);
       e.target.value = "";
       return;
     }
@@ -557,7 +560,7 @@ export default function EditProductPage() {
     setImageError(null);
   };
 
-  const handleRemoveNewImage = (index: number) => {
+  const handleRemoveImage = (index: number) => {
     setSelectedImageFiles((prevFiles) =>
       prevFiles.filter((_, i) => i !== index)
     );
@@ -565,10 +568,6 @@ export default function EditProductPage() {
 
   const handleRemoveExistingImage = (imageId: string) => {
     setImagesToDelete((prev) => [...prev, imageId]);
-  };
-
-  const handleRestoreExistingImage = (imageId: string) => {
-    setImagesToDelete((prev) => prev.filter((id) => id !== imageId));
   };
 
   const handleAddCertificate = () => {
@@ -894,450 +893,580 @@ export default function EditProductPage() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Product Details</CardTitle>
-              <CardDescription>
-                Update the basic details of the cement product.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
+          {/* Main Product Information - Two Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left Side - General Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  <TypographyH3>General Information</TypographyH3>
+                </CardTitle>
+                <CardDescription>
+                  <TypographyP className="!mt-0">
+                    Edit the basic details of the cement product.
+                  </TypographyP>
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
                 <FormField
                   control={form.control}
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Product Name *</FormLabel>
+                      <FormLabel>Name Product</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="e.g., YTL Bagged Cement 50kg"
                           {...field}
                         />
                       </FormControl>
-                      <FormDescription>
-                        The full name of the product.
-                      </FormDescription>
-                      <FormMessage />
+                      <div className="min-h-[10px]">
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )}
                 />
-              </div>
 
-              <div className="space-y-2">
-                <FormField
-                  control={form.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Category *</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a category" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="bagged">Bagged</SelectItem>
-                          <SelectItem value="bulk">Bulk</SelectItem>
-                          <SelectItem value="ready-mix">Ready-Mix</SelectItem>
-                          <SelectItem value="Concrete">Concrete</SelectItem>
-                          <SelectItem value="Mortar">Mortar</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>
-                        The type of cement product.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <FormField
-                  control={form.control}
-                  name="grade"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Grade</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="e.g., M25, M30, Grade 42.5"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        The grade or strength of the cement (optional).
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <FormField
-                  control={form.control}
-                  name="price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Price (RM) *</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="e.g., 18.50"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Price per unit of the product.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <FormField
-                  control={form.control}
-                  name="unit"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Unit *</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select unit" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="per bag">Per Bag</SelectItem>
-                          <SelectItem value="per tonne">Per Tonne</SelectItem>
-                          <SelectItem value="per m³">Per m³</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>
-                        The unit of measurement for pricing.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <FormField
-                  control={form.control}
-                  name="stock_quantity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Stock Quantity *</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="e.g., 120"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Current quantity in stock.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="md:col-span-2 space-y-2">
                 <FormField
                   control={form.control}
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <FormLabel>Description Product</FormLabel>
                       <FormControl>
                         <Textarea
                           placeholder="High-strength bagged cement suitable for general construction."
-                          className="resize-none"
+                          className="resize-none min-h-[100px]"
                           {...field}
                           value={field.value || ""}
                         />
                       </FormControl>
-                      <FormDescription>
-                        A detailed description of the product.
-                      </FormDescription>
-                      <FormMessage />
+                      <div className="min-h-[10px]">
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )}
                 />
-              </div>
-            </CardContent>
-          </Card>
 
-          {/* Multiple Image Upload */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Product Images</CardTitle>
-              <CardDescription>
-                Manage product images. You can add new images or remove existing
-                ones.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <FormItem>
-                <FormLabel>Image Files *</FormLabel>
-                <FormDescription>
-                  Accepted formats: JPG, PNG, GIF. Max size: 5MB per file.
-                  Maximum {MAX_IMAGES} images total.
-                </FormDescription>
-                {imageError && <FormMessage>{imageError}</FormMessage>}
-              </FormItem>
-
-              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {/* Existing Images */}
-                {existingImages.map((image) => (
-                  <div
-                    key={image.id}
-                    className={`relative group aspect-square w-full border rounded-md overflow-hidden ${
-                      imagesToDelete.includes(image.id)
-                        ? "border-destructive opacity-50"
-                        : "border-muted"
-                    }`}
-                  >
-                    <Image
-                      src={image.image_url}
-                      alt="Product image"
-                      className="w-full h-full object-cover"
-                      fill
-                      priority
-                    />
-                    {imagesToDelete.includes(image.id) ? (
-                      <div className="absolute inset-0 bg-destructive/20 flex items-center justify-center">
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => handleRestoreExistingImage(image.id)}
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
                         >
-                          Restore
-                        </Button>
-                      </div>
-                    ) : (
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a category" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="bagged">Bagged</SelectItem>
+                            <SelectItem value="bulk">Bulk</SelectItem>
+                            <SelectItem value="ready-mix">Ready-Mix</SelectItem>
+                            <SelectItem value="Concrete">Concrete</SelectItem>
+                            <SelectItem value="Mortar">Mortar</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <div className="min-h-[10px]">
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="grade"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Grade</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., N20, M044, S35"
+                            {...field}
+                          />
+                        </FormControl>
+                        <div className="min-h-[10px]">
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium">Pricing And Stock</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="price"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Base Pricing</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="e.g., 18.50"
+                              {...field}
+                            />
+                          </FormControl>
+                          <div className="min-h-[10px]">
+                            <FormMessage />
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="stock_quantity"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Stock</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder="e.g., 120"
+                              {...field}
+                            />
+                          </FormControl>
+                          <div className="min-h-[10px]">
+                            <FormMessage />
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="unit"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Unit</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select unit" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="per bag">Per Bag</SelectItem>
+                            <SelectItem value="per tonne">Per Tonne</SelectItem>
+                            <SelectItem value="per m³">Per m³</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <div className="min-h-[10px]">
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Additional Information Section */}
+                <div className="space-y-6 pt-6 border-t">
+                  <div>
+                    <TypographyH3>Additional Information</TypographyH3>
+                    <TypographyP className="!mt-0">
+                      Edit tags, certificates, and product variants for this
+                      product.
+                    </TypographyP>
+                  </div>
+
+                  {/* Product Tags Section */}
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="text-sm font-medium mb-2">Product Tags</h4>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Select or create relevant tags for this product.
+                      </p>
+                    </div>
+                    <TagMultiSelect
+                      selectedTags={selectedTags}
+                      setSelectedTags={setSelectedTags}
+                    />
+                  </div>
+
+                  {/* Product Certificates Section */}
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="text-sm font-medium mb-2">
+                        Product Certificates
+                      </h4>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Manage certifications the product holds (e.g., "ISO
+                        9001", "Green Mark").
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Add a certificate"
+                        value={certificateInput}
+                        onChange={(e) => setCertificateInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleAddCertificate();
+                          }
+                        }}
+                        className="flex-1"
+                      />
                       <Button
                         type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-1 right-1 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => handleRemoveExistingImage(image.id)}
+                        onClick={handleAddCertificate}
+                        variant="outline"
                       >
-                        <X className="h-4 w-4" />
-                        <span className="sr-only">Remove image</span>
+                        <Plus className="mr-2 h-4 w-4" /> Add
                       </Button>
-                    )}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {certificateFields.map((item, index) => (
+                        <Badge
+                          key={item.id}
+                          variant="secondary"
+                          className="flex items-center gap-1"
+                        >
+                          {item.certificate}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-4 w-4 p-0"
+                            onClick={() => removeCertificate(index)}
+                          >
+                            <X className="h-3 w-3" />
+                            <span className="sr-only">Remove certificate</span>
+                          </Button>
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="min-h-[10px]">
+                      {form.formState.errors.certificates && (
+                        <FormMessage>
+                          {form.formState.errors.certificates.message}
+                        </FormMessage>
+                      )}
+                    </div>
                   </div>
-                ))}
 
-                {/* New Images */}
-                {selectedImageFiles.map((file, index) => (
-                  <div
-                    key={`new-${index}`}
-                    className="relative group aspect-square w-full border border-muted rounded-md overflow-hidden"
-                  >
-                    <Image
-                      src={URL.createObjectURL(file)}
-                      alt={`New preview ${index + 1}`}
-                      className="w-full h-full object-cover"
-                      fill
-                      priority
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-1 right-1 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => handleRemoveNewImage(index)}
-                    >
-                      <X className="h-4 w-4" />
-                      <span className="sr-only">Remove image</span>
-                    </Button>
-                    <Badge className="absolute bottom-1 left-1 text-xs">
-                      New
-                    </Badge>
+                  {/* Product Variants Section */}
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="text-sm font-medium mb-2">
+                        Product Variants
+                      </h4>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Add different pricing variants for delivery methods
+                        (e.g., "Pump", "Tremie 1", "Tremie 2").
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Variant type (e.g., Pump)"
+                        value={variantTypeInput}
+                        onChange={(e) => setVariantTypeInput(e.target.value)}
+                        className="flex-1"
+                      />
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="Price (RM)"
+                        value={variantPriceInput}
+                        onChange={(e) => setVariantPriceInput(e.target.value)}
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        onClick={handleAddVariant}
+                        variant="outline"
+                      >
+                        <Plus className="mr-2 h-4 w-4" /> Add
+                      </Button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {variantFields.map((item, index) => (
+                        <Badge
+                          key={item.id}
+                          variant="secondary"
+                          className="flex items-center gap-1"
+                        >
+                          {item.variant_type} - RM {item.price}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-4 w-4 p-0"
+                            onClick={() => removeVariant(index)}
+                          >
+                            <X className="h-3 w-3" />
+                            <span className="sr-only">Remove variant</span>
+                          </Button>
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="min-h-[10px]">
+                      {form.formState.errors.variants && (
+                        <FormMessage>
+                          {form.formState.errors.variants.message}
+                        </FormMessage>
+                      )}
+                    </div>
                   </div>
-                ))}
+                </div>
+              </CardContent>
+            </Card>
 
-                {/* Add More Images Button */}
-                {selectedImageFiles.length +
-                  existingImages.length -
-                  imagesToDelete.length <
-                  MAX_IMAGES && (
-                  <div className="relative flex items-center justify-center border border-dashed border-muted rounded-md aspect-square w-full cursor-pointer hover:bg-muted transition">
-                    <label
-                      htmlFor="image-upload"
-                      className="flex flex-col items-center justify-center w-full h-full cursor-pointer"
-                    >
-                      <span className="text-4xl font-bold text-muted-foreground">
-                        +
-                      </span>
-                      <span className="sr-only">Add more images</span>
-                    </label>
-                    <input
-                      id="image-upload"
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleImageChange}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
+            {/* Right Side - Upload Images */}
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  <TypographyH3>Upload Images</TypographyH3>
+                </CardTitle>
+                <CardDescription>
+                  <TypographyP className="!mt-0">
+                    Upload one or more images for the product.
+                  </TypographyP>
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FormItem>
+                  <FormLabel>Image Files *</FormLabel>
+                  <FormDescription>
+                    Upload 1 main image and up to 4 additional images. Accepted
+                    formats: JPG, PNG, GIF. Max size: 5MB per file.
+                  </FormDescription>
+                  <div className="min-h-[10px]">
+                    {imageError && <FormMessage>{imageError}</FormMessage>}
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                </FormItem>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Product Tags</CardTitle>
-              <CardDescription>Select or create relevant tags.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <TagMultiSelect
-                selectedTags={selectedTags}
-                setSelectedTags={setSelectedTags}
-              />
-            </CardContent>
-          </Card>
+                <div className="mt-4">
+                  {/* Main Image Display - Handle both new and existing images */}
+                  <AspectRatio ratio={4 / 3} className="mb-4">
+                    <div className="relative w-full h-full border-2 border-dashed border-muted rounded-lg overflow-hidden bg-input">
+                      {/* Show main image - prioritize new files first, then existing */}
+                      {(() => {
+                        // Get all available images (new + existing not marked for deletion)
+                        const availableExisting = existingImages.filter(
+                          (img) => !imagesToDelete.includes(img.id)
+                        );
+                        const allImages = [...selectedImageFiles, ...availableExisting];
+                        const mainImage = allImages[0];
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Product Certificates</CardTitle>
-              <CardDescription>
-                Manage certifications the product holds (e.g., "ISO 9001",
-                "Green Mark").
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-2 mb-4">
-                <Input
-                  placeholder="Add a certificate"
-                  value={certificateInput}
-                  onChange={(e) => setCertificateInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleAddCertificate();
-                    }
-                  }}
-                />
-                <Button type="button" onClick={handleAddCertificate}>
-                  <Plus className="mr-2 h-4 w-4" /> Add
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {certificateFields.map((item, index) => (
-                  <Badge
-                    key={item.id}
-                    variant="secondary"
-                    className="flex items-center gap-1"
-                  >
-                    {item.certificate}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-4 w-4 p-0"
-                      onClick={() => removeCertificate(index)}
-                    >
-                      <X className="h-3 w-3" />
-                      <span className="sr-only">Remove certificate</span>
-                    </Button>
-                  </Badge>
-                ))}
-              </div>
-              {form.formState.errors.certificates && (
-                <FormMessage>
-                  {form.formState.errors.certificates.message}
-                </FormMessage>
-              )}
-            </CardContent>
-          </Card>
+                        if (mainImage) {
+                          const isNewFile = selectedImageFiles.includes(mainImage as File);
+                          const imageSrc = isNewFile 
+                            ? URL.createObjectURL(mainImage as File)
+                            : (mainImage as ExistingImage).image_url;
 
-          {/* NEW: Product Variants Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Product Variants</CardTitle>
-              <CardDescription>
-                Add different pricing variants for delivery methods (e.g.,
-                "Pump", "Tremie 1", "Tremie 2").
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-2 mb-4">
-                <Input
-                  placeholder="Variant type (e.g., Pump)"
-                  value={variantTypeInput}
-                  onChange={(e) => setVariantTypeInput(e.target.value)}
-                  className="flex-1"
-                />
-                <Input
-                  type="number"
-                  step="0.01"
-                  placeholder="Price (RM)"
-                  value={variantPriceInput}
-                  onChange={(e) => setVariantPriceInput(e.target.value)}
-                  className="flex-1"
-                />
-                <Button type="button" onClick={handleAddVariant}>
-                  <Plus className="mr-2 h-4 w-4" /> Add
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {variantFields.map((item, index) => (
-                  <Badge
-                    key={index}
-                    variant="secondary"
-                    className="flex items-center gap-1"
-                  >
-                    {item.variant_type} - RM {item.price}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-4 w-4 p-0"
-                      onClick={() => removeVariant(index)}
-                    >
-                      <X className="h-3 w-3" />
-                      <span className="sr-only">Remove variant</span>
-                    </Button>
-                  </Badge>
-                ))}
-              </div>
-              {form.formState.errors.variants && (
-                <FormMessage>
-                  {form.formState.errors.variants.message}
-                </FormMessage>
-              )}
-            </CardContent>
-          </Card>
+                          return (
+                            <>
+                              <Image
+                                src={imageSrc}
+                                alt="Main product image"
+                                className="w-full h-full object-cover"
+                                fill
+                                priority
+                              />
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                className="absolute top-2 right-2 h-8 w-8 rounded-full shadow-lg z-10"
+                                onClick={() => {
+                                  if (isNewFile) {
+                                    handleRemoveImage(0);
+                                  } else {
+                                    handleRemoveExistingImage((mainImage as ExistingImage).id);
+                                  }
+                                }}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                              {/* Change main image overlay */}
+                              <label
+                                htmlFor="main-image-upload"
+                                className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors cursor-pointer flex items-center justify-center"
+                              >
+                                <div className="bg-white/90 hover:bg-white text-gray-700 px-3 py-2 rounded-md opacity-0 hover:opacity-100 transition-opacity">
+                                  Change Image
+                                </div>
+                              </label>
+                              <input
+                                id="main-image-upload"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              />
+                            </>
+                          );
+                        } else {
+                          return (
+                            <label
+                              htmlFor="main-image-upload"
+                              className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-input/80 transition-colors"
+                            >
+                              <div className="flex flex-col items-center justify-center space-y-3">
+                                <div className="w-16 h-16 border-2 border-dashed border-muted-foreground rounded-lg flex items-center justify-center">
+                                  <Plus className="h-8 w-8 text-muted-foreground" />
+                                </div>
+                                <div className="text-center">
+                                  <p className="text-sm font-medium text-foreground">
+                                    Upload main product image
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    Click to browse files
+                                  </p>
+                                </div>
+                              </div>
+                              <input
+                                id="main-image-upload"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              />
+                            </label>
+                          );
+                        }
+                      })()}
+                    </div>
+                  </AspectRatio>
 
-          <div className="flex justify-end gap-4">
+                  {/* Additional Images Section */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-medium">Additional Images</h4>
+                      {(() => {
+                        const availableExisting = existingImages.filter(
+                          (img) => !imagesToDelete.includes(img.id)
+                        );
+                        const allImages = [...selectedImageFiles, ...availableExisting];
+                        const additionalCount = Math.max(0, allImages.length - 1);
+                        return (
+                          <span className="text-xs text-muted-foreground">
+                            {additionalCount} of 4 uploaded
+                          </span>
+                        );
+                      })()}
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-3">
+                      {/* Additional images (skip the first one which is main) */}
+                      {(() => {
+                        const availableExisting = existingImages.filter(
+                          (img) => !imagesToDelete.includes(img.id)
+                        );
+                        const allImages = [...selectedImageFiles, ...availableExisting];
+                        const additionalImages = allImages.slice(1);
+
+                        return additionalImages.map((image, index) => {
+                          const isNewFile = selectedImageFiles.includes(image as File);
+                          const imageSrc = isNewFile 
+                            ? URL.createObjectURL(image as File)
+                            : (image as ExistingImage).image_url;
+                          const actualIndex = index + 1; // Actual index in the full array
+
+                          return (
+                            <AspectRatio key={`additional-${index}`} ratio={1}>
+                              <div className="relative group w-full h-full border border-muted rounded-md overflow-hidden">
+                                <Image
+                                  src={imageSrc}
+                                  alt={`Additional image ${index + 1}`}
+                                  className="w-full h-full object-cover"
+                                  fill
+                                />
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="icon"
+                                  className="absolute top-1 right-1 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10"
+                                  onClick={() => {
+                                    if (isNewFile) {
+                                      handleRemoveImage(actualIndex);
+                                    } else {
+                                      handleRemoveExistingImage((image as ExistingImage).id);
+                                    }
+                                  }}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </AspectRatio>
+                          );
+                        });
+                      })()}
+
+                      {/* Empty slots for additional images */}
+                      {(() => {
+                        const availableExisting = existingImages.filter(
+                          (img) => !imagesToDelete.includes(img.id)
+                        );
+                        const allImages = [...selectedImageFiles, ...availableExisting];
+                        const additionalCount = Math.max(0, allImages.length - 1);
+                        const emptySlots = Math.max(0, 4 - additionalCount);
+
+                        return Array.from({ length: emptySlots }, (_, index) => (
+                          <AspectRatio key={`empty-${index}`} ratio={1}>
+                            <div className="relative w-full h-full border-2 border-dashed border-muted rounded-md bg-input hover:bg-input/80 transition-colors cursor-pointer">
+                              <label
+                                htmlFor={`additional-image-upload-${index}`}
+                                className="flex items-center justify-center w-full h-full cursor-pointer"
+                              >
+                                <Plus className="h-6 w-6 text-muted-foreground" />
+                                <span className="sr-only">
+                                  Add additional image
+                                </span>
+                              </label>
+                              <input
+                                id={`additional-image-upload-${index}`}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              />
+                            </div>
+                          </AspectRatio>
+                        ));
+                      })()}
+                    </div>
+
+                    <p className="text-xs text-muted-foreground">
+                      Upload up to 4 additional images. Accepted formats: JPG,
+                      PNG, GIF. Max size: 5MB per file.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="flex justify-between items-center pt-6 border-t">
             <Link href="/staff/products">
               <Button variant="outline" type="button">
+                <ArrowLeft className="mr-2 h-4 w-4" />
                 Cancel
               </Button>
             </Link>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Updating Product..." : "Update Product"}
-            </Button>
+            <div className="flex gap-3">
+              <Button variant="outline" type="button">
+                Save Draft
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Updating Product..." : "Update Product"}
+              </Button>
+            </div>
           </div>
         </form>
       </Form>
