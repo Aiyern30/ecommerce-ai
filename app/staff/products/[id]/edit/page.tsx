@@ -660,7 +660,7 @@ export default function EditProductPage() {
           stock_quantity: data.stock_quantity || 0, // Default to 0 for drafts
           category: data.category,
           grade: data.grade || null,
-          status: isDraft ? 'draft' : 'published',
+          status: isDraft ? "draft" : "published",
           updated_at: new Date().toISOString(),
         })
         .eq("id", productId);
@@ -946,11 +946,19 @@ export default function EditProductPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <TypographyH2>Edit Product</TypographyH2>
-            <Badge 
-              variant={form.getValues("status") === 'published' ? 'default' : 'secondary'}
-              className={form.getValues("status") === 'published' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-yellow-100 text-yellow-800 border-yellow-200'}
+            <Badge
+              variant={
+                form.getValues("status") === "published"
+                  ? "default"
+                  : "secondary"
+              }
+              className={
+                form.getValues("status") === "published"
+                  ? "bg-green-100 text-green-800 border-green-200"
+                  : "bg-yellow-100 text-yellow-800 border-yellow-200"
+              }
             >
-              {form.getValues("status") === 'published' ? 'Published' : 'Draft'}
+              {form.getValues("status") === "published" ? "Published" : "Draft"}
             </Badge>
           </div>
           <div className="flex items-center gap-2">
@@ -1095,7 +1103,8 @@ export default function EditProductPage() {
                           </SelectContent>
                         </Select>
                         <FormDescription>
-                          Draft products are not visible to customers. Published products are live on the store.
+                          Draft products are not visible to customers. Published
+                          products are live on the store.
                         </FormDescription>
                         <div className="min-h-[10px]">
                           <FormMessage />
@@ -1595,7 +1604,12 @@ export default function EditProductPage() {
               </Button>
             </Link>
             <div className="flex gap-3">
-              <Button variant="outline" type="button" onClick={onSaveDraft} disabled={isSubmitting || isDraftSaving}>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={onSaveDraft}
+                disabled={isSubmitting || isDraftSaving}
+              >
                 {isDraftSaving ? "Saving Draft..." : "Save Draft"}
               </Button>
               <Button type="submit" disabled={isSubmitting || isDraftSaving}>

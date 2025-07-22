@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
   Skeleton,
+  Badge,
 } from "@/components/ui";
 import { TypographyH1, TypographyP } from "@/components/ui/Typography";
 import ProductDetailDisplay from "@/components/ProductDetailDisplay";
@@ -71,6 +72,14 @@ function ProductDetailSkeleton({ isStaffView }: { isStaffView: boolean }) {
                 <Skeleton className="h-4 w-16 mb-1" />
                 <Skeleton className="h-6 w-20" />
               </div>
+
+              {/* Status Skeleton - Only show for staff */}
+              {isStaffView && (
+                <div>
+                  <Skeleton className="h-4 w-12 mb-1" />
+                  <Skeleton className="h-6 w-16" />
+                </div>
+              )}
             </div>
           </div>
 
@@ -361,19 +370,40 @@ export default function ProductDetailClient() {
     <div className="flex flex-col gap-6 w-full max-w-full">
       {/* Header with Breadcrumb and Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <BreadcrumbNav
-          customItems={[
-            {
-              label: "Dashboard",
-              href: isStaffView ? "/staff/dashboard" : "/",
-            },
-            {
-              label: "Products",
-              href: isStaffView ? "/staff/products" : "/products",
-            },
-            { label: product.name },
-          ]}
-        />
+        <div className="flex flex-col gap-2">
+          <BreadcrumbNav
+            customItems={[
+              {
+                label: "Dashboard",
+                href: isStaffView ? "/staff/dashboard" : "/",
+              },
+              {
+                label: "Products",
+                href: isStaffView ? "/staff/products" : "/products",
+              },
+              { label: product.name },
+            ]}
+          />
+
+          {/* Status Badge - Only show for staff */}
+          {isStaffView && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Status:</span>
+              <Badge
+                variant={
+                  product.status === "published" ? "default" : "secondary"
+                }
+                className={
+                  product.status === "published"
+                    ? "bg-green-100 text-green-800 border-green-200"
+                    : "bg-yellow-100 text-yellow-800 border-yellow-200"
+                }
+              >
+                {product.status === "published" ? "Published" : "Draft"}
+              </Badge>
+            </div>
+          )}
+        </div>
 
         {/* Action Buttons - Only show for staff */}
         {isStaffView && (

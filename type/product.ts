@@ -8,7 +8,7 @@ export interface Product {
   unit: string | null;
   stock_quantity: number | null;
   grade?: string | null;
-  status: 'draft' | 'published';
+  status: "draft" | "published";
   created_at: string;
   updated_at: string;
   product_images: { image_url: string }[] | null;
