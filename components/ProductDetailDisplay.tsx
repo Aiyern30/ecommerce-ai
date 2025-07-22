@@ -86,6 +86,27 @@ export default function ProductDetailDisplay({
                 {product.category || "N/A"}
               </Badge>
             </div>
+
+            {/* Status - Only show for staff view */}
+            {!isCustomerView && (
+              <div>
+                <TypographySmall className="font-medium text-muted-foreground mb-1">
+                  Status:
+                </TypographySmall>
+                <Badge
+                  variant={
+                    product.status === "published" ? "default" : "secondary"
+                  }
+                  className={
+                    product.status === "published"
+                      ? "bg-green-100 text-green-800 border-green-200"
+                      : "bg-yellow-100 text-yellow-800 border-yellow-200"
+                  }
+                >
+                  {product.status === "published" ? "Published" : "Draft"}
+                </Badge>
+              </div>
+            )}
           </div>
         </CardHeader>
 

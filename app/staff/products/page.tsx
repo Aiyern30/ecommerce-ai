@@ -481,10 +481,7 @@ export default function ProductsPage() {
           <Select
             value={filters.status}
             onValueChange={(value) => {
-              updateFilter(
-                "status",
-                value as "all" | "draft" | "published"
-              );
+              updateFilter("status", value as "all" | "draft" | "published");
             }}
           >
             <SelectTrigger className="w-full sm:w-[180px] h-9">
@@ -666,13 +663,13 @@ export default function ProductsPage() {
                 <TableHead className="w-[80px]">Image</TableHead>
                 <TableHead>Product Name</TableHead>
                 <TableHead>Category</TableHead>
-                <TableHead>Price</TableHead>            <TableHead>Unit</TableHead>
-            <TableHead>Stock</TableHead>
-            <TableHead>Grade</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Tags</TableHead>
-            <TableHead>Certificates</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+                <TableHead>Price</TableHead> <TableHead>Unit</TableHead>
+                <TableHead>Stock</TableHead>
+                <TableHead>Grade</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Tags</TableHead>
+                <TableHead>Certificates</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -723,11 +720,17 @@ export default function ProductsPage() {
                   <TableCell>{product.stock_quantity ?? "N/A"}</TableCell>
                   <TableCell>{product.grade || "N/A"}</TableCell>
                   <TableCell>
-                    <Badge 
-                      variant={product.status === 'published' ? 'default' : 'secondary'}
-                      className={product.status === 'published' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-yellow-100 text-yellow-800 border-yellow-200'}
+                    <Badge
+                      variant={
+                        product.status === "published" ? "default" : "secondary"
+                      }
+                      className={
+                        product.status === "published"
+                          ? "bg-green-100 text-green-800 border-green-200"
+                          : "bg-yellow-100 text-yellow-800 border-yellow-200"
+                      }
                     >
-                      {product.status === 'published' ? 'Published' : 'Draft'}
+                      {product.status === "published" ? "Published" : "Draft"}
                     </Badge>
                   </TableCell>
                   <TableCell>
