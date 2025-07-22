@@ -47,103 +47,101 @@ function ProductDetailSkeleton({ isStaffView }: { isStaffView: boolean }) {
       </div>
 
       {/* Product Detail Skeleton */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 xl:gap-6">
-        {/* Left Side - Small Thumbnails Skeleton */}
-        <div className="lg:col-span-1">
-          <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-y-auto pb-2 lg:pb-0">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <Skeleton
-                key={index}
-                className="aspect-square w-16 lg:w-full flex-shrink-0 rounded-md"
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Middle - Large Main Image Skeleton */}
-        <div className="lg:col-span-7 xl:col-span-6">
-          <Skeleton className="w-full h-[500px] lg:h-[600px] rounded-lg" />
-        </div>
-
-        {/* Right Side - Product Information Skeleton */}
-        <div className="lg:col-span-4 xl:col-span-5">
-          <div className="border rounded-lg p-6 h-fit">
-            {/* Header Skeleton */}
-            <div className="pb-3 border-b">
-              <div className="flex items-start justify-between gap-2 mb-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Side - Product Information Skeleton */}
+        <div className="border rounded-lg p-6 h-fit">
+          {/* Header Skeleton */}
+          <div className="pb-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="space-y-4">
+              {/* Product Name Skeleton */}
+              <div>
+                <Skeleton className="h-4 w-24 mb-1" />
                 <Skeleton className="h-8 w-3/4" />
+              </div>
+
+              {/* Description Skeleton */}
+              <div>
+                <Skeleton className="h-4 w-20 mb-1" />
+                <Skeleton className="h-4 w-full mb-1" />
+                <Skeleton className="h-4 w-5/6" />
+              </div>
+
+              {/* Category Skeleton */}
+              <div>
+                <Skeleton className="h-4 w-16 mb-1" />
                 <Skeleton className="h-6 w-20" />
               </div>
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-5/6" />
+            </div>
+          </div>
+
+          {/* Content Skeleton */}
+          <div className="pt-6 space-y-6">
+            {/* Pricing & Stock Skeleton */}
+            <div>
+              <Skeleton className="h-4 w-32 mb-3" />
+              <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div>
+                  <Skeleton className="h-3 w-12 mb-2" />
+                  <Skeleton className="h-6 w-20 mb-1" />
+                  <Skeleton className="h-3 w-16" />
+                </div>
+                <div>
+                  <Skeleton className="h-3 w-12 mb-2" />
+                  <Skeleton className="h-5 w-16 mb-1" />
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-3 w-12" />
+                    <Skeleton className="h-5 w-16" />
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Content Skeleton */}
-            <div className="pt-6 space-y-6">
-              {/* Pricing & Stock Skeleton */}
-              <div>
-                <Skeleton className="h-5 w-32 mb-3" />
-                <div className="grid grid-cols-2 gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <div>
-                    <Skeleton className="h-3 w-12 mb-2" />
-                    <Skeleton className="h-6 w-20 mb-1" />
-                    <Skeleton className="h-3 w-16" />
+            {/* Grade Skeleton */}
+            <div>
+              <Skeleton className="h-4 w-16 mb-3" />
+              <Skeleton className="h-6 w-24" />
+            </div>
+
+            {/* Variants Skeleton */}
+            <div>
+              <Skeleton className="h-4 w-32 mb-3" />
+              <div className="space-y-2">
+                {Array.from({ length: 2 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                  >
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-16" />
                   </div>
-                  <div>
-                    <Skeleton className="h-3 w-12 mb-2" />
-                    <Skeleton className="h-5 w-16 mb-1" />
-                    <div className="flex items-center gap-2">
-                      <Skeleton className="h-3 w-12" />
-                      <Skeleton className="h-5 w-16" />
-                    </div>
-                  </div>
-                </div>
+                ))}
               </div>
+            </div>
 
-              {/* Grade Skeleton */}
-              <div>
-                <Skeleton className="h-5 w-16 mb-3" />
-                <Skeleton className="h-6 w-24" />
+            {/* Certifications Skeleton */}
+            <div>
+              <Skeleton className="h-4 w-28 mb-3" />
+              <div className="flex flex-wrap gap-2">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <Skeleton key={index} className="h-6 w-20" />
+                ))}
               </div>
+            </div>
 
-              {/* Variants Skeleton */}
-              <div>
-                <Skeleton className="h-5 w-32 mb-3" />
-                <div className="space-y-2">
-                  {Array.from({ length: 3 }).map((_, index) => (
-                    <div
-                      key={index}
-                      className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                    >
-                      <Skeleton className="h-4 w-24" />
-                      <Skeleton className="h-4 w-16" />
-                    </div>
-                  ))}
-                </div>
+            {/* Tags Skeleton */}
+            <div>
+              <Skeleton className="h-4 w-16 mb-3" />
+              <div className="flex flex-wrap gap-2">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <Skeleton key={index} className="h-5 w-16" />
+                ))}
               </div>
+            </div>
 
-              {/* Certifications Skeleton */}
-              <div>
-                <Skeleton className="h-5 w-28 mb-3" />
-                <div className="flex flex-wrap gap-2">
-                  {Array.from({ length: 3 }).map((_, index) => (
-                    <Skeleton key={index} className="h-6 w-20" />
-                  ))}
-                </div>
-              </div>
-
-              {/* Tags Skeleton */}
-              <div>
-                <Skeleton className="h-5 w-16 mb-3" />
-                <div className="flex flex-wrap gap-2">
-                  {Array.from({ length: 4 }).map((_, index) => (
-                    <Skeleton key={index} className="h-5 w-16" />
-                  ))}
-                </div>
-              </div>
-
-              {/* Meta Information Skeleton */}
-              <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+            {/* Meta Information Skeleton */}
+            {!isStaffView && (
+              <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+                <Skeleton className="h-3 w-32 mb-2" />
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Skeleton className="w-4 h-4" />
@@ -153,13 +151,30 @@ function ProductDetailSkeleton({ isStaffView }: { isStaffView: boolean }) {
                     <Skeleton className="w-4 h-4" />
                     <Skeleton className="h-3 w-36" />
                   </div>
-                  {!isStaffView && (
-                    <div className="flex items-center gap-2">
-                      <Skeleton className="h-5 w-24" />
-                    </div>
-                  )}
                 </div>
               </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Side - Images Skeleton */}
+        <div className="space-y-4">
+          {/* Main Image Skeleton */}
+          <div>
+            <Skeleton className="h-4 w-20 mb-2" />
+            <Skeleton className="w-full aspect-[4/3] rounded-lg" />
+          </div>
+
+          {/* Thumbnails Skeleton */}
+          <div>
+            <Skeleton className="h-4 w-28 mb-2" />
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Skeleton
+                  key={index}
+                  className="aspect-square w-16 flex-shrink-0 rounded-md"
+                />
+              ))}
             </div>
           </div>
         </div>
