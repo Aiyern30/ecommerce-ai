@@ -433,7 +433,9 @@ export default function NewProductPage() {
                           {...field}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <div className="min-h-[10px]">
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )}
                 />
@@ -452,7 +454,9 @@ export default function NewProductPage() {
                           value={field.value || ""}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <div className="min-h-[10px]">
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   )}
                 />
@@ -481,7 +485,9 @@ export default function NewProductPage() {
                             <SelectItem value="Mortar">Mortar</SelectItem>
                           </SelectContent>
                         </Select>
-                        <FormMessage />
+                        <div className="min-h-[10px]">
+                          <FormMessage />
+                        </div>
                       </FormItem>
                     )}
                   />
@@ -498,7 +504,9 @@ export default function NewProductPage() {
                             {...field}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <div className="min-h-[10px]">
+                          <FormMessage />
+                        </div>
                       </FormItem>
                     )}
                   />
@@ -521,7 +529,9 @@ export default function NewProductPage() {
                               {...field}
                             />
                           </FormControl>
-                          <FormMessage />
+                          <div className="min-h-[10px]">
+                            <FormMessage />
+                          </div>
                         </FormItem>
                       )}
                     />
@@ -539,7 +549,9 @@ export default function NewProductPage() {
                               {...field}
                             />
                           </FormControl>
-                          <FormMessage />
+                          <div className="min-h-[10px]">
+                            <FormMessage />
+                          </div>
                         </FormItem>
                       )}
                     />
@@ -566,7 +578,9 @@ export default function NewProductPage() {
                             <SelectItem value="per m³">Per m³</SelectItem>
                           </SelectContent>
                         </Select>
-                        <FormMessage />
+                        <div className="min-h-[10px]">
+                          <FormMessage />
+                        </div>
                       </FormItem>
                     )}
                   />
@@ -651,11 +665,13 @@ export default function NewProductPage() {
                         </Badge>
                       ))}
                     </div>
-                    {form.formState.errors.certificates && (
-                      <FormMessage>
-                        {form.formState.errors.certificates.message}
-                      </FormMessage>
-                    )}
+                    <div className="min-h-[10px]">
+                      {form.formState.errors.certificates && (
+                        <FormMessage>
+                          {form.formState.errors.certificates.message}
+                        </FormMessage>
+                      )}
+                    </div>
                   </div>
 
                   {/* Product Variants Section */}
@@ -713,11 +729,13 @@ export default function NewProductPage() {
                         </Badge>
                       ))}
                     </div>
-                    {form.formState.errors.variants && (
-                      <FormMessage>
-                        {form.formState.errors.variants.message}
-                      </FormMessage>
-                    )}
+                    <div className="min-h-[10px]">
+                      {form.formState.errors.variants && (
+                        <FormMessage>
+                          {form.formState.errors.variants.message}
+                        </FormMessage>
+                      )}
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -738,7 +756,9 @@ export default function NewProductPage() {
                     Upload 1 main image and up to 4 additional images. Accepted
                     formats: JPG, PNG, GIF. Max size: 5MB per file.
                   </FormDescription>
-                  {imageError && <FormMessage>{imageError}</FormMessage>}
+                  <div className="min-h-[10px]">
+                    {imageError && <FormMessage>{imageError}</FormMessage>}
+                  </div>
                 </FormItem>
 
                 <div className="mt-4">
