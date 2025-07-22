@@ -61,6 +61,7 @@ const productSchema = z.object({
   }),
   // NEW FIELDS
   grade: z.string().optional(),
+  status: z.enum(["draft", "published"]).optional(),
   tags: z
     .array(z.object({ tag: z.string().min(1, "Tag cannot be empty") }))
     .optional(),
@@ -87,6 +88,7 @@ type ProductFormData = z.infer<typeof productSchema>;
 export default function NewProductPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDraftSaving, setIsDraftSaving] = useState(false);
   const [selectedImageFiles, setSelectedImageFiles] = useState<File[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
   const [certificateInput, setCertificateInput] = useState("");
@@ -106,6 +108,7 @@ export default function NewProductPage() {
       stock_quantity: 0,
       category: "bagged",
       grade: "",
+      status: "draft",
       tags: [],
       certificates: [],
       variants: [],
@@ -212,13 +215,22 @@ export default function NewProductPage() {
     }
   };
 
-  const onSubmit = async (data: ProductFormData) => {
-    setIsSubmitting(true);
+  const handleSubmit = async (data: ProductFormData, isDraft = false) => {
+    if (isDraft) {
+      setIsDraftSaving(true);
+    } else {
+      setIsSubmitting(true);
+    }
     setImageError(null);
 
-    if (selectedImageFiles.length === 0) {
+    // For published products, require at least one image
+    if (selectedImageFiles.length === 0 && !isDraft) {
       setImageError("At least one product image is required.");
-      setIsSubmitting(false);
+      if (isDraft) {
+        setIsDraftSaving(false);
+      } else {
+        setIsSubmitting(false);
+      }
       return;
     }
 
@@ -230,12 +242,13 @@ export default function NewProductPage() {
           .insert({
             name: data.name,
             description: data.description,
-            price: data.price,
+            price: data.price || 0, // Default to 0 for drafts
             unit: data.unit,
-            stock_quantity: data.stock_quantity,
+            stock_quantity: data.stock_quantity || 0, // Default to 0 for drafts
             category: data.category,
             grade: data.grade || null,
             image_url: selectedImageFiles.length > 0 ? "" : null,
+            status: isDraft ? "draft" : "published",
           })
           .select("id")
           .single();
@@ -378,14 +391,37 @@ export default function NewProductPage() {
         }
       }
 
-      toast.success("Product added successfully!");
+      if (isDraft) {
+        toast.success("Product saved as draft successfully!");
+      } else {
+        toast.success("Product added successfully!");
+      }
       router.push("/staff/products");
     } catch (error) {
       console.error("Unexpected error during product creation:", error);
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
-      setIsSubmitting(false);
+      if (isDraft) {
+        setIsDraftSaving(false);
+      } else {
+        setIsSubmitting(false);
+      }
     }
+  };
+
+  const onSubmit = async (data: ProductFormData) => {
+    await handleSubmit(data, false);
+  };
+
+  const onSaveDraft = async () => {
+    const formData = form.getValues();
+    // For drafts, we don't need to validate the form as strictly
+    // Just ensure we have at least a name
+    if (!formData.name.trim()) {
+      toast.error("Product name is required even for drafts.");
+      return;
+    }
+    await handleSubmit(formData, true);
   };
 
   return (
@@ -928,10 +964,15 @@ export default function NewProductPage() {
               </Button>
             </Link>
             <div className="flex gap-3">
-              <Button variant="outline" type="button">
-                Save Draft
+              <Button
+                variant="outline"
+                type="button"
+                onClick={onSaveDraft}
+                disabled={isSubmitting || isDraftSaving}
+              >
+                {isDraftSaving ? "Saving Draft..." : "Save Draft"}
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting || isDraftSaving}>
                 {isSubmitting ? "Adding Product..." : "Add Product"}
               </Button>
             </div>

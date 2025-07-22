@@ -61,6 +61,7 @@ const productSchema = z.object({
   }),
   // NEW FIELDS
   grade: z.string().optional(),
+  status: z.enum(["draft", "published"]).optional(),
   tags: z
     .array(z.object({ tag: z.string().min(1, "Tag cannot be empty") }))
     .optional(),
@@ -365,6 +366,7 @@ export default function EditProductPage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDraftSaving, setIsDraftSaving] = useState(false);
   const [selectedImageFiles, setSelectedImageFiles] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<ExistingImage[]>([]);
   const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
@@ -386,6 +388,7 @@ export default function EditProductPage() {
       stock_quantity: 0,
       category: "bagged",
       grade: "",
+      status: "draft",
       tags: [],
       certificates: [],
       variants: [],
@@ -504,6 +507,7 @@ export default function EditProductPage() {
             | "Concrete"
             | "Mortar",
           grade: product.grade || "",
+          status: product.status || "draft",
           tags: productTags.map((pt) => ({
             tag: pt.tags.name,
           })),
@@ -619,8 +623,12 @@ export default function EditProductPage() {
     }
   };
 
-  const onSubmit = async (data: ProductFormData) => {
-    setIsSubmitting(true);
+  const handleSubmit = async (data: ProductFormData, isDraft = false) => {
+    if (isDraft) {
+      setIsDraftSaving(true);
+    } else {
+      setIsSubmitting(true);
+    }
     setImageError(null);
 
     const remainingExistingImages = existingImages.filter(
@@ -629,9 +637,14 @@ export default function EditProductPage() {
     const totalImageCount =
       remainingExistingImages.length + selectedImageFiles.length;
 
-    if (totalImageCount === 0) {
+    // For published products, require at least one image
+    if (totalImageCount === 0 && !isDraft) {
       setImageError("At least one product image is required.");
-      setIsSubmitting(false);
+      if (isDraft) {
+        setIsDraftSaving(false);
+      } else {
+        setIsSubmitting(false);
+      }
       return;
     }
 
@@ -642,18 +655,23 @@ export default function EditProductPage() {
         .update({
           name: data.name,
           description: data.description,
-          price: data.price,
+          price: data.price || 0, // Default to 0 for drafts
           unit: data.unit,
-          stock_quantity: data.stock_quantity,
+          stock_quantity: data.stock_quantity || 0, // Default to 0 for drafts
           category: data.category,
           grade: data.grade || null,
+          status: isDraft ? 'draft' : 'published',
           updated_at: new Date().toISOString(),
         })
         .eq("id", productId);
 
       if (productUpdateError) {
         toast.error("Product update failed: " + productUpdateError.message);
-        setIsSubmitting(false);
+        if (isDraft) {
+          setIsDraftSaving(false);
+        } else {
+          setIsSubmitting(false);
+        }
         return;
       }
 
@@ -869,14 +887,37 @@ export default function EditProductPage() {
         }
       }
 
-      toast.success("Product updated successfully!");
+      if (isDraft) {
+        toast.success("Product saved as draft successfully!");
+      } else {
+        toast.success("Product updated successfully!");
+      }
       router.push("/staff/products");
     } catch (error) {
       console.error("Unexpected error during product update:", error);
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
-      setIsSubmitting(false);
+      if (isDraft) {
+        setIsDraftSaving(false);
+      } else {
+        setIsSubmitting(false);
+      }
     }
+  };
+
+  const onSubmit = async (data: ProductFormData) => {
+    await handleSubmit(data, false);
+  };
+
+  const onSaveDraft = async () => {
+    const formData = form.getValues();
+    // For drafts, we don't need to validate the form as strictly
+    // Just ensure we have at least a name
+    if (!formData.name.trim()) {
+      toast.error("Product name is required even for drafts.");
+      return;
+    }
+    await handleSubmit(formData, true);
   };
 
   if (isLoading) {
@@ -903,7 +944,15 @@ export default function EditProductPage() {
         />
 
         <div className="flex items-center justify-between">
-          <TypographyH2>Edit Product</TypographyH2>
+          <div className="flex items-center gap-3">
+            <TypographyH2>Edit Product</TypographyH2>
+            <Badge 
+              variant={form.getValues("status") === 'published' ? 'default' : 'secondary'}
+              className={form.getValues("status") === 'published' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-yellow-100 text-yellow-800 border-yellow-200'}
+            >
+              {form.getValues("status") === 'published' ? 'Published' : 'Draft'}
+            </Badge>
+          </div>
           <div className="flex items-center gap-2">
             <Link href="/staff/products">
               <Button variant="outline" size="sm">
@@ -1015,6 +1064,39 @@ export default function EditProductPage() {
                             {...field}
                           />
                         </FormControl>
+                        <div className="min-h-[10px]">
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium">Product Status</h3>
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Status</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value || "draft"}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="draft">Draft</SelectItem>
+                            <SelectItem value="published">Published</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          Draft products are not visible to customers. Published products are live on the store.
+                        </FormDescription>
                         <div className="min-h-[10px]">
                           <FormMessage />
                         </div>
@@ -1513,10 +1595,10 @@ export default function EditProductPage() {
               </Button>
             </Link>
             <div className="flex gap-3">
-              <Button variant="outline" type="button">
-                Save Draft
+              <Button variant="outline" type="button" onClick={onSaveDraft} disabled={isSubmitting || isDraftSaving}>
+                {isDraftSaving ? "Saving Draft..." : "Save Draft"}
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting || isDraftSaving}>
                 {isSubmitting ? "Updating Product..." : "Update Product"}
               </Button>
             </div>

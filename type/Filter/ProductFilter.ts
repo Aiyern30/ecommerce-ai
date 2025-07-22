@@ -2,6 +2,7 @@ export interface ProductFilters {
   search: string;
   category: string;
   stockStatus: "all" | "in-stock" | "out-of-stock";
+  status: "all" | "draft" | "published";
   sortBy:
     | "name-asc"
     | "name-desc"
