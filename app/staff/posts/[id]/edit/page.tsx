@@ -890,21 +890,15 @@ export default function EditPostPage() {
                           return (
                             <label
                               htmlFor="image-upload"
-                              className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-input/80 transition-colors"
+                              className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-muted/50 transition-colors"
                             >
-                              <div className="flex flex-col items-center justify-center space-y-3">
-                                <div className="w-16 h-16 border-2 border-dashed border-muted-foreground rounded-lg flex items-center justify-center">
-                                  <Plus className="h-8 w-8 text-muted-foreground" />
-                                </div>
-                                <div className="text-center">
-                                  <p className="text-sm font-medium text-foreground">
-                                    Upload post image
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">
-                                    Click to browse files
-                                  </p>
-                                </div>
-                              </div>
+                              <Plus className="h-8 w-8 text-muted-foreground mb-2" />
+                              <p className="text-sm text-muted-foreground text-center">
+                                Click to upload image
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                JPG, PNG, GIF up to 5MB
+                              </p>
                               <input
                                 id="image-upload"
                                 type="file"

@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import type React from "react";
-import { ArrowLeft, X, BookOpen, Search } from "lucide-react";
+import { ArrowLeft, X, BookOpen, Search, Plus } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
   Skeleton,
+  AspectRatio,
 } from "@/components/ui/";
 import {
   TypographyH2,
@@ -87,80 +88,83 @@ function BlogEditSkeleton() {
         </div>
       </div>
 
-      {/* Blog Details Card Skeleton */}
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-32" />
-          <Skeleton className="h-4 w-48" />
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Title Field */}
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-3 w-64" />
-          </div>
-
-          {/* Description Field */}
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-3 w-56" />
-          </div>
-
-          {/* External Link Field */}
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-28" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-3 w-52" />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Tags Card Skeleton */}
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-16" />
-          <Skeleton className="h-4 w-44" />
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-10 w-full" />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Skeleton className="h-6 w-16 rounded-full" />
-            <Skeleton className="h-6 w-20 rounded-full" />
-            <Skeleton className="h-6 w-18 rounded-full" />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Images Card Skeleton */}
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-28" />
-          <Skeleton className="h-4 w-48" />
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Current Images */}
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-32" />
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="aspect-square rounded-md" />
-              ))}
+      {/* Main Blog Information - Two Column Layout Skeleton */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Side - Blog Information Skeleton */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-36" /> {/* Blog Information */}
+            <Skeleton className="h-4 w-56" />
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Title Field */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-3 w-64" />
+              <Skeleton className="h-3 w-10" /> {/* min-h container */}
             </div>
-          </div>
 
-          {/* Upload Field */}
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-40" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-3 w-72" />
-          </div>
-        </CardContent>
-      </Card>
+            {/* Description Field */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-3 w-56" />
+              <Skeleton className="h-3 w-10" />
+            </div>
+
+            {/* External Link Field */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-3 w-52" />
+              <Skeleton className="h-3 w-10" />
+            </div>
+
+            {/* Tags Section */}
+            <div className="space-y-4 pt-6 border-t">
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-16" /> {/* Tags */}
+                <Skeleton className="h-4 w-44" />
+              </div>
+
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <Skeleton className="h-6 w-16 rounded-full" />
+                <Skeleton className="h-6 w-20 rounded-full" />
+                <Skeleton className="h-6 w-18 rounded-full" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Right Side - Blog Image Skeleton */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-24" /> {/* Blog Image */}
+            <Skeleton className="h-4 w-52" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 mb-4">
+              <Skeleton className="h-4 w-24" /> {/* Image File label */}
+              <Skeleton className="h-3 w-76" /> {/* Description */}
+              <Skeleton className="h-3 w-10" /> {/* Error container */}
+            </div>
+
+            <div className="space-y-4">
+              {/* Main Image Skeleton */}
+              <div className="mb-4">
+                <Skeleton className="w-full aspect-[4/3] rounded-lg" />
+              </div>
+              <Skeleton className="h-3 w-72" /> {/* Bottom description */}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Submit Buttons Skeleton */}
       <div className="flex justify-end gap-4">
@@ -271,12 +275,10 @@ export default function EditBlogPage() {
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedImageFiles, setSelectedImageFiles] = useState<File[]>([]);
-  const [currentImages, setCurrentImages] = useState<{ image_url: string }[]>(
-    []
-  );
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
-  const [removedImages, setRemovedImages] = useState<string[]>([]);
+  const [removeCurrentImage, setRemoveCurrentImage] = useState(false);
 
   const form = useForm<BlogFormData>({
     resolver: zodResolver(blogSchema),
@@ -323,7 +325,12 @@ export default function EditBlogPage() {
       }
 
       setBlog(blogData);
-      setCurrentImages(blogData.blog_images || []);
+      // Get the first image as the current image (since we're now using single image design)
+      const firstImage =
+        blogData.blog_images && blogData.blog_images.length > 0
+          ? blogData.blog_images[0].image_url
+          : null;
+      setCurrentImageUrl(firstImage);
 
       // Set form values
       form.reset({
@@ -356,59 +363,57 @@ export default function EditBlogPage() {
   }, [blogId, form, router]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const files = Array.from(e.target.files);
-      const newFiles: File[] = [];
-      let hasError = false;
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
 
-      files.forEach((file) => {
-        if (!file.type.startsWith("image/")) {
-          setImageError(`File "${file.name}" is not an image.`);
-          hasError = true;
-        } else if (file.size > 5 * 1024 * 1024) {
-          setImageError(`File "${file.name}" size exceeds 5MB.`);
-          hasError = true;
-        } else {
-          newFiles.push(file);
-        }
-      });
-
-      if (hasError) {
-        setSelectedImageFiles([]);
+      if (!file.type.startsWith("image/")) {
+        setImageError("File must be an image.");
+        setSelectedImageFile(null);
         e.target.value = "";
-      } else {
-        setSelectedImageFiles(newFiles);
-        setImageError(null);
+        return;
       }
+
+      if (file.size > 10 * 1024 * 1024) {
+        setImageError("File size must be less than 10MB.");
+        setSelectedImageFile(null);
+        e.target.value = "";
+        return;
+      }
+
+      setSelectedImageFile(file);
+      setImageError(null);
+      setRemoveCurrentImage(false); // If uploading new image, don't remove current
     } else {
-      setSelectedImageFiles([]);
+      setSelectedImageFile(null);
       setImageError(null);
     }
   };
 
-  const handleRemoveNewImage = (index: number) => {
-    setSelectedImageFiles((prevFiles) =>
-      prevFiles.filter((_, i) => i !== index)
-    );
-  };
-
-  const handleRemoveCurrentImage = (imageUrl: string) => {
-    setRemovedImages((prev) => [...prev, imageUrl]);
-    setCurrentImages((prev) =>
-      prev.filter((img) => img.image_url !== imageUrl)
-    );
-  };
-
-  const handleRestoreCurrentImage = (imageUrl: string) => {
-    setRemovedImages((prev) => prev.filter((url) => url !== imageUrl));
-    if (blog?.blog_images) {
-      const originalImage = blog.blog_images.find(
-        (img) => img.image_url === imageUrl
-      );
-      if (originalImage) {
-        setCurrentImages((prev) => [...prev, originalImage]);
-      }
+  const handleRemoveNewImage = () => {
+    setSelectedImageFile(null);
+    setImageError(null);
+    // Reset the file input
+    const fileInput = document.querySelector(
+      'input[type="file"]'
+    ) as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = "";
     }
+  };
+
+  const handleRemoveCurrentImage = () => {
+    setRemoveCurrentImage(true);
+    setCurrentImageUrl(null);
+  };
+
+  const handleKeepCurrentImage = () => {
+    setRemoveCurrentImage(false);
+    // Get the first image from blog_images
+    const firstImage =
+      blog?.blog_images && blog.blog_images.length > 0
+        ? blog.blog_images[0].image_url
+        : null;
+    setCurrentImageUrl(firstImage);
   };
 
   const addTag = (tagId: string) => {
@@ -424,33 +429,54 @@ export default function EditBlogPage() {
     setImageError(null);
 
     try {
-      // Upload new images if any
-      const newImageUrls: string[] = [];
-      for (const file of selectedImageFiles) {
-        const fileExt = file.name.split(".").pop();
-        const filePath = `blogs/${blogId}/${Date.now()}-${Math.random()
+      let imageUrl: string | null = currentImageUrl;
+
+      // Handle image upload if new image is selected
+      if (selectedImageFile) {
+        const fileExt = selectedImageFile.name.split(".").pop();
+        const filePath = `blogs/${Date.now()}-${Math.random()
           .toString(36)
           .substring(2, 15)}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
           .from("blogs")
-          .upload(filePath, file, {
+          .upload(filePath, selectedImageFile, {
             cacheControl: "3600",
             upsert: false,
           });
 
         if (uploadError) {
           console.error("Image upload failed:", uploadError.message);
-          toast.error(
-            `Failed to upload image ${file.name}: ${uploadError.message}`
-          );
-          continue;
+          toast.error(`Failed to upload image: ${uploadError.message}`);
+          setIsSubmitting(false);
+          return;
         }
 
         const { data: publicData } = supabase.storage
           .from("blogs")
           .getPublicUrl(filePath);
-        newImageUrls.push(publicData.publicUrl);
+        imageUrl = publicData.publicUrl;
+
+        // Remove old image if it exists
+        if (currentImageUrl) {
+          const oldImagePath = currentImageUrl.split("/").pop();
+          if (oldImagePath) {
+            await supabase.storage
+              .from("blogs")
+              .remove([`blogs/${oldImagePath}`]);
+          }
+        }
+      } else if (removeCurrentImage) {
+        // Remove current image
+        if (currentImageUrl) {
+          const oldImagePath = currentImageUrl.split("/").pop();
+          if (oldImagePath) {
+            await supabase.storage
+              .from("blogs")
+              .remove([`blogs/${oldImagePath}`]);
+          }
+        }
+        imageUrl = null;
       }
 
       // Update blog data
@@ -470,31 +496,28 @@ export default function EditBlogPage() {
         return;
       }
 
-      // Handle image updates
-      if (removedImages.length > 0) {
-        // Remove images from blog_images table
+      // Handle image updates in blog_images table
+      if (removeCurrentImage || selectedImageFile) {
+        // First, remove all existing images
         const { error: removeImagesError } = await supabase
           .from("blog_images")
           .delete()
-          .eq("blog_id", blog.id)
-          .in("image_url", removedImages);
+          .eq("blog_id", blog.id);
 
         if (removeImagesError) {
           console.error("Failed to remove images:", removeImagesError.message);
         }
-      }
 
-      // Add new images to blog_images table
-      if (newImageUrls.length > 0) {
-        const { error: addImagesError } = await supabase
-          .from("blog_images")
-          .insert(
-            newImageUrls.map((url) => ({ blog_id: blog.id, image_url: url }))
-          );
+        // Add new image if we have one
+        if (imageUrl) {
+          const { error: addImageError } = await supabase
+            .from("blog_images")
+            .insert({ blog_id: blog.id, image_url: imageUrl });
 
-        if (addImagesError) {
-          console.error("Failed to add new images:", addImagesError.message);
-          toast.error("Failed to add new images: " + addImagesError.message);
+          if (addImageError) {
+            console.error("Failed to add new image:", addImageError.message);
+            toast.error("Failed to add new image: " + addImageError.message);
+          }
         }
       }
 
@@ -571,250 +594,311 @@ export default function EditBlogPage() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Basic Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Blog Details</CardTitle>
-              <CardDescription>
-                Edit the basic details of the blog.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Blog Title *</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="e.g., How to Choose the Right Cement for Your Project"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      The title of your blog (max 200 characters).
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="A brief description of the blog content..."
-                        className="resize-none"
-                        rows={3}
-                        {...field}
-                        value={field.value || ""}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      A short description or summary (max 500 characters).
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="external_link"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>External Link</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="https://example.com"
-                        {...field}
-                        value={field.value || ""}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Optional external link related to this blog.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-          </Card>
-
-          {/* Tags */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Tags</CardTitle>
-              <CardDescription>
-                Select tags to categorize this blog.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <FormLabel>Add Tags</FormLabel>
-                <Select onValueChange={addTag}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a tag to add" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableTags
-                      .filter(
-                        (tag) =>
-                          !tagFields.some((field) => field.tag_id === tag.id)
-                      )
-                      .map((tag) => (
-                        <SelectItem key={tag.id} value={tag.id}>
-                          {tag.name}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {tagFields.map((field, index) => {
-                  const tag = availableTags.find((t) => t.id === field.tag_id);
-                  return (
-                    <Badge
-                      key={field.id}
-                      variant="secondary"
-                      className="flex items-center gap-1"
-                    >
-                      {tag?.name || "Unknown Tag"}
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-4 w-4 p-0"
-                        onClick={() => removeTag(index)}
-                      >
-                        <X className="h-3 w-3" />
-                        <span className="sr-only">Remove tag</span>
-                      </Button>
-                    </Badge>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Image Management */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Blog Images</CardTitle>
-              <CardDescription>
-                Manage the images for this blog.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Current Images */}
-              {currentImages.length > 0 && (
-                <div>
-                  <FormLabel>Current Images</FormLabel>
-                  <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {currentImages.map((image, index) => (
-                      <div key={index} className="relative group">
-                        <Image
-                          src={image.image_url || "/placeholder.svg"}
-                          alt={`Current image ${index + 1}`}
-                          className="object-cover rounded-md aspect-square"
-                          width={128}
-                          height={128}
+          {/* Main Blog Information - Two Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left Side - Blog Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  <TypographyH3>Blog Information</TypographyH3>
+                </CardTitle>
+                <CardDescription>
+                  <TypographyP className="!mt-0">
+                    Edit the basic details of the blog.
+                  </TypographyP>
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Blog Title *</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g., How to Choose the Right Cement for Your Project"
+                          {...field}
                         />
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-1 right-1 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() =>
-                            handleRemoveCurrentImage(image.image_url)
-                          }
-                        >
-                          <X className="h-4 w-4" />
-                          <span className="sr-only">Remove image</span>
-                        </Button>
+                      </FormControl>
+                      <FormDescription>
+                        The title of your blog (max 200 characters).
+                      </FormDescription>
+                      <div className="min-h-[10px]">
+                        <FormMessage />
                       </div>
-                    ))}
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="A brief description of the blog content..."
+                          className="resize-none"
+                          rows={3}
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        A short description or summary (max 500 characters).
+                      </FormDescription>
+                      <div className="min-h-[10px]">
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="external_link"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>External Link</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="https://example.com"
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Optional external link related to this blog.
+                      </FormDescription>
+                      <div className="min-h-[10px]">
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                {/* Tags Section */}
+                <div className="space-y-4 pt-6 border-t">
+                  <div>
+                    <TypographyH3>Tags</TypographyH3>
+                    <TypographyP className="!mt-0">
+                      Select tags to categorize this blog.
+                    </TypographyP>
+                  </div>
+
+                  <div>
+                    <FormLabel>Add Tags</FormLabel>
+                    <Select onValueChange={addTag}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a tag to add" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableTags
+                          .filter(
+                            (tag) =>
+                              !tagFields.some(
+                                (field) => field.tag_id === tag.id
+                              )
+                          )
+                          .map((tag) => (
+                            <SelectItem key={tag.id} value={tag.id}>
+                              {tag.name}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {tagFields.map((field, index) => {
+                      const tag = availableTags.find(
+                        (t) => t.id === field.tag_id
+                      );
+                      return (
+                        <Badge
+                          key={field.id}
+                          variant="secondary"
+                          className="flex items-center gap-1"
+                        >
+                          {tag?.name || "Unknown Tag"}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-4 w-4 p-0"
+                            onClick={() => removeTag(index)}
+                          >
+                            <X className="h-3 w-3" />
+                            <span className="sr-only">Remove tag</span>
+                          </Button>
+                        </Badge>
+                      );
+                    })}
                   </div>
                 </div>
-              )}
+              </CardContent>
+            </Card>
 
-              {/* Removed Images (with restore option) */}
-              {removedImages.length > 0 && (
-                <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-yellow-800 dark:text-yellow-200">
-                      {removedImages.length} image(s) will be removed
-                    </span>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        removedImages.forEach(handleRestoreCurrentImage);
-                        setRemovedImages([]);
-                      }}
-                    >
-                      Restore All
-                    </Button>
+            {/* Right Side - Blog Image */}
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  <TypographyH3>Blog Image</TypographyH3>
+                </CardTitle>
+                <CardDescription>
+                  <TypographyP className="!mt-0">
+                    Update the blog image or keep the current one.
+                  </TypographyP>
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FormItem>
+                  <FormLabel>Image File</FormLabel>
+                  <FormDescription>
+                    Upload a new image or keep the current one. Accepted
+                    formats: JPG, PNG, GIF. Max size: 10MB.
+                  </FormDescription>
+                  <div className="min-h-[10px]">
+                    {imageError && <FormMessage>{imageError}</FormMessage>}
                   </div>
-                </div>
-              )}
+                </FormItem>
 
-              {/* New Image Upload */}
-              <FormItem>
-                <FormLabel>Upload New Images (Optional)</FormLabel>
-                <FormControl>
-                  <Input
+                <div className="mt-4">
+                  {/* Main Image Display */}
+                  <AspectRatio ratio={4 / 3} className="mb-4">
+                    <div className="relative w-full h-full border-2 border-dashed border-muted rounded-lg overflow-hidden bg-input">
+                      {/* Show current image, new image, or upload placeholder */}
+                      {(() => {
+                        if (selectedImageFile) {
+                          // Show new image preview
+                          return (
+                            <>
+                              <Image
+                                src={URL.createObjectURL(selectedImageFile)}
+                                alt="New image preview"
+                                className="w-full h-full object-cover"
+                                fill
+                                priority
+                              />
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                className="absolute top-2 right-2 h-8 w-8 rounded-full shadow-lg z-10"
+                                onClick={handleRemoveNewImage}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                              {/* Change image overlay */}
+                              <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <label
+                                  htmlFor="image-upload"
+                                  className="cursor-pointer"
+                                >
+                                  <div className="bg-white rounded-lg px-4 py-2 text-sm font-medium text-black hover:bg-gray-100 transition-colors">
+                                    Change Image
+                                  </div>
+                                </label>
+                              </div>
+                            </>
+                          );
+                        } else if (currentImageUrl && !removeCurrentImage) {
+                          // Show current image
+                          return (
+                            <>
+                              <Image
+                                src={currentImageUrl}
+                                alt="Current blog image"
+                                className="w-full h-full object-cover"
+                                fill
+                                priority
+                              />
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                className="absolute top-2 right-2 h-8 w-8 rounded-full shadow-lg z-10"
+                                onClick={handleRemoveCurrentImage}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                              {/* Change image overlay */}
+                              <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <label
+                                  htmlFor="image-upload"
+                                  className="cursor-pointer"
+                                >
+                                  <div className="bg-white rounded-lg px-4 py-2 text-sm font-medium text-black hover:bg-gray-100 transition-colors">
+                                    Change Image
+                                  </div>
+                                </label>
+                              </div>
+                            </>
+                          );
+                        } else {
+                          // Show upload placeholder
+                          return (
+                            <label
+                              htmlFor="image-upload"
+                              className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-muted/50 transition-colors"
+                            >
+                              <Plus className="h-8 w-8 text-muted-foreground mb-2" />
+                              <p className="text-sm text-muted-foreground text-center">
+                                Click to upload image
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                JPG, PNG, GIF up to 10MB
+                              </p>
+                            </label>
+                          );
+                        }
+                      })()}
+                    </div>
+                  </AspectRatio>
+
+                  {/* Hidden file input */}
+                  <input
+                    id="image-upload"
                     type="file"
                     accept="image/*"
-                    multiple
                     onChange={handleImageChange}
+                    className="hidden"
                   />
-                </FormControl>
-                <FormDescription>
-                  Accepted formats: JPG, PNG, GIF. Max size: 5MB per file. Leave
-                  empty to keep current images.
-                </FormDescription>
-                {imageError && <FormMessage>{imageError}</FormMessage>}
-              </FormItem>
 
-              {/* New Images Preview */}
-              {selectedImageFiles.length > 0 && (
-                <div className="mt-4">
-                  <FormLabel>New Images Preview</FormLabel>
-                  <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {selectedImageFiles.map((file, index) => (
-                      <div key={index} className="relative group">
-                        <Image
-                          src={URL.createObjectURL(file) || "/placeholder.svg"}
-                          alt={`New image preview ${index + 1}`}
-                          className="object-cover rounded-md aspect-square"
-                          width={128}
-                          height={128}
-                        />
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-1 right-1 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleRemoveNewImage(index)}
-                        >
-                          <X className="h-4 w-4" />
-                          <span className="sr-only">Remove new image</span>
-                        </Button>
+                  {/* Show option to restore current image if removed */}
+                  {removeCurrentImage &&
+                    blog?.blog_images &&
+                    blog.blog_images.length > 0 && (
+                      <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md mb-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-yellow-800 dark:text-yellow-200">
+                            Current image will be removed
+                          </span>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleKeepCurrentImage}
+                          >
+                            Keep Current Image
+                          </Button>
+                        </div>
                       </div>
-                    ))}
-                  </div>
+                    )}
+
+                  <p className="text-xs text-muted-foreground">
+                    {selectedImageFile
+                      ? "New image preview. This will replace the current image when you save."
+                      : currentImageUrl && !removeCurrentImage
+                      ? "Current blog image. Click to change or use the X button to remove."
+                      : "Upload an image for your blog. Recommended aspect ratio is 4:3."}
+                  </p>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Submit Button */}
           <div className="flex justify-end gap-4">
