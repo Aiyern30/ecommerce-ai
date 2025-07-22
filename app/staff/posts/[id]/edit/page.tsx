@@ -10,6 +10,7 @@ import {
   LinkIcon,
   FileText,
   Search,
+  Plus,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
@@ -39,6 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
   Skeleton,
+  AspectRatio,
 } from "@/components/ui/";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import {
@@ -94,101 +96,113 @@ function PostEditSkeleton() {
         </div>
       </div>
 
-      {/* Post Details Card Skeleton */}
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-28" />
-          <Skeleton className="h-4 w-48" />
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Title Field */}
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-3 w-64" />
-          </div>
-
-          {/* Description Field */}
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-3 w-56" />
-          </div>
-
-          {/* Body Content Field */}
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-28" />
-            <Skeleton className="h-48 w-full" />
-            <Skeleton className="h-3 w-48" />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Link Card Skeleton */}
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-32" />
-          <Skeleton className="h-4 w-60" />
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Link Type Field */}
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-3 w-72" />
-          </div>
-
-          {/* Link Name Field */}
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-3 w-80" />
-          </div>
-
-          {/* Link Field */}
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-36" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-3 w-68" />
-          </div>
-
-          {/* Link Preview */}
-          <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-4 w-4" />
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-40" />
+      {/* Main Post Information - Two Column Layout Skeleton */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Side - Post Information Skeleton */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-36" /> {/* Post Information */}
+            <Skeleton className="h-4 w-56" />
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Title Field */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-3 w-64" />
+              <Skeleton className="h-3 w-10" /> {/* min-h container */}
             </div>
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Image Card Skeleton */}
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-24" />
-          <Skeleton className="h-4 w-52" />
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Current Image */}
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-28" />
-            <Skeleton className="w-48 h-48 rounded-md" />
-          </div>
+            {/* Description Field */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-3 w-56" />
+              <Skeleton className="h-3 w-10" />
+            </div>
 
-          {/* Upload Field */}
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-44" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-3 w-76" />
-          </div>
-        </CardContent>
-      </Card>
+            {/* Body Content Field */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-48 w-full" />
+              <Skeleton className="h-3 w-48" />
+              <Skeleton className="h-3 w-10" />
+            </div>
+
+            {/* Link Section */}
+            <div className="space-y-6 pt-6 border-t">
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-32" /> {/* Link (Optional) */}
+                <Skeleton className="h-4 w-60" />
+              </div>
+
+              {/* Link Type Field */}
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-3 w-72" />
+                <Skeleton className="h-3 w-10" />
+              </div>
+
+              {/* Link Name Field */}
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-3 w-80" />
+                <Skeleton className="h-3 w-10" />
+              </div>
+
+              {/* Link Field */}
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-36" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-3 w-68" />
+                <Skeleton className="h-3 w-10" />
+              </div>
+
+              {/* Link Preview */}
+              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-4 w-4" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-40" />
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Right Side - Post Image Skeleton */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-24" /> {/* Post Image */}
+            <Skeleton className="h-4 w-52" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 mb-4">
+              <Skeleton className="h-4 w-24" /> {/* Image File label */}
+              <Skeleton className="h-3 w-76" /> {/* Description */}
+              <Skeleton className="h-3 w-10" /> {/* Error container */}
+            </div>
+
+            <div className="space-y-4">
+              {/* Main Image Skeleton */}
+              <div className="mb-4">
+                <Skeleton className="w-full aspect-[4/3] rounded-lg" />
+              </div>
+              <Skeleton className="h-3 w-72" /> {/* Bottom description */}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Submit Buttons Skeleton */}
-      <div className="flex justify-end gap-4">
+      <div className="flex justify-between items-center pt-6 border-t">
         <Skeleton className="h-10 w-20" />
-        <Skeleton className="h-10 w-28" />
+        <div className="flex gap-3">
+          <Skeleton className="h-10 w-24" />
+          <Skeleton className="h-10 w-28" />
+        </div>
       </div>
     </div>
   );
@@ -545,317 +559,413 @@ export default function EditPostPage() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Basic Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Post Details</CardTitle>
-              <CardDescription>
-                Edit the basic details of the post.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Post Title *</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="e.g., How to Choose the Right Cement for Your Project"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      The title of your post (max 200 characters).
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="A brief description of the post content..."
-                        className="resize-none"
-                        rows={3}
-                        {...field}
-                        value={field.value || ""}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      A short description or summary (max 500 characters).
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="body"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Post Content *</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Write your post content here..."
-                        className="resize-none min-h-[200px]"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      The main content of your post.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-          </Card>
-
-          {/* Link Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Link (Optional)</CardTitle>
-              <CardDescription>
-                Edit the internal page link or external website link.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <FormField
-                control={form.control}
-                name="linkType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Link Type</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+          {/* Main Post Information - Two Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left Side - Post Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  <TypographyH3>Post Information</TypographyH3>
+                </CardTitle>
+                <CardDescription>
+                  <TypographyP className="!mt-0">
+                    Edit the basic details and content of the post.
+                  </TypographyP>
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Post Title *</FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select link type" />
-                        </SelectTrigger>
+                        <Input
+                          placeholder="e.g., How to Choose the Right Cement for Your Project"
+                          {...field}
+                        />
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="internal">
-                          <div className="flex items-center gap-2">
-                            <LinkIcon className="h-4 w-4 text-green-500" />
-                            Internal Page
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="external">
-                          <div className="flex items-center gap-2">
-                            <ExternalLink className="h-4 w-4 text-blue-500" />
-                            External Website
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>
-                      Choose whether to link to an internal page or external
-                      website.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormDescription>
+                        The title of your post (max 200 characters).
+                      </FormDescription>
+                      <div className="min-h-[10px]">
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="link_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Link Display Name</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder={
-                          linkType === "external"
-                            ? "Visit Our Website"
-                            : "Explore Products"
-                        }
-                        {...field}
-                        value={field.value || ""}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      A human-readable name for the link (e.g., "Explore
-                      Products", "Read More", "Visit Website")
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="A brief description of the post content..."
+                          className="resize-none"
+                          rows={3}
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        A short description or summary (max 500 characters).
+                      </FormDescription>
+                      <div className="min-h-[10px]">
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="link"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {linkType === "external"
-                        ? "External URL"
-                        : "Internal Page Path"}
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder={
-                          linkType === "external"
-                            ? "https://example.com"
-                            : "/staff/products"
-                        }
-                        {...field}
-                        value={field.value || ""}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      {linkType === "external"
-                        ? "Full URL starting with http:// or https://"
-                        : "Internal page path starting with / (e.g., /staff/products, /comparison)"}
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="body"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Post Content *</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Write your post content here..."
+                          className="resize-none min-h-[200px]"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        The main content of your post.
+                      </FormDescription>
+                      <div className="min-h-[10px]">
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
 
-              {/* Link Preview */}
-              {form.watch("link") && (
-                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
-                  <div className="flex items-center gap-2 text-sm">
-                    {linkType === "external" ? (
-                      <ExternalLink className="h-4 w-4 text-blue-500" />
-                    ) : (
-                      <LinkIcon className="h-4 w-4 text-green-500" />
+                {/* Link Section */}
+                <div className="space-y-6 pt-6 border-t">
+                  <div>
+                    <TypographyH3>Link (Optional)</TypographyH3>
+                    <TypographyP className="!mt-0">
+                      Edit the internal page link or external website link.
+                    </TypographyP>
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="linkType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Link Type</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select link type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="internal">
+                              <div className="flex items-center gap-2">
+                                <LinkIcon className="h-4 w-4 text-green-500" />
+                                Internal Page
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="external">
+                              <div className="flex items-center gap-2">
+                                <ExternalLink className="h-4 w-4 text-blue-500" />
+                                External Website
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          Choose whether to link to an internal page or external
+                          website.
+                        </FormDescription>
+                        <div className="min-h-[10px]">
+                          <FormMessage />
+                        </div>
+                      </FormItem>
                     )}
-                    <span className="font-medium">
-                      {linkType === "external"
-                        ? "External Link:"
-                        : "Internal Link:"}
-                    </span>
-                    <code className="bg-white dark:bg-gray-700 px-2 py-1 rounded text-xs">
-                      {form.watch("link")}
-                    </code>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Image Upload */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Post Image</CardTitle>
-              <CardDescription>
-                Update the post image or keep the current one.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {currentImageUrl && !removeCurrentImage && (
-                <div className="space-x-5">
-                  <FormLabel>Current Image</FormLabel>
-                  <div className="mt-2 relative inline-block">
-                    <Image
-                      src={currentImageUrl || "/placeholder.svg"}
-                      alt="Current post image"
-                      className="object-cover rounded-md"
-                      width={200}
-                      height={200}
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-1 right-1 h-6 w-6 rounded-full"
-                      onClick={handleRemoveCurrentImage}
-                    >
-                      <X className="h-4 w-4" />
-                      <span className="sr-only">Remove current image</span>
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Show option to restore current image if removed */}
-              {removeCurrentImage && post.image_url && (
-                <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-yellow-800 dark:text-yellow-200">
-                      Current image will be removed
-                    </span>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={handleKeepCurrentImage}
-                    >
-                      Keep Current Image
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* New Image Upload */}
-              <FormItem>
-                <FormLabel>Upload New Image (Optional)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
                   />
-                </FormControl>
-                <FormDescription>
-                  Accepted formats: JPG, PNG, GIF. Max size: 5MB. Leave empty to
-                  keep current image.
-                </FormDescription>
-                {imageError && <FormMessage>{imageError}</FormMessage>}
-              </FormItem>
 
-              {/* New Image Preview */}
-              {selectedImageFile && (
-                <div className="mt-4 space-x-5">
-                  <FormLabel>New Image Preview</FormLabel>
-                  <div className="mt-2 relative inline-block">
-                    <Image
-                      src={
-                        URL.createObjectURL(selectedImageFile) ||
-                        "/placeholder.svg"
-                      }
-                      alt="New image preview"
-                      className="object-cover rounded-md"
-                      width={200}
-                      height={200}
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-1 right-1 h-6 w-6 rounded-full"
-                      onClick={handleRemoveNewImage}
-                    >
-                      <X className="h-4 w-4" />
-                      <span className="sr-only">Remove new image</span>
-                    </Button>
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="link_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Link Display Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder={
+                              linkType === "external"
+                                ? "Visit Our Website"
+                                : "Explore Products"
+                            }
+                            {...field}
+                            value={field.value || ""}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          A human-readable name for the link (e.g., "Explore
+                          Products", "Read More", "Visit Website")
+                        </FormDescription>
+                        <div className="min-h-[10px]">
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="link"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {linkType === "external"
+                            ? "External URL"
+                            : "Internal Page Path"}
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder={
+                              linkType === "external"
+                                ? "https://example.com"
+                                : "/staff/products"
+                            }
+                            {...field}
+                            value={field.value || ""}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {linkType === "external"
+                            ? "Full URL starting with http:// or https://"
+                            : "Internal page path starting with / (e.g., /staff/products, /comparison)"}
+                        </FormDescription>
+                        <div className="min-h-[10px]">
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Link Preview */}
+                  {form.watch("link") && (
+                    <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                      <div className="flex items-center gap-2 text-sm">
+                        {linkType === "external" ? (
+                          <ExternalLink className="h-4 w-4 text-blue-500" />
+                        ) : (
+                          <LinkIcon className="h-4 w-4 text-green-500" />
+                        )}
+                        <span className="font-medium">
+                          {linkType === "external"
+                            ? "External Link:"
+                            : "Internal Link:"}
+                        </span>
+                        <code className="bg-white dark:bg-gray-700 px-2 py-1 rounded text-xs">
+                          {form.watch("link")}
+                        </code>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+
+            {/* Right Side - Post Image */}
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  <TypographyH3>Post Image</TypographyH3>
+                </CardTitle>
+                <CardDescription>
+                  <TypographyP className="!mt-0">
+                    Update the post image or keep the current one.
+                  </TypographyP>
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FormItem>
+                  <FormLabel>Image File</FormLabel>
+                  <FormDescription>
+                    Upload a new image or keep the current one. Accepted
+                    formats: JPG, PNG, GIF. Max size: 5MB.
+                  </FormDescription>
+                  <div className="min-h-[10px]">
+                    {imageError && <FormMessage>{imageError}</FormMessage>}
+                  </div>
+                </FormItem>
+
+                <div className="mt-4">
+                  {/* Main Image Display */}
+                  <AspectRatio ratio={4 / 3} className="mb-4">
+                    <div className="relative w-full h-full border-2 border-dashed border-muted rounded-lg overflow-hidden bg-input">
+                      {/* Show current image, new image, or upload placeholder */}
+                      {(() => {
+                        if (selectedImageFile) {
+                          // Show new image preview
+                          return (
+                            <>
+                              <Image
+                                src={URL.createObjectURL(selectedImageFile)}
+                                alt="New image preview"
+                                className="w-full h-full object-cover"
+                                fill
+                                priority
+                              />
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                className="absolute top-2 right-2 h-8 w-8 rounded-full shadow-lg z-10"
+                                onClick={handleRemoveNewImage}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                              {/* Change image overlay */}
+                              <label
+                                htmlFor="image-upload"
+                                className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors cursor-pointer flex items-center justify-center"
+                              >
+                                <div className="bg-white/90 hover:bg-white text-gray-700 px-3 py-2 rounded-md opacity-0 hover:opacity-100 transition-opacity">
+                                  Change Image
+                                </div>
+                              </label>
+                              <input
+                                id="image-upload"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              />
+                            </>
+                          );
+                        } else if (currentImageUrl && !removeCurrentImage) {
+                          // Show current image
+                          return (
+                            <>
+                              <Image
+                                src={currentImageUrl}
+                                alt="Current post image"
+                                className="w-full h-full object-cover"
+                                fill
+                                priority
+                              />
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                className="absolute top-2 right-2 h-8 w-8 rounded-full shadow-lg z-10"
+                                onClick={handleRemoveCurrentImage}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                              {/* Change image overlay */}
+                              <label
+                                htmlFor="image-upload"
+                                className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors cursor-pointer flex items-center justify-center"
+                              >
+                                <div className="bg-white/90 hover:bg-white text-gray-700 px-3 py-2 rounded-md opacity-0 hover:opacity-100 transition-opacity">
+                                  Change Image
+                                </div>
+                              </label>
+                              <input
+                                id="image-upload"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              />
+                            </>
+                          );
+                        } else {
+                          // Show upload placeholder
+                          return (
+                            <label
+                              htmlFor="image-upload"
+                              className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-input/80 transition-colors"
+                            >
+                              <div className="flex flex-col items-center justify-center space-y-3">
+                                <div className="w-16 h-16 border-2 border-dashed border-muted-foreground rounded-lg flex items-center justify-center">
+                                  <Plus className="h-8 w-8 text-muted-foreground" />
+                                </div>
+                                <div className="text-center">
+                                  <p className="text-sm font-medium text-foreground">
+                                    Upload post image
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    Click to browse files
+                                  </p>
+                                </div>
+                              </div>
+                              <input
+                                id="image-upload"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              />
+                            </label>
+                          );
+                        }
+                      })()}
+                    </div>
+                  </AspectRatio>
+
+                  {/* Show option to restore current image if removed */}
+                  {removeCurrentImage && post.image_url && (
+                    <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md mb-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-yellow-800 dark:text-yellow-200">
+                          Current image will be removed
+                        </span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleKeepCurrentImage}
+                        >
+                          Keep Current Image
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-muted-foreground">
+                    {selectedImageFile
+                      ? "New image preview. This will replace the current image when you save."
+                      : currentImageUrl && !removeCurrentImage
+                      ? "Current post image. Click to change or use the X button to remove."
+                      : "Upload an image for your post. Recommended aspect ratio is 4:3."}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Submit Button */}
-          <div className="flex justify-end gap-4">
+          <div className="flex justify-between items-center pt-6 border-t">
             <Link href={`/staff/posts/${post.id}`}>
               <Button variant="outline" type="button">
+                <ArrowLeft className="mr-2 h-4 w-4" />
                 Cancel
               </Button>
             </Link>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Updating Post..." : "Update Post"}
-            </Button>
+            <div className="flex gap-3">
+              <Button variant="outline" type="button">
+                Save Draft
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Updating Post..." : "Update Post"}
+              </Button>
+            </div>
           </div>
         </form>
       </Form>
