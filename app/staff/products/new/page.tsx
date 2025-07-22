@@ -133,10 +133,14 @@ export default function NewProductPage() {
 
     const files = Array.from(e.target.files);
     const currentCount = selectedImageFiles.length;
-    const totalSelected = currentCount + files.length;
+    const remainingSlots = MAX_IMAGES - currentCount;
 
-    if (totalSelected > MAX_IMAGES) {
-      setImageError(`You can only upload up to ${MAX_IMAGES} images.`);
+    if (files.length > remainingSlots) {
+      setImageError(
+        `You can only upload ${remainingSlots} more image${
+          remainingSlots === 1 ? "" : "s"
+        }. Maximum total: ${MAX_IMAGES} images (1 main + 4 additional).`
+      );
       e.target.value = "";
       return;
     }
@@ -163,6 +167,9 @@ export default function NewProductPage() {
 
     setSelectedImageFiles((prev) => [...prev, ...newFiles]);
     setImageError(null);
+
+    // Clear the input value to allow re-uploading the same file
+    e.target.value = "";
   };
 
   const handleRemoveImage = (index: number) => {
@@ -737,7 +744,7 @@ export default function NewProductPage() {
                 <div className="mt-4">
                   {/* Main Image Display - Always show upload area */}
                   <AspectRatio ratio={4 / 3} className="mb-4">
-                    <div className="relative w-full h-full border-2 border-dashed border-muted rounded-lg overflow-hidden bg-muted/20">
+                    <div className="relative w-full h-full border-2 border-dashed border-muted rounded-lg overflow-hidden bg-input">
                       {selectedImageFiles.length > 0 ? (
                         <>
                           <Image
@@ -764,26 +771,26 @@ export default function NewProductPage() {
                             <div className="bg-white/90 hover:bg-white text-gray-700 px-3 py-2 rounded-md opacity-0 hover:opacity-100 transition-opacity">
                               Change Image
                             </div>
-                            <input
-                              id="main-image-upload"
-                              type="file"
-                              accept="image/*"
-                              onChange={handleImageChange}
-                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                            />
                           </label>
+                          <input
+                            id="main-image-upload"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          />
                         </>
                       ) : (
                         <label
                           htmlFor="main-image-upload"
-                          className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-muted/30 transition-colors"
+                          className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-input/80 transition-colors"
                         >
                           <div className="flex flex-col items-center justify-center space-y-3">
-                            <div className="w-16 h-16 border-2 border-dashed border-gray-400 rounded-lg flex items-center justify-center">
-                              <Plus className="h-8 w-8 text-gray-400" />
+                            <div className="w-16 h-16 border-2 border-dashed border-muted-foreground rounded-lg flex items-center justify-center">
+                              <Plus className="h-8 w-8 text-muted-foreground" />
                             </div>
                             <div className="text-center">
-                              <p className="text-sm font-medium text-gray-700">
+                              <p className="text-sm font-medium text-foreground">
                                 Upload main product image
                               </p>
                               <p className="text-xs text-muted-foreground">
@@ -842,32 +849,38 @@ export default function NewProductPage() {
                         {
                           length: Math.max(
                             0,
-                            4 - (selectedImageFiles.length - 1)
+                            4 - Math.max(0, selectedImageFiles.length - 1)
                           ),
                         },
-                        (_, index) => (
-                          <AspectRatio key={`empty-${index}`} ratio={1}>
-                            <div className="relative w-full h-full border-2 border-dashed border-muted rounded-md bg-muted/10 hover:bg-muted/20 transition-colors cursor-pointer">
-                              <label
-                                htmlFor="additional-image-upload"
-                                className="flex items-center justify-center w-full h-full cursor-pointer"
-                              >
-                                <Plus className="h-6 w-6 text-muted-foreground" />
-                                <span className="sr-only">
-                                  Add additional image
-                                </span>
-                              </label>
-                              <input
-                                id="additional-image-upload"
-                                type="file"
-                                accept="image/*"
-                                multiple
-                                onChange={handleImageChange}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                              />
-                            </div>
-                          </AspectRatio>
-                        )
+                        (_, index) => {
+                          const currentAdditionalImages = Math.max(
+                            0,
+                            selectedImageFiles.length - 1
+                          );
+                          const slotIndex = currentAdditionalImages + index;
+                          return (
+                            <AspectRatio key={`empty-${index}`} ratio={1}>
+                              <div className="relative w-full h-full border-2 border-dashed border-muted rounded-md bg-input hover:bg-input/80 transition-colors cursor-pointer">
+                                <label
+                                  htmlFor={`additional-image-upload-${slotIndex}`}
+                                  className="flex items-center justify-center w-full h-full cursor-pointer"
+                                >
+                                  <Plus className="h-6 w-6 text-muted-foreground" />
+                                  <span className="sr-only">
+                                    Add additional image
+                                  </span>
+                                </label>
+                                <input
+                                  id={`additional-image-upload-${slotIndex}`}
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleImageChange}
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                />
+                              </div>
+                            </AspectRatio>
+                          );
+                        }
                       )}
                     </div>
 
