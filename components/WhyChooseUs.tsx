@@ -1,6 +1,7 @@
 // components/WhyChooseUs.tsx
 "use client";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 const features = [
   {
@@ -69,19 +70,19 @@ export function WhyChooseUs() {
   };
 
   return (
-    <section className="py-20 bg-gradient-to-br from-cyan-50 to-blue-100 dark:from-gray-900 dark:to-slate-800">
+    <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-cyan-50 to-blue-100 dark:from-gray-900 dark:to-slate-800">
       <div className="container mx-auto px-4">
-        <div className="flex flex-col lg:flex-row items-center gap-16">
+        <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-16">
           {/* Left side - Images and Title */}
           <motion.div
-            className="lg:w-1/2"
+            className="w-full lg:w-1/2"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
             variants={imageVariants}
           >
             <motion.h2
-              className="text-5xl font-bold text-gray-800 dark:text-white mb-8"
+              className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 dark:text-white mb-6 lg:mb-8 text-center lg:text-left"
               initial={{ opacity: 0, y: -20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -91,7 +92,7 @@ export function WhyChooseUs() {
             </motion.h2>
 
             <motion.p
-              className="text-gray-600 dark:text-gray-200 mb-12 text-lg leading-relaxed"
+              className="text-gray-600 dark:text-gray-200 mb-8 lg:mb-12 text-base lg:text-lg leading-relaxed text-center lg:text-left"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -102,50 +103,63 @@ export function WhyChooseUs() {
             </motion.p>
 
             {/* Product Images Grid */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-sm sm:max-w-md mx-auto lg:max-w-none lg:mx-0">
+              {/* First column */}
               <motion.div
-                className="space-y-4"
+                className="space-y-3 sm:space-y-4"
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.3 }}
               >
-                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl dark:hover:shadow-2xl transition-shadow duration-300">
-                  <div className="w-full h-32 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">
-                      SEB MAN
-                    </span>
+                <div className="bg-white dark:bg-gray-800 rounded-xl lg:rounded-2xl p-3 sm:p-4 shadow-lg hover:shadow-xl dark:hover:shadow-2xl transition-shadow duration-300">
+                  <div className="relative w-full h-28 sm:h-32 lg:h-40 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-lg overflow-hidden">
+                    <Image
+                      src="/401.png"
+                      alt="Product 1"
+                      fill
+                      className="object-contain p-2 sm:p-3 lg:p-4"
+                    />
                   </div>
                 </div>
-                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl dark:hover:shadow-2xl transition-shadow duration-300">
-                  <div className="w-full h-32 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">
-                      HAIR CARE
-                    </span>
+                <div className="bg-white dark:bg-gray-800 rounded-xl lg:rounded-2xl p-3 sm:p-4 shadow-lg hover:shadow-xl dark:hover:shadow-2xl transition-shadow duration-300">
+                  <div className="relative w-full h-28 sm:h-32 lg:h-40 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-lg overflow-hidden">
+                    <Image
+                      src="/401.png"
+                      alt="Product 2"
+                      fill
+                      className="object-contain p-2 sm:p-3 lg:p-4"
+                    />
                   </div>
                 </div>
               </motion.div>
 
+              {/* Second column */}
               <motion.div
-                className="space-y-4 mt-8"
+                className="space-y-3 sm:space-y-4 sm:mt-4 lg:mt-8"
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.4 }}
               >
-                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl dark:hover:shadow-2xl transition-shadow duration-300">
-                  <div className="w-full h-32 bg-gradient-to-br from-gray-700 to-gray-800 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">
-                      PREMIUM
-                    </span>
+                <div className="bg-white dark:bg-gray-800 rounded-xl lg:rounded-2xl p-3 sm:p-4 shadow-lg hover:shadow-xl dark:hover:shadow-2xl transition-shadow duration-300">
+                  <div className="relative w-full h-28 sm:h-32 lg:h-40 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-lg overflow-hidden">
+                    <Image
+                      src="/401.png"
+                      alt="Product 3"
+                      fill
+                      className="object-contain p-2 sm:p-3 lg:p-4"
+                    />
                   </div>
                 </div>
-                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl dark:hover:shadow-2xl transition-shadow duration-300">
-                  <div className="w-full h-32 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg flex items-center justify-center relative overflow-hidden">
-                    <span className="text-white font-bold text-sm relative z-10">
-                      STYLE
-                    </span>
-                    <div className="absolute inset-0 bg-black opacity-20"></div>
+                <div className="bg-white dark:bg-gray-800 rounded-xl lg:rounded-2xl p-3 sm:p-4 shadow-lg hover:shadow-xl dark:hover:shadow-2xl transition-shadow duration-300">
+                  <div className="relative w-full h-28 sm:h-32 lg:h-40 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-lg overflow-hidden">
+                    <Image
+                      src="/401.png"
+                      alt="Product 4"
+                      fill
+                      className="object-contain p-2 sm:p-3 lg:p-4"
+                    />
                   </div>
                 </div>
               </motion.div>
@@ -154,13 +168,13 @@ export function WhyChooseUs() {
 
           {/* Right side - Features */}
           <motion.div
-            className="lg:w-1/2"
+            className="w-full lg:w-1/2"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
             variants={containerVariants}
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
               {features.map((feature, index) => (
                 <motion.div
                   key={index}
@@ -171,9 +185,9 @@ export function WhyChooseUs() {
                   }}
                   className="group"
                 >
-                  <div className="bg-white/80 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-8 h-full shadow-lg hover:shadow-xl transition-all duration-300 border border-white/20 dark:border-gray-700/50">
+                  <div className="bg-white/80 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl lg:rounded-2xl p-6 lg:p-8 h-full shadow-lg hover:shadow-xl transition-all duration-300 border border-white/20 dark:border-gray-700/50">
                     <motion.div
-                      className={`text-4xl font-bold ${feature.color} dark:text-cyan-400 mb-4`}
+                      className={`text-3xl lg:text-4xl font-bold ${feature.color} dark:text-cyan-400 mb-3 lg:mb-4`}
                       initial={{ scale: 0 }}
                       whileInView={{ scale: 1 }}
                       viewport={{ once: true }}
@@ -187,11 +201,11 @@ export function WhyChooseUs() {
                       {feature.number}
                     </motion.div>
 
-                    <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-4 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors duration-300">
+                    <h3 className="text-xl lg:text-2xl font-bold text-gray-800 dark:text-white mb-3 lg:mb-4 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors duration-300">
                       {feature.title}
                     </h3>
 
-                    <p className="text-gray-600 dark:text-gray-200 leading-relaxed">
+                    <p className="text-sm lg:text-base text-gray-600 dark:text-gray-200 leading-relaxed">
                       {feature.description}
                     </p>
                   </div>
