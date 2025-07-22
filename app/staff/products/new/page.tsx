@@ -34,7 +34,11 @@ import {
   Badge,
   AspectRatio,
 } from "@/components/ui/";
-import { TypographyH2 } from "@/components/ui/Typography";
+import {
+  TypographyH2,
+  TypographyH3,
+  TypographyP,
+} from "@/components/ui/Typography";
 import TagMultiSelect from "@/components/TagMultiSelect";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
@@ -415,9 +419,13 @@ export default function NewProductPage() {
             {/* Left Side - General Information */}
             <Card>
               <CardHeader>
-                <CardTitle>General Information</CardTitle>
+                <CardTitle>
+                  <TypographyH3>General Information</TypographyH3>
+                </CardTitle>
                 <CardDescription>
-                  Enter the basic details of the cement product.
+                  <TypographyP className="!mt-0">
+                    Enter the basic details of the cement product.
+                  </TypographyP>
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -589,13 +597,11 @@ export default function NewProductPage() {
                 {/* Additional Information Section */}
                 <div className="space-y-6 pt-6 border-t">
                   <div>
-                    <h3 className="text-lg font-medium mb-2">
-                      Additional Information
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-4">
+                    <TypographyH3>Additional Information</TypographyH3>
+                    <TypographyP className="!mt-0">
                       Add tags, certificates, and product variants for this
                       product.
-                    </p>
+                    </TypographyP>
                   </div>
 
                   {/* Product Tags Section */}
