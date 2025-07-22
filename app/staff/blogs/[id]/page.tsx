@@ -22,6 +22,7 @@ import {
   DialogTrigger,
   Badge,
   Skeleton,
+  AspectRatio,
 } from "@/components/ui";
 import {
   TypographyH2,
@@ -130,30 +131,31 @@ function BlogDetailSkeleton() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 xl:gap-6">
-        {/* Left Side - Images Skeleton */}
+        {/* Left Side - Blog Information Skeleton */}
         <div className="lg:col-span-7 xl:col-span-6">
-          <div className="space-y-4">
-            {/* Main Image Skeleton */}
-            <Skeleton className="w-full h-[400px] lg:h-[500px] rounded-lg" />
-
-            {/* Additional Images Skeleton */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <Skeleton key={index} className="w-full h-[120px] rounded-md" />
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Side - Blog Information Skeleton */}
-        <div className="lg:col-span-5 xl:col-span-6">
           <div className="border rounded-lg p-6 h-fit">
             {/* Header Skeleton */}
             <div className="pb-6 border-b border-gray-200 dark:border-gray-700">
-              <Skeleton className="h-8 w-3/4 mb-2" />
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-5/6 mb-4" />
-              <Skeleton className="h-6 w-20" />
+              <div className="space-y-4">
+                {/* Title Skeleton */}
+                <div>
+                  <Skeleton className="h-4 w-12 mb-1" />
+                  <Skeleton className="h-8 w-3/4" />
+                </div>
+
+                {/* Description Skeleton */}
+                <div>
+                  <Skeleton className="h-4 w-20 mb-1" />
+                  <Skeleton className="h-4 w-full mb-1" />
+                  <Skeleton className="h-4 w-5/6" />
+                </div>
+
+                {/* Status Skeleton */}
+                <div>
+                  <Skeleton className="h-4 w-12 mb-1" />
+                  <Skeleton className="h-6 w-20" />
+                </div>
+              </div>
             </div>
 
             {/* Content Skeleton */}
@@ -186,6 +188,30 @@ function BlogDetailSkeleton() {
               {/* Meta Information Skeleton */}
               <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
                 <Skeleton className="h-3 w-32" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side - Images Skeleton */}
+        <div className="lg:col-span-5 xl:col-span-6">
+          <div className="space-y-4">
+            {/* Main Image Skeleton */}
+            <div>
+              <Skeleton className="h-4 w-20 mb-2" />
+              <Skeleton className="w-full aspect-[4/3] rounded-lg" />
+            </div>
+
+            {/* Additional Images Skeleton */}
+            <div>
+              <Skeleton className="h-4 w-28 mb-2" />
+              <div className="grid grid-cols-2 gap-2">
+                {Array.from({ length: 2 }).map((_, index) => (
+                  <Skeleton
+                    key={index}
+                    className="w-full aspect-square rounded-md"
+                  />
+                ))}
               </div>
             </div>
           </div>
@@ -372,75 +398,52 @@ export default function BlogDetailPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 xl:gap-6">
-        {/* Left Side - Images */}
+        {/* Left Side - Blog Information */}
         <div className="lg:col-span-7 xl:col-span-6">
-          {blog.blog_images && blog.blog_images.length > 0 ? (
-            <div className="space-y-4">
-              {/* Main Image */}
-              <div className="w-full">
-                <Image
-                  src={blog.blog_images[0]?.image_url || "/placeholder.svg"}
-                  alt={`${blog.title} - Main Image`}
-                  width={800}
-                  height={600}
-                  className="w-full h-[400px] lg:h-[500px] rounded-lg object-cover"
-                />
-              </div>
-
-              {/* Additional Images */}
-              {blog.blog_images.length > 1 && (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {blog.blog_images.slice(1).map((image, index) => (
-                    <Image
-                      key={index + 1}
-                      src={image.image_url || "/placeholder.svg"}
-                      alt={`${blog.title} - Image ${index + 2}`}
-                      width={200}
-                      height={150}
-                      className="w-full h-[120px] rounded-md object-cover"
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="w-full h-[400px] lg:h-[500px] rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-              <div className="text-center">
-                <FileText className="w-16 h-16 text-gray-400 mx-auto mb-2" />
-                <TypographyP className="text-muted-foreground">
-                  No images available
-                </TypographyP>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Right Side - Blog Information */}
-        <div className="lg:col-span-5 xl:col-span-6">
           <div className="border rounded-lg p-6 h-fit">
             {/* Blog Header */}
             <div className="pb-6 border-b border-gray-200 dark:border-gray-700">
-              <TypographyH2 className="mb-2">{blog.title}</TypographyH2>
-              {blog.description && (
-                <TypographyP className="text-muted-foreground mb-4">
-                  {blog.description}
-                </TypographyP>
-              )}
+              <div className="space-y-4">
+                {/* Title */}
+                <div>
+                  <TypographySmall className="font-medium text-muted-foreground mb-1">
+                    Title:
+                  </TypographySmall>
+                  <TypographyH2 className="leading-tight">
+                    {blog.title}
+                  </TypographyH2>
+                </div>
 
-              {/* Status Badge */}
-              <div className="flex items-center gap-2 mb-4">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                  Published
-                </span>
+                {/* Description */}
+                {blog.description && (
+                  <div>
+                    <TypographySmall className="font-medium text-muted-foreground mb-1">
+                      Description:
+                    </TypographySmall>
+                    <TypographyP className="text-muted-foreground">
+                      {blog.description}
+                    </TypographyP>
+                  </div>
+                )}
+
+                {/* Status */}
+                <div>
+                  <TypographySmall className="font-medium text-muted-foreground mb-1">
+                    Status:
+                  </TypographySmall>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                    Published
+                  </span>
+                </div>
               </div>
             </div>
 
             {/* Blog Details */}
             <div className="pt-6 space-y-6">
-              {/* Dates */}
+              {/* Publication Details */}
               <div>
                 <TypographySmall className="font-medium text-muted-foreground mb-3">
-                  Publication Details
+                  Publication Details:
                 </TypographySmall>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
@@ -464,7 +467,7 @@ export default function BlogDetailPage() {
               {blog.blog_tags && blog.blog_tags.length > 0 && (
                 <div>
                   <TypographySmall className="font-medium text-muted-foreground mb-3">
-                    Tags
+                    Tags:
                   </TypographySmall>
                   <div className="flex flex-wrap gap-2">
                     {blog.blog_tags
@@ -486,7 +489,7 @@ export default function BlogDetailPage() {
               {blog.external_link && (
                 <div>
                   <TypographySmall className="font-medium text-muted-foreground mb-3">
-                    External Link
+                    External Link:
                   </TypographySmall>
                   <a
                     href={blog.external_link}
@@ -508,6 +511,59 @@ export default function BlogDetailPage() {
                 </TypographySmall>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Right Side - Images */}
+        <div className="lg:col-span-5 xl:col-span-6">
+          <div className="space-y-4">
+            {/* Main Image with AspectRatio */}
+            <div>
+              <TypographySmall className="font-medium text-muted-foreground mb-2">
+                Main Image:
+              </TypographySmall>
+              <AspectRatio ratio={4 / 3} className="w-full">
+                {blog.blog_images && blog.blog_images.length > 0 ? (
+                  <Image
+                    src={blog.blog_images[0]?.image_url || "/placeholder.svg"}
+                    alt={`${blog.title} - Main Image`}
+                    className="w-full h-full rounded-lg object-cover"
+                    fill
+                    priority
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                    <div className="text-center">
+                      <FileText className="w-16 h-16 text-gray-400 mx-auto mb-2" />
+                      <TypographyP className="text-muted-foreground">
+                        No image available
+                      </TypographyP>
+                    </div>
+                  </div>
+                )}
+              </AspectRatio>
+            </div>
+
+            {/* Additional Images */}
+            {blog.blog_images && blog.blog_images.length > 1 && (
+              <div>
+                <TypographySmall className="font-medium text-muted-foreground mb-2">
+                  Additional Images:
+                </TypographySmall>
+                <div className="grid grid-cols-2 gap-2">
+                  {blog.blog_images.slice(1).map((image, index) => (
+                    <AspectRatio key={index + 1} ratio={1} className="w-full">
+                      <Image
+                        src={image.image_url || "/placeholder.svg"}
+                        alt={`${blog.title} - Image ${index + 2}`}
+                        className="w-full h-full rounded-md object-cover"
+                        fill
+                      />
+                    </AspectRatio>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
