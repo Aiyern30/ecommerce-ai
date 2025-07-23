@@ -27,6 +27,7 @@ import {
   DialogTitle,
   DialogTrigger,
   Skeleton,
+  Badge,
 } from "@/components/ui";
 import {
   TypographyP,
@@ -388,13 +389,22 @@ export default function PostDetailPage() {
         <div className="lg:col-span-1">
           <Card className="h-fit">
             <CardHeader className="pb-6">
-              <div className="flex items-start justify-between gap-4 mb-4">
+              <div className="flex items-center justify-between gap-4 mb-4">
                 <CardTitle className="text-2xl font-bold leading-tight flex-1">
                   {post.title}
                 </CardTitle>
-                <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 flex-shrink-0">
-                  Published
-                </span>
+                <Badge
+                  variant={
+                    post.status === "published" ? "default" : "secondary"
+                  }
+                  className={
+                    post.status === "published"
+                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                      : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                  }
+                >
+                  {post.status === "published" ? "Published" : "Draft"}
+                </Badge>
               </div>
 
               {post.description && (
