@@ -1,33 +1,9 @@
 import { supabase } from "./supabase/browserClient";
 import { toast } from "sonner";
+import type { CartItem } from "@/type/cart";
 
-export interface CartItem {
-  id: string;
-  cart_id: string;
-  product_id: string;
-  quantity: number;
-  created_at: string;
-  updated_at: string;
-  product?: {
-    name: string;
-    price: number;
-    image_url: string;
-    unit: string;
-  };
-}
-
-export interface Cart {
-  id: string;
-  user_id: string;
-  created_at: string;
-  updated_at: string;
-  cart_items?: CartItem[];
-}
-
-// Get or create user's cart
 export async function getOrCreateCart(userId: string): Promise<string | null> {
   try {
-    // First, try to get existing cart
     const { data: existingCart, error: fetchError } = await supabase
       .from("carts")
       .select("id")
@@ -38,9 +14,7 @@ export async function getOrCreateCart(userId: string): Promise<string | null> {
       return existingCart.id;
     }
 
-    // If no cart exists, create one
     if (fetchError?.code === "PGRST116") {
-      // No rows returned
       const { data: newCart, error: createError } = await supabase
         .from("carts")
         .insert({ user_id: userId })
@@ -63,7 +37,6 @@ export async function getOrCreateCart(userId: string): Promise<string | null> {
   }
 }
 
-// Add item to cart
 export async function addToCart(
   userId: string,
   productId: string,
@@ -76,7 +49,6 @@ export async function addToCart(
       return { success: false, isUpdate: false };
     }
 
-    // Check if item already exists in cart
     const { data: existingItem } = await supabase
       .from("cart_items")
       .select("id, quantity")
@@ -85,7 +57,6 @@ export async function addToCart(
       .single();
 
     if (existingItem) {
-      // Update quantity if item exists
       const newQuantity = existingItem.quantity + quantity;
       const { error: updateError } = await supabase
         .from("cart_items")
@@ -103,7 +74,6 @@ export async function addToCart(
 
       return { success: true, isUpdate: true, newQuantity };
     } else {
-      // Add new item to cart
       const { error: insertError } = await supabase.from("cart_items").insert({
         cart_id: cartId,
         product_id: productId,
@@ -125,7 +95,6 @@ export async function addToCart(
   }
 }
 
-// Get cart items
 export async function getCartItems(userId: string): Promise<CartItem[]> {
   try {
     const cartId = await getOrCreateCart(userId);
@@ -158,7 +127,6 @@ export async function getCartItems(userId: string): Promise<CartItem[]> {
   }
 }
 
-// Update cart item quantity
 export async function updateCartItemQuantity(
   itemId: string,
   quantity: number
@@ -190,7 +158,6 @@ export async function updateCartItemQuantity(
   }
 }
 
-// Remove item from cart
 export async function removeFromCart(itemId: string): Promise<boolean> {
   try {
     const { error } = await supabase
@@ -213,7 +180,6 @@ export async function removeFromCart(itemId: string): Promise<boolean> {
   }
 }
 
-// Get cart count
 export async function getCartCount(userId: string): Promise<number> {
   try {
     const cartId = await getOrCreateCart(userId);
@@ -236,7 +202,6 @@ export async function getCartCount(userId: string): Promise<number> {
   }
 }
 
-// Clear cart
 export async function clearCart(userId: string): Promise<boolean> {
   try {
     const cartId = await getOrCreateCart(userId);
