@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ShoppingCart, Plus, Minus, X } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2 } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -192,10 +192,10 @@ export default function Cart() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-7 w-7 p-0 border rounded"
+                          className="h-7 w-7 p-0 border rounded text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
                           onClick={() => handleDeleteClick(item)}
                         >
-                          <X className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
@@ -228,7 +228,7 @@ export default function Cart() {
                   </Button>
                 </Link>
                 <Link href="/checkout" onClick={() => setIsOpen(false)}>
-                  <Button className="w-full bg-black hover:bg-gray-800 text-white">
+                  <Button className="w-full bg-black hover:bg-gray-800 text-white mt-3">
                     Continue to Checkout
                   </Button>
                 </Link>
