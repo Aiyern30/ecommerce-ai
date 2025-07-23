@@ -590,7 +590,7 @@ export default function Page() {
                 {isDraftSaving ? "Saving Draft..." : "Save Draft"}
               </Button>
               <Button type="submit" disabled={isSubmitting || isDraftSaving}>
-                {isSubmitting ? "Creating Blog..." : "Create Blog"}
+                {isSubmitting ? "Publishing..." : "Publish Blog"}
               </Button>
             </div>
           </div>
