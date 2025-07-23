@@ -14,7 +14,6 @@ import {
   DialogTitle,
   DialogTrigger,
   Skeleton,
-  Badge,
 } from "@/components/ui";
 import { TypographyH1, TypographyP } from "@/components/ui/Typography";
 import ProductDetailDisplay from "@/components/ProductDetailDisplay";
@@ -384,25 +383,6 @@ export default function ProductDetailClient() {
               { label: product.name },
             ]}
           />
-
-          {/* Status Badge - Only show for staff */}
-          {isStaffView && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Status:</span>
-              <Badge
-                variant={
-                  product.status === "published" ? "default" : "secondary"
-                }
-                className={
-                  product.status === "published"
-                    ? "bg-green-100 text-green-800 border-green-200"
-                    : "bg-yellow-100 text-yellow-800 border-yellow-200"
-                }
-              >
-                {product.status === "published" ? "Published" : "Draft"}
-              </Badge>
-            </div>
-          )}
         </div>
 
         {/* Action Buttons - Only show for staff */}

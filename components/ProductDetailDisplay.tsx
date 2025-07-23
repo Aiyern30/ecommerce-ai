@@ -89,7 +89,7 @@ export default function ProductDetailDisplay({
 
             {/* Status - Only show for staff view */}
             {!isCustomerView && (
-              <div>
+              <div className="flex items-center gap-2">
                 <TypographySmall className="font-medium text-muted-foreground mb-1">
                   Status:
                 </TypographySmall>
