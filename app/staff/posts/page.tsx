@@ -45,6 +45,7 @@ import {
   DialogTitle,
   DialogTrigger,
   Skeleton,
+  Badge,
 } from "@/components/ui/";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import Image from "next/image";
@@ -117,6 +118,7 @@ function PostTableSkeletonEnhanced() {
               <TableHead className="w-[80px]">Image</TableHead>
               <TableHead className="min-w-[150px]">Title</TableHead>
               <TableHead className="min-w-[120px]">Description</TableHead>
+              <TableHead className="min-w-[100px]">Status</TableHead>
               <TableHead className="min-w-[100px]">Link</TableHead>
               <TableHead className="min-w-[100px]">Created</TableHead>
               <TableHead className="text-right min-w-[80px]">Actions</TableHead>
@@ -136,6 +138,9 @@ function PostTableSkeletonEnhanced() {
                 </TableCell>
                 <TableCell>
                   <Skeleton className="h-4 w-full max-w-[150px]" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-6 w-16" />
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
@@ -167,6 +172,7 @@ export default function PostsPage() {
     sortBy: "date-new",
     hasImage: "all",
     hasLink: "all",
+    status: "all",
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
@@ -208,6 +214,7 @@ export default function PostsPage() {
       sortBy: "date-new",
       hasImage: "all",
       hasLink: "all",
+      status: "all",
     });
     setCurrentPage(1);
   };
@@ -296,6 +303,14 @@ export default function PostsPage() {
     }
     if (filters.hasLink === "without-link" && post.link) {
       return false;
+    }
+
+    // Filter by status
+    if (filters.status !== "all") {
+      const postStatus = post.status || "draft"; // Default to draft if no status
+      if (filters.status !== postStatus) {
+        return false;
+      }
     }
 
     return true;
@@ -412,6 +427,21 @@ export default function PostsPage() {
               <SelectItem value="all">All Posts</SelectItem>
               <SelectItem value="with-image">With Image</SelectItem>
               <SelectItem value="without-image">Without Image</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
+            value={filters.status}
+            onValueChange={(value) => {
+              updateFilter("status", value as PostFilters["status"]);
+            }}
+          >
+            <SelectTrigger className="w-full sm:w-[180px] h-9">
+              <SelectValue placeholder="Status Filter" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="draft">Draft</SelectItem>
+              <SelectItem value="published">Published</SelectItem>
             </SelectContent>
           </Select>
           <Select
@@ -565,6 +595,7 @@ export default function PostsPage() {
                 <TableHead className="w-[80px]">Image</TableHead>
                 <TableHead>Title</TableHead>
                 <TableHead>Description</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>Link</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -573,7 +604,7 @@ export default function PostsPage() {
             <TableBody>
               {currentPageData.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
+                  <TableCell colSpan={8} className="h-24 text-center">
                     No posts found.
                   </TableCell>
                 </TableRow>
@@ -615,6 +646,20 @@ export default function PostsPage() {
                       >
                         {post.description || "No description"}
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          post.status === "published" ? "default" : "secondary"
+                        }
+                        className={
+                          post.status === "published"
+                            ? "bg-green-500 hover:bg-green-600 text-white"
+                            : "bg-yellow-500 hover:bg-yellow-600 text-white"
+                        }
+                      >
+                        {post.status === "published" ? "Published" : "Draft"}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       {renderLinkDisplay(post.link, post.link_name)}
