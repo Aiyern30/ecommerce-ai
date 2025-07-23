@@ -973,7 +973,7 @@ export default function NewProductPage() {
                 {isDraftSaving ? "Saving Draft..." : "Save Draft"}
               </Button>
               <Button type="submit" disabled={isSubmitting || isDraftSaving}>
-                {isSubmitting ? "Adding Product..." : "Add Product"}
+                {isSubmitting ? "Publishing Product..." : "Publish Product"}
               </Button>
             </div>
           </div>

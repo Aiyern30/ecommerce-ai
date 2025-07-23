@@ -1624,7 +1624,13 @@ export default function EditProductPage() {
                 {isDraftSaving ? "Saving Draft..." : "Save Draft"}
               </Button>
               <Button type="submit" disabled={isSubmitting || isDraftSaving}>
-                {isSubmitting ? "Updating Product..." : "Update Product"}
+                {isSubmitting
+                  ? product?.status === "published"
+                    ? "Updating Product..."
+                    : "Publishing Product..."
+                  : product?.status === "published"
+                  ? "Update Product"
+                  : "Publish Product"}
               </Button>
             </div>
           </div>
