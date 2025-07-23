@@ -586,7 +586,7 @@ export default function NewPostPage() {
                 {isSubmitting ? "Saving..." : "Save Draft"}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Publishing..." : "Create Post"}
+                {isSubmitting ? "Publishing..." : "Publish Post"}
               </Button>
             </div>
           </div>
