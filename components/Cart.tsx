@@ -96,7 +96,7 @@ export default function Cart() {
         <div className="flex flex-col flex-1 min-h-0">
           <ScrollArea className="flex-1">
             {isLoading ? (
-              <div className="flex items-center justify-center h-full min-h-[400px]">
+              <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
                 <div className="text-center space-y-2">
                   <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
                   <p className="text-sm text-muted-foreground">
@@ -105,7 +105,7 @@ export default function Cart() {
                 </div>
               </div>
             ) : !user ? (
-              <div className="flex flex-col items-center justify-center h-full min-h-[400px] px-6 text-center space-y-6">
+              <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-6 text-center space-y-6">
                 <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
                   <ShoppingCart className="h-12 w-12 text-gray-400" />
                 </div>
@@ -123,7 +123,7 @@ export default function Cart() {
                 </Link>
               </div>
             ) : cartItems.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full min-h-[400px] px-6 text-center space-y-6">
+              <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-6 text-center space-y-6">
                 <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
                   <ShoppingCart className="h-12 w-12 text-gray-500" />
                 </div>
