@@ -515,8 +515,13 @@ export default function CheckoutPage() {
                   type="submit"
                   className="w-full"
                   disabled={isSubmitting}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    // Redirect to new order page with Stripe integration
+                    window.location.href = "/order";
+                  }}
                 >
-                  {isSubmitting ? "Processing..." : "Place order"}
+                  Continue to Order
                 </Button>
               </form>
             </FormProvider>
