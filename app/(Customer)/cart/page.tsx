@@ -39,23 +39,26 @@ export default function CartPage() {
       newSelected.add(itemId);
     } else {
       newSelected.delete(itemId);
-      setSelectAll(false);
     }
     setSelectedItems(newSelected);
 
-    // Update select all state
-    if (newSelected.size === cartItems.length) {
-      setSelectAll(true);
-    }
+    // Update select all state based on whether all items are selected
+    setSelectAll(newSelected.size === cartItems.length && cartItems.length > 0);
   };
 
   // Handle select all
   const handleSelectAll = (checked: boolean) => {
+    console.log("handleSelectAll called with:", checked); // Debug log
     setSelectAll(checked);
     if (checked) {
-      setSelectedItems(new Set(cartItems.map((item) => item.id)));
+      // Select all items
+      const allItemIds = new Set(cartItems.map((item) => item.id));
+      setSelectedItems(allItemIds);
+      console.log("Selected all items:", allItemIds); // Debug log
     } else {
+      // Deselect all items
       setSelectedItems(new Set());
+      console.log("Deselected all items"); // Debug log
     }
   };
 
@@ -82,6 +85,32 @@ export default function CartPage() {
   const updateQuantity = async (itemId: string, newQuantity: number) => {
     await updateCartItemQuantity(itemId, newQuantity);
     refreshCart();
+  };
+
+  // Handle proceed to order with validation
+  const handleProceedToOrder = () => {
+    if (selectedItems.size === 0) {
+      toast.error(
+        "Please select at least one item to proceed with your order",
+        {
+          duration: 4000,
+          style: { background: "#ef4444", color: "#fff" },
+        }
+      );
+      return;
+    }
+
+    // Store selected items in sessionStorage for the order page
+    const selectedCartItems = cartItems.filter((item) =>
+      selectedItems.has(item.id)
+    );
+    sessionStorage.setItem(
+      "selectedCartItems",
+      JSON.stringify(selectedCartItems)
+    );
+
+    // Navigate to order page
+    window.location.href = "/order";
   };
 
   const subtotal = cartItems
@@ -219,18 +248,26 @@ export default function CartPage() {
             {/* Cart Items */}
             <div className="lg:col-span-2">
               {/* Choose All Product Header */}
-              <div className="flex items-center gap-3 mb-4 p-4 border rounded-lg">
-                <Checkbox
-                  id="select-all"
-                  checked={selectAll}
-                  onCheckedChange={handleSelectAll}
-                />
-                <label
-                  htmlFor="select-all"
-                  className="font-medium cursor-pointer"
-                >
-                  Choose All Product
-                </label>
+              <div className="flex items-center justify-between gap-3 mb-4 p-4 border rounded-lg">
+                <div className="flex items-center gap-3">
+                  <Checkbox
+                    id="select-all"
+                    checked={selectAll}
+                    onCheckedChange={(checked) => {
+                      console.log("Checkbox onCheckedChange:", checked); // Debug log
+                      handleSelectAll(checked === true);
+                    }}
+                  />
+                  <label
+                    htmlFor="select-all"
+                    className="font-medium cursor-pointer"
+                  >
+                    Choose All Product
+                  </label>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {selectedItems.size} of {cartItems.length} items selected
+                </div>
               </div>
 
               <div className="space-y-4">
@@ -359,15 +396,14 @@ export default function CartPage() {
                 </div>
 
                 <div className="mt-6">
-                  <Link href="/order">
-                    <Button
-                      className="mt-4 w-full"
-                      size="lg"
-                      disabled={selectedItems.size === 0}
-                    >
-                      Go to Checkout ({selectedItems.size} items)
-                    </Button>
-                  </Link>
+                  <Button
+                    className="mt-4 w-full"
+                    size="lg"
+                    disabled={selectedItems.size === 0}
+                    onClick={handleProceedToOrder}
+                  >
+                    Proceed to Order ({selectedItems.size} items)
+                  </Button>
                 </div>
               </div>
             </div>

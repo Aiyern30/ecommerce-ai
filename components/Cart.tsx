@@ -227,9 +227,9 @@ export default function Cart() {
                     View Full Cart
                   </Button>
                 </Link>
-                <Link href="/checkout" onClick={() => setIsOpen(false)}>
+                <Link href="/order" onClick={() => setIsOpen(false)}>
                   <Button className="w-full bg-black hover:bg-gray-800 text-white mt-3">
-                    Continue to Checkout
+                    Proceed to Order
                   </Button>
                 </Link>
               </div>

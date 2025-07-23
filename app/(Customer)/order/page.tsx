@@ -15,19 +15,15 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import type { PaymentIntent } from "@stripe/stripe-js";
 import { CreateOrderRequest } from "@/type/order";
-
-interface CartItem {
-  product_id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  variant_type?: string;
-  image_url?: string;
-}
+import { useCart } from "@/components/CartProvider";
+import { useUser } from "@supabase/auth-helpers-react";
+import { CartItem } from "@/type/cart";
 
 export default function OrderPage() {
   const router = useRouter();
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const { cartItems } = useCart();
+  const user = useUser();
+  const [selectedCartItems, setSelectedCartItems] = useState<CartItem[]>([]);
   const [clientSecret, setClientSecret] = useState<string>("");
   const [orderId, setOrderId] = useState<string>("");
   const [orderAmount, setOrderAmount] = useState<number>(0);
@@ -38,7 +34,7 @@ export default function OrderPage() {
   const [shippingInfo, setShippingInfo] = useState({
     first_name: "",
     last_name: "",
-    email: "",
+    email: user?.email || "",
     phone: "",
     address_line_1: "",
     address_line_2: "",
@@ -48,22 +44,40 @@ export default function OrderPage() {
     country: "US",
   });
 
-  // Load cart items from localStorage on component mount
+  // Load selected items from sessionStorage or fallback to all cart items
   useEffect(() => {
-    const savedCart = localStorage.getItem("cart");
-    if (savedCart) {
+    const savedSelectedItems = sessionStorage.getItem("selectedCartItems");
+    if (savedSelectedItems) {
       try {
-        const parsedCart = JSON.parse(savedCart);
-        setCartItems(parsedCart);
+        const parsedItems = JSON.parse(savedSelectedItems);
+        setSelectedCartItems(parsedItems);
+        // Clear after loading
+        sessionStorage.removeItem("selectedCartItems");
       } catch (error) {
-        console.error("Error parsing cart from localStorage:", error);
+        console.error("Error parsing selected items:", error);
+        setSelectedCartItems(cartItems);
       }
+    } else {
+      // If no selected items, check if user came directly to order page
+      if (cartItems.length === 0) {
+        toast.error("Your cart is empty. Redirecting to products...");
+        setTimeout(() => router.push("/products"), 2000);
+        return;
+      }
+      setSelectedCartItems(cartItems);
     }
-  }, []);
+  }, [cartItems, router]);
+
+  // Update email when user changes
+  useEffect(() => {
+    if (user?.email) {
+      setShippingInfo((prev) => ({ ...prev, email: user.email || "" }));
+    }
+  }, [user]);
 
   const calculateTotals = () => {
-    const subtotal = cartItems.reduce(
-      (sum, item) => sum + item.price * item.quantity,
+    const subtotal = selectedCartItems.reduce(
+      (sum, item) => sum + (item.product?.price || 0) * item.quantity,
       0
     );
     const shipping = 15.0;
@@ -76,8 +90,8 @@ export default function OrderPage() {
   const { subtotal, shipping, tax, total } = calculateTotals();
 
   const handleCreateOrder = async () => {
-    if (cartItems.length === 0) {
-      toast.error("Your cart is empty");
+    if (selectedCartItems.length === 0) {
+      toast.error("No items selected for order");
       return;
     }
 
@@ -96,11 +110,12 @@ export default function OrderPage() {
 
     try {
       const orderRequest: CreateOrderRequest & { user_id: string } = {
-        user_id: "temp-user-id", // You should get this from auth context
-        items: cartItems.map((item) => ({
+        user_id: user?.id || "temp-user-id", // Use actual user ID
+        items: selectedCartItems.map((item) => ({
           product_id: item.product_id,
           quantity: item.quantity,
-          variant_type: item.variant_type,
+          price: item.product?.price || 0,
+          // variant_type: item.variant_type, // Remove this if not in CartItem type
         })),
         shipping_address: shippingInfo,
       };
@@ -149,9 +164,8 @@ export default function OrderPage() {
 
       if (response.ok) {
         setPaymentStep("success");
-        // Clear cart
-        localStorage.removeItem("cart");
-        setCartItems([]);
+        // Clear cart - the cart context will handle this
+        // localStorage.removeItem("cart"); // Remove this as we're using cart context now
         toast.success("Payment successful! Order confirmed.");
       }
     } catch (error) {
@@ -350,29 +364,32 @@ export default function OrderPage() {
                     <CardTitle>Order Items</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {cartItems.length === 0 ? (
-                      <p className="text-gray-500">No items in cart</p>
+                    {selectedCartItems.length === 0 ? (
+                      <p className="text-gray-500">No items selected</p>
                     ) : (
                       <div className="space-y-4">
-                        {cartItems.map((item, index) => (
+                        {selectedCartItems.map((item, index) => (
                           <div
                             key={index}
                             className="flex justify-between items-center p-3 border rounded"
                           >
                             <div>
-                              <h4 className="font-medium">{item.name}</h4>
-                              {item.variant_type && (
-                                <p className="text-sm text-gray-500">
-                                  Variant: {item.variant_type}
-                                </p>
-                              )}
+                              <h4 className="font-medium">
+                                {item.product?.name}
+                              </h4>
+                              <p className="text-sm text-gray-500">
+                                Unit: {item.product?.unit || "Piece"}
+                              </p>
                               <p className="text-sm text-gray-500">
                                 Quantity: {item.quantity}
                               </p>
                             </div>
                             <div className="text-right">
                               <p className="font-medium">
-                                ${(item.price * item.quantity).toFixed(2)}
+                                $
+                                {(
+                                  (item.product?.price || 0) * item.quantity
+                                ).toFixed(2)}
                               </p>
                             </div>
                           </div>
