@@ -68,12 +68,12 @@ export async function addToCart(
   userId: string,
   productId: string,
   quantity: number = 1
-): Promise<boolean> {
+): Promise<{ success: boolean; isUpdate: boolean; newQuantity?: number }> {
   try {
     const cartId = await getOrCreateCart(userId);
     if (!cartId) {
       toast.error("Failed to create cart");
-      return false;
+      return { success: false, isUpdate: false };
     }
 
     // Check if item already exists in cart
@@ -86,10 +86,11 @@ export async function addToCart(
 
     if (existingItem) {
       // Update quantity if item exists
+      const newQuantity = existingItem.quantity + quantity;
       const { error: updateError } = await supabase
         .from("cart_items")
         .update({
-          quantity: existingItem.quantity + quantity,
+          quantity: newQuantity,
           updated_at: new Date().toISOString(),
         })
         .eq("id", existingItem.id);
@@ -97,8 +98,10 @@ export async function addToCart(
       if (updateError) {
         console.error("Error updating cart item:", updateError);
         toast.error("Failed to update cart");
-        return false;
+        return { success: false, isUpdate: true };
       }
+
+      return { success: true, isUpdate: true, newQuantity };
     } else {
       // Add new item to cart
       const { error: insertError } = await supabase.from("cart_items").insert({
@@ -110,16 +113,15 @@ export async function addToCart(
       if (insertError) {
         console.error("Error adding to cart:", insertError);
         toast.error("Failed to add to cart");
-        return false;
+        return { success: false, isUpdate: false };
       }
-    }
 
-    toast.success("Added to cart successfully!");
-    return true;
+      return { success: true, isUpdate: false };
+    }
   } catch (error) {
     console.error("Error in addToCart:", error);
     toast.error("Failed to add to cart");
-    return false;
+    return { success: false, isUpdate: false };
   }
 }
 

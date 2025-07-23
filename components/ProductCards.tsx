@@ -52,12 +52,18 @@ export function ProductCard({
 
     setIsAddingToCart(true);
 
-    const success = await addToCart(user.id, id, 1);
+    const result = await addToCart(user.id, id, 1);
 
-    if (success) {
-      toast.success("Added to cart!", {
-        description: `${name} has been added to your cart.`,
-      });
+    if (result.success) {
+      if (result.isUpdate) {
+        toast.success("Quantity updated!", {
+          description: `${name} quantity increased to ${result.newQuantity}.`,
+        });
+      } else {
+        toast.success("Added to cart!", {
+          description: `${name} has been added to your cart.`,
+        });
+      }
       // Refresh cart count
       window.dispatchEvent(new CustomEvent("cartUpdated"));
     } else {
@@ -99,7 +105,7 @@ export function ProductCard({
             <button
               onClick={handleAddToCart}
               disabled={isAddingToCart}
-              className="p-2 bg-white rounded-full shadow-md hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-2 bg-white rounded-full shadow-md hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
               title="Add to Cart"
             >
               <ShoppingCart
@@ -110,14 +116,14 @@ export function ProductCard({
             </button>
             <button
               onClick={handleQuickView}
-              className="p-2 bg-white rounded-full shadow-md hover:bg-gray-200"
+              className="p-2 bg-white rounded-full shadow-md hover:bg-gray-200 cursor-pointer transition-colors"
               title="Quick View"
             >
               <ZoomIn className="h-5 w-5 text-blue-600" />
             </button>
             <button
               onClick={handleWishlist}
-              className="p-2 bg-white rounded-full shadow-md hover:bg-red-50"
+              className="p-2 bg-white rounded-full shadow-md hover:bg-red-50 cursor-pointer transition-colors"
               title="Add to Wishlist"
             >
               <Heart className="h-5 w-5 text-blue-600" />
