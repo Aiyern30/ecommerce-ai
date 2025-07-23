@@ -20,45 +20,46 @@ import {
 import { toast } from "sonner";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { useCart } from "@/components/CartProvider";
-import { updateCartItemQuantity, removeFromCart } from "@/lib/cart-utils";
+import {
+  updateCartItemQuantity,
+  removeFromCart,
+  updateCartItemSelection,
+  selectAllCartItems,
+} from "@/lib/cart-utils";
 import { useUser } from "@supabase/auth-helpers-react";
 import { CartItem } from "@/type/cart";
 
 export default function CartPage() {
   const { cartItems, refreshCart, isLoading } = useCart();
   const user = useUser();
-  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const [selectAll, setSelectAll] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<CartItem | null>(null);
 
-  // Handle individual item selection
-  const handleItemSelect = (itemId: string, checked: boolean) => {
-    const newSelected = new Set(selectedItems);
-    if (checked) {
-      newSelected.add(itemId);
-    } else {
-      newSelected.delete(itemId);
-    }
-    setSelectedItems(newSelected);
+  // Calculate select all state from database
+  const selectAll =
+    cartItems.length > 0 && cartItems.every((item) => item.selected);
+  const selectedItems = cartItems.filter((item) => item.selected);
 
-    // Update select all state based on whether all items are selected
-    setSelectAll(newSelected.size === cartItems.length && cartItems.length > 0);
+  // Handle individual item selection
+  const handleItemSelect = async (itemId: string, checked: boolean) => {
+    const success = await updateCartItemSelection(itemId, checked);
+    if (success) {
+      await refreshCart(); // Refresh to get updated selection state
+    } else {
+      toast.error("Failed to update selection");
+    }
   };
 
   // Handle select all
-  const handleSelectAll = (checked: boolean) => {
-    console.log("handleSelectAll called with:", checked); // Debug log
-    setSelectAll(checked);
-    if (checked) {
-      // Select all items
-      const allItemIds = new Set(cartItems.map((item) => item.id));
-      setSelectedItems(allItemIds);
-      console.log("Selected all items:", allItemIds); // Debug log
+  const handleSelectAll = async (checked: boolean) => {
+    if (!user?.id) return;
+
+    const success = await selectAllCartItems(user.id, checked);
+    if (success) {
+      await refreshCart(); // Refresh to get updated selection state
+      toast.success(checked ? "All items selected" : "All items deselected");
     } else {
-      // Deselect all items
-      setSelectedItems(new Set());
-      console.log("Deselected all items"); // Debug log
+      toast.error("Failed to update selection");
     }
   };
 
@@ -89,7 +90,7 @@ export default function CartPage() {
 
   // Handle proceed to order with validation
   const handleProceedToOrder = () => {
-    if (selectedItems.size === 0) {
+    if (selectedItems.length === 0) {
       toast.error(
         "Please select at least one item to proceed with your order",
         {
@@ -100,22 +101,14 @@ export default function CartPage() {
       return;
     }
 
-    // Store selected items in sessionStorage for the order page
-    const selectedCartItems = cartItems.filter((item) =>
-      selectedItems.has(item.id)
-    );
-    sessionStorage.setItem(
-      "selectedCartItems",
-      JSON.stringify(selectedCartItems)
-    );
-
-    // Navigate to order page
+    // Navigate to order page - selected items are already in database
     window.location.href = "/order";
   };
 
-  const subtotal = cartItems
-    .filter((item) => selectedItems.has(item.id))
-    .reduce((sum, item) => sum + (item.product?.price || 0) * item.quantity, 0);
+  const subtotal = selectedItems.reduce(
+    (sum, item) => sum + (item.product?.price || 0) * item.quantity,
+    0
+  );
   const total = subtotal; // Simplified total without discount and delivery fee
 
   return (
@@ -266,7 +259,7 @@ export default function CartPage() {
                   </label>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {selectedItems.size} of {cartItems.length} items selected
+                  {selectedItems.length} of {cartItems.length} items selected
                 </div>
               </div>
 
@@ -280,7 +273,7 @@ export default function CartPage() {
                     <div className="flex items-start pt-2">
                       <Checkbox
                         id={`item-${item.id}`}
-                        checked={selectedItems.has(item.id)}
+                        checked={item.selected}
                         onCheckedChange={(checked) =>
                           handleItemSelect(item.id, checked as boolean)
                         }
@@ -357,23 +350,21 @@ export default function CartPage() {
               <div className="rounded-lg border p-6">
                 <h2 className="text-lg font-semibold">Order Summary</h2>
                 <div className="mt-6 space-y-4">
-                  {cartItems
-                    .filter((item) => selectedItems.has(item.id))
-                    .map((item) => (
-                      <div key={item.id} className="flex justify-between">
-                        <span>
-                          {item.product?.name} (x{item.quantity})
-                        </span>
-                        <span className="font-medium">
-                          $
-                          {((item.product?.price || 0) * item.quantity).toFixed(
-                            2
-                          )}
-                        </span>
-                      </div>
-                    ))}
+                  {selectedItems.map((item) => (
+                    <div key={item.id} className="flex justify-between">
+                      <span>
+                        {item.product?.name} (x{item.quantity})
+                      </span>
+                      <span className="font-medium">
+                        $
+                        {((item.product?.price || 0) * item.quantity).toFixed(
+                          2
+                        )}
+                      </span>
+                    </div>
+                  ))}
 
-                  {selectedItems.size === 0 ? (
+                  {selectedItems.length === 0 ? (
                     <div className="text-center text-muted-foreground py-4">
                       No items selected
                     </div>
@@ -399,10 +390,10 @@ export default function CartPage() {
                   <Button
                     className="mt-4 w-full"
                     size="lg"
-                    disabled={selectedItems.size === 0}
+                    disabled={selectedItems.length === 0}
                     onClick={handleProceedToOrder}
                   >
-                    Proceed to Order ({selectedItems.size} items)
+                    Proceed to Order ({selectedItems.length} items)
                   </Button>
                 </div>
               </div>

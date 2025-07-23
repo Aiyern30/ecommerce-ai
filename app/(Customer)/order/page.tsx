@@ -15,13 +15,12 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import type { PaymentIntent } from "@stripe/stripe-js";
 import { CreateOrderRequest } from "@/type/order";
-import { useCart } from "@/components/CartProvider";
 import { useUser } from "@supabase/auth-helpers-react";
 import { CartItem } from "@/type/cart";
+import { getSelectedCartItems } from "@/lib/cart-utils";
 
 export default function OrderPage() {
   const router = useRouter();
-  const { cartItems } = useCart();
   const user = useUser();
   const [selectedCartItems, setSelectedCartItems] = useState<CartItem[]>([]);
   const [clientSecret, setClientSecret] = useState<string>("");
@@ -44,29 +43,32 @@ export default function OrderPage() {
     country: "US",
   });
 
-  // Load selected items from sessionStorage or fallback to all cart items
+  // Load selected items from database
   useEffect(() => {
-    const savedSelectedItems = sessionStorage.getItem("selectedCartItems");
-    if (savedSelectedItems) {
-      try {
-        const parsedItems = JSON.parse(savedSelectedItems);
-        setSelectedCartItems(parsedItems);
-        // Clear after loading
-        sessionStorage.removeItem("selectedCartItems");
-      } catch (error) {
-        console.error("Error parsing selected items:", error);
-        setSelectedCartItems(cartItems);
-      }
-    } else {
-      // If no selected items, check if user came directly to order page
-      if (cartItems.length === 0) {
-        toast.error("Your cart is empty. Redirecting to products...");
-        setTimeout(() => router.push("/products"), 2000);
+    const loadSelectedItems = async () => {
+      if (!user?.id) {
+        toast.error("Please login to continue");
+        router.push("/login");
         return;
       }
-      setSelectedCartItems(cartItems);
-    }
-  }, [cartItems, router]);
+
+      try {
+        const selectedItems = await getSelectedCartItems(user.id);
+        if (selectedItems.length === 0) {
+          toast.error("No items selected. Redirecting to cart...");
+          setTimeout(() => router.push("/cart"), 2000);
+          return;
+        }
+        setSelectedCartItems(selectedItems);
+      } catch (error) {
+        console.error("Error loading selected items:", error);
+        toast.error("Failed to load selected items");
+        router.push("/cart");
+      }
+    };
+
+    loadSelectedItems();
+  }, [user?.id, router]);
 
   // Update email when user changes
   useEffect(() => {
@@ -448,7 +450,7 @@ export default function OrderPage() {
                 {paymentStep === "review" && (
                   <Button
                     onClick={handleCreateOrder}
-                    disabled={isCreatingOrder || cartItems.length === 0}
+                    disabled={isCreatingOrder || selectedCartItems.length === 0}
                     className="w-full mt-6"
                     size="lg"
                   >
