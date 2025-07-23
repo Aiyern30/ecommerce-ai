@@ -7,6 +7,8 @@ import { Card, CardContent } from "@/components/ui/";
 import { addToCart } from "@/lib/cart-utils";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 
 interface ProductCardProps {
   id: string;
@@ -31,22 +33,37 @@ export function ProductCard({
 }: ProductCardProps) {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const router = useRouter();
+  const { data: session } = useSession();
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation when clicking cart button
     e.stopPropagation();
 
+    // Check if user is logged in
+    if (!session?.user?.id) {
+      toast.error("Please login to add items to cart", {
+        action: {
+          label: "Login",
+          onClick: () => router.push("/login"),
+        },
+      });
+      return;
+    }
+
     setIsAddingToCart(true);
 
-    // For now, we'll use a temporary user ID
-    // In a real app, you'd get this from your auth context
-    const tempUserId = "temp-user-id"; // Replace with actual user ID from auth
-
-    const success = await addToCart(tempUserId, id, 1);
+    const success = await addToCart(session.user.id, id, 1);
 
     if (success) {
-      // Optionally refresh cart count or update global state
+      toast.success("Added to cart!", {
+        description: `${name} has been added to your cart.`,
+      });
+      // Refresh cart count
       window.dispatchEvent(new CustomEvent("cartUpdated"));
+    } else {
+      toast.error("Failed to add item to cart", {
+        description: "Please try again.",
+      });
     }
 
     setIsAddingToCart(false);

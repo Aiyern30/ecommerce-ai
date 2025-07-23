@@ -1,6 +1,13 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
+import { useSession } from "next-auth/react";
 import { getCartCount, getCartItems } from "@/lib/cart-utils";
 import type { CartItem } from "@/lib/cart-utils";
 
@@ -18,12 +25,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // For now, using a temporary user ID
-  // In a real app, you'd get this from your auth context
-  const userId = "temp-user-id";
+  const { data: session } = useSession();
 
-  const refreshCart = async () => {
-    if (!userId) return;
+  // Only load cart if user is logged in
+  const userId = session?.user?.id;
+
+  const refreshCart = useCallback(async () => {
+    if (!userId) {
+      // If no user, clear cart and stop loading
+      setCartCount(0);
+      setCartItems([]);
+      setIsLoading(false);
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -39,7 +53,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
     refreshCart();
@@ -51,7 +65,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     window.addEventListener("cartUpdated", handleCartUpdate);
     return () => window.removeEventListener("cartUpdated", handleCartUpdate);
-  }, [userId]);
+  }, [userId, refreshCart]);
 
   return (
     <CartContext.Provider
