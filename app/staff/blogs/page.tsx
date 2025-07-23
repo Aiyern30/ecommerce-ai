@@ -55,6 +55,7 @@ import { Blog } from "@/type/blogs";
 
 interface BlogFilters {
   search: string;
+  status: "all" | "draft" | "published";
   sortBy: "title-asc" | "title-desc" | "date-new" | "date-old";
   hasImage: "all" | "with-image" | "without-image";
   hasLink: "all" | "with-link" | "without-link";
@@ -72,6 +73,7 @@ function BlogTableSkeleton() {
             <TableHead className="w-[80px]">Image</TableHead>
             <TableHead>Title</TableHead>
             <TableHead>Description</TableHead>
+            <TableHead>Status</TableHead>
             <TableHead>Tags</TableHead>
             <TableHead>Link</TableHead>
             <TableHead>Created</TableHead>
@@ -92,6 +94,9 @@ function BlogTableSkeleton() {
               </TableCell>
               <TableCell>
                 <div className="h-4 w-1/2 rounded bg-gray-200 animate-pulse" />
+              </TableCell>
+              <TableCell>
+                <div className="h-4 w-1/4 rounded bg-gray-200 animate-pulse" />
               </TableCell>
               <TableCell>
                 <div className="h-4 w-1/3 rounded bg-gray-200 animate-pulse" />
@@ -166,6 +171,7 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<BlogFilters>({
     search: "",
+    status: "all",
     sortBy: "date-new",
     hasImage: "all",
     hasLink: "all",
@@ -240,6 +246,7 @@ export default function Page() {
   const clearAllFilters = () => {
     setFilters({
       search: "",
+      status: "all",
       sortBy: "date-new",
       hasImage: "all",
       hasLink: "all",
@@ -310,6 +317,11 @@ export default function Page() {
       return false;
     }
     if (filters.hasLink === "without-link" && blog.external_link) {
+      return false;
+    }
+
+    // Filter by status
+    if (filters.status !== "all" && blog.status !== filters.status) {
       return false;
     }
 
@@ -479,6 +491,21 @@ export default function Page() {
             </SelectContent>
           </Select>
           <Select
+            value={filters.status}
+            onValueChange={(value) => {
+              updateFilter("status", value as BlogFilters["status"]);
+            }}
+          >
+            <SelectTrigger className="w-full sm:w-[180px] h-9">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="draft">Draft</SelectItem>
+              <SelectItem value="published">Published</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
             value={filters.sortBy}
             onValueChange={(value) => {
               updateFilter("sortBy", value as BlogFilters["sortBy"]);
@@ -558,6 +585,7 @@ export default function Page() {
                 <TableHead className="w-[80px]">Image</TableHead>
                 <TableHead>Title</TableHead>
                 <TableHead>Description</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>Tags</TableHead>
                 <TableHead>Link</TableHead>
                 <TableHead>Created</TableHead>
@@ -613,6 +641,20 @@ export default function Page() {
                     >
                       {blog.description || "No description"}
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        blog.status === "published" ? "default" : "secondary"
+                      }
+                      className={
+                        blog.status === "published"
+                          ? "bg-green-100 text-green-800 border-green-200"
+                          : "bg-yellow-100 text-yellow-800 border-yellow-200"
+                      }
+                    >
+                      {blog.status === "published" ? "Published" : "Draft"}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">

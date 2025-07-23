@@ -3,6 +3,7 @@ export interface Blog {
   title: string;
   description: string | null;
   external_link: string | null;
+  status: "draft" | "published";
   created_at: string;
   updated_at: string;
   blog_images: { image_url: string }[] | null;
