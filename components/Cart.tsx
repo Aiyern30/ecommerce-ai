@@ -10,6 +10,14 @@ import {
   SheetTrigger,
   Button,
   ScrollArea,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui";
 import { useCart } from "./CartProvider";
 import { updateCartItemQuantity, removeFromCart } from "@/lib/cart-utils";
@@ -21,15 +29,44 @@ export default function Cart() {
   const { cartCount, cartItems, refreshCart, isLoading } = useCart();
   const user = useUser();
   const [isOpen, setIsOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{
+    id: string;
+    product?: {
+      name: string;
+      price: number;
+      image_url: string;
+      unit: string;
+    };
+    quantity: number;
+  } | null>(null);
 
   const updateQuantity = async (itemId: string, newQuantity: number) => {
     await updateCartItemQuantity(itemId, newQuantity);
     refreshCart();
   };
 
-  const removeItem = async (itemId: string) => {
-    await removeFromCart(itemId);
-    refreshCart();
+  const handleDeleteClick = (item: {
+    id: string;
+    product?: {
+      name: string;
+      price: number;
+      image_url: string;
+      unit: string;
+    };
+    quantity: number;
+  }) => {
+    setItemToDelete(item);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (itemToDelete) {
+      await removeFromCart(itemToDelete.id);
+      refreshCart();
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
+    }
   };
 
   const subtotal = cartItems.reduce((sum, item) => {
@@ -59,7 +96,7 @@ export default function Cart() {
         <div className="flex flex-col flex-1 min-h-0">
           <ScrollArea className="flex-1">
             {isLoading ? (
-              <div className="flex items-center justify-center py-16">
+              <div className="flex items-center justify-center h-full min-h-[400px]">
                 <div className="text-center space-y-2">
                   <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
                   <p className="text-sm text-muted-foreground">
@@ -68,7 +105,7 @@ export default function Cart() {
                 </div>
               </div>
             ) : !user ? (
-              <div className="flex flex-col items-center justify-center py-16 px-6 text-center space-y-6">
+              <div className="flex flex-col items-center justify-center h-full min-h-[400px] px-6 text-center space-y-6">
                 <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
                   <ShoppingCart className="h-12 w-12 text-gray-400" />
                 </div>
@@ -86,7 +123,7 @@ export default function Cart() {
                 </Link>
               </div>
             ) : cartItems.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 px-6 text-center space-y-6">
+              <div className="flex flex-col items-center justify-center h-full min-h-[400px] px-6 text-center space-y-6">
                 <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
                   <ShoppingCart className="h-12 w-12 text-gray-500" />
                 </div>
@@ -156,7 +193,7 @@ export default function Cart() {
                           variant="ghost"
                           size="sm"
                           className="h-7 w-7 p-0 border rounded"
-                          onClick={() => removeItem(item.id)}
+                          onClick={() => handleDeleteClick(item)}
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -200,6 +237,56 @@ export default function Cart() {
           )}
         </div>
       </SheetContent>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove item from cart?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove this item from your cart? This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          {itemToDelete && (
+            <div className="flex gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+              <div className="h-16 w-16 bg-gray-100 rounded-lg overflow-hidden shrink-0">
+                <Image
+                  src={itemToDelete.product?.image_url || "/placeholder.svg"}
+                  alt={itemToDelete.product?.name || "Product"}
+                  width={64}
+                  height={64}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-medium text-sm mb-1">
+                  {itemToDelete.product?.name}
+                </h4>
+                <p className="text-sm text-gray-500 mb-1">
+                  Quantity: {itemToDelete.quantity}
+                </p>
+                <p className="text-sm font-medium">
+                  $
+                  {(
+                    (itemToDelete.product?.price || 0) * itemToDelete.quantity
+                  ).toFixed(2)}
+                </p>
+              </div>
+            </div>
+          )}
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Remove Item
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Sheet>
   );
 }
