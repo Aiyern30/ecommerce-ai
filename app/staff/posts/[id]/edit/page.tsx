@@ -41,6 +41,7 @@ import {
   SelectValue,
   Skeleton,
   AspectRatio,
+  Badge,
 } from "@/components/ui/";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import {
@@ -69,6 +70,7 @@ const postSchema = z.object({
     .nullish(),
   link: z.string().nullish().or(z.literal("")),
   linkType: z.enum(["internal", "external"]),
+  status: z.enum(["draft", "published"]).optional(),
 });
 
 type PostFormData = z.infer<typeof postSchema>;
@@ -311,6 +313,9 @@ export default function EditPostPage() {
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
   const [removeCurrentImage, setRemoveCurrentImage] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState<"draft" | "published">(
+    "draft"
+  );
 
   const form = useForm<PostFormData>({
     resolver: zodResolver(postSchema),
@@ -321,10 +326,19 @@ export default function EditPostPage() {
       link_name: "",
       link: "",
       linkType: "internal",
+      status: "draft",
     },
   });
 
   const linkType = form.watch("linkType");
+  const formStatus = form.watch("status");
+
+  // Update current status when form status changes
+  useEffect(() => {
+    if (formStatus) {
+      setCurrentStatus(formStatus);
+    }
+  }, [formStatus]);
 
   // Fetch post data
   useEffect(() => {
@@ -346,6 +360,8 @@ export default function EditPostPage() {
 
       setPost(data);
       setCurrentImageUrl(data.image_url);
+      const postStatus = data.status || "draft";
+      setCurrentStatus(postStatus);
 
       // Determine link type
       const isExternal = data.link
@@ -360,6 +376,7 @@ export default function EditPostPage() {
         link_name: data.link_name || "",
         link: data.link || "",
         linkType: isExternal ? "external" : "internal",
+        status: postStatus,
       });
 
       setLoading(false);
@@ -428,11 +445,14 @@ export default function EditPostPage() {
     }
   };
 
-  const onSubmit = async (data: PostFormData) => {
+  const onSubmit = async (data: PostFormData, isDraft: boolean = false) => {
     if (!post) return;
 
     setIsSubmitting(true);
     setImageError(null);
+
+    // Set status based on button clicked
+    const statusToSave = isDraft ? "draft" : "published";
 
     // Validate link based on type
     if (data.link && !validateLink(data.link, data.linkType)) {
@@ -504,6 +524,7 @@ export default function EditPostPage() {
           link_name: data.link_name || null,
           link: data.link || null,
           image_url: imageUrl,
+          status: statusToSave,
           updated_at: new Date().toISOString(),
         })
         .eq("id", post.id);
@@ -514,7 +535,12 @@ export default function EditPostPage() {
         return;
       }
 
-      toast.success("Post updated successfully!");
+      // Update local state
+      setCurrentStatus(statusToSave);
+      form.setValue("status", statusToSave);
+
+      const actionText = isDraft ? "saved as draft" : "published";
+      toast.success(`Post ${actionText} successfully!`);
       router.push(`/staff/posts/${post.id}`);
     } catch (error) {
       console.error("Unexpected error during post update:", error);
@@ -522,6 +548,11 @@ export default function EditPostPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSaveDraft = async () => {
+    const formData = form.getValues();
+    await onSubmit(formData, true);
   };
 
   if (loading) {
@@ -545,7 +576,19 @@ export default function EditPostPage() {
         />
 
         <div className="flex items-center justify-between">
-          <TypographyH2 className="border-none pb-0">Edit Post</TypographyH2>
+          <div className="flex items-center gap-3">
+            <TypographyH2 className="border-none pb-0">Edit Post</TypographyH2>
+            <Badge
+              variant={currentStatus === "published" ? "default" : "secondary"}
+              className={
+                currentStatus === "published"
+                  ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                  : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+              }
+            >
+              {currentStatus === "published" ? "Published" : "Draft"}
+            </Badge>
+          </div>
           <div className="flex items-center gap-2">
             <Link href={`/staff/posts/${post.id}`}>
               <Button variant="outline" size="sm">
@@ -558,7 +601,10 @@ export default function EditPostPage() {
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form
+          onSubmit={form.handleSubmit((data) => onSubmit(data, false))}
+          className="space-y-6"
+        >
           {/* Main Post Information - Two Column Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Side - Post Information */}
@@ -588,6 +634,46 @@ export default function EditPostPage() {
                       </FormControl>
                       <FormDescription>
                         The title of your post (max 200 characters).
+                      </FormDescription>
+                      <div className="min-h-[10px]">
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Post Status</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select post status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="draft">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                              Draft
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="published">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                              Published
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        Set the publication status of this post.
                       </FormDescription>
                       <div className="min-h-[10px]">
                         <FormMessage />
@@ -953,11 +1039,16 @@ export default function EditPostPage() {
               </Button>
             </Link>
             <div className="flex gap-3">
-              <Button variant="outline" type="button">
-                Save Draft
+              <Button
+                variant="outline"
+                type="button"
+                onClick={handleSaveDraft}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Saving..." : "Save Draft"}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Updating Post..." : "Update Post"}
+                {isSubmitting ? "Publishing..." : "Update Post"}
               </Button>
             </div>
           </div>
