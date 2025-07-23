@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/";
 import { addToCart } from "@/lib/cart-utils";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useUser } from "@supabase/auth-helpers-react";
 import { toast } from "sonner";
 
 interface ProductCardProps {
@@ -33,14 +33,14 @@ export function ProductCard({
 }: ProductCardProps) {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const router = useRouter();
-  const { data: session } = useSession();
+  const user = useUser();
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation when clicking cart button
     e.stopPropagation();
 
     // Check if user is logged in
-    if (!session?.user?.id) {
+    if (!user?.id) {
       toast.error("Please login to add items to cart", {
         action: {
           label: "Login",
@@ -52,7 +52,7 @@ export function ProductCard({
 
     setIsAddingToCart(true);
 
-    const success = await addToCart(session.user.id, id, 1);
+    const success = await addToCart(user.id, id, 1);
 
     if (success) {
       toast.success("Added to cart!", {

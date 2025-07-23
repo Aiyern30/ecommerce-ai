@@ -7,7 +7,7 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import { useSession } from "next-auth/react";
+import { useUser } from "@supabase/auth-helpers-react";
 import { getCartCount, getCartItems } from "@/lib/cart-utils";
 import type { CartItem } from "@/lib/cart-utils";
 
@@ -25,10 +25,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const { data: session } = useSession();
+  const user = useUser();
 
   // Only load cart if user is logged in
-  const userId = session?.user?.id;
+  const userId = user?.id;
 
   const refreshCart = useCallback(async () => {
     if (!userId) {
