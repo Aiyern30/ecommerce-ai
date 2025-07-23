@@ -59,6 +59,7 @@ const postSchema = z.object({
     .nullish(),
   link: z.string().nullish().or(z.literal("")),
   linkType: z.enum(["internal", "external"]),
+  status: z.enum(["draft", "published"]).optional(),
 });
 
 type PostFormData = z.infer<typeof postSchema>;
@@ -78,6 +79,7 @@ export default function NewPostPage() {
       link_name: "",
       link: "",
       linkType: "internal",
+      status: "draft",
     },
   });
 
@@ -132,9 +134,12 @@ export default function NewPostPage() {
     }
   };
 
-  const onSubmit = async (data: PostFormData) => {
+  const onSubmit = async (data: PostFormData, isDraft: boolean = false) => {
     setIsSubmitting(true);
     setImageError(null);
+
+    // Set status based on button clicked - this overrides the form field
+    const statusToSave = isDraft ? "draft" : "published";
 
     // Validate link based on type
     if (data.link && !validateLink(data.link, data.linkType)) {
@@ -185,6 +190,7 @@ export default function NewPostPage() {
         link_name: data.link_name || null,
         link: data.link || null,
         image_url: imageUrl,
+        status: statusToSave,
       });
 
       if (postInsertError) {
@@ -193,7 +199,8 @@ export default function NewPostPage() {
         return;
       }
 
-      toast.success("Post created successfully!");
+      const actionText = isDraft ? "saved as draft" : "published";
+      toast.success(`Post ${actionText} successfully!`);
       router.push("/staff/posts");
     } catch (error) {
       console.error("Unexpected error during post creation:", error);
@@ -201,6 +208,11 @@ export default function NewPostPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSaveDraft = async () => {
+    const formData = form.getValues();
+    await onSubmit(formData, true);
   };
 
   return (
@@ -230,7 +242,10 @@ export default function NewPostPage() {
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form
+          onSubmit={form.handleSubmit((data) => onSubmit(data, false))}
+          className="space-y-6"
+        >
           {/* Main Post Information - Two Column Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Side - Post Information */}
@@ -562,11 +577,16 @@ export default function NewPostPage() {
               </Button>
             </Link>
             <div className="flex gap-3">
-              <Button variant="outline" type="button">
-                Save Draft
+              <Button
+                variant="outline"
+                type="button"
+                onClick={handleSaveDraft}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Saving..." : "Save Draft"}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Creating Post..." : "Create Post"}
+                {isSubmitting ? "Publishing..." : "Create Post"}
               </Button>
             </div>
           </div>
