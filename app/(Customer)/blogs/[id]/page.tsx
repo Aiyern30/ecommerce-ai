@@ -34,12 +34,13 @@ export default function BlogPost() {
         .from("blogs")
         .select(
           `
-    id, title, description, external_link, created_at, updated_at,
+    id, title, description, external_link, status, created_at, updated_at,
     blog_images ( image_url ),
     blog_tags ( tags ( id, name ) )
   `
         )
         .eq("id", id)
+        .eq("status", "published")
         .single();
       if (currentError) {
         console.error("Failed to fetch blog:", currentError.message);
