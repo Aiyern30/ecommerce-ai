@@ -14,11 +14,13 @@ import {
 } from "@/components/ui";
 import { useCart } from "./CartProvider";
 import { updateCartItemQuantity, removeFromCart } from "@/lib/cart-utils";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function Cart() {
   const { cartCount, cartItems, refreshCart, isLoading } = useCart();
+  const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
 
   const updateQuantity = async (itemId: string, newQuantity: number) => {
@@ -59,6 +61,14 @@ export default function Cart() {
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <p className="text-muted-foreground">Loading cart...</p>
+              </div>
+            ) : !session ? (
+              <div className="flex flex-col items-center justify-center py-8">
+                <ShoppingCart className="h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-muted-foreground mb-4">Please login to view your cart</p>
+                <Link href="/login" onClick={() => setIsOpen(false)}>
+                  <Button>Login</Button>
+                </Link>
               </div>
             ) : cartItems.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8">
@@ -138,7 +148,7 @@ export default function Cart() {
             )}
           </ScrollArea>
 
-          {cartItems.length > 0 && (
+          {session && cartItems.length > 0 && (
             <div className="border-t pt-4 mt-4">
               <div className="flex justify-between items-center mb-4">
                 <span className="font-medium">Subtotal:</span>
