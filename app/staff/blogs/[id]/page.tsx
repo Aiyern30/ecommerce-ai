@@ -427,13 +427,22 @@ export default function BlogDetailPage() {
                 )}
 
                 {/* Status */}
-                <div>
+                <div className="flex items-center gap-2">
                   <TypographySmall className="font-medium text-muted-foreground mb-1">
                     Status:
                   </TypographySmall>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                    Published
-                  </span>
+                  <Badge
+                    variant={
+                      blog.status === "published" ? "default" : "secondary"
+                    }
+                    className={`px-3 py-1 ${
+                      blog.status === "published"
+                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                        : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                    }`}
+                  >
+                    {blog.status === "published" ? "Published" : "Draft"}
+                  </Badge>
                 </div>
               </div>
             </div>

@@ -60,6 +60,7 @@ const blogSchema = z.object({
     .url("Must be a valid URL")
     .nullish()
     .or(z.literal("")),
+  status: z.enum(["draft", "published"]).optional(),
   tags: z.array(z.object({ tag_id: z.string() })).optional(),
 });
 
@@ -275,6 +276,7 @@ export default function EditBlogPage() {
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDraftSaving, setIsDraftSaving] = useState(false);
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
@@ -286,6 +288,7 @@ export default function EditBlogPage() {
       title: "",
       description: "",
       external_link: "",
+      status: "draft",
       tags: [],
     },
   });
@@ -337,6 +340,7 @@ export default function EditBlogPage() {
         title: blogData.title,
         description: blogData.description || "",
         external_link: blogData.external_link || "",
+        status: (blogData.status as "draft" | "published") || "draft",
         tags:
           blogData.blog_tags?.map((bt: { tags: { id: any } }) => ({
             tag_id: bt.tags.id,
@@ -422,10 +426,11 @@ export default function EditBlogPage() {
     }
   };
 
-  const onSubmit = async (data: BlogFormData) => {
+  const handleSubmit = async (data: BlogFormData, isDraft: boolean = false) => {
     if (!blog) return;
 
-    setIsSubmitting(true);
+    const setLoadingState = isDraft ? setIsDraftSaving : setIsSubmitting;
+    setLoadingState(true);
     setImageError(null);
 
     try {
@@ -448,7 +453,7 @@ export default function EditBlogPage() {
         if (uploadError) {
           console.error("Image upload failed:", uploadError.message);
           toast.error(`Failed to upload image: ${uploadError.message}`);
-          setIsSubmitting(false);
+          setLoadingState(false);
           return;
         }
 
@@ -479,20 +484,21 @@ export default function EditBlogPage() {
         imageUrl = null;
       }
 
-      // Update blog data
+      // Update blog data with status based on isDraft parameter
       const { error: blogUpdateError } = await supabase
         .from("blogs")
         .update({
           title: data.title,
           description: data.description || null,
           external_link: data.external_link || null,
+          status: isDraft ? "draft" : "published",
           updated_at: new Date().toISOString(),
         })
         .eq("id", blog.id);
 
       if (blogUpdateError) {
         toast.error("Blog update failed: " + blogUpdateError.message);
-        setIsSubmitting(false);
+        setLoadingState(false);
         return;
       }
 
@@ -549,14 +555,22 @@ export default function EditBlogPage() {
         }
       }
 
-      toast.success("Blog updated successfully!");
+      toast.success(
+        isDraft ? "Blog saved as draft!" : "Blog updated successfully!"
+      );
       router.push(`/staff/blogs/${blog.id}`);
     } catch (error) {
       console.error("Unexpected error during blog update:", error);
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
-      setIsSubmitting(false);
+      setLoadingState(false);
     }
+  };
+
+  const onSubmit = (data: BlogFormData) => handleSubmit(data, false);
+  const onSaveDraft = () => {
+    const data = form.getValues();
+    handleSubmit(data, true);
   };
 
   if (loading) {
@@ -580,7 +594,19 @@ export default function EditBlogPage() {
         />
 
         <div className="flex items-center justify-between">
-          <TypographyH2 className="border-none pb-0">Edit Blog</TypographyH2>
+          <div className="flex items-center gap-3">
+            <TypographyH2 className="border-none pb-0">Edit Blog</TypographyH2>
+            <Badge
+              variant={blog.status === "published" ? "default" : "secondary"}
+              className={
+                blog.status === "published"
+                  ? "bg-green-500 hover:bg-green-600"
+                  : "bg-yellow-500 hover:bg-yellow-600"
+              }
+            >
+              {blog.status === "published" ? "Published" : "Draft"}
+            </Badge>
+          </div>
           <div className="flex items-center gap-2">
             <Link href={`/staff/blogs/${blog.id}`}>
               <Button variant="outline" size="sm">
@@ -671,6 +697,37 @@ export default function EditBlogPage() {
                       </FormControl>
                       <FormDescription>
                         Optional external link related to this blog.
+                      </FormDescription>
+                      <div className="min-h-[10px]">
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="draft">Draft</SelectItem>
+                          <SelectItem value="published">Published</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        Set the blog status. Draft blogs are not visible to
+                        customers.
                       </FormDescription>
                       <div className="min-h-[10px]">
                         <FormMessage />
@@ -900,14 +957,22 @@ export default function EditBlogPage() {
             </Card>
           </div>
 
-          {/* Submit Button */}
+          {/* Submit Buttons */}
           <div className="flex justify-end gap-4">
             <Link href={`/staff/blogs/${blog.id}`}>
               <Button variant="outline" type="button">
                 Cancel
               </Button>
             </Link>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onSaveDraft}
+              disabled={isSubmitting || isDraftSaving}
+            >
+              {isDraftSaving ? "Saving Draft..." : "Save Draft"}
+            </Button>
+            <Button type="submit" disabled={isSubmitting || isDraftSaving}>
               {isSubmitting ? "Updating Blog..." : "Update Blog"}
             </Button>
           </div>
