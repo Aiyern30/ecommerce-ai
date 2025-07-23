@@ -58,6 +58,7 @@ const blogSchema = z.object({
     .url("Must be a valid URL")
     .nullish()
     .or(z.literal("")),
+  status: z.enum(["draft", "published"]).optional(),
   tags: z.array(z.object({ tag_id: z.string() })).optional(),
 });
 
@@ -66,6 +67,7 @@ type BlogFormData = z.infer<typeof blogSchema>;
 export default function Page() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDraftSaving, setIsDraftSaving] = useState(false);
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
@@ -76,6 +78,7 @@ export default function Page() {
       title: "",
       description: "",
       external_link: "",
+      status: "draft",
       tags: [],
     },
   });
@@ -152,8 +155,12 @@ export default function Page() {
     }
   };
 
-  const onSubmit = async (data: BlogFormData) => {
-    setIsSubmitting(true);
+  const handleSubmit = async (data: BlogFormData, isDraft = false) => {
+    if (isDraft) {
+      setIsDraftSaving(true);
+    } else {
+      setIsSubmitting(true);
+    }
     setImageError(null);
 
     try {
@@ -164,13 +171,18 @@ export default function Page() {
           title: data.title,
           description: data.description || null,
           external_link: data.external_link || null,
+          status: isDraft ? "draft" : "published",
         })
         .select("id")
         .single();
 
       if (blogInsertError) {
         toast.error("Blog creation failed: " + blogInsertError.message);
-        setIsSubmitting(false);
+        if (isDraft) {
+          setIsDraftSaving(false);
+        } else {
+          setIsSubmitting(false);
+        }
         return;
       }
 
@@ -234,14 +246,37 @@ export default function Page() {
         }
       }
 
-      toast.success("Blog created successfully!");
+      if (isDraft) {
+        toast.success("Blog saved as draft successfully!");
+      } else {
+        toast.success("Blog created successfully!");
+      }
       router.push("/staff/blogs");
     } catch (error) {
       console.error("Unexpected error during blog creation:", error);
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
-      setIsSubmitting(false);
+      if (isDraft) {
+        setIsDraftSaving(false);
+      } else {
+        setIsSubmitting(false);
+      }
     }
+  };
+
+  const onSubmit = async (data: BlogFormData) => {
+    await handleSubmit(data, false);
+  };
+
+  const onSaveDraft = async () => {
+    const formData = form.getValues();
+    // For drafts, we don't need to validate as strictly
+    // Just ensure we have at least a title
+    if (!formData.title.trim()) {
+      toast.error("Blog title is required even for drafts.");
+      return;
+    }
+    await handleSubmit(formData, true);
   };
 
   return (
@@ -349,6 +384,37 @@ export default function Page() {
                       </FormControl>
                       <FormDescription>
                         Optional external link related to this blog.
+                      </FormDescription>
+                      <div className="min-h-[10px]">
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value || "draft"}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="draft">Draft</SelectItem>
+                          <SelectItem value="published">Published</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        Draft blogs are not visible to customers. Published
+                        blogs are live on the website.
                       </FormDescription>
                       <div className="min-h-[10px]">
                         <FormMessage />
@@ -507,16 +573,26 @@ export default function Page() {
             </Card>
           </div>
 
-          {/* Submit Button */}
-          <div className="flex justify-end gap-4">
+          {/* Submit Buttons */}
+          <div className="flex justify-between items-center">
             <Link href="/staff/blogs">
               <Button variant="outline" type="button">
                 Cancel
               </Button>
             </Link>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Creating Blog..." : "Create Blog"}
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                type="button"
+                onClick={onSaveDraft}
+                disabled={isSubmitting || isDraftSaving}
+              >
+                {isDraftSaving ? "Saving Draft..." : "Save Draft"}
+              </Button>
+              <Button type="submit" disabled={isSubmitting || isDraftSaving}>
+                {isSubmitting ? "Creating Blog..." : "Create Blog"}
+              </Button>
+            </div>
           </div>
         </form>
       </Form>
