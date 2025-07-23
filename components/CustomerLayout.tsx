@@ -9,6 +9,7 @@ import ChatButton from "./Chat/ChatButton";
 import { Toaster } from "./ui";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "./ThemeProvider";
+import { CartProvider } from "./CartProvider";
 import { WHATSAPP_CONFIG } from "@/lib/whatsapp-config";
 
 interface LayoutProps {
@@ -34,23 +35,25 @@ export function CustomerLayout({ children }: LayoutProps) {
       disableTransitionOnChange
     >
       <SessionProvider>
-        <div className="flex min-h-screen flex-col">
-          <Header />
-          <main className="flex-1 pt-[70px]">
-            {children}
-            <Toaster richColors />
-          </main>
-          <div className="fixed bottom-0 right-0 z-50 flex items-end p-4">
-            <WhatsAppChat
-              isOpen={isChatOpen}
-              onClose={closeChat}
-              whatsappNumber={WHATSAPP_CONFIG.businessNumber}
-              businessName={WHATSAPP_CONFIG.businessName}
-            />
-            {!isChatOpen && <ChatButton onClick={toggleChat} />}
+        <CartProvider>
+          <div className="flex min-h-screen flex-col">
+            <Header />
+            <main className="flex-1 pt-[70px]">
+              {children}
+              <Toaster richColors />
+            </main>
+            <div className="fixed bottom-0 right-0 z-50 flex items-end p-4">
+              <WhatsAppChat
+                isOpen={isChatOpen}
+                onClose={closeChat}
+                whatsappNumber={WHATSAPP_CONFIG.businessNumber}
+                businessName={WHATSAPP_CONFIG.businessName}
+              />
+              {!isChatOpen && <ChatButton onClick={toggleChat} />}
+            </div>
+            <Footer />
           </div>
-          <Footer />
-        </div>
+        </CartProvider>
       </SessionProvider>
     </ThemeProvider>
   );
