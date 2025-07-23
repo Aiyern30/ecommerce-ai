@@ -31,7 +31,6 @@ const Header = () => {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const user = useUser();
-  console.log("User:", user);
 
   const isActive = (path: string) => pathname.startsWith(path);
 

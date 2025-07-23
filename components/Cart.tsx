@@ -65,7 +65,9 @@ export default function Cart() {
             ) : !user ? (
               <div className="flex flex-col items-center justify-center py-8">
                 <ShoppingCart className="h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground mb-4">Please login to view your cart</p>
+                <p className="text-muted-foreground mb-4">
+                  Please login to view your cart
+                </p>
                 <Link href="/login" onClick={() => setIsOpen(false)}>
                   <Button>Login</Button>
                 </Link>
