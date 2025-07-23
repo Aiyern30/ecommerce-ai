@@ -367,6 +367,7 @@ export default function EditProductPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDraftSaving, setIsDraftSaving] = useState(false);
+  const [product, setProduct] = useState<{ status?: string } | null>(null);
   const [selectedImageFiles, setSelectedImageFiles] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<ExistingImage[]>([]);
   const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
@@ -423,7 +424,7 @@ export default function EditProductPage() {
         setIsLoading(true);
 
         // Fetch product details
-        const { data: product, error: productError } = await supabase
+        const { data: productData, error: productError } = await supabase
           .from("products")
           .select("*, product_tags:product_tags(tag_id, tags(id, name))")
           .eq("id", productId)
@@ -434,6 +435,8 @@ export default function EditProductPage() {
           router.push("/staff/products");
           return;
         }
+
+        setProduct(productData);
 
         // Fetch product images
         const { data: images, error: imagesError } = await supabase
@@ -482,7 +485,7 @@ export default function EditProductPage() {
           );
         }
 
-        const productTags = (product.product_tags ?? []) as {
+        const productTags = (productData.product_tags ?? []) as {
           tags: { id: string; name: string };
         }[];
 
@@ -495,19 +498,19 @@ export default function EditProductPage() {
         );
 
         form.reset({
-          name: product.name,
-          description: product.description,
-          price: product.price,
-          unit: product.unit as "per bag" | "per tonne" | "per m³",
-          stock_quantity: product.stock_quantity,
-          category: product.category as
+          name: productData.name,
+          description: productData.description,
+          price: productData.price,
+          unit: productData.unit as "per bag" | "per tonne" | "per m³",
+          stock_quantity: productData.stock_quantity,
+          category: productData.category as
             | "bagged"
             | "bulk"
             | "ready-mix"
             | "Concrete"
             | "Mortar",
-          grade: product.grade || "",
-          status: product.status || "draft",
+          grade: productData.grade || "",
+          status: productData.status || "draft",
           tags: productTags.map((pt) => ({
             tag: pt.tags.name,
           })),
@@ -547,6 +550,16 @@ export default function EditProductPage() {
 
     fetchProductData();
   }, [productId, form, router, replaceCertificates, replaceVariants]);
+
+  // Update product status when form status changes
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      if (product && value.status !== undefined) {
+        setProduct((prev) => (prev ? { ...prev, status: value.status } : null));
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form, product]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
@@ -948,17 +961,15 @@ export default function EditProductPage() {
             <TypographyH2>Edit Product</TypographyH2>
             <Badge
               variant={
-                form.getValues("status") === "published"
-                  ? "default"
-                  : "secondary"
+                product?.status === "published" ? "default" : "secondary"
               }
-              className={
-                form.getValues("status") === "published"
-                  ? "bg-green-100 text-green-800 border-green-200"
-                  : "bg-yellow-100 text-yellow-800 border-yellow-200"
-              }
+              className={`flex items-center ${
+                product?.status === "published"
+                  ? "bg-green-500 hover:bg-green-600 text-white"
+                  : "bg-yellow-500 hover:bg-yellow-600 text-white"
+              }`}
             >
-              {form.getValues("status") === "published" ? "Published" : "Draft"}
+              {product?.status === "published" ? "Published" : "Draft"}
             </Badge>
           </div>
           <div className="flex items-center gap-2">
