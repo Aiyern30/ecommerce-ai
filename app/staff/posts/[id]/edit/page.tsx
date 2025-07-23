@@ -1008,7 +1008,13 @@ export default function EditPostPage() {
                 {isSubmitting ? "Saving..." : "Save Draft"}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Publishing..." : "Update Post"}
+                {isSubmitting
+                  ? currentStatus === "published"
+                    ? "Updating Post..."
+                    : "Publishing Post..."
+                  : currentStatus === "published"
+                  ? "Update Post"
+                  : "Publish Post"}
               </Button>
             </div>
           </div>
