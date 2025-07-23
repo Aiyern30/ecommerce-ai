@@ -27,6 +27,7 @@ export default function OrderPage() {
   const [orderId, setOrderId] = useState<string>("");
   const [orderAmount, setOrderAmount] = useState<number>(0);
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [paymentStep, setPaymentStep] = useState<
     "review" | "payment" | "success"
   >("review");
@@ -46,29 +47,40 @@ export default function OrderPage() {
   // Load selected items from database
   useEffect(() => {
     const loadSelectedItems = async () => {
-      if (!user?.id) {
-        toast.error("Please login to continue");
-        router.push("/login");
+      console.log("Order page - user state:", user); // Debug log
+
+      // Wait for user to be loaded
+      if (user === undefined) {
+        console.log("User still loading..."); // Debug log
         return;
       }
 
+      // If no user, just show empty state (don't redirect)
+      if (!user?.id) {
+        console.log("No user found, showing empty state"); // Debug log
+        setSelectedCartItems([]);
+        setIsLoading(false);
+        return;
+      }
+
+      console.log("Loading selected items for user:", user.id); // Debug log
+
       try {
         const selectedItems = await getSelectedCartItems(user.id);
-        if (selectedItems.length === 0) {
-          toast.error("No items selected. Redirecting to cart...");
-          setTimeout(() => router.push("/cart"), 2000);
-          return;
-        }
+        console.log("Selected items loaded:", selectedItems); // Debug log
+
         setSelectedCartItems(selectedItems);
       } catch (error) {
         console.error("Error loading selected items:", error);
         toast.error("Failed to load selected items");
-        router.push("/cart");
+        setSelectedCartItems([]);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     loadSelectedItems();
-  }, [user?.id, router]);
+  }, [user, router]);
 
   // Update email when user changes
   useEffect(() => {
@@ -179,6 +191,22 @@ export default function OrderPage() {
   };
 
   const stripePromise = getStripe();
+
+  // Show loading only while auth is being determined
+  if (user === undefined || isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="container mx-auto px-4 max-w-2xl">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center space-y-4">
+              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+              <p className="text-muted-foreground">Loading order page...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (paymentStep === "success") {
     return (
