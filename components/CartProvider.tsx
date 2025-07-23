@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { useUser } from "@supabase/auth-helpers-react";
 import { getCartCount, getCartItems } from "@/lib/cart-utils";
-import type { CartItem } from "@/lib/cart-utils";
+import { CartItem } from "@/type/cart";
 
 interface CartContextType {
   cartCount: number;

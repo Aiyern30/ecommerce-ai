@@ -22,7 +22,7 @@ import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { useCart } from "@/components/CartProvider";
 import { updateCartItemQuantity, removeFromCart } from "@/lib/cart-utils";
 import { useUser } from "@supabase/auth-helpers-react";
-import type { CartItem } from "@/lib/cart-utils";
+import { CartItem } from "@/type/cart";
 
 export default function CartPage() {
   const { cartItems, refreshCart, isLoading } = useCart();
