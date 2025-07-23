@@ -25,13 +25,9 @@ interface CartItem {
   image_url?: string;
 }
 
-interface OrderPageProps {
-  initialCartItems?: CartItem[];
-}
-
-export default function OrderPage({ initialCartItems = [] }: OrderPageProps) {
+export default function OrderPage() {
   const router = useRouter();
-  const [cartItems, setCartItems] = useState<CartItem[]>(initialCartItems);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [clientSecret, setClientSecret] = useState<string>("");
   const [orderId, setOrderId] = useState<string>("");
   const [orderAmount, setOrderAmount] = useState<number>(0);
@@ -54,18 +50,16 @@ export default function OrderPage({ initialCartItems = [] }: OrderPageProps) {
 
   // Load cart items from localStorage on component mount
   useEffect(() => {
-    if (initialCartItems.length === 0) {
-      const savedCart = localStorage.getItem("cart");
-      if (savedCart) {
-        try {
-          const parsedCart = JSON.parse(savedCart);
-          setCartItems(parsedCart);
-        } catch (error) {
-          console.error("Error parsing cart from localStorage:", error);
-        }
+    const savedCart = localStorage.getItem("cart");
+    if (savedCart) {
+      try {
+        const parsedCart = JSON.parse(savedCart);
+        setCartItems(parsedCart);
+      } catch (error) {
+        console.error("Error parsing cart from localStorage:", error);
       }
     }
-  }, [initialCartItems.length]);
+  }, []);
 
   const calculateTotals = () => {
     const subtotal = cartItems.reduce(
