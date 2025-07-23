@@ -3,6 +3,7 @@ export interface CartItem {
   cart_id: string;
   product_id: string;
   quantity: number;
+  selected: boolean;
   created_at: string;
   updated_at: string;
   product?: {

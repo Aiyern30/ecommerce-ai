@@ -127,6 +127,97 @@ export async function getCartItems(userId: string): Promise<CartItem[]> {
   }
 }
 
+// New function to get only selected cart items
+export async function getSelectedCartItems(
+  userId: string
+): Promise<CartItem[]> {
+  try {
+    const cartId = await getOrCreateCart(userId);
+    if (!cartId) return [];
+
+    const { data, error } = await supabase
+      .from("cart_items")
+      .select(
+        `
+        *,
+        product:products (
+          name,
+          price,
+          image_url,
+          unit
+        )
+      `
+      )
+      .eq("cart_id", cartId)
+      .eq("selected", true);
+
+    if (error) {
+      console.error("Error fetching selected cart items:", error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error("Error in getSelectedCartItems:", error);
+    return [];
+  }
+}
+
+// New function to update item selection
+export async function updateCartItemSelection(
+  itemId: string,
+  selected: boolean
+): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from("cart_items")
+      .update({
+        selected: selected,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", itemId);
+
+    if (error) {
+      console.error("Error updating cart item selection:", error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error in updateCartItemSelection:", error);
+    return false;
+  }
+}
+
+// New function to select all items
+export async function selectAllCartItems(
+  userId: string,
+  selected: boolean
+): Promise<boolean> {
+  try {
+    const cartId = await getOrCreateCart(userId);
+    if (!cartId) return false;
+
+    const { error } = await supabase
+      .from("cart_items")
+      .update({
+        selected: selected,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("cart_id", cartId);
+
+    if (error) {
+      console.error("Error updating all cart items selection:", error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error in selectAllCartItems:", error);
+    return false;
+  }
+}
+
 export async function updateCartItemQuantity(
   itemId: string,
   quantity: number
