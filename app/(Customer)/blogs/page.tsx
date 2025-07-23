@@ -32,11 +32,12 @@ export default function BlogsPage() {
       .from("blogs")
       .select(
         `
-        id, title, description, external_link, created_at, updated_at,
+        id, title, description, external_link, status, created_at, updated_at,
         blog_images ( image_url ),
         blog_tags ( tags ( id, name ) )
       `
       )
+      .eq("status", "published")
       .order("created_at", { ascending: false })
       .range(from, to);
 
