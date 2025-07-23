@@ -40,12 +40,26 @@ export default function CartPage() {
     cartItems.length > 0 && cartItems.every((item) => item.selected);
   const selectedItems = cartItems.filter((item) => item.selected);
 
+  console.log("Cart state:", {
+    totalItems: cartItems.length,
+    selectedItems: selectedItems.length,
+    selectAll,
+    cartItems: cartItems.map((item) => ({
+      id: item.id,
+      name: item.product?.name,
+      selected: item.selected,
+    })),
+  }); // Debug log
+
   // Handle individual item selection
   const handleItemSelect = async (itemId: string, checked: boolean) => {
+    console.log("Updating selection for item:", itemId, "to:", checked); // Debug log
     const success = await updateCartItemSelection(itemId, checked);
     if (success) {
+      console.log("Selection updated successfully, refreshing cart"); // Debug log
       await refreshCart(); // Refresh to get updated selection state
     } else {
+      console.error("Failed to update selection"); // Debug log
       toast.error("Failed to update selection");
     }
   };
@@ -54,11 +68,14 @@ export default function CartPage() {
   const handleSelectAll = async (checked: boolean) => {
     if (!user?.id) return;
 
+    console.log("Select all triggered:", checked, "for user:", user.id); // Debug log
     const success = await selectAllCartItems(user.id, checked);
     if (success) {
+      console.log("Select all successful, refreshing cart"); // Debug log
       await refreshCart(); // Refresh to get updated selection state
       toast.success(checked ? "All items selected" : "All items deselected");
     } else {
+      console.error("Failed to update select all"); // Debug log
       toast.error("Failed to update selection");
     }
   };

@@ -2,6 +2,14 @@ import { supabase } from "./supabase/browserClient";
 import { toast } from "sonner";
 import type { CartItem } from "@/type/cart";
 
+/**
+ * Cart Selection Logic:
+ * 1. New items added to cart → selected: false (database default)
+ * 2. User manually checks items in cart → selected: true
+ * 3. Order page only fetches selected: true items
+ * 4. Users must select at least one item to proceed to order
+ */
+
 export async function getOrCreateCart(userId: string): Promise<string | null> {
   try {
     const { data: existingCart, error: fetchError } = await supabase
@@ -78,6 +86,7 @@ export async function addToCart(
         cart_id: cartId,
         product_id: productId,
         quantity: quantity,
+        // selected will be false by default from database schema
       });
 
       if (insertError) {
@@ -86,6 +95,7 @@ export async function addToCart(
         return { success: false, isUpdate: false };
       }
 
+      console.log("New item added to cart with selected: false (default)"); // Debug log
       return { success: true, isUpdate: false };
     }
   } catch (error) {
@@ -169,6 +179,8 @@ export async function updateCartItemSelection(
   selected: boolean
 ): Promise<boolean> {
   try {
+    console.log("Updating cart item selection:", { itemId, selected }); // Debug log
+
     const { error } = await supabase
       .from("cart_items")
       .update({
@@ -182,6 +194,7 @@ export async function updateCartItemSelection(
       return false;
     }
 
+    console.log("Cart item selection updated successfully"); // Debug log
     return true;
   } catch (error) {
     console.error("Error in updateCartItemSelection:", error);
@@ -195,8 +208,13 @@ export async function selectAllCartItems(
   selected: boolean
 ): Promise<boolean> {
   try {
+    console.log("Select all cart items:", { userId, selected }); // Debug log
+
     const cartId = await getOrCreateCart(userId);
-    if (!cartId) return false;
+    if (!cartId) {
+      console.error("Failed to get cart ID for select all");
+      return false;
+    }
 
     const { error } = await supabase
       .from("cart_items")
@@ -211,6 +229,7 @@ export async function selectAllCartItems(
       return false;
     }
 
+    console.log("All cart items selection updated successfully"); // Debug log
     return true;
   } catch (error) {
     console.error("Error in selectAllCartItems:", error);
@@ -315,5 +334,26 @@ export async function clearCart(userId: string): Promise<boolean> {
     console.error("Error in clearCart:", error);
     toast.error("Failed to clear cart");
     return false;
+  }
+}
+
+// Helper function to get cart statistics for debugging
+export async function getCartStats(userId: string): Promise<{
+  total: number;
+  selected: number;
+  unselected: number;
+}> {
+  try {
+    const allItems = await getCartItems(userId);
+    const selectedItems = allItems.filter((item) => item.selected);
+
+    return {
+      total: allItems.length,
+      selected: selectedItems.length,
+      unselected: allItems.length - selectedItems.length,
+    };
+  } catch (error) {
+    console.error("Error getting cart stats:", error);
+    return { total: 0, selected: 0, unselected: 0 };
   }
 }
