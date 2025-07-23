@@ -1,9 +1,15 @@
+"use client";
+
 import { Star, ShoppingCart, Heart, ZoomIn } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/";
+import { addToCart } from "@/lib/cart-utils";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface ProductCardProps {
+  id: string;
   name: string;
   price: number;
   originalPrice?: number;
@@ -14,6 +20,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({
+  id,
   name,
   price,
   originalPrice,
@@ -22,6 +29,42 @@ export function ProductCard({
   image,
   href = "#",
 }: ProductCardProps) {
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const router = useRouter();
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigation when clicking cart button
+    e.stopPropagation();
+
+    setIsAddingToCart(true);
+
+    // For now, we'll use a temporary user ID
+    // In a real app, you'd get this from your auth context
+    const tempUserId = "temp-user-id"; // Replace with actual user ID from auth
+
+    const success = await addToCart(tempUserId, id, 1);
+
+    if (success) {
+      // Optionally refresh cart count or update global state
+      window.dispatchEvent(new CustomEvent("cartUpdated"));
+    }
+
+    setIsAddingToCart(false);
+  };
+
+  const handleQuickView = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    router.push(href);
+  };
+
+  const handleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // TODO: Implement wishlist functionality
+    console.log("Add to wishlist:", id);
+  };
+
   return (
     <Link href={href} className="group block relative h-full">
       <Card className="py-0 h-full flex flex-col hover:shadow-lg transition-shadow duration-300 overflow-hidden">
@@ -36,13 +79,30 @@ export function ProductCard({
 
           {/* Hover Icons */}
           <div className="absolute left-4 bottom-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <button className="p-2 bg-white rounded-full shadow-md hover:bg-gray-200">
-              <ShoppingCart className="h-5 w-5 text-blue-600" />
+            <button
+              onClick={handleAddToCart}
+              disabled={isAddingToCart}
+              className="p-2 bg-white rounded-full shadow-md hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Add to Cart"
+            >
+              <ShoppingCart
+                className={`h-5 w-5 ${
+                  isAddingToCart ? "text-blue-400" : "text-blue-600"
+                }`}
+              />
             </button>
-            <button className="p-2 bg-white rounded-full shadow-md hover:bg-gray-200">
+            <button
+              onClick={handleQuickView}
+              className="p-2 bg-white rounded-full shadow-md hover:bg-gray-200"
+              title="Quick View"
+            >
               <ZoomIn className="h-5 w-5 text-blue-600" />
             </button>
-            <button className="p-2 bg-white rounded-full shadow-md hover:bg-gray-200">
+            <button
+              onClick={handleWishlist}
+              className="p-2 bg-white rounded-full shadow-md hover:bg-red-50"
+              title="Add to Wishlist"
+            >
               <Heart className="h-5 w-5 text-blue-600" />
             </button>
           </div>

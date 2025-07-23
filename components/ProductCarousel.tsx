@@ -81,6 +81,7 @@ export default function ProductCarousel() {
                 <div key={product.id} className="keen-slider__slide">
                   <div className="h-80 w-full px-1 sm:px-0">
                     <ProductCard
+                      id={product.id}
                       name={product.name}
                       price={product.price}
                       rating={4.5}
