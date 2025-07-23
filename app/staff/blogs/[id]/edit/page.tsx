@@ -973,7 +973,13 @@ export default function EditBlogPage() {
               {isDraftSaving ? "Saving Draft..." : "Save Draft"}
             </Button>
             <Button type="submit" disabled={isSubmitting || isDraftSaving}>
-              {isSubmitting ? "Updating Blog..." : "Update Blog"}
+              {isSubmitting
+                ? blog.status === "published"
+                  ? "Updating Blog..."
+                  : "Publishing Blog..."
+                : blog.status === "published"
+                ? "Update Blog"
+                : "Publish Blog"}
             </Button>
           </div>
         </form>
