@@ -13,7 +13,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
   Button,
   Skeleton,
   Checkbox,
@@ -28,9 +27,10 @@ import type { CartItem } from "@/lib/cart-utils";
 export default function CartPage() {
   const { cartItems, refreshCart, isLoading } = useCart();
   const user = useUser();
-  const [selectedItem, setSelectedItem] = useState<CartItem | null>(null);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [selectAll, setSelectAll] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<CartItem | null>(null);
 
   // Handle individual item selection
   const handleItemSelect = (itemId: string, checked: boolean) => {
@@ -59,18 +59,29 @@ export default function CartPage() {
     }
   };
 
+  // Handle delete click
+  const handleDeleteClick = (item: CartItem) => {
+    setItemToDelete(item);
+    setDeleteDialogOpen(true);
+  };
+
+  // Confirm delete
+  const confirmDelete = async () => {
+    if (itemToDelete) {
+      await removeFromCart(itemToDelete.id);
+      refreshCart();
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
+      toast.success("Item removed from cart!", {
+        duration: 3000,
+        style: { background: "#16a34a", color: "#fff" },
+      });
+    }
+  };
+
   const updateQuantity = async (itemId: string, newQuantity: number) => {
     await updateCartItemQuantity(itemId, newQuantity);
     refreshCart();
-  };
-
-  const removeItem = async (itemId: string) => {
-    await removeFromCart(itemId);
-    refreshCart();
-    toast.success("Item removed from cart!", {
-      duration: 3000,
-      style: { background: "#16a34a", color: "#fff" },
-    });
   };
 
   const subtotal = cartItems
@@ -290,37 +301,12 @@ export default function CartPage() {
                         </div>
                         <div className="flex items-center gap-4">
                           <p className="font-medium">${item.product?.price}</p>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <button
-                                onClick={() => setSelectedItem(item)}
-                                className="text-red-500 hover:text-red-600"
-                              >
-                                <Trash2 className="h-5 w-5" />
-                              </button>
-                            </AlertDialogTrigger>
-                            {selectedItem && (
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>
-                                    Remove Item
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Are you sure you want to remove{" "}
-                                    {selectedItem.product?.name} from your cart?
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => removeItem(selectedItem.id)}
-                                  >
-                                    Confirm
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            )}
-                          </AlertDialog>
+                          <button
+                            onClick={() => handleDeleteClick(item)}
+                            className="text-red-500 hover:text-red-600"
+                          >
+                            <Trash2 className="h-5 w-5" />
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -388,6 +374,57 @@ export default function CartPage() {
           </div>
         )}
       </div>
+
+      {/* Enhanced Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove item from cart?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove this item from your cart? This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          {itemToDelete && (
+            <div className="flex gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+              <div className="h-16 w-16 bg-gray-100 rounded-lg overflow-hidden shrink-0">
+                <Image
+                  src={itemToDelete.product?.image_url || "/placeholder.svg"}
+                  alt={itemToDelete.product?.name || "Product"}
+                  width={64}
+                  height={64}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-medium text-sm mb-1">
+                  {itemToDelete.product?.name}
+                </h4>
+                <p className="text-sm text-gray-500 mb-1">
+                  Quantity: {itemToDelete.quantity}
+                </p>
+                <p className="text-sm font-medium">
+                  $
+                  {(
+                    (itemToDelete.product?.price || 0) * itemToDelete.quantity
+                  ).toFixed(2)}
+                </p>
+              </div>
+            </div>
+          )}
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Remove Item
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
