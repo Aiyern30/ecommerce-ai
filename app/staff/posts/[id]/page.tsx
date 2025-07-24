@@ -1,6 +1,6 @@
 "use client";
 
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -39,7 +39,7 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Post } from "@/type/posts";
-import { formatDate } from "@/lib/format";
+import { formatDate } from "@/lib/utils/format";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 // Post Detail Skeleton Component
