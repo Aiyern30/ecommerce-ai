@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useUser } from "@supabase/auth-helpers-react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/browserClient";
 import Image from "next/image";
 import {
   Badge,
