@@ -89,6 +89,15 @@ export default function OrderPage() {
     }
   }, [user]);
 
+  // Reset order if shipping info changes after order creation
+  useEffect(() => {
+    if (orderId) {
+      console.log("Shipping info changed after order creation - order may need to be recreated"); // Debug log
+      // Note: We don't automatically reset here to avoid disrupting user flow
+      // User can manually reset if needed
+    }
+  }, [shippingInfo, orderId]);
+
   const calculateTotals = () => {
     const subtotal = selectedCartItems.reduce(
       (sum, item) => sum + (item.product?.price || 0) * item.quantity,
@@ -117,6 +126,13 @@ export default function OrderPage() {
       !shippingInfo.address_line_1
     ) {
       toast.error("Please fill in all required shipping information");
+      return;
+    }
+
+    // If we already have an order (user went back and forth), just proceed to payment
+    if (orderId && clientSecret) {
+      console.log("Reusing existing order:", orderId); // Debug log
+      setPaymentStep("payment");
       return;
     }
 
@@ -204,6 +220,20 @@ export default function OrderPage() {
       // Still show success since payment went through
       setPaymentStep("success");
     }
+  };
+
+  const handleBackToReview = () => {
+    setPaymentStep("review");
+    // Don't reset order details - keep them for reuse
+  };
+
+  const resetOrder = () => {
+    console.log("Resetting order - clearing previous order data"); // Debug log
+    setOrderId("");
+    setClientSecret("");
+    setOrderAmount(0);
+    setPaymentStep("review");
+    toast.info("Order reset. You can create a new order now.");
   };
 
   const stripePromise = getStripe();
@@ -470,7 +500,21 @@ export default function OrderPage() {
           <div>
             <Card className="sticky top-6">
               <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
+                <CardTitle className="flex items-center justify-between">
+                  Order Summary
+                  {orderId && (
+                    <span className="text-sm font-normal text-green-600 bg-green-50 px-2 py-1 rounded flex items-center gap-2">
+                      Order Created
+                      <button
+                        onClick={resetOrder}
+                        className="text-xs underline hover:no-underline"
+                        title="Start over with a new order"
+                      >
+                        Reset
+                      </button>
+                    </span>
+                  )}
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex justify-between">
@@ -500,6 +544,8 @@ export default function OrderPage() {
                   >
                     {isCreatingOrder
                       ? "Creating Order..."
+                      : orderId
+                      ? "Continue to Payment"
                       : "Proceed to Payment"}
                   </Button>
                 )}
@@ -507,7 +553,7 @@ export default function OrderPage() {
                 {paymentStep === "payment" && (
                   <Button
                     variant="outline"
-                    onClick={() => setPaymentStep("review")}
+                    onClick={handleBackToReview}
                     className="w-full mt-6"
                   >
                     Back to Review
