@@ -347,7 +347,7 @@ export default function CartPage() {
                           </button>
                         </div>
                         <div className="flex items-center gap-4">
-                          <p className="font-medium">${item.product?.price}</p>
+                          <p className="font-medium">RM{item.product?.price}</p>
                           <button
                             onClick={() => handleDeleteClick(item)}
                             className="text-red-500 hover:text-red-600"
@@ -373,7 +373,7 @@ export default function CartPage() {
                         {item.product?.name} (x{item.quantity})
                       </span>
                       <span className="font-medium">
-                        $
+                        RM
                         {((item.product?.price || 0) * item.quantity).toFixed(
                           2
                         )}
@@ -390,13 +390,13 @@ export default function CartPage() {
                       <div className="flex justify-between border-t pt-4">
                         <span className="text-muted-foreground">Subtotal</span>
                         <span className="font-medium">
-                          ${subtotal.toFixed(2)}
+                          RM{subtotal.toFixed(2)}
                         </span>
                       </div>
                       <div className="flex justify-between border-t pt-4">
                         <span className="text-base font-semibold">Total</span>
                         <span className="text-base font-semibold">
-                          ${total.toFixed(2)}
+                          RM{total.toFixed(2)}
                         </span>
                       </div>
                     </>
@@ -449,7 +449,7 @@ export default function CartPage() {
                   Quantity: {itemToDelete.quantity}
                 </p>
                 <p className="text-sm font-medium">
-                  $
+                  RM
                   {(
                     (itemToDelete.product?.price || 0) * itemToDelete.quantity
                   ).toFixed(2)}

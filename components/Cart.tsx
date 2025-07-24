@@ -201,7 +201,7 @@ export default function Cart() {
                     </div>
                     <div className="text-right">
                       <p className="font-medium">
-                        $
+                        RM
                         {((item.product?.price || 0) * item.quantity).toFixed(
                           2
                         )}
@@ -218,7 +218,7 @@ export default function Cart() {
               <div className="flex justify-between items-center">
                 <span className="text-lg font-medium">Subtotal</span>
                 <span className="text-lg font-medium">
-                  ${subtotal.toFixed(2)}
+                  RM{subtotal.toFixed(2)}
                 </span>
               </div>
               <div className="space-y-3">
@@ -267,7 +267,7 @@ export default function Cart() {
                   Quantity: {itemToDelete.quantity}
                 </p>
                 <p className="text-sm font-medium">
-                  $
+                  RM
                   {(
                     (itemToDelete.product?.price || 0) * itemToDelete.quantity
                   ).toFixed(2)}

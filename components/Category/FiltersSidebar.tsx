@@ -112,10 +112,10 @@ export function FiltersSidebar({
             />
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground dark:text-gray-400">
-                ${priceRange[0]}
+                RM{priceRange[0]}
               </span>
               <span className="text-sm text-muted-foreground dark:text-gray-400">
-                $200
+                RM200
               </span>
             </div>
           </div>

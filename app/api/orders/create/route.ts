@@ -176,8 +176,8 @@ export async function POST(request: NextRequest) {
 
     // Create Stripe PaymentIntent
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(total * 100), // Convert to cents
-      currency: "usd",
+      amount: Math.round(total * 100), // Convert to sen (MYR cents)
+      currency: "myr",
       metadata: {
         order_id: order.id,
         user_id: body.user_id,
