@@ -425,7 +425,7 @@ export default function OrderPage() {
                             </div>
                             <div className="text-right">
                               <p className="font-medium">
-                                $
+                                RM
                                 {(
                                   (item.product?.price || 0) * item.quantity
                                 ).toFixed(2)}
@@ -468,20 +468,20 @@ export default function OrderPage() {
               <CardContent className="space-y-4">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>RM{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping</span>
-                  <span>${shipping.toFixed(2)}</span>
+                  <span>RM{shipping.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Tax</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>RM{tax.toFixed(2)}</span>
                 </div>
                 <hr />
                 <div className="flex justify-between font-bold text-lg">
                   <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>RM{total.toFixed(2)}</span>
                 </div>
 
                 {paymentStep === "review" && (

@@ -38,5 +38,5 @@ export function formatDateForExport(date: Date): string {
 }
 
 export function formatCurrencyForExport(value: string): string {
-  return value.replace("$", "");
+  return value.replace("RM", "");
 }
