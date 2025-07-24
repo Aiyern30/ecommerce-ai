@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import stripe from "@/lib/stripe-server";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,8 +25,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get order from database
-    const { data: order, error: orderError } = await supabase
+    // Get order from database using admin client
+    const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
       .select(
         `

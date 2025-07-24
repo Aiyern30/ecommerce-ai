@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import stripe from "@/lib/stripe-server";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import Stripe from "stripe";
 
 export async function POST(request: NextRequest) {
@@ -64,8 +64,10 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
     return;
   }
 
-  // Update order status
-  const { error: orderError } = await supabase
+  console.log(`Processing payment success for order ${orderId}`); // Debug log
+
+  // Update order status using admin client to bypass RLS
+  const { error: orderError } = await supabaseAdmin
     .from("orders")
     .update({
       payment_status: "paid",
@@ -80,7 +82,7 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
   }
 
   // Update product stock quantities
-  const { data: orderItems, error: itemsError } = await supabase
+  const { data: orderItems, error: itemsError } = await supabaseAdmin
     .from("order_items")
     .select("product_id, quantity")
     .eq("order_id", orderId);
@@ -92,7 +94,7 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
 
   // Reduce stock for each product
   for (const item of orderItems) {
-    const { error: stockError } = await supabase.rpc("decrease_stock", {
+    const { error: stockError } = await supabaseAdmin.rpc("decrease_stock", {
       product_id: item.product_id,
       quantity: item.quantity,
     });
@@ -117,8 +119,10 @@ async function handlePaymentFailure(paymentIntent: Stripe.PaymentIntent) {
     return;
   }
 
-  // Update order status
-  const { error } = await supabase
+  console.log(`Processing payment failure for order ${orderId}`); // Debug log
+
+  // Update order status using admin client to bypass RLS
+  const { error } = await supabaseAdmin
     .from("orders")
     .update({
       payment_status: "failed",
