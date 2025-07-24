@@ -23,7 +23,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/";
-import { updateUserProfile, updateUserPassword } from "@/lib/user-actions";
+import { updateUserProfile, updateUserPassword } from "@/lib/user/actions";
 import {
   UserDetails,
   ProfileFormValues,

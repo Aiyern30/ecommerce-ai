@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Plus, Trash2, CreditCard, Badge } from "lucide-react";
 
-import { updateUserPaymentMethods } from "@/lib/user-actions";
+import { updateUserPaymentMethods } from "@/lib/user/actions";
 import { PaymentMethod } from "@/type/user";
 import { Card, CardContent, Button } from "@/components/ui";
 
