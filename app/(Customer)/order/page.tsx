@@ -333,8 +333,8 @@ export default function OrderPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-4xl">
+    <div className="min-h-screen mb-4">
+      <div className="container mx-auto px-4 mt-8">
         <h1 className="text-3xl font-bold mb-8">Complete Your Order</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
