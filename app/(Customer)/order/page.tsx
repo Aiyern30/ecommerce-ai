@@ -305,6 +305,13 @@ export default function OrderPage() {
               <p className="text-sm text-gray-500 mb-6">Order ID: {orderId}</p>
               <div className="space-y-2">
                 <Button
+                  onClick={() => router.push(`/profile/orders/${orderId}`)}
+                  className="w-full"
+                >
+                  View Order Details
+                </Button>
+                <Button
+                  variant="outline"
                   onClick={() => router.push("/profile/orders")}
                   className="w-full"
                 >
