@@ -92,7 +92,9 @@ export default function OrderPage() {
   // Reset order if shipping info changes after order creation
   useEffect(() => {
     if (orderId) {
-      console.log("Shipping info changed after order creation - order may need to be recreated"); // Debug log
+      console.log(
+        "Shipping info changed after order creation - order may need to be recreated"
+      ); // Debug log
       // Note: We don't automatically reset here to avoid disrupting user flow
       // User can manually reset if needed
     }
@@ -194,7 +196,11 @@ export default function OrderPage() {
 
       // Clear selected cart items after successful payment
       if (user?.id) {
-        await clearSelectedCartItems(user.id);
+        console.log("Clearing purchased items from cart..."); // Debug log
+        const cartCleared = await clearSelectedCartItems(user.id);
+        if (cartCleared) {
+          console.log("Cart items cleared successfully"); // Debug log
+        }
       }
 
       setPaymentStep("success");
@@ -217,13 +223,17 @@ export default function OrderPage() {
           const data = await response.json();
           console.log("Order confirmation successful:", data); // Debug log
         } else {
-          console.log("Order confirmation not needed - webhook likely handled it"); // Debug log
+          console.log(
+            "Order confirmation not needed - webhook likely handled it"
+          ); // Debug log
         }
       } catch (confirmError) {
-        console.log("Order confirmation skipped - webhook handling payment:", confirmError); // Debug log
+        console.log(
+          "Order confirmation skipped - webhook handling payment:",
+          confirmError
+        ); // Debug log
         // Don't show error to user since payment was successful
       }
-
     } catch (error) {
       console.error("Error in payment success handler:", error);
       // Still show success since payment went through

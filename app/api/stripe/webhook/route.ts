@@ -58,13 +58,16 @@ export async function POST(request: NextRequest) {
 
 async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
   const orderId = paymentIntent.metadata.order_id;
+  const userId = paymentIntent.metadata.user_id;
 
   if (!orderId) {
     console.error("No order_id in payment intent metadata");
     return;
   }
 
-  console.log(`Processing payment success for order ${orderId}`); // Debug log
+  console.log(
+    `Processing payment success for order ${orderId}, user ${userId}`
+  ); // Debug log
 
   // Update order status using admin client to bypass RLS
   const { error: orderError } = await supabaseAdmin
@@ -105,6 +108,38 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
         item.product_id,
         stockError
       );
+    }
+  }
+
+  // Clear selected cart items as backup (in case frontend clearing fails)
+  if (userId) {
+    try {
+      // First get the user's cart
+      const { data: cart } = await supabaseAdmin
+        .from("carts")
+        .select("id")
+        .eq("user_id", userId)
+        .single();
+
+      if (cart) {
+        // Clear only selected items
+        const { error: clearError } = await supabaseAdmin
+          .from("cart_items")
+          .delete()
+          .eq("cart_id", cart.id)
+          .eq("selected", true);
+
+        if (clearError) {
+          console.error(
+            "Failed to clear selected cart items in webhook:",
+            clearError
+          );
+        } else {
+          console.log(`Cleared selected cart items for user ${userId}`);
+        }
+      }
+    } catch (cartError) {
+      console.error("Error clearing cart in webhook:", cartError);
     }
   }
 
