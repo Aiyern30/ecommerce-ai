@@ -93,19 +93,19 @@ function OrderSummary() {
 
         <div className="flex justify-between">
           <span>Marketside Fresh Organic Banana, Bunch × 1</span>
-          <span>$0.99</span>
+          <span>RM0.99</span>
         </div>
 
         <div className="flex justify-between pb-2 border-b">
           <span className="font-medium">Subtotal</span>
-          <span>$0.99</span>
+          <span>RM0.99</span>
         </div>
 
         <div className="flex justify-between items-center">
           <span className="font-medium">Shipping</span>
           <div className="text-right">
             <div className="flex items-center justify-end gap-2 mb-1">
-              <span>Flat rate: $15.00</span>
+              <span>Flat rate: RM15.00</span>
               <Checkbox id="flat_rate" defaultChecked />
             </div>
             <div className="flex items-center justify-end gap-2">
@@ -117,7 +117,7 @@ function OrderSummary() {
 
         <div className="flex justify-between pb-2 border-b">
           <span className="font-medium">Total</span>
-          <span className="font-bold text-lg">$15.99</span>
+          <span className="font-bold text-lg">RM15.99</span>
         </div>
       </div>
     </div>
@@ -167,7 +167,7 @@ export default function CheckoutPage() {
         <div className="lg:col-span-2">
           <Alert className="mb-6 bg-red-50 border-red-200 text-red-800">
             <AlertDescription>
-              Add $250.11 to cart and get free shipping!
+              Add RM250.11 to cart and get free shipping!
             </AlertDescription>
           </Alert>
 

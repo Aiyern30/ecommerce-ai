@@ -68,10 +68,12 @@ export default function OrdersPage() {
     try {
       const { data: orders, error } = await supabase
         .from("orders")
-        .select(`
+        .select(
+          `
           *,
           order_items (*)
-        `)
+        `
+        )
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
@@ -92,7 +94,7 @@ export default function OrdersPage() {
 
   useEffect(() => {
     if (user === undefined) return; // Still loading
-    
+
     if (!user) {
       router.push("/login");
       return;
@@ -197,7 +199,8 @@ export default function OrdersPage() {
               </div>
               <h2 className="text-xl font-semibold mb-2">No orders yet</h2>
               <p className="text-gray-600 mb-6">
-                You haven&apos;t placed any orders yet. Start shopping to see your orders here.
+                You haven&apos;t placed any orders yet. Start shopping to see
+                your orders here.
               </p>
               <Link href="/products">
                 <Button>Start Shopping</Button>
@@ -219,17 +222,19 @@ export default function OrdersPage() {
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <Badge 
-                        variant="outline" 
+                      <Badge
+                        variant="outline"
                         className={getStatusColor(order.status)}
                       >
-                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                        {order.status.charAt(0).toUpperCase() +
+                          order.status.slice(1)}
                       </Badge>
-                      <Badge 
-                        variant="outline" 
+                      <Badge
+                        variant="outline"
                         className={getPaymentStatusColor(order.payment_status)}
                       >
-                        {order.payment_status.charAt(0).toUpperCase() + order.payment_status.slice(1)}
+                        {order.payment_status.charAt(0).toUpperCase() +
+                          order.payment_status.slice(1)}
                       </Badge>
                     </div>
                   </div>
@@ -238,10 +243,12 @@ export default function OrdersPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                     <div className="space-y-1">
                       <p className="text-sm text-gray-600">
-                        <span className="font-medium">Total:</span> RM{order.total.toFixed(2)}
+                        <span className="font-medium">Total:</span> RM
+                        {order.total.toFixed(2)}
                       </p>
                       <p className="text-sm text-gray-600">
-                        <span className="font-medium">Items:</span> {order.order_items.length}
+                        <span className="font-medium">Items:</span>{" "}
+                        {order.order_items.length}
                       </p>
                     </div>
                     <Button
@@ -250,7 +257,9 @@ export default function OrdersPage() {
                       onClick={() => toggleOrderDetails(order.id)}
                       className="flex items-center gap-2"
                     >
-                      {expandedOrderId === order.id ? "Hide Details" : "View Details"}
+                      {expandedOrderId === order.id
+                        ? "Hide Details"
+                        : "View Details"}
                       {expandedOrderId === order.id ? (
                         <ChevronUp className="h-4 w-4" />
                       ) : (
@@ -280,7 +289,9 @@ export default function OrdersPage() {
                                     className="w-full h-full object-cover rounded-lg"
                                   />
                                 ) : (
-                                  <div className="text-gray-400 text-xs">No Image</div>
+                                  <div className="text-gray-400 text-xs">
+                                    No Image
+                                  </div>
                                 )}
                               </div>
                               <div className="flex-1">
@@ -335,13 +346,18 @@ export default function OrdersPage() {
                         <div className="bg-gray-50 p-4 rounded-lg">
                           <h4 className="font-medium mb-3">Shipping Address</h4>
                           <div className="text-sm text-gray-600">
-                            <p>{order.shipping_address.first_name} {order.shipping_address.last_name}</p>
+                            <p>
+                              {order.shipping_address.first_name}{" "}
+                              {order.shipping_address.last_name}
+                            </p>
                             <p>{order.shipping_address.address_line_1}</p>
                             {order.shipping_address.address_line_2 && (
                               <p>{order.shipping_address.address_line_2}</p>
                             )}
                             <p>
-                              {order.shipping_address.city}, {order.shipping_address.state} {order.shipping_address.postal_code}
+                              {order.shipping_address.city},{" "}
+                              {order.shipping_address.state}{" "}
+                              {order.shipping_address.postal_code}
                             </p>
                             <p>{order.shipping_address.country}</p>
                           </div>
@@ -351,15 +367,25 @@ export default function OrdersPage() {
                       {/* Payment Info */}
                       {order.payment_intent_id && (
                         <div className="bg-gray-50 p-4 rounded-lg">
-                          <h4 className="font-medium mb-3">Payment Information</h4>
+                          <h4 className="font-medium mb-3">
+                            Payment Information
+                          </h4>
                           <div className="text-sm text-gray-600">
                             <p>
-                              <span className="font-medium">Payment ID:</span> {order.payment_intent_id}
+                              <span className="font-medium">Payment ID:</span>{" "}
+                              {order.payment_intent_id}
                             </p>
                             <p>
-                              <span className="font-medium">Payment Status:</span>{" "}
-                              <span className={`px-2 py-1 rounded-full text-xs ${getPaymentStatusColor(order.payment_status)}`}>
-                                {order.payment_status.charAt(0).toUpperCase() + order.payment_status.slice(1)}
+                              <span className="font-medium">
+                                Payment Status:
+                              </span>{" "}
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs ${getPaymentStatusColor(
+                                  order.payment_status
+                                )}`}
+                              >
+                                {order.payment_status.charAt(0).toUpperCase() +
+                                  order.payment_status.slice(1)}
                               </span>
                             </p>
                           </div>
@@ -381,9 +407,7 @@ export default function OrdersPage() {
             </Button>
           </Link>
           <Link href="/profile">
-            <Button className="w-full sm:w-auto">
-              Back to Profile
-            </Button>
+            <Button className="w-full sm:w-auto">Back to Profile</Button>
           </Link>
         </div>
       </div>

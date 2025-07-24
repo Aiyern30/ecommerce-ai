@@ -150,10 +150,10 @@ export function ProductCard({
             <span className="text-sm text-muted-foreground">({reviews})</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="font-medium">${price}</span>
+            <span className="font-medium">RM{price}</span>
             {originalPrice && (
               <span className="text-sm text-muted-foreground line-through">
-                ${originalPrice}
+                RM{originalPrice}
               </span>
             )}
             {originalPrice && (

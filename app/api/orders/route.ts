@@ -16,10 +16,12 @@ export async function GET(request: NextRequest) {
     // Fetch orders with order items
     const { data: orders, error } = await supabase
       .from("orders")
-      .select(`
+      .select(
+        `
         *,
         order_items (*)
-      `)
+      `
+      )
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
 
