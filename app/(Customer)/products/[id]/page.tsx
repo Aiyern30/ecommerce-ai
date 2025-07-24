@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui";
 import ProductDetailDisplay from "@/components/ProductDetailDisplay";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 import type { Product } from "@/type/product";
 
 export default function PublicProductDetailPage() {

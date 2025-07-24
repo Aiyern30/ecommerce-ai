@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useUser } from "@supabase/auth-helpers-react";
 import { useState } from "react";
-import { getUserDetails } from "@/lib/user";
+import { getUserDetails } from "@/lib/user/utils";
 import { UserDetails } from "@/type/user";
 import {
   Button,

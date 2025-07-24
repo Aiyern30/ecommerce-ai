@@ -51,7 +51,7 @@ import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import Image from "next/image";
 import { PostFilters } from "@/type/Filter/PostFilters";
 import { Post } from "@/type/posts";
-import { formatDate } from "@/lib/format";
+import { formatDate } from "@/lib/utils/format";
 
 function EmptyPostsState() {
   return (

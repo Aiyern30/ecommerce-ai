@@ -16,7 +16,7 @@ import {
   TypographySmall,
 } from "@/components/ui/Typography";
 import { Calendar } from "lucide-react";
-import { formatDate } from "@/lib/format";
+import { formatDate } from "@/lib/utils/format";
 import type { Product } from "@/type/product";
 
 interface ProductDetailDisplayProps {
