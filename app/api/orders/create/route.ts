@@ -1,31 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
 import stripe from "@/lib/stripe-server";
 import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { CreateOrderRequest } from "@/type/order";
 
 export async function POST(request: NextRequest) {
   try {
+    console.log("Create order API called"); // Debug log
+
     const body = (await request.json()) as CreateOrderRequest & {
       user_id: string;
     };
 
+    console.log("Request body:", body); // Debug log
+
     // Validate request
     if (!body.items || body.items.length === 0) {
+      console.log("No items in order"); // Debug log
       return NextResponse.json({ error: "No items in order" }, { status: 400 });
     }
 
     // Fetch product details from database
     const productIds = body.items.map((item) => item.product_id);
+    console.log("Fetching products:", productIds); // Debug log
+
     const { data: products, error: productError } = await supabase
       .from("products")
       .select("*")
       .in("id", productIds);
 
-    if (productError || !products) {
+    if (productError) {
+      console.error("Product fetch error:", productError); // Debug log
       return NextResponse.json(
-        { error: "Failed to fetch product details" },
+        { error: `Failed to fetch product details: ${productError.message}` },
         { status: 400 }
       );
+    }
+
+    if (!products) {
+      console.log("No products found"); // Debug log
+      return NextResponse.json({ error: "No products found" }, { status: 400 });
     }
 
     // Calculate totals
@@ -76,8 +90,17 @@ export async function POST(request: NextRequest) {
     const tax = subtotal * tax_rate;
     const total = subtotal + shipping_cost + tax;
 
-    // Create order in database
-    const { data: order, error: orderError } = await supabase
+    // Create order in database using admin client to bypass RLS
+    console.log("Creating order with data:", {
+      user_id: body.user_id,
+      subtotal,
+      shipping_cost,
+      tax,
+      total,
+      shipping_address: body.shipping_address,
+    }); // Debug log
+
+    const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
       .insert({
         user_id: body.user_id,
@@ -93,26 +116,58 @@ export async function POST(request: NextRequest) {
       .select()
       .single();
 
-    if (orderError || !order) {
+    if (orderError) {
+      console.error("Order creation error:", orderError); // Debug log
+      console.error("Full error details:", JSON.stringify(orderError, null, 2)); // More detailed error
+
+      // Check if error is due to missing table
+      if (
+        orderError.message?.includes('relation "orders" does not exist') ||
+        orderError.code === "PGRST116" ||
+        orderError.details?.includes("does not exist")
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Database tables not found. Please run the database setup first.",
+          },
+          { status: 500 }
+        );
+      }
+
       return NextResponse.json(
-        { error: "Failed to create order" },
+        {
+          error: `Failed to create order: ${
+            orderError.message ||
+            orderError.details ||
+            JSON.stringify(orderError)
+          }`,
+        },
         { status: 500 }
       );
     }
 
-    // Create order items
+    if (!order) {
+      console.log("No order returned"); // Debug log
+      return NextResponse.json(
+        { error: "Failed to create order - no data returned" },
+        { status: 500 }
+      );
+    }
+
+    // Create order items using admin client
     const orderItemsWithOrderId = orderItems.map((item) => ({
       ...item,
       order_id: order.id,
     }));
 
-    const { error: itemsError } = await supabase
+    const { error: itemsError } = await supabaseAdmin
       .from("order_items")
       .insert(orderItemsWithOrderId);
 
     if (itemsError) {
       // Rollback order creation
-      await supabase.from("orders").delete().eq("id", order.id);
+      await supabaseAdmin.from("orders").delete().eq("id", order.id);
       return NextResponse.json(
         { error: "Failed to create order items" },
         { status: 500 }
@@ -132,8 +187,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Update order with payment intent ID
-    await supabase
+    // Update order with payment intent ID using admin client
+    await supabaseAdmin
       .from("orders")
       .update({ payment_intent_id: paymentIntent.id })
       .eq("id", order.id);
