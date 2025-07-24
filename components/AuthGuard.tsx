@@ -11,10 +11,14 @@ interface AuthGuardProps {
   fallback?: React.ReactNode;
 }
 
-export function AuthGuard({ 
-  children, 
-  redirectTo = "/login", 
-  fallback = <div className="flex items-center justify-center min-h-screen">Loading...</div> 
+export function AuthGuard({
+  children,
+  redirectTo = "/login",
+  fallback = (
+    <div className="flex items-center justify-center min-h-screen">
+      Loading...
+    </div>
+  ),
 }: AuthGuardProps) {
   const user = useUser();
   const router = useRouter();
@@ -29,7 +33,9 @@ export function AuthGuard({
 
       // If user is null, double-check with Supabase session
       if (user === null) {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         if (!session) {
           console.log("No authentication found, redirecting...");
           router.push(redirectTo);
