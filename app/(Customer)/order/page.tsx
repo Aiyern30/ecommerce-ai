@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Elements } from "@stripe/react-stripe-js";
-import getStripe from "@/lib/stripe";
+import getStripe from "@/lib/stripe/client";
 import PaymentForm from "@/components/PaymentForm";
 import {
   Button,

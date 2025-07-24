@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShoppingCart, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/";
-import { updateUserWishlist } from "@/lib/user-actions";
+import { updateUserWishlist } from "@/lib/user/actions";
 import { WishlistItem } from "@/type/user";
 
 interface WishlistItemsProps {

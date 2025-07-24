@@ -16,7 +16,7 @@ import {
   FormMessage,
   Input,
 } from "@/components/ui/";
-import { updateUserAddresses } from "@/lib/user-actions";
+import { updateUserAddresses } from "@/lib/user/actions";
 import { UserAddress } from "@/type/user";
 
 const addressSchema = z.object({

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Edit, Plus, Trash2 } from "lucide-react";
 import { UserAddress } from "@/type/user";
 import { Card, CardContent, Button, Badge } from "@/components/ui";
-import { updateUserAddresses } from "@/lib/user-actions";
+import { updateUserAddresses } from "@/lib/user/actions";
 import AddressForm from "./address-form";
 
 interface SavedAddressesProps {
