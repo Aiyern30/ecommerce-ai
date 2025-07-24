@@ -1,4 +1,4 @@
-import { supabase } from "./supabase/browserClient";
+import { supabase } from "../supabase/browserClient";
 import { toast } from "sonner";
 import type { CartItem } from "@/type/cart";
 

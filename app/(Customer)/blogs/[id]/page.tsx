@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 import { Blog } from "@/type/blogs";
 import { Card, Skeleton } from "@/components/ui";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
