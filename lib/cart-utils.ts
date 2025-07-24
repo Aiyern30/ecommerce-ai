@@ -337,7 +337,10 @@ export async function clearCart(userId: string): Promise<boolean> {
   }
 }
 
-export async function clearSelectedCartItems(userId: string): Promise<boolean> {
+export async function clearSelectedCartItems(
+  userId: string,
+  showToast: boolean = false
+): Promise<boolean> {
   try {
     const cartId = await getOrCreateCart(userId);
     if (!cartId) return true;
@@ -350,15 +353,16 @@ export async function clearSelectedCartItems(userId: string): Promise<boolean> {
 
     if (error) {
       console.error("Error clearing selected cart items:", error);
-      toast.error("Failed to clear selected items");
+      if (showToast) toast.error("Failed to clear selected items");
       return false;
     }
 
     console.log("Selected cart items cleared successfully");
+    if (showToast) toast.success("Purchased items removed from cart");
     return true;
   } catch (error) {
     console.error("Error in clearSelectedCartItems:", error);
-    toast.error("Failed to clear selected items");
+    if (showToast) toast.error("Failed to clear selected items");
     return false;
   }
 }
