@@ -143,11 +143,20 @@ export default function OrderPage() {
       });
 
       const data = await response.json();
+      console.log("API response:", { status: response.status, data }); // Debug log
 
       if (!response.ok) {
+        console.error("Order creation failed:", data); // Debug log
         throw new Error(data.error || "Failed to create order");
       }
 
+      // Validate that we got the required fields
+      if (!data.client_secret || !data.order_id) {
+        console.error("Missing required fields in response:", data); // Debug log
+        throw new Error("Invalid response from server - missing payment data");
+      }
+
+      console.log("Order created successfully:", data); // Debug log
       setClientSecret(data.client_secret);
       setOrderId(data.order_id);
       setOrderAmount(data.amount);
