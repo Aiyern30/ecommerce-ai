@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
-import { getImageLabels } from "@/lib/getImageLabels";
+import { getImageLabels } from "@/lib/ai/image-labels";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(

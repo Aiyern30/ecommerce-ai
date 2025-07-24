@@ -17,7 +17,7 @@ import type { PaymentIntent } from "@stripe/stripe-js";
 import { CreateOrderRequest } from "@/type/order";
 import { useUser } from "@supabase/auth-helpers-react";
 import { CartItem } from "@/type/cart";
-import { getSelectedCartItems, clearSelectedCartItems } from "@/lib/cart-utils";
+import { getSelectedCartItems, clearSelectedCartItems } from "@/lib/cart/utils";
 
 export default function OrderPage() {
   const router = useRouter();

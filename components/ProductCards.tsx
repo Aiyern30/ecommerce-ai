@@ -4,7 +4,7 @@ import { Star, ShoppingCart, Heart, ZoomIn } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/";
-import { addToCart } from "@/lib/cart-utils";
+import { addToCart } from "@/lib/cart/utils";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@supabase/auth-helpers-react";

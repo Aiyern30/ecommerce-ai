@@ -27,7 +27,7 @@ import {
   Phone,
   Mail,
 } from "lucide-react";
-import { formatCurrency } from "@/lib/currency";
+import { formatCurrency } from "@/lib/utils/currency";
 
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 

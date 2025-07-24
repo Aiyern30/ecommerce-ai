@@ -20,7 +20,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui";
 import { useCart } from "./CartProvider";
-import { updateCartItemQuantity, removeFromCart } from "@/lib/cart-utils";
+import { updateCartItemQuantity, removeFromCart } from "@/lib/cart/utils";
 import { useUser } from "@supabase/auth-helpers-react";
 import Image from "next/image";
 import Link from "next/link";

@@ -25,7 +25,7 @@ import {
   removeFromCart,
   updateCartItemSelection,
   selectAllCartItems,
-} from "@/lib/cart-utils";
+} from "@/lib/cart/utils";
 import { useUser } from "@supabase/auth-helpers-react";
 import { CartItem } from "@/type/cart";
 
