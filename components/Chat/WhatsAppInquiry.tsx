@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui";
 import { MessageCircle, Phone } from "lucide-react";
-import { createWhatsAppUrl, WHATSAPP_CONFIG } from "@/lib/whatsapp-config";
+import { createWhatsAppUrl, WHATSAPP_CONFIG } from "@/lib/whatsapp/config";
 
 interface WhatsAppInquiryProps {
   productName?: string;
