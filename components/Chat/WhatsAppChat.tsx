@@ -8,7 +8,7 @@ import {
   WHATSAPP_CONFIG,
   createWhatsAppUrl,
   formatPhoneNumber,
-} from "@/lib/whatsapp-config";
+} from "@/lib/whatsapp/config";
 import TypingIndicator from "./TypingIndicator";
 
 interface WhatsAppChatProps {

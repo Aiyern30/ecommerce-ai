@@ -2,7 +2,7 @@
 
 import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/";
-import { WHATSAPP_CONFIG, createWhatsAppUrl } from "@/lib/whatsapp-config";
+import { WHATSAPP_CONFIG, createWhatsAppUrl } from "@/lib/whatsapp/config";
 
 interface ChatButtonProps {
   onClick?: () => void;
