@@ -105,21 +105,18 @@ export default function CartPage() {
     refreshCart();
   };
 
-  // Handle proceed to order with validation
-  const handleProceedToOrder = () => {
+  // Handle proceed to checkout with validation
+  const handleProceedToCheckout = () => {
     if (selectedItems.length === 0) {
-      toast.error(
-        "Please select at least one item to proceed with your order",
-        {
-          duration: 4000,
-          style: { background: "#ef4444", color: "#fff" },
-        }
-      );
+      toast.error("Please select at least one item to proceed with checkout", {
+        duration: 4000,
+        style: { background: "#ef4444", color: "#fff" },
+      });
       return;
     }
 
-    // Navigate to order page - selected items are already in database
-    window.location.href = "/order";
+    // Navigate to new checkout flow - selected items are already in database
+    window.location.href = "/checkout";
   };
 
   const subtotal = selectedItems.reduce(
@@ -130,12 +127,10 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen mb-4">
-      <div className="p-4 container mx-auto">
+      <div className="container mx-auto px-4 py-6">
         <BreadcrumbNav showFilterButton={false} />
-      </div>
 
-      <div className="container mx-auto px-4 mt-8">
-        <h1 className="text-3xl font-bold mb-8">YOUR CART</h1>
+        <h1 className="text-3xl font-bold mb-8 mt-8">YOUR CART</h1>
 
         {isLoading ? (
           <div className="mt-8 grid gap-8 lg:grid-cols-3">
@@ -408,9 +403,9 @@ export default function CartPage() {
                     className="mt-4 w-full"
                     size="lg"
                     disabled={selectedItems.length === 0}
-                    onClick={handleProceedToOrder}
+                    onClick={handleProceedToCheckout}
                   >
-                    Proceed to Order ({selectedItems.length} items)
+                    Proceed to Checkout ({selectedItems.length} items)
                   </Button>
                 </div>
               </div>
