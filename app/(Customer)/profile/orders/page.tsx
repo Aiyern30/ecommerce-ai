@@ -34,7 +34,6 @@ import {
 } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { formatDistanceToNow } from "date-fns";
-import { AuthGuard } from "@/components/AuthGuard";
 
 interface ShippingAddress {
   first_name: string;
@@ -277,23 +276,22 @@ export default function OrdersPage() {
   }
 
   return (
-    <AuthGuard>
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="container mx-auto px-4 max-w-4xl">
-          {/* Header with Search and Filters */}
-          <div className="flex flex-col gap-4 mb-8">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => router.back()}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back
-              </Button>
-              <h1 className="text-3xl font-bold">Your Orders</h1>
-            </div>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="container mx-auto px-4 max-w-4xl">
+        {/* Header with Search and Filters */}
+        <div className="flex flex-col gap-4 mb-8">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.back()}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+            <h1 className="text-3xl font-bold">Your Orders</h1>
+          </div>
 
             {/* Search and Filters */}
             <div className="flex flex-col sm:flex-row gap-4">
@@ -628,9 +626,8 @@ export default function OrdersPage() {
             <Link href="/profile">
               <Button className="w-full sm:w-auto">Back to Profile</Button>
             </Link>
-          </div>
         </div>
       </div>
-    </AuthGuard>
+    </div>
   );
 }

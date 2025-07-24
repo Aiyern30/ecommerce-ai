@@ -3,7 +3,7 @@
 import { useUser } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/browserClient";
 
 interface AuthGuardProps {
   children: React.ReactNode;
