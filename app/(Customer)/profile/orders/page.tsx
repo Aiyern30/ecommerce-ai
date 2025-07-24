@@ -32,7 +32,7 @@ import {
   DollarSign,
   Clock,
 } from "lucide-react";
-import { formatCurrency } from "@/lib/currency";
+import { formatCurrency } from "@/lib/utils/currency";
 import { formatDistanceToNow } from "date-fns";
 
 interface ShippingAddress {

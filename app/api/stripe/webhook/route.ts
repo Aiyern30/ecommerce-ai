@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import stripe from "@/lib/stripe-server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import stripe from "@/lib/stripe/server";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import Stripe from "stripe";
 
 export async function POST(request: NextRequest) {

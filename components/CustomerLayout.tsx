@@ -11,7 +11,7 @@ import { ThemeProvider } from "./ThemeProvider";
 import { CartProvider } from "./CartProvider";
 import { AuthGuard } from "./AuthGuard";
 import { usePathname } from "next/navigation";
-import { WHATSAPP_CONFIG } from "@/lib/whatsapp-config";
+import { WHATSAPP_CONFIG } from "@/lib/whatsapp/config";
 
 interface LayoutProps {
   children: React.ReactNode;
