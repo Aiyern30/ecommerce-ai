@@ -19,16 +19,16 @@ interface LayoutProps {
 
 // Routes that require authentication
 const PROTECTED_ROUTES = [
-  '/profile',
-  '/checkout', 
-  '/wishlist',
-  '/notifications',
-  '/order'
+  "/profile",
+  "/checkout",
+  "/wishlist",
+  "/notifications",
+  "/order",
 ];
 
 // Check if current path requires authentication
 const requiresAuth = (pathname: string): boolean => {
-  return PROTECTED_ROUTES.some(route => pathname.startsWith(route));
+  return PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
 };
 
 export function CustomerLayout({ children }: LayoutProps) {
@@ -72,11 +72,7 @@ export function CustomerLayout({ children }: LayoutProps) {
       disableTransitionOnChange
     >
       <CartProvider>
-        {needsAuth ? (
-          <AuthGuard>{renderContent()}</AuthGuard>
-        ) : (
-          renderContent()
-        )}
+        {needsAuth ? <AuthGuard>{renderContent()}</AuthGuard> : renderContent()}
       </CartProvider>
     </ThemeProvider>
   );
