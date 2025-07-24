@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button, Card, CardContent, Badge, Skeleton } from "@/components/ui/";
 import type { Product } from "@/type/product";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 import { Plus, Package, DollarSign, Truck, Award } from "lucide-react";
 import Image from "next/image";
 

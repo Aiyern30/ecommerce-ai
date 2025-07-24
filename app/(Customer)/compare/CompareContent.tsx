@@ -15,7 +15,7 @@ import { ComparisonSummary } from "@/components/Comparison/ComparisonSummary";
 import { PricingTab } from "@/components/Comparison/Tabs/PricingTab";
 import type { Product } from "@/type/product";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { ComparisonProductCard } from "@/components/Comparison/ComparisonProductCard";
