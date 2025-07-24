@@ -7,7 +7,7 @@ import { useSwipeable } from "react-swipeable";
 import { Button } from "@/components/ui/";
 import { TypographyH1, TypographyP } from "@/components/ui/Typography";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 import { Post } from "@/type/posts";
 import { CarouselItem } from "@/type/carousel";
 

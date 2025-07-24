@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/";
 import { Button } from "@/components/ui/";
 import { Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 
 type Tag = { id: string; name: string };
 
