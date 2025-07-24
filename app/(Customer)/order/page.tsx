@@ -190,7 +190,7 @@ export default function OrderPage() {
         if (user?.id) {
           await clearSelectedCartItems(user.id);
         }
-        
+
         setPaymentStep("success");
         toast.success("Payment successful! Order confirmed.");
       } else {
