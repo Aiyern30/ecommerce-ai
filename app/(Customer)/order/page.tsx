@@ -17,7 +17,7 @@ import type { PaymentIntent } from "@stripe/stripe-js";
 import { CreateOrderRequest } from "@/type/order";
 import { useUser } from "@supabase/auth-helpers-react";
 import { CartItem } from "@/type/cart";
-import { getSelectedCartItems } from "@/lib/cart-utils";
+import { getSelectedCartItems, clearSelectedCartItems } from "@/lib/cart-utils";
 
 export default function OrderPage() {
   const router = useRouter();
@@ -186,16 +186,23 @@ export default function OrderPage() {
       });
 
       if (response.ok) {
+        // Clear selected cart items after successful payment
+        if (user?.id) {
+          await clearSelectedCartItems(user.id);
+        }
+        
         setPaymentStep("success");
-        // Clear cart - the cart context will handle this
-        // localStorage.removeItem("cart"); // Remove this as we're using cart context now
         toast.success("Payment successful! Order confirmed.");
+      } else {
+        throw new Error("Failed to confirm payment");
       }
     } catch (error) {
       console.error("Error confirming payment:", error);
       toast.error(
         "Payment successful but confirmation failed. Please contact support."
       );
+      // Still show success since payment went through
+      setPaymentStep("success");
     }
   };
 

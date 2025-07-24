@@ -337,6 +337,32 @@ export async function clearCart(userId: string): Promise<boolean> {
   }
 }
 
+export async function clearSelectedCartItems(userId: string): Promise<boolean> {
+  try {
+    const cartId = await getOrCreateCart(userId);
+    if (!cartId) return true;
+
+    const { error } = await supabase
+      .from("cart_items")
+      .delete()
+      .eq("cart_id", cartId)
+      .eq("selected", true);
+
+    if (error) {
+      console.error("Error clearing selected cart items:", error);
+      toast.error("Failed to clear selected items");
+      return false;
+    }
+
+    console.log("Selected cart items cleared successfully");
+    return true;
+  } catch (error) {
+    console.error("Error in clearSelectedCartItems:", error);
+    toast.error("Failed to clear selected items");
+    return false;
+  }
+}
+
 // Helper function to get cart statistics for debugging
 export async function getCartStats(userId: string): Promise<{
   total: number;

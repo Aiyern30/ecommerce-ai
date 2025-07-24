@@ -59,7 +59,7 @@ export default function PaymentForm({
         <h3 className="font-medium text-lg mb-2">Order Summary</h3>
         <div className="flex justify-between">
           <span>Order #{orderId.slice(-8)}</span>
-          <span className="font-medium">${amount.toFixed(2)}</span>
+          <span className="font-medium">RM{amount.toFixed(2)}</span>
         </div>
       </div>
 
@@ -83,7 +83,7 @@ export default function PaymentForm({
         className="w-full"
         size="lg"
       >
-        {isLoading ? "Processing..." : `Pay $${amount.toFixed(2)}`}
+        {isLoading ? "Processing..." : `Pay RM${amount.toFixed(2)}`}
       </Button>
     </form>
   );
