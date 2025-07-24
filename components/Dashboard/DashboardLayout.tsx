@@ -39,7 +39,7 @@ import {
   SidebarProvider,
 } from "@/components/ui/";
 import { useTheme } from "../ThemeProvider";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/browserClient";
 import { useUser } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/navigation";
 import { Product } from "@/type/product";
