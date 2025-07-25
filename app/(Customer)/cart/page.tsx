@@ -127,8 +127,8 @@ export default function CartPage() {
       return;
     }
 
-    // Use Next.js router instead of window.location to preserve context
-    router.push("/checkout");
+    // Go directly to the address step
+    router.push("/checkout/address");
   };
 
   const subtotal = selectedItems.reduce(
@@ -414,16 +414,27 @@ export default function CartPage() {
                               {/* Quantity Controls */}
                               <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-600 shadow-sm">
                                 <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (item.quantity === 1) {
-                                    handleDeleteClick(item);
-                                  } else {
-                                    updateQuantity(item.id, item.quantity - 1);
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (item.quantity === 1) {
+                                      handleDeleteClick(item);
+                                    } else {
+                                      updateQuantity(
+                                        item.id,
+                                        item.quantity - 1
+                                      );
+                                    }
+                                  }}
+                                  className={`p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-l-lg group${
+                                    item.quantity === 1
+                                      ? " text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                      : ""
+                                  }`}
+                                  aria-label={
+                                    item.quantity === 1
+                                      ? "Remove item"
+                                      : "Decrease quantity"
                                   }
-                                }}
-                                className={`p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-l-lg group${item.quantity === 1 ? ' text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20' : ''}`}
-                                aria-label={item.quantity === 1 ? "Remove item" : "Decrease quantity"}
                                 >
                                   <Minus className="h-3.5 w-3.5 group-hover:scale-110 transition-transform duration-200" />
                                 </button>
@@ -488,7 +499,8 @@ export default function CartPage() {
                               <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
                                 <Image
                                   src={
-                                    item.product?.image_url || "/placeholder.svg"
+                                    item.product?.image_url ||
+                                    "/placeholder.svg"
                                   }
                                   alt={item.product?.name || "Product"}
                                   fill
