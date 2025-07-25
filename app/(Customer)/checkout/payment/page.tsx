@@ -2,56 +2,27 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useUser } from "@supabase/auth-helpers-react";
-import {
-  Button,
-  RadioGroup,
-  RadioGroupItem,
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-  Label,
-} from "@/components/ui";
+import { Button } from "@/components/ui";
 import { StripeProvider } from "@/components/StripeProvider";
-import { StripeCardForm, StripeFPXForm } from "@/components/StripePaymentForms";
+import { StripePaymentForm } from "@/components/StripePaymentForms";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { CheckoutStepper } from "@/components/Checkout/CheckoutStepper";
 import { CheckoutSummary } from "@/components/Checkout/CheckoutSummary";
-import { ArrowLeft, CreditCard, Building } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { Address } from "@/lib/user/address";
-
-const paymentSchema = z.object({
-  paymentMethod: z.enum(["card", "fpx", "cash_on_delivery"], {
-    required_error: "Please select a payment method",
-  }),
-});
-
-type PaymentFormData = z.infer<typeof paymentSchema>;
-
-const defaultValues: Partial<PaymentFormData> = {
-  paymentMethod: "card",
-};
+import type { Address } from "@/lib/user/address";
+import { getCountryCode } from "@/utils/country-codes";
 
 export default function CheckoutPaymentPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClientComponentClient();
   const user = useUser();
-
   const [addressData, setAddressData] = useState<Address | null>(null);
+  const [totalAmount, setTotalAmount] = useState<number>(0);
   const addressId = searchParams.get("addressId");
-
-  const form = useForm<PaymentFormData>({
-    resolver: zodResolver(paymentSchema),
-    defaultValues,
-  });
 
   useEffect(() => {
     const fetchAddress = async () => {
@@ -79,19 +50,21 @@ export default function CheckoutPaymentPage() {
     fetchAddress();
   }, [addressId, router, supabase, user]);
 
-  const onSubmit = async (data: PaymentFormData) => {
-    try {
-      // ⚠ remove localStorage
-      if (data.paymentMethod === "cash_on_delivery") {
-        router.push(`/checkout/confirm?addressId=${addressId}`);
-      }
-      // Stripe forms handle their own submit & redirect
-    } catch (error) {
-      console.error("Error saving payment method:", error);
-    }
-  };
+  useEffect(() => {
+    // Calculate total amount from cart or order summary
+    // This should match your CheckoutSummary calculation
+    // For now, using a placeholder - replace with your actual cart total logic
+    const calculateTotal = () => {
+      // Example: Get from localStorage, context, or API
+      // const cartTotal = getCartTotal() // Your cart total function
+      // Convert to cents: cartTotal * 100
+      return 2300; // RM23.00 in cents - replace with actual calculation
+    };
 
-  if (!addressData) {
+    setTotalAmount(calculateTotal());
+  }, []);
+
+  if (!addressData || totalAmount === 0) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
         <div className="text-center">
@@ -103,7 +76,7 @@ export default function CheckoutPaymentPage() {
   }
 
   return (
-    <StripeProvider>
+    <StripeProvider amount={totalAmount}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
@@ -116,7 +89,6 @@ export default function CheckoutPaymentPage() {
               { label: "Payment" },
             ]}
           />
-
           <div className="flex items-center justify-between mt-4">
             <h1 className="text-2xl font-bold">Payment Method</h1>
             <Link href="/checkout/address">
@@ -156,120 +128,26 @@ export default function CheckoutPaymentPage() {
               </div>
             </div>
 
+            {/* Payment Form */}
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-              <h2 className="text-xl font-semibold mb-6">
-                Choose Payment Method
-              </h2>
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-6"
-                >
-                  <FormField
-                    control={form.control}
-                    name="paymentMethod"
-                    render={({ field }) => (
-                      <FormItem className="space-y-3">
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            value={field.value}
-                            className="space-y-4"
-                          >
-                            {/* Credit / Debit Card */}
-                            <Label
-                              htmlFor="card"
-                              className={`
-      flex items-center space-x-3 border rounded-lg p-4 transition-colors cursor-pointer
-      ${
-        field.value === "card"
-          ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20 shadow"
-          : "hover:bg-gray-50 dark:hover:bg-gray-700"
-      }
-    `}
-                            >
-                              <RadioGroupItem value="card" id="card" />
-                              <CreditCard
-                                className={`h-5 w-5 ${
-                                  field.value === "card"
-                                    ? "text-blue-600"
-                                    : "text-gray-400"
-                                }`}
-                              />
-                              <div className="flex-1">
-                                <p className="font-medium">
-                                  Credit/Debit Card (via Stripe)
-                                </p>
-                                <p className="text-sm text-gray-500">
-                                  Pay securely with your card
-                                </p>
-                              </div>
-                              {field.value === "card" && (
-                                <div className="flex items-center space-x-1 bg-gray-100 dark:bg-gray-700 rounded px-2 py-0.5 text-xs">
-                                  <span className="text-green-700 dark:text-green-300">
-                                    Link
-                                  </span>
-                                  <span className="bg-white dark:bg-gray-800 px-1 rounded text-gray-800 dark:text-gray-100">
-                                    VISA
-                                  </span>
-                                  <span>4242</span>
-                                </div>
-                              )}
-                            </Label>
-
-                            {/* FPX */}
-                            <Label
-                              htmlFor="fpx"
-                              className={`
-      flex items-center space-x-3 border rounded-lg p-4 transition-colors cursor-pointer
-      ${
-        field.value === "fpx"
-          ? "border-green-600 bg-green-50 dark:bg-green-900/20 shadow"
-          : "hover:bg-gray-50 dark:hover:bg-gray-700"
-      }
-    `}
-                            >
-                              <RadioGroupItem value="fpx" id="fpx" />
-                              <Building
-                                className={`h-5 w-5 ${
-                                  field.value === "fpx"
-                                    ? "text-green-600"
-                                    : "text-gray-400"
-                                }`}
-                              />
-                              <div className="flex-1">
-                                <p className="font-medium">
-                                  FPX Online Banking (via Stripe)
-                                </p>
-                                <p className="text-sm text-gray-500">
-                                  Pay with Malaysian online banking
-                                </p>
-                              </div>
-                            </Label>
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </form>
-              </Form>
-
-              {/* Payment forms below */}
-              {form.watch("paymentMethod") === "card" && (
-                <StripeCardForm
-                  onSuccess={() =>
-                    router.push(`/checkout/confirm?addressId=${addressId}`)
-                  }
-                />
-              )}
-              {form.watch("paymentMethod") === "fpx" && (
-                <StripeFPXForm
-                  onSuccess={() =>
-                    router.push(`/checkout/confirm?addressId=${addressId}`)
-                  }
-                />
-              )}
+              <h2 className="text-xl font-semibold mb-6">Payment Details</h2>
+              <StripePaymentForm
+                onSuccess={() =>
+                  router.push(`/checkout/confirm?addressId=${addressId}`)
+                }
+                billingDetails={{
+                  name: addressData.full_name,
+                  address: {
+                    line1: addressData.address_line1,
+                    line2: addressData.address_line2 || undefined,
+                    city: addressData.city,
+                    state: addressData.state,
+                    postal_code: addressData.postal_code,
+                    country: getCountryCode(addressData.country),
+                  },
+                  phone: addressData.phone || undefined,
+                }}
+              />
             </div>
           </div>
 
