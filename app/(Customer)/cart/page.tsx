@@ -414,13 +414,16 @@ export default function CartPage() {
                               {/* Quantity Controls */}
                               <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-600 shadow-sm">
                                 <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (item.quantity === 1) {
+                                    handleDeleteClick(item);
+                                  } else {
                                     updateQuantity(item.id, item.quantity - 1);
-                                  }}
-                                  className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-l-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent group"
-                                  disabled={item.quantity <= 1}
-                                  aria-label="Decrease quantity"
+                                  }
+                                }}
+                                className={`p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-l-lg group${item.quantity === 1 ? ' text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20' : ''}`}
+                                aria-label={item.quantity === 1 ? "Remove item" : "Decrease quantity"}
                                 >
                                   <Minus className="h-3.5 w-3.5 group-hover:scale-110 transition-transform duration-200" />
                                 </button>
@@ -449,153 +452,155 @@ export default function CartPage() {
             </div>
 
             {/* Order Summary */}
-            <div className="lg:col-span-1 self-start sticky top-28">
-              <Card className="overflow-hidden shadow-sm py-0 gap-0">
-                {/* Header */}
-                <CardHeader className="p-6 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-                  <CardTitle className="text-xl font-bold flex items-center gap-2">
-                    <ShoppingCart className="h-5 w-5" />
-                    Order Summary
-                  </CardTitle>
-                </CardHeader>
+            <div className="lg:col-span-1">
+              <div className="sticky top-6 z-10">
+                <Card className="overflow-hidden shadow-sm py-0 gap-0">
+                  {/* Header */}
+                  <CardHeader className="p-6 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                    <CardTitle className="text-xl font-bold flex items-center gap-2">
+                      <ShoppingCart className="h-5 w-5" />
+                      Order Summary
+                    </CardTitle>
+                  </CardHeader>
 
-                {/* Content */}
-                <CardContent className="p-6">
-                  {selectedItems.length === 0 ? (
-                    <div className="text-center text-gray-500 dark:text-gray-400 py-12">
-                      <ShoppingCart className="h-16 w-16 mx-auto mb-4 opacity-30" />
-                      <TypographyH4 className="mb-2">
-                        No items selected
-                      </TypographyH4>
-                      <TypographyP className="text-sm !mt-0">
-                        Select items to see summary
-                      </TypographyP>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {/* Selected Items */}
-                      <div className="space-y-3">
-                        {selectedItems.map((item) => (
-                          <div
-                            key={item.id}
-                            className="flex gap-3 py-3 group hover:bg-gray-50 dark:hover:bg-gray-900/30 rounded-lg p-2 transition-all duration-200"
-                          >
-                            {/* Product Image */}
-                            <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
-                              <Image
-                                src={
-                                  item.product?.image_url || "/placeholder.svg"
-                                }
-                                alt={item.product?.name || "Product"}
-                                fill
-                                className="object-cover group-hover:scale-105 transition-transform duration-200"
-                              />
-                            </div>
+                  {/* Content */}
+                  <CardContent className="p-6">
+                    {selectedItems.length === 0 ? (
+                      <div className="text-center text-gray-500 dark:text-gray-400 py-12">
+                        <ShoppingCart className="h-16 w-16 mx-auto mb-4 opacity-30" />
+                        <TypographyH4 className="mb-2">
+                          No items selected
+                        </TypographyH4>
+                        <TypographyP className="text-sm !mt-0">
+                          Select items to see summary
+                        </TypographyP>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {/* Selected Items */}
+                        <div className="space-y-3">
+                          {selectedItems.map((item) => (
+                            <div
+                              key={item.id}
+                              className="flex gap-3 py-3 group hover:bg-gray-50 dark:hover:bg-gray-900/30 rounded-lg p-2 transition-all duration-200"
+                            >
+                              {/* Product Image */}
+                              <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
+                                <Image
+                                  src={
+                                    item.product?.image_url || "/placeholder.svg"
+                                  }
+                                  alt={item.product?.name || "Product"}
+                                  fill
+                                  className="object-cover group-hover:scale-105 transition-transform duration-200"
+                                />
+                              </div>
 
-                            {/* Product Details */}
-                            <div className="flex-1 min-w-0">
-                              <TypographyH4 className="text-sm font-medium line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                                {item.product?.name}
-                              </TypographyH4>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded text-gray-600 dark:text-gray-300">
-                                  Qty: {item.quantity}
-                                </span>
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                  @ RM{item.product?.price}
+                              {/* Product Details */}
+                              <div className="flex-1 min-w-0">
+                                <TypographyH4 className="text-sm font-medium line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                  {item.product?.name}
+                                </TypographyH4>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <span className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded text-gray-600 dark:text-gray-300">
+                                    Qty: {item.quantity}
+                                  </span>
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                    @ RM{item.product?.price}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Price */}
+                              <div className="text-right">
+                                <span className="font-bold text-gray-900 dark:text-gray-100 text-sm">
+                                  RM
+                                  {(
+                                    (item.product?.price || 0) * item.quantity
+                                  ).toFixed(2)}
                                 </span>
                               </div>
                             </div>
+                          ))}
+                        </div>
 
-                            {/* Price */}
-                            <div className="text-right">
-                              <span className="font-bold text-gray-900 dark:text-gray-100 text-sm">
-                                RM
-                                {(
-                                  (item.product?.price || 0) * item.quantity
-                                ).toFixed(2)}
+                        {/* Divider */}
+                        <div className="border-t-2 border-gray-200 dark:border-gray-700 my-6"></div>
+
+                        {/* Summary Calculations */}
+                        <div className="space-y-3">
+                          {/* Items Count */}
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-gray-600 dark:text-gray-400">
+                              Items ({selectedItems.length})
+                            </span>
+                            <span className="font-medium text-gray-900 dark:text-gray-100">
+                              RM{subtotal.toFixed(2)}
+                            </span>
+                          </div>
+
+                          {/* Shipping */}
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-gray-600 dark:text-gray-400">
+                              Shipping
+                            </span>
+                            <span className="font-medium text-green-600 dark:text-green-400">
+                              FREE
+                            </span>
+                          </div>
+
+                          {/* Total */}
+                          <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
+                            <div className="flex justify-between items-center">
+                              <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                                Total
+                              </span>
+                              <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                                RM{total.toFixed(2)}
                               </span>
                             </div>
                           </div>
-                        ))}
-                      </div>
-
-                      {/* Divider */}
-                      <div className="border-t-2 border-gray-200 dark:border-gray-700 my-6"></div>
-
-                      {/* Summary Calculations */}
-                      <div className="space-y-3">
-                        {/* Items Count */}
-                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-gray-600 dark:text-gray-400">
-                            Items ({selectedItems.length})
-                          </span>
-                          <span className="font-medium text-gray-900 dark:text-gray-100">
-                            RM{subtotal.toFixed(2)}
-                          </span>
-                        </div>
-
-                        {/* Shipping */}
-                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-gray-600 dark:text-gray-400">
-                            Shipping
-                          </span>
-                          <span className="font-medium text-green-600 dark:text-green-400">
-                            FREE
-                          </span>
-                        </div>
-
-                        {/* Total */}
-                        <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
-                          <div className="flex justify-between items-center">
-                            <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                              Total
-                            </span>
-                            <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                              RM{total.toFixed(2)}
-                            </span>
-                          </div>
                         </div>
                       </div>
+                    )}
+
+                    {/* Checkout Button */}
+                    <div className="mt-8">
+                      <Button
+                        className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-4 rounded-xl text-base transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none"
+                        size="lg"
+                        disabled={selectedItems.length === 0}
+                        onClick={handleProceedToCheckout}
+                      >
+                        <div className="flex items-center justify-center gap-2">
+                          <span>Proceed to Checkout</span>
+                          {selectedItems.length > 0 && (
+                            <span className="bg-white/20 text-white px-2 py-1 rounded-full text-sm font-bold">
+                              {selectedItems.length}
+                            </span>
+                          )}
+                        </div>
+                      </Button>
                     </div>
-                  )}
 
-                  {/* Checkout Button */}
-                  <div className="mt-8">
-                    <Button
-                      className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-4 rounded-xl text-base transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none"
-                      size="lg"
-                      disabled={selectedItems.length === 0}
-                      onClick={handleProceedToCheckout}
-                    >
-                      <div className="flex items-center justify-center gap-2">
-                        <span>Proceed to Checkout</span>
-                        {selectedItems.length > 0 && (
-                          <span className="bg-white/20 text-white px-2 py-1 rounded-full text-sm font-bold">
-                            {selectedItems.length}
-                          </span>
-                        )}
-                      </div>
-                    </Button>
-                  </div>
-
-                  {/* Security Badge */}
-                  <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                    <svg
-                      className="h-4 w-4"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <span>Secure checkout guaranteed</span>
-                  </div>
-                </CardContent>
-              </Card>
+                    {/* Security Badge */}
+                    <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                      <svg
+                        className="h-4 w-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span>Secure checkout guaranteed</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
         )}
