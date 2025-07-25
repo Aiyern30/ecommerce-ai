@@ -30,6 +30,7 @@ import { CheckoutSummary } from "@/components/Checkout/CheckoutSummary";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { Address } from "@/lib/user/address";
 
 const addressSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
@@ -73,20 +74,6 @@ const malaysianStates = [
   "Terengganu",
 ];
 
-type Address = {
-  id: string;
-  user_id: string;
-  full_name: string;
-  phone: string | null;
-  address_line1: string;
-  address_line2: string | null;
-  city: string;
-  state: string;
-  postal_code: string;
-  country: string;
-  created_at: string; // ISO timestamp
-};
-
 export default function CheckoutAddressPage() {
   const supabase = createClientComponentClient();
   const user = useUser();
@@ -122,43 +109,40 @@ export default function CheckoutAddressPage() {
   const onSubmit = async (data: AddressFormData) => {
     setIsSubmitting(true);
     try {
-      let newAddressId: string | null = null;
+      if (!user) return;
 
-      if (data.saveAddress && user) {
-        const { data: inserted, error } = await supabase
-          .from("addresses")
-          .insert({
-            user_id: user.id,
-            full_name: data.firstName + " " + data.lastName,
-            phone: data.phone,
-            address_line1: data.address,
-            address_line2: data.apartment,
-            city: data.city,
-            state: data.state,
-            postal_code: data.postalCode,
-            country: data.country,
-          })
-          .select()
-          .single();
+      const { data: inserted, error } = await supabase
+        .from("addresses")
+        .insert({
+          user_id: user.id,
+          full_name: data.firstName + " " + data.lastName,
+          phone: data.phone,
+          address_line1: data.address,
+          address_line2: data.apartment,
+          city: data.city,
+          state: data.state,
+          postal_code: data.postalCode,
+          country: data.country,
+        })
+        .select()
+        .single();
 
-        if (error) {
-          console.error("Error saving address to DB:", error);
-        } else if (inserted) {
-          newAddressId = inserted.id;
-        }
+      if (error || !inserted) {
+        console.error("Error inserting new address:", error);
+      } else {
+        // Proceed: new address inserted
+        setSelectedAddressId(inserted.id);
+        router.push("/checkout/payment?addressId=" + inserted.id);
       }
-
-      // Store for next step
-      localStorage.setItem("checkout-address", JSON.stringify(data));
-      if (newAddressId) {
-        localStorage.setItem("checkout-address-id", newAddressId);
-      }
-
-      router.push("/checkout/payment");
     } catch (error) {
       console.error("Error saving address:", error);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+  const handleUseExistingAddress = () => {
+    if (selectedAddressId) {
+      router.push("/checkout/payment?addressId=" + selectedAddressId);
     }
   };
 
@@ -507,13 +491,7 @@ export default function CheckoutAddressPage() {
               </p>
               <div className="flex justify-end pt-6">
                 <Button
-                  onClick={() => {
-                    localStorage.setItem(
-                      "checkout-address-id",
-                      selectedAddressId!
-                    );
-                    router.push("/checkout/payment");
-                  }}
+                  onClick={handleUseExistingAddress}
                   className="min-w-[200px]"
                 >
                   Continue to Payment <ArrowRight className="ml-2 h-4 w-4" />
