@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Minus, Plus, Trash2, ShoppingCart } from "lucide-react";
 import {
   AlertDialog,
@@ -32,6 +33,7 @@ import { CartItem } from "@/type/cart";
 export default function CartPage() {
   const { cartItems, refreshCart, isLoading } = useCart();
   const user = useUser();
+  const router = useRouter();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<CartItem | null>(null);
 
@@ -115,8 +117,8 @@ export default function CartPage() {
       return;
     }
 
-    // Navigate to new checkout flow - selected items are already in database
-    window.location.href = "/checkout";
+    // Use Next.js router instead of window.location to preserve context
+    router.push("/checkout");
   };
 
   const subtotal = selectedItems.reduce(
