@@ -16,6 +16,7 @@ import {
   FormField,
   FormItem,
   FormMessage,
+  Label,
 } from "@/components/ui";
 import { StripeProvider } from "@/components/StripeProvider";
 import { StripeCardForm, StripeFPXForm } from "@/components/StripePaymentForms";
@@ -176,23 +177,18 @@ export default function CheckoutPaymentPage() {
                             className="space-y-4"
                           >
                             {/* Credit / Debit Card */}
-                            <div
+                            <Label
+                              htmlFor="card"
                               className={`
-                    flex items-center space-x-3 border rounded-lg p-4 
-                    transition-colors cursor-pointer
-                    ${
-                      field.value === "card"
-                        ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20 shadow"
-                        : "hover:bg-gray-50 dark:hover:bg-gray-700"
-                    }
-                  `}
-                              onClick={() => field.onChange("card")}
+      flex items-center space-x-3 border rounded-lg p-4 transition-colors cursor-pointer
+      ${
+        field.value === "card"
+          ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20 shadow"
+          : "hover:bg-gray-50 dark:hover:bg-gray-700"
+      }
+    `}
                             >
-                              <RadioGroupItem
-                                value="card"
-                                id="card"
-                                className="hidden"
-                              />
+                              <RadioGroupItem value="card" id="card" />
                               <CreditCard
                                 className={`h-5 w-5 ${
                                   field.value === "card"
@@ -208,7 +204,6 @@ export default function CheckoutPaymentPage() {
                                   Pay securely with your card
                                 </p>
                               </div>
-                              {/* Card preview badge */}
                               {field.value === "card" && (
                                 <div className="flex items-center space-x-1 bg-gray-100 dark:bg-gray-700 rounded px-2 py-0.5 text-xs">
                                   <span className="text-green-700 dark:text-green-300">
@@ -220,26 +215,21 @@ export default function CheckoutPaymentPage() {
                                   <span>4242</span>
                                 </div>
                               )}
-                            </div>
+                            </Label>
 
-                            {/* FPX Online Banking */}
-                            <div
+                            {/* FPX */}
+                            <Label
+                              htmlFor="fpx"
                               className={`
-                    flex items-center space-x-3 border rounded-lg p-4 
-                    transition-colors cursor-pointer
-                    ${
-                      field.value === "fpx"
-                        ? "border-green-600 bg-green-50 dark:bg-green-900/20 shadow"
-                        : "hover:bg-gray-50 dark:hover:bg-gray-700"
-                    }
-                  `}
-                              onClick={() => field.onChange("fpx")}
+      flex items-center space-x-3 border rounded-lg p-4 transition-colors cursor-pointer
+      ${
+        field.value === "fpx"
+          ? "border-green-600 bg-green-50 dark:bg-green-900/20 shadow"
+          : "hover:bg-gray-50 dark:hover:bg-gray-700"
+      }
+    `}
                             >
-                              <RadioGroupItem
-                                value="fpx"
-                                id="fpx"
-                                className="hidden"
-                              />
+                              <RadioGroupItem value="fpx" id="fpx" />
                               <Building
                                 className={`h-5 w-5 ${
                                   field.value === "fpx"
@@ -255,7 +245,7 @@ export default function CheckoutPaymentPage() {
                                   Pay with Malaysian online banking
                                 </p>
                               </div>
-                            </div>
+                            </Label>
                           </RadioGroup>
                         </FormControl>
                         <FormMessage />
