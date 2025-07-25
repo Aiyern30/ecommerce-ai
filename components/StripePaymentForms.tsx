@@ -1,12 +1,8 @@
-import {
-  CardElement,
-  useStripe,
-  useElements,
-  PaymentElement,
-} from "@stripe/react-stripe-js";
+import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import type { PaymentIntent } from "@stripe/stripe-js";
 import { useState } from "react";
 import { Button } from "@/components/ui";
+import { FpxBankElement } from "@stripe/react-stripe-js";
 
 export function StripeCardForm({
   onSuccess,
@@ -79,16 +75,26 @@ export function StripeFPXForm({
       setIsProcessing(false);
       return;
     }
-    // Confirm FPX payment using PaymentIntent client secret from backend
+
+    const fpxBank = elements.getElement(FpxBankElement);
+    if (!fpxBank) {
+      setError("Please select a bank");
+      setIsProcessing(false);
+      return;
+    }
+
     const { error: stripeError, paymentIntent } =
       await stripe.confirmFpxPayment(
         window.localStorage.getItem("stripe-client-secret") || "",
         {
           payment_method: {
-            fpx: elements.getElement("fpxBank")!,
+            fpx: fpxBank,
+            billing_details: { name: "Customer" }, // replace as needed
           },
+          return_url: window.location.origin + "/checkout/confirm",
         }
       );
+
     if (stripeError) {
       setError(stripeError.message || "Payment failed");
     } else if (paymentIntent && paymentIntent.status === "succeeded") {
@@ -99,7 +105,13 @@ export function StripeFPXForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <PaymentElement />
+      <FpxBankElement
+        options={{
+          accountHolderType: "individual",
+          style: { base: { fontSize: "16px", color: "#000" } },
+        }}
+      />
+
       {error && <div className="text-red-500 text-sm">{error}</div>}
       <Button
         type="submit"
