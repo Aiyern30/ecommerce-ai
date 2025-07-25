@@ -3,6 +3,7 @@ import type { PaymentIntent } from "@stripe/stripe-js";
 import { useState } from "react";
 import { Button } from "@/components/ui";
 import { FpxBankElement } from "@stripe/react-stripe-js";
+import { Loader2 } from "lucide-react";
 
 export function StripeCardForm({
   onSuccess,
@@ -70,6 +71,7 @@ export function StripeFPXForm({
     e.preventDefault();
     setIsProcessing(true);
     setError(null);
+
     if (!stripe || !elements) {
       setError("Stripe not loaded");
       setIsProcessing(false);
@@ -89,7 +91,7 @@ export function StripeFPXForm({
         {
           payment_method: {
             fpx: fpxBank,
-            billing_details: { name: "Customer" }, // replace as needed
+            billing_details: { name: "Customer" }, // replace with real name
           },
           return_url: window.location.origin + "/checkout/confirm",
         }
@@ -100,24 +102,34 @@ export function StripeFPXForm({
     } else if (paymentIntent && paymentIntent.status === "succeeded") {
       onSuccess(paymentIntent);
     }
+
     setIsProcessing(false);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <FpxBankElement
-        options={{
-          accountHolderType: "individual",
-          style: { base: { fontSize: "16px", color: "#000" } },
-        }}
-      />
+    <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+      <div className="border rounded p-3 dark:bg-gray-700 bg-gray-50">
+        <FpxBankElement
+          options={{
+            accountHolderType: "individual",
+            style: { base: { fontSize: "16px", color: "#000" } },
+          }}
+        />
+      </div>
+
+      <p className="text-xs text-gray-500">
+        You’ll be redirected to your bank’s website to complete the payment
+        securely.
+      </p>
 
       {error && <div className="text-red-500 text-sm">{error}</div>}
+
       <Button
         type="submit"
         disabled={isProcessing || !stripe}
-        className="min-w-[200px]"
+        className="min-w-[200px] flex items-center justify-center"
       >
+        {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         {isProcessing ? "Processing..." : "Pay Now"}
       </Button>
     </form>
