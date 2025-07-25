@@ -10,23 +10,42 @@ import Link from "next/link";
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cartItems } = useCart();
+  const { cartItems, isLoading: cartLoading } = useCart();
   const [loading, setLoading] = useState(true);
 
   const selectedItems = useMemo(() => {
-    return cartItems.filter((item) => item.selected);
+    const selected = cartItems.filter((item) => item.selected);
+    console.log("Checkout - Cart items:", cartItems.length, "Selected items:", selected.length);
+    console.log("Cart items detail:", cartItems.map(item => ({ id: item.id, name: item.product?.name, selected: item.selected })));
+    return selected;
   }, [cartItems]);
 
   useEffect(() => {
-    // Check if user has selected items in cart
-    if (selectedItems.length === 0 && !loading) {
-      router.push("/cart");
+    console.log("Checkout useEffect - cartLoading:", cartLoading, "selectedItems.length:", selectedItems.length);
+    
+    // Wait for cart to load first
+    if (cartLoading) {
+      console.log("Cart still loading, waiting...");
       return;
     }
-    setLoading(false);
-  }, [selectedItems.length, router, loading]);
 
-  if (loading) {
+    // Give it a moment for the data to settle after loading
+    const timer = setTimeout(() => {
+      // Only check after cart has loaded and we've given it time to populate
+      if (selectedItems.length === 0) {
+        console.log("No selected items found after cart loaded, redirecting to cart");
+        router.push("/cart");
+        return;
+      }
+      
+      console.log("Selected items found:", selectedItems.length, "setting loading to false");
+      setLoading(false);
+    }, 100); // Small delay to ensure cart data is fully loaded
+
+    return () => clearTimeout(timer);
+  }, [cartLoading, selectedItems.length, router]);
+
+  if (cartLoading || loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
         <div className="text-center">
