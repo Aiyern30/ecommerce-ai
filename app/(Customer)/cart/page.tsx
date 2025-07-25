@@ -15,9 +15,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   Button,
-  Skeleton,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
   Checkbox,
+  Skeleton,
 } from "@/components/ui";
+import {
+  TypographyH1,
+  TypographyH3,
+  TypographyH4,
+  TypographyP,
+} from "@/components/ui/Typography";
 import { toast } from "sonner";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { useCart } from "@/components/CartProvider";
@@ -132,9 +142,7 @@ export default function CartPage() {
       <div className="container mx-auto px-4 py-6">
         <BreadcrumbNav showFilterButton={false} />
 
-        <h1 className="text-4xl font-bold mb-8 mt-8 text-gray-900 dark:text-gray-100">
-          YOUR CART
-        </h1>
+        <TypographyH1 className="mb-8 mt-8">YOUR CART</TypographyH1>
 
         {isLoading ? (
           <div className="mt-8 grid gap-8 lg:grid-cols-3">
@@ -143,7 +151,7 @@ export default function CartPage() {
               {/* Single Card Container Skeleton */}
               <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
                 {/* Header Skeleton */}
-                <div className="flex items-center gap-3 p-6 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-3 p-6 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
                   <Skeleton className="h-5 w-5 rounded" />
                   <Skeleton className="h-7 w-48" />
                   <div className="ml-auto">
@@ -197,7 +205,7 @@ export default function CartPage() {
             <div className="lg:col-span-1 self-start sticky top-28">
               <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
                 {/* Header Skeleton */}
-                <div className="p-6 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 border-b border-gray-200 dark:border-gray-700">
+                <div className="p-6 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
                   <Skeleton className="h-7 w-48" />
                 </div>
 
@@ -298,164 +306,170 @@ export default function CartPage() {
             {/* Cart Items */}
             <div className="lg:col-span-2">
               {/* Single Card Container for All Products */}
-              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+              <Card className="overflow-hidden shadow-sm py-0 gap-0">
                 {/* Choose All Product Header */}
-                <div className="flex items-center justify-between gap-3 p-6 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 border-b border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center gap-3">
-                    <Checkbox
-                      id="select-all"
-                      checked={selectAll}
-                      onCheckedChange={(checked) => {
-                        console.log("Checkbox onCheckedChange:", checked); // Debug log
-                        handleSelectAll(checked === true);
-                      }}
-                      className="h-5 w-5"
-                    />
-                    <label
-                      htmlFor="select-all"
-                      className="font-bold text-gray-900 dark:text-gray-100 cursor-pointer text-xl"
-                    >
-                      Choose All Product
-                    </label>
+                <CardHeader className="p-6 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <Checkbox
+                        id="select-all"
+                        checked={selectAll}
+                        onCheckedChange={(checked) => {
+                          console.log("Checkbox onCheckedChange:", checked); // Debug log
+                          handleSelectAll(checked === true);
+                        }}
+                        className="h-5 w-5"
+                      />
+                      <CardTitle className="text-xl font-bold cursor-pointer">
+                        Choose All Product
+                      </CardTitle>
+                    </div>
+                    <TypographyP className="text-sm text-gray-600 dark:text-gray-400 font-medium !mt-0">
+                      {selectedItems.length} of {cartItems.length} items
+                      selected
+                    </TypographyP>
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
-                    {selectedItems.length} of {cartItems.length} items selected
-                  </div>
-                </div>
+                </CardHeader>
 
                 {/* Product Items */}
-                <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {cartItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="p-6 hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-all duration-200 cursor-pointer group"
-                      onClick={(e) => {
-                        // Only navigate if not clicking on interactive elements
-                        const target = e.target as HTMLElement;
-                        if (
-                          !target.closest("button") &&
-                          !target.closest("input") &&
-                          !target.closest("a")
-                        ) {
-                          router.push(`/products/${item.product_id}`);
-                        }
-                      }}
-                    >
-                      <div className="flex gap-4">
-                        {/* Checkbox for individual item */}
-                        <div className="flex items-start pt-3">
-                          <Checkbox
-                            id={`item-${item.id}`}
-                            checked={item.selected}
-                            onCheckedChange={(checked) =>
-                              handleItemSelect(item.id, checked as boolean)
-                            }
-                            onClick={(e) => e.stopPropagation()}
-                            className="h-5 w-5"
-                          />
-                        </div>
-
-                        {/* Product Image */}
-                        <div className="relative h-24 w-24 md:h-28 md:w-28 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-700">
-                          <Image
-                            src={item.product?.image_url || "/placeholder.svg"}
-                            alt={item.product?.name || "Product"}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        </div>
-
-                        {/* Product Details */}
-                        <div className="flex flex-1 flex-col justify-between min-h-[96px] md:min-h-[112px]">
-                          <div className="flex flex-col md:flex-row md:justify-between md:items-start">
-                            <div className="flex-1 pr-4">
-                              <h3 className="font-bold text-gray-900 dark:text-gray-100 text-xl mb-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                                {item.product?.name}
-                              </h3>
-                              <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4 text-sm text-gray-500 dark:text-gray-400">
-                                <span>
-                                  Size: {item.product?.unit || "per bag"}
-                                </span>
-                                <span className="hidden md:inline">•</span>
-                                <span>Color: White</span>
-                              </div>
-                            </div>
-
-                            {/* Delete Button - Top Right */}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteClick(item);
-                              }}
-                              className="text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition-all duration-200 ml-auto md:ml-0 opacity-0 group-hover:opacity-100"
-                              aria-label="Remove item"
-                            >
-                              <Trash2 className="h-5 w-5" />
-                            </button>
+                <CardContent className="p-0">
+                  <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {cartItems.map((item) => (
+                      <div
+                        key={item.id}
+                        className="p-6 hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-all duration-200 cursor-pointer group"
+                        onClick={(e) => {
+                          // Only navigate if not clicking on interactive elements
+                          const target = e.target as HTMLElement;
+                          if (
+                            !target.closest("button") &&
+                            !target.closest("input") &&
+                            !target.closest("a")
+                          ) {
+                            router.push(`/products/${item.product_id}`);
+                          }
+                        }}
+                      >
+                        <div className="flex gap-4">
+                          {/* Checkbox for individual item */}
+                          <div className="flex items-start pt-3">
+                            <Checkbox
+                              id={`item-${item.id}`}
+                              checked={item.selected}
+                              onCheckedChange={(checked) =>
+                                handleItemSelect(item.id, checked as boolean)
+                              }
+                              onClick={(e) => e.stopPropagation()}
+                              className="h-5 w-5"
+                            />
                           </div>
 
-                          {/* Price and Quantity Controls */}
-                          <div className="flex items-center justify-between mt-4">
-                            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                              RM{item.product?.price}
+                          {/* Product Image */}
+                          <div className="relative h-24 w-24 md:h-28 md:w-28 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-700">
+                            <Image
+                              src={
+                                item.product?.image_url || "/placeholder.svg"
+                              }
+                              alt={item.product?.name || "Product"}
+                              fill
+                              className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+
+                          {/* Product Details */}
+                          <div className="flex flex-1 flex-col justify-between min-h-[96px] md:min-h-[112px]">
+                            <div className="flex flex-col md:flex-row md:justify-between md:items-start">
+                              <div className="flex-1 pr-4">
+                                <TypographyH3 className="font-bold text-xl mb-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                  {item.product?.name}
+                                </TypographyH3>
+                                <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4 text-sm text-gray-500 dark:text-gray-400">
+                                  <span>
+                                    Size: {item.product?.unit || "per bag"}
+                                  </span>
+                                  <span className="hidden md:inline">•</span>
+                                  <span>Color: White</span>
+                                </div>
+                              </div>
+
+                              {/* Delete Button - Top Right */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteClick(item);
+                                }}
+                                className="text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition-all duration-200 ml-auto md:ml-0 opacity-0 group-hover:opacity-100"
+                                aria-label="Remove item"
+                              >
+                                <Trash2 className="h-5 w-5" />
+                              </button>
                             </div>
 
-                            {/* Quantity Controls */}
-                            <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-600 shadow-sm">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  updateQuantity(item.id, item.quantity - 1);
-                                }}
-                                className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-l-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent group"
-                                disabled={item.quantity <= 1}
-                                aria-label="Decrease quantity"
-                              >
-                                <Minus className="h-3.5 w-3.5 group-hover:scale-110 transition-transform duration-200" />
-                              </button>
-                              <span className="px-3 py-2 font-bold min-w-[2.5rem] text-center text-gray-900 dark:text-gray-100 text-sm border-x border-gray-200 dark:border-gray-600">
-                                {item.quantity}
-                              </span>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  updateQuantity(item.id, item.quantity + 1);
-                                }}
-                                className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-r-lg group"
-                                aria-label="Increase quantity"
-                              >
-                                <Plus className="h-3.5 w-3.5 group-hover:scale-110 transition-transform duration-200" />
-                              </button>
+                            {/* Price and Quantity Controls */}
+                            <div className="flex items-center justify-between mt-4">
+                              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                                RM{item.product?.price}
+                              </div>
+
+                              {/* Quantity Controls */}
+                              <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-600 shadow-sm">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    updateQuantity(item.id, item.quantity - 1);
+                                  }}
+                                  className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-l-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent group"
+                                  disabled={item.quantity <= 1}
+                                  aria-label="Decrease quantity"
+                                >
+                                  <Minus className="h-3.5 w-3.5 group-hover:scale-110 transition-transform duration-200" />
+                                </button>
+                                <span className="px-3 py-2 font-bold min-w-[2.5rem] text-center text-gray-900 dark:text-gray-100 text-sm border-x border-gray-200 dark:border-gray-600">
+                                  {item.quantity}
+                                </span>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    updateQuantity(item.id, item.quantity + 1);
+                                  }}
+                                  className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-r-lg group"
+                                  aria-label="Increase quantity"
+                                >
+                                  <Plus className="h-3.5 w-3.5 group-hover:scale-110 transition-transform duration-200" />
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Order Summary */}
             <div className="lg:col-span-1 self-start sticky top-28">
-              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+              <Card className="overflow-hidden shadow-sm py-0 gap-0">
                 {/* Header */}
-                <div className="p-6 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 border-b border-gray-200 dark:border-gray-700">
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                <CardHeader className="p-6 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                  <CardTitle className="text-xl font-bold flex items-center gap-2">
                     <ShoppingCart className="h-5 w-5" />
                     Order Summary
-                  </h2>
-                </div>
+                  </CardTitle>
+                </CardHeader>
 
                 {/* Content */}
-                <div className="p-6">
+                <CardContent className="p-6">
                   {selectedItems.length === 0 ? (
                     <div className="text-center text-gray-500 dark:text-gray-400 py-12">
                       <ShoppingCart className="h-16 w-16 mx-auto mb-4 opacity-30" />
-                      <p className="text-lg font-medium mb-2">
+                      <TypographyH4 className="mb-2">
                         No items selected
-                      </p>
-                      <p className="text-sm">Select items to see summary</p>
+                      </TypographyH4>
+                      <TypographyP className="text-sm !mt-0">
+                        Select items to see summary
+                      </TypographyP>
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -480,9 +494,9 @@ export default function CartPage() {
 
                             {/* Product Details */}
                             <div className="flex-1 min-w-0">
-                              <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                              <TypographyH4 className="text-sm font-medium line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                                 {item.product?.name}
-                              </h4>
+                              </TypographyH4>
                               <div className="flex items-center gap-2 mt-1">
                                 <span className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded text-gray-600 dark:text-gray-300">
                                   Qty: {item.quantity}
@@ -580,8 +594,8 @@ export default function CartPage() {
                     </svg>
                     <span>Secure checkout guaranteed</span>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         )}
