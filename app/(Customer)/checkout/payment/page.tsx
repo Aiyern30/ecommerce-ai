@@ -19,11 +19,17 @@ import {
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { CheckoutStepper } from "@/components/Checkout/CheckoutStepper";
 import { CheckoutSummary } from "@/components/Checkout/CheckoutSummary";
-import { ArrowLeft, ArrowRight, CreditCard, Truck, Building } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CreditCard,
+  Truck,
+  Building,
+} from "lucide-react";
 import Link from "next/link";
 
 const paymentSchema = z.object({
-  paymentMethod: z.enum(["card", "bank_transfer", "cash_on_delivery"], {
+  paymentMethod: z.enum(["card", "fpx", "cash_on_delivery"], {
     required_error: "Please select a payment method",
   }),
 });
@@ -67,11 +73,11 @@ export default function CheckoutPaymentPage() {
 
   const onSubmit = async (data: PaymentFormData) => {
     setIsSubmitting(true);
-    
+
     try {
       // Store payment method data
       localStorage.setItem("checkout-payment", JSON.stringify(data));
-      
+
       // Navigate to confirmation step
       router.push("/checkout/confirm");
     } catch (error) {
@@ -105,7 +111,7 @@ export default function CheckoutPaymentPage() {
             { label: "Payment" },
           ]}
         />
-        
+
         <div className="flex items-center justify-between mt-4">
           <h1 className="text-2xl font-bold">Payment Method</h1>
           <Link href="/checkout/address">
@@ -130,10 +136,14 @@ export default function CheckoutPaymentPage() {
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
             <h3 className="text-lg font-semibold mb-4">Shipping Address</h3>
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              <p className="font-medium">{addressData.firstName} {addressData.lastName}</p>
+              <p className="font-medium">
+                {addressData.firstName} {addressData.lastName}
+              </p>
               <p>{addressData.address}</p>
               {addressData.apartment && <p>{addressData.apartment}</p>}
-              <p>{addressData.city}, {addressData.state} {addressData.postalCode}</p>
+              <p>
+                {addressData.city}, {addressData.state} {addressData.postalCode}
+              </p>
               <p>{addressData.country}</p>
               <p className="mt-2">{addressData.phone}</p>
               <p>{addressData.email}</p>
@@ -142,10 +152,15 @@ export default function CheckoutPaymentPage() {
 
           {/* Payment Method Selection */}
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-            <h2 className="text-xl font-semibold mb-6">Choose Payment Method</h2>
-            
+            <h2 className="text-xl font-semibold mb-6">
+              Choose Payment Method
+            </h2>
+
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
                 <FormField
                   control={form.control}
                   name="paymentMethod"
@@ -157,38 +172,61 @@ export default function CheckoutPaymentPage() {
                           value={field.value}
                           className="space-y-4"
                         >
-                          {/* Credit/Debit Card */}
+                          {/* Credit/Debit Card (Stripe) */}
                           <div className="flex items-center space-x-3 border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <RadioGroupItem value="card" id="card" />
-                            <Label htmlFor="card" className="flex items-center space-x-3 cursor-pointer flex-1">
+                            <Label
+                              htmlFor="card"
+                              className="flex items-center space-x-3 cursor-pointer flex-1"
+                            >
                               <CreditCard className="h-5 w-5 text-blue-600" />
                               <div>
-                                <p className="font-medium">Credit/Debit Card</p>
-                                <p className="text-sm text-gray-500">Pay securely with your card</p>
+                                <p className="font-medium">
+                                  Credit/Debit Card (via Stripe)
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  Pay securely with your card using Stripe
+                                </p>
                               </div>
                             </Label>
                           </div>
 
-                          {/* Bank Transfer */}
+                          {/* FPX Online Banking (Stripe) */}
                           <div className="flex items-center space-x-3 border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                            <RadioGroupItem value="bank_transfer" id="bank_transfer" />
-                            <Label htmlFor="bank_transfer" className="flex items-center space-x-3 cursor-pointer flex-1">
+                            <RadioGroupItem value="fpx" id="fpx" />
+                            <Label
+                              htmlFor="fpx"
+                              className="flex items-center space-x-3 cursor-pointer flex-1"
+                            >
                               <Building className="h-5 w-5 text-green-600" />
                               <div>
-                                <p className="font-medium">Bank Transfer</p>
-                                <p className="text-sm text-gray-500">Transfer directly to our bank account</p>
+                                <p className="font-medium">
+                                  FPX Online Banking (via Stripe)
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  Pay with Malaysian online banking (FPX)
+                                  through Stripe
+                                </p>
                               </div>
                             </Label>
                           </div>
 
                           {/* Cash on Delivery */}
                           <div className="flex items-center space-x-3 border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                            <RadioGroupItem value="cash_on_delivery" id="cash_on_delivery" />
-                            <Label htmlFor="cash_on_delivery" className="flex items-center space-x-3 cursor-pointer flex-1">
+                            <RadioGroupItem
+                              value="cash_on_delivery"
+                              id="cash_on_delivery"
+                            />
+                            <Label
+                              htmlFor="cash_on_delivery"
+                              className="flex items-center space-x-3 cursor-pointer flex-1"
+                            >
                               <Truck className="h-5 w-5 text-orange-600" />
                               <div>
                                 <p className="font-medium">Cash on Delivery</p>
-                                <p className="text-sm text-gray-500">Pay when your order arrives</p>
+                                <p className="text-sm text-gray-500">
+                                  Pay when your order arrives
+                                </p>
                               </div>
                             </Label>
                           </div>
@@ -200,14 +238,21 @@ export default function CheckoutPaymentPage() {
                 />
 
                 {/* Payment Method Details */}
-                {form.watch("paymentMethod") === "bank_transfer" && (
+
+                {form.watch("paymentMethod") === "fpx" && (
                   <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                    <h4 className="font-medium mb-2">Bank Transfer Instructions</h4>
+                    <h4 className="font-medium mb-2">
+                      FPX Online Banking (via Stripe)
+                    </h4>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
-                      <p><strong>Bank:</strong> Maybank</p>
-                      <p><strong>Account Number:</strong> 1234567890</p>
-                      <p><strong>Account Name:</strong> Cement Products Sdn Bhd</p>
-                      <p className="mt-2">Please use your order ID as the payment reference.</p>
+                      <p>
+                        Pay securely using your Malaysian online banking account
+                        (FPX) through Stripe.
+                      </p>
+                      <p className="mt-2">
+                        You will be redirected to Stripe to complete your
+                        payment.
+                      </p>
                     </div>
                   </div>
                 )}
@@ -216,7 +261,8 @@ export default function CheckoutPaymentPage() {
                   <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                     <h4 className="font-medium mb-2">Cash on Delivery</h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Pay with cash when your order is delivered. Additional COD fee of RM5.00 will be added to your total.
+                      Pay with cash when your order is delivered. Additional COD
+                      fee of RM5.00 will be added to your total.
                     </p>
                   </div>
                 )}
@@ -225,7 +271,8 @@ export default function CheckoutPaymentPage() {
                   <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
                     <h4 className="font-medium mb-2">Secure Card Payment</h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Your payment information is encrypted and secure. We accept Visa, Mastercard, and other major credit cards.
+                      Your payment information is encrypted and secure. We
+                      accept Visa, Mastercard, and other major credit cards.
                     </p>
                   </div>
                 )}
