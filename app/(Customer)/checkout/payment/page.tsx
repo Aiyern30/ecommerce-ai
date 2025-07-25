@@ -133,7 +133,9 @@ export default function CheckoutPaymentPage() {
               <h2 className="text-xl font-semibold mb-6">Payment Details</h2>
               <StripePaymentForm
                 onSuccess={() =>
-                  router.push(`/checkout/confirm?addressId=${addressId}`)
+                  router.push(
+                    `/checkout/confirm?addressId=${addressId}&paymentSuccess=true`
+                  )
                 }
                 billingDetails={{
                   name: addressData.full_name,
