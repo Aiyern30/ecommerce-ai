@@ -103,6 +103,31 @@ export function StripePaymentForm({
       setError(stripeError.message || "Payment failed");
       setIsProcessing(false);
     } else if (paymentIntent && paymentIntent.status === "succeeded") {
+      // Save payment data to localStorage for the confirm page
+      const paymentData = {
+        paymentMethod: "card", // or determine from the payment method used
+        paymentIntentId: paymentIntent.id,
+        amount: paymentIntent.amount,
+        currency: paymentIntent.currency,
+      };
+
+      // Save address data to localStorage
+      const addressData = {
+        firstName: billingDetails.name.split(" ")[0] || "",
+        lastName: billingDetails.name.split(" ").slice(1).join(" ") || "",
+        email: "", // You might want to pass this from the parent component
+        phone: billingDetails.phone || "",
+        address: billingDetails.address.line1,
+        apartment: billingDetails.address.line2,
+        city: billingDetails.address.city,
+        state: billingDetails.address.state,
+        postalCode: billingDetails.address.postal_code,
+        country: billingDetails.address.country,
+      };
+
+      localStorage.setItem("checkout-payment", JSON.stringify(paymentData));
+      localStorage.setItem("checkout-address", JSON.stringify(addressData));
+
       onSuccess(paymentIntent);
     } else if (paymentIntent && paymentIntent.status === "requires_action") {
       // Handle 3D Secure or other authentication
