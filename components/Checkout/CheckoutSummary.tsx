@@ -1,95 +1,156 @@
 "use client";
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/components/CartProvider";
-import { formatCurrency } from "@/lib/utils/currency";
+import { calculateCartTotals, formatCurrency } from "@/lib/cart/calculations";
 import Image from "next/image";
-import { useMemo } from "react";
 
 export function CheckoutSummary() {
-  const { cartItems } = useCart();
+  const { cartItems, isLoading } = useCart();
+  const totals = calculateCartTotals(cartItems);
+  const selectedItems = cartItems.filter((item) => item.selected);
 
-  const selectedItems = useMemo(() => {
-    return cartItems.filter((item) => item.selected);
-  }, [cartItems]);
-
-  const subtotal = useMemo(() => {
-    return selectedItems.reduce((sum, item) => {
-      return sum + (item.product?.price || 0) * item.quantity;
-    }, 0);
-  }, [selectedItems]);
-
-  const shipping = 15.0; // Fixed shipping cost
-  const total = subtotal + shipping;
+  if (isLoading) {
+    return (
+      <Card className="overflow-hidden shadow-sm">
+        <CardHeader className="p-6 bg-gray-50 dark:bg-gray-900 border-b">
+          <CardTitle className="text-xl font-bold flex items-center gap-2">
+            <ShoppingCart className="h-5 w-5" />
+            Order Summary
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (selectedItems.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm h-fit">
-        <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
-        <p className="text-gray-500">No items selected</p>
-      </div>
+      <Card className="overflow-hidden shadow-sm">
+        <CardHeader className="p-6 bg-gray-50 dark:bg-gray-900 border-b">
+          <CardTitle className="text-xl font-bold flex items-center gap-2">
+            <ShoppingCart className="h-5 w-5" />
+            Order Summary
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+            <ShoppingCart className="h-12 w-12 mx-auto mb-4 opacity-30" />
+            <p className="text-sm">No items selected</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm h-fit sticky top-6">
-      <h2 className="text-xl font-semibold mb-6">Order Summary</h2>
+    <Card className="overflow-hidden shadow-sm">
+      <CardHeader className="p-6 bg-gray-50 dark:bg-gray-900 border-b">
+        <CardTitle className="text-xl font-bold flex items-center gap-2">
+          <ShoppingCart className="h-5 w-5" />
+          Order Summary
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-6">
+        <div className="space-y-4">
+          {/* Selected Items */}
+          <div className="space-y-3">
+            {selectedItems.map((item) => (
+              <div key={item.id} className="flex gap-3 py-2">
+                <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
+                  <Image
+                    src={item.product?.image_url || "/placeholder.svg"}
+                    alt={item.product?.name || "Product"}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-medium line-clamp-1">
+                    {item.product?.name}
+                  </h4>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded text-gray-600 dark:text-gray-300">
+                      Qty: {item.quantity}
+                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      @ {formatCurrency(item.product?.price || 0)}
+                    </span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="font-bold text-gray-900 dark:text-gray-100 text-sm">
+                    {formatCurrency((item.product?.price || 0) * item.quantity)}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
 
-      {/* Selected Items */}
-      <div className="space-y-4 mb-6">
-        {selectedItems.map((item) => (
-          <div key={item.id} className="flex items-center space-x-3">
-            <div className="relative">
-              <Image
-                src={item.product?.image_url || "/placeholder.svg"}
-                alt={item.product?.name || "Product"}
-                width={50}
-                height={50}
-                className="rounded-md object-cover"
-              />
-              <span className="absolute -top-2 -right-2 bg-gray-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                {item.quantity}
+          {/* Divider */}
+          <div className="border-t-2 border-gray-200 dark:border-gray-700 my-4"></div>
+
+          {/* Summary Calculations */}
+          <div className="space-y-3">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-gray-600 dark:text-gray-400">
+                Subtotal ({totals.selectedItemsCount} items)
+              </span>
+              <span className="font-medium text-gray-900 dark:text-gray-100">
+                {formatCurrency(totals.subtotal)}
               </span>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">
-                {item.product?.name}
-              </p>
-              <p className="text-xs text-gray-500">
-                {formatCurrency(item.product?.price || 0)} × {item.quantity}
-              </p>
+
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-gray-600 dark:text-gray-400">Shipping</span>
+              <span
+                className={`font-medium ${
+                  totals.shippingCost === 0
+                    ? "text-green-600 dark:text-green-400"
+                    : "text-gray-900 dark:text-gray-100"
+                }`}
+              >
+                {totals.shippingCost === 0
+                  ? "FREE"
+                  : formatCurrency(totals.shippingCost)}
+              </span>
             </div>
-            <p className="text-sm font-medium">
-              {formatCurrency((item.product?.price || 0) * item.quantity)}
-            </p>
+
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-gray-600 dark:text-gray-400">
+                Tax (SST 6%)
+              </span>
+              <span className="font-medium text-gray-900 dark:text-gray-100">
+                {formatCurrency(totals.tax)}
+              </span>
+            </div>
+
+            {totals.subtotal >= 100 && (
+              <div className="text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 p-2 rounded">
+                🎉 You qualify for free shipping!
+              </div>
+            )}
+
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                  Total
+                </span>
+                <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  {formatCurrency(totals.total)}
+                </span>
+              </div>
+            </div>
           </div>
-        ))}
-      </div>
-
-      {/* Order Totals */}
-      <div className="space-y-3 border-t pt-4">
-        <div className="flex justify-between text-sm">
-          <span>Subtotal ({selectedItems.length} items)</span>
-          <span>{formatCurrency(subtotal)}</span>
         </div>
-
-        <div className="flex justify-between text-sm">
-          <span>Shipping</span>
-          <span>{formatCurrency(shipping)}</span>
-        </div>
-
-        <div className="flex justify-between text-base font-semibold border-t pt-3">
-          <span>Total</span>
-          <span>{formatCurrency(total)}</span>
-        </div>
-      </div>
-
-      {/* Estimated Delivery */}
-      <div className="mt-6 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
-        <p className="text-sm font-medium mb-1">Estimated Delivery</p>
-        <p className="text-xs text-gray-600 dark:text-gray-400">
-          3-5 business days
-        </p>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

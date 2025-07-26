@@ -6,7 +6,8 @@ export interface CartItem {
   selected: boolean;
   created_at: string;
   updated_at: string;
-  product?: {
+  product: {
+    id: string;
     name: string;
     price: number;
     image_url: string;
