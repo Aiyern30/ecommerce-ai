@@ -165,7 +165,7 @@ export function StripePaymentForm({
           const orderResult = await createOrderAPI(
             user.id,
             cartItems,
-            shippingAddress,
+            shippingAddress.id, // Pass address ID instead of full address object
             paymentIntent.id, // Pass the completed PaymentIntent ID
             undefined // notes
           );

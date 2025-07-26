@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase/client";
+import { type NextRequest, NextResponse } from "next/server";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,13 +13,32 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch orders with order items
-    const { data: orders, error } = await supabase
+    // Fetch orders with address data using JOIN
+    const { data: orders, error } = await supabaseAdmin
       .from("orders")
       .select(
         `
         *,
-        order_items (*)
+        addresses:address_id (
+          id,
+          full_name,
+          phone,
+          address_line1,
+          address_line2,
+          city,
+          state,
+          postal_code,
+          country
+        ),
+        order_items (
+          id,
+          product_id,
+          name,
+          price,
+          quantity,
+          variant_type,
+          image_url
+        )
       `
       )
       .eq("user_id", userId)
