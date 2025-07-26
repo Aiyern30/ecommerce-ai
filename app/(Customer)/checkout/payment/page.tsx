@@ -13,6 +13,11 @@ import { CheckoutSummary } from "@/components/Checkout/CheckoutSummary";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import type { Address } from "@/lib/user/address";
+import { useCart } from "@/components/CartProvider";
+import {
+  calculateCartTotals,
+  convertToStripeAmount,
+} from "@/lib/cart/calculations";
 import { getCountryCode } from "@/utils/country-codes";
 
 export default function CheckoutPaymentPage() {
@@ -23,6 +28,9 @@ export default function CheckoutPaymentPage() {
   const [addressData, setAddressData] = useState<Address | null>(null);
   const [totalAmount, setTotalAmount] = useState<number>(0);
   const addressId = searchParams.get("addressId");
+  const { cartItems, isLoading } = useCart();
+
+  const selectedItems = cartItems.filter((item) => item.selected);
 
   useEffect(() => {
     const fetchAddress = async () => {
@@ -51,20 +59,23 @@ export default function CheckoutPaymentPage() {
   }, [addressId, router, supabase, user]);
 
   useEffect(() => {
-    // Calculate total amount from cart or order summary
-    // This should match your CheckoutSummary calculation
-    // For now, using a placeholder - replace with your actual cart total logic
-    const calculateTotal = () => {
-      // Example: Get from localStorage, context, or API
-      // const cartTotal = getCartTotal() // Your cart total function
-      // Convert to cents: cartTotal * 100
-      return 2300; // RM23.00 in cents - replace with actual calculation
-    };
+    const totals = calculateCartTotals(cartItems);
 
-    setTotalAmount(calculateTotal());
-  }, []);
+    if (totals.selectedItemsCount === 0) {
+      setTotalAmount(0);
+      // Redirect to cart if no items selected
+      if (!isLoading) {
+        router.push("/cart");
+      }
+      return;
+    }
 
-  if (!addressData || totalAmount === 0) {
+    // Convert to Stripe amount (cents)
+    const stripeAmount = convertToStripeAmount(totals.total);
+    setTotalAmount(stripeAmount);
+  }, [cartItems, router, isLoading]);
+
+  if (!addressData || totalAmount === 0 || isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
         <div className="text-center">
@@ -75,10 +86,25 @@ export default function CheckoutPaymentPage() {
     );
   }
 
+  if (!isLoading && selectedItems.length === 0) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-4">No Items Selected</h2>
+          <p className="text-gray-600 mb-4">
+            Please select items from your cart to proceed with checkout.
+          </p>
+          <Link href="/cart">
+            <Button>Go to Cart</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <StripeProvider amount={totalAmount}>
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="mb-6">
           <BreadcrumbNav
             customItems={[
@@ -100,15 +126,12 @@ export default function CheckoutPaymentPage() {
           </div>
         </div>
 
-        {/* Stepper */}
         <div className="mb-8">
           <CheckoutStepper currentStep={3} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left - Payment Form */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Shipping Address Summary */}
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
               <h3 className="text-lg font-semibold mb-4">Shipping Address</h3>
               <div className="text-sm text-gray-600 dark:text-gray-400">
@@ -128,7 +151,6 @@ export default function CheckoutPaymentPage() {
               </div>
             </div>
 
-            {/* Payment Form */}
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
               <h2 className="text-xl font-semibold mb-6">Payment Details</h2>
               <StripePaymentForm
@@ -153,7 +175,6 @@ export default function CheckoutPaymentPage() {
             </div>
           </div>
 
-          {/* Right - Summary */}
           <div className="lg:col-span-1">
             <CheckoutSummary />
           </div>
