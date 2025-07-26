@@ -27,6 +27,7 @@ interface PaymentData {
   paymentIntentId?: string;
   amount?: number;
   currency?: string;
+  status?: string;
 }
 
 export default function CheckoutConfirmPage() {
@@ -68,11 +69,14 @@ export default function CheckoutConfirmPage() {
       // Load payment data from localStorage
       const savedPayment = localStorage.getItem("checkout-payment");
       if (savedPayment) {
-        setPaymentData(JSON.parse(savedPayment));
+        const parsedPayment = JSON.parse(savedPayment);
+        setPaymentData(parsedPayment);
+        console.log("Loaded payment data:", parsedPayment);
       } else if (paymentSuccess === "true") {
         // Fallback: if payment was successful but no localStorage data
         setPaymentData({
           paymentMethod: "card",
+          status: "succeeded",
         });
       } else {
         // No payment data available, redirect to payment page
@@ -118,22 +122,27 @@ export default function CheckoutConfirmPage() {
 
     setIsSubmitting(true);
     try {
-      // Create order using your API
+      console.log("Creating order with payment data:", paymentData);
+
+      // Create order with the existing PaymentIntent ID (payment already completed)
       const orderResult = await createOrderAPI(
         user.id,
         cartItems,
-        addressData
-        // You can add notes here if needed
+        addressData,
+        paymentData?.paymentIntentId, // Pass the existing PaymentIntent ID
+        undefined // notes
       );
 
       if (!orderResult) {
         throw new Error("Failed to create order");
       }
 
+      console.log("Order created successfully:", orderResult.order_id);
+
       // Clear payment data from localStorage
       localStorage.removeItem("checkout-payment");
 
-      // Refresh cart to remove purchased items (your API should handle this)
+      // Refresh cart to reflect the cleared items (API already handles this)
       await refreshCart();
 
       toast.success("Order placed successfully!");
@@ -160,6 +169,8 @@ export default function CheckoutConfirmPage() {
   }
 
   const selectedItems = cartItems.filter((item) => item.selected);
+  const isPaymentCompleted =
+    paymentData.status === "succeeded" || paymentSuccess === "true";
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -227,11 +238,13 @@ export default function CheckoutConfirmPage() {
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Payment Method</h3>
-              <Link href={`/checkout/payment?addressId=${addressId}`}>
-                <Button variant="ghost" size="sm">
-                  Edit
-                </Button>
-              </Link>
+              {!isPaymentCompleted && (
+                <Link href={`/checkout/payment?addressId=${addressId}`}>
+                  <Button variant="ghost" size="sm">
+                    Edit
+                  </Button>
+                </Link>
+              )}
             </div>
             <div className="flex items-center space-x-3">
               {getPaymentIcon(paymentData.paymentMethod)}
@@ -244,7 +257,7 @@ export default function CheckoutConfirmPage() {
                 </span>
               )}
             </div>
-            {paymentSuccess === "true" && (
+            {isPaymentCompleted && (
               <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-md">
                 <p className="text-sm text-green-600 dark:text-green-400 flex items-center">
                   <CheckCircle className="h-4 w-4 mr-2" />
@@ -300,18 +313,19 @@ export default function CheckoutConfirmPage() {
               {isSubmitting ? (
                 <div className="flex items-center space-x-2">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  <span>Placing Order...</span>
+                  <span>Creating Order...</span>
                 </div>
               ) : (
                 <>
                   <CheckCircle className="mr-2 h-5 w-5" />
-                  Place Order
+                  {isPaymentCompleted ? "Create Order" : "Place Order"}
                 </>
               )}
             </Button>
             <p className="text-xs text-gray-500 text-center mt-3">
-              By placing this order, you agree to our Terms of Service and
-              Privacy Policy.
+              {isPaymentCompleted
+                ? "Payment completed. Click to create your order."
+                : "By placing this order, you agree to our Terms of Service and Privacy Policy."}
             </p>
           </div>
         </div>

@@ -18,18 +18,21 @@ export interface CreateOrderData {
     phone?: string;
   };
   notes?: string;
+  payment_intent_id?: string; // Add this for already completed payments
 }
 
 export interface CreateOrderResponse {
   order_id: string;
-  client_secret: string;
+  client_secret?: string; // Optional since payment might already be completed
   amount: number;
+  payment_already_completed?: boolean;
 }
 
 export async function createOrderAPI(
   userId: string,
   cartItems: CartItem[],
   address: Address,
+  paymentIntentId?: string, // If payment is already completed
   notes?: string
 ): Promise<CreateOrderResponse | null> {
   try {
@@ -59,7 +62,10 @@ export async function createOrderAPI(
         phone: address.phone || undefined,
       },
       notes,
+      payment_intent_id: paymentIntentId, // Pass existing payment intent ID
     };
+
+    console.log("Creating order with data:", orderData);
 
     const response = await fetch("/api/orders/create", {
       method: "POST",
