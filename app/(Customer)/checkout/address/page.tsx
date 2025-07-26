@@ -10,7 +10,7 @@ import { CheckoutStepper } from "@/components/Checkout/CheckoutStepper";
 import { CheckoutSummary } from "@/components/Checkout/CheckoutSummary";
 import { AddressForm } from "@/components/AddressForm";
 import { AddressCard } from "@/components/AddressCard";
-import { Plus, MapPin } from "lucide-react";
+import { Plus, MapPin, X } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/components/CartProvider";
 import {
@@ -30,6 +30,7 @@ export default function CheckoutAddressPage() {
     null
   );
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const selectedItems = cartItems.filter((item) => item.selected);
@@ -88,7 +89,48 @@ export default function CheckoutAddressPage() {
     setAddresses((prev) => [newAddress, ...prev]);
     setSelectedAddressId(newAddress.id);
     setShowAddForm(false);
+    setEditingAddress(null);
     toast.success("Address added successfully!");
+  };
+
+  const handleAddressUpdated = (updatedAddress: Address) => {
+    setAddresses((prev) =>
+      prev.map((addr) =>
+        addr.id === updatedAddress.id ? updatedAddress : addr
+      )
+    );
+    setEditingAddress(null);
+    setShowAddForm(false);
+    toast.success("Address updated successfully!");
+  };
+
+  const handleEditAddress = (address: Address) => {
+    setEditingAddress(address);
+    setShowAddForm(true);
+  };
+
+  const handleDeleteAddress = (addressId: string) => {
+    setAddresses((prev) => prev.filter((addr) => addr.id !== addressId));
+
+    // If the deleted address was selected, select another one
+    if (selectedAddressId === addressId) {
+      const remainingAddresses = addresses.filter(
+        (addr) => addr.id !== addressId
+      );
+      if (remainingAddresses.length > 0) {
+        const defaultAddress = remainingAddresses.find(
+          (addr) => addr.is_default
+        );
+        setSelectedAddressId(defaultAddress?.id || remainingAddresses[0].id);
+      } else {
+        setSelectedAddressId(null);
+      }
+    }
+  };
+
+  const handleCancelForm = () => {
+    setShowAddForm(false);
+    setEditingAddress(null);
   };
 
   const handleContinueToPayment = () => {
@@ -155,107 +197,117 @@ export default function CheckoutAddressPage() {
   }
 
   return (
-    <div className="min-h-screen mb-4">
-      <div className="container mx-auto px-4 py-6">
-        <BreadcrumbNav showFilterButton={false} />
-        <TypographyH1 className="mb-8 mt-8">SHIPPING ADDRESS</TypographyH1>
+    <div className="container mx-auto px-4 py-6">
+      <BreadcrumbNav showFilterButton={false} />
+      <TypographyH1 className="mb-8 mt-8">SHIPPING ADDRESS</TypographyH1>
 
-        <div className="mb-8">
-          <CheckoutStepper currentStep={2} />
-        </div>
+      <div className="mb-8">
+        <CheckoutStepper currentStep={2} />
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Address Selection */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Add New Address Button */}
-            <div className="flex justify-between items-center">
-              <TypographyH3 className="flex items-center gap-2">
-                <MapPin className="h-5 w-5" />
-                Choose Shipping Address
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Address Selection */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Add New Address Button */}
+          <div className="flex justify-between items-center">
+            <TypographyH3 className="flex items-center gap-2">
+              <MapPin className="h-5 w-5" />
+              Choose Shipping Address
+            </TypographyH3>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setEditingAddress(null);
+                setShowAddForm(!showAddForm);
+              }}
+              className="flex items-center gap-2"
+            >
+              {showAddForm ? (
+                <>
+                  <X className="h-4 w-4" />
+                  Cancel
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4" />
+                  Add New Address
+                </>
+              )}
+            </Button>
+          </div>
+
+          {/* Add/Edit Address Form */}
+          {showAddForm && (
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+              <TypographyH3 className="mb-4">
+                {editingAddress ? "Edit Address" : "Add New Address"}
               </TypographyH3>
+              <AddressForm
+                onSuccess={
+                  editingAddress ? handleAddressUpdated : handleAddressAdded
+                }
+                onCancel={handleCancelForm}
+                initialData={editingAddress || undefined}
+                isEditing={!!editingAddress}
+              />
+            </div>
+          )}
+
+          {/* Address List */}
+          {addresses.length === 0 ? (
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-8 shadow-sm border text-center">
+              <MapPin className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+              <TypographyH3 className="mb-2">No addresses found</TypographyH3>
+              <TypographyP className="text-gray-600 dark:text-gray-400 mb-4">
+                Add your first shipping address to continue with checkout.
+              </TypographyP>
               <Button
-                variant="outline"
-                onClick={() => setShowAddForm(!showAddForm)}
+                onClick={() => setShowAddForm(true)}
                 className="flex items-center gap-2"
               >
                 <Plus className="h-4 w-4" />
-                Add New Address
+                Add Address
               </Button>
             </div>
-
-            {/* Add Address Form */}
-            {showAddForm && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
-                <TypographyH3 className="mb-4">Add New Address</TypographyH3>
-                <AddressForm
-                  onSuccess={handleAddressAdded}
-                  onCancel={() => setShowAddForm(false)}
+          ) : (
+            <div className="space-y-4">
+              {addresses.map((address) => (
+                <AddressCard
+                  key={address.id}
+                  address={address}
+                  isSelected={selectedAddressId === address.id}
+                  onSelect={() => handleAddressSelect(address.id)}
+                  onEdit={handleEditAddress}
+                  onDelete={handleDeleteAddress}
                 />
-              </div>
-            )}
-
-            {/* Address List */}
-            {addresses.length === 0 ? (
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-8 shadow-sm border text-center">
-                <MapPin className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                <TypographyH3 className="mb-2">No addresses found</TypographyH3>
-                <TypographyP className="text-gray-600 dark:text-gray-400 mb-4">
-                  Add your first shipping address to continue with checkout.
-                </TypographyP>
-                <Button
-                  onClick={() => setShowAddForm(true)}
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Address
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {addresses.map((address) => (
-                  <AddressCard
-                    key={address.id}
-                    address={address}
-                    isSelected={selectedAddressId === address.id}
-                    onSelect={() => handleAddressSelect(address.id)}
-                    onEdit={() => {
-                      // Handle edit functionality if needed
-                      console.log("Edit address:", address.id);
-                    }}
-                    onDelete={() => {
-                      // Handle delete functionality if needed
-                      console.log("Delete address:", address.id);
-                    }}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Continue Button */}
-            {addresses.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
-                <Button
-                  onClick={handleContinueToPayment}
-                  disabled={!selectedAddressId}
-                  className="w-full"
-                  size="lg"
-                >
-                  Continue to Payment
-                </Button>
-                {!selectedAddressId && (
-                  <TypographyP className="text-sm text-gray-500 text-center mt-2">
-                    Please select an address to continue
-                  </TypographyP>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Order Summary */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-6 z-10">
-              <CheckoutSummary />
+              ))}
             </div>
+          )}
+
+          {/* Continue Button */}
+          {addresses.length > 0 && (
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+              <Button
+                onClick={handleContinueToPayment}
+                disabled={!selectedAddressId}
+                className="w-full"
+                size="lg"
+              >
+                Continue to Payment
+              </Button>
+              {!selectedAddressId && (
+                <TypographyP className="text-sm text-gray-500 text-center mt-2">
+                  Please select an address to continue
+                </TypographyP>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Order Summary */}
+        <div className="lg:col-span-1">
+          <div className="sticky top-6 z-10">
+            <CheckoutSummary />
           </div>
         </div>
       </div>
