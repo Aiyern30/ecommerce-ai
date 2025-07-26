@@ -31,8 +31,9 @@ export interface Order {
   shipping_cost: number;
   tax: number;
   total: number;
-  shipping_address: ShippingAddress;
-  items: OrderItem[];
+  address_id: string;
+  addresses?: ShippingAddress;
+  order_items?: OrderItem[];
   created_at: string;
   updated_at: string;
   notes?: string;

@@ -1,5 +1,4 @@
 import type { CartItem } from "@/type/cart";
-import type { Address } from "@/lib/user/address";
 
 export interface CreateOrderData {
   items: {
@@ -7,18 +6,9 @@ export interface CreateOrderData {
     quantity: number;
     variant_type?: string;
   }[];
-  shipping_address: {
-    full_name: string;
-    address_line1: string;
-    address_line2?: string;
-    city: string;
-    state: string;
-    postal_code: string;
-    country: string;
-    phone?: string;
-  };
+  address_id: string; // Just pass the address ID
   notes?: string;
-  payment_intent_id?: string; // Add this for already completed payments
+  payment_intent_id?: string;
 }
 
 export interface CreateOrderResponse {
@@ -31,12 +21,11 @@ export interface CreateOrderResponse {
 export async function createOrderAPI(
   userId: string,
   cartItems: CartItem[],
-  address: Address,
-  paymentIntentId?: string, // If payment is already completed
+  addressId: string, // Just pass address ID
+  paymentIntentId?: string,
   notes?: string
 ): Promise<CreateOrderResponse | null> {
   try {
-    // Filter selected items and prepare for API
     const selectedItems = cartItems.filter((item) => item.selected);
 
     if (selectedItems.length === 0) {
@@ -45,24 +34,13 @@ export async function createOrderAPI(
 
     const orderData: CreateOrderData & { user_id: string } = {
       user_id: userId,
+      address_id: addressId, // Pass address ID only
       items: selectedItems.map((item) => ({
         product_id: item.product_id,
         quantity: item.quantity,
-        // Add variant_type if you have variants in your cart
-        // variant_type: item.variant_type,
       })),
-      shipping_address: {
-        full_name: address.full_name,
-        address_line1: address.address_line1,
-        address_line2: address.address_line2 || undefined,
-        city: address.city,
-        state: address.state,
-        postal_code: address.postal_code,
-        country: address.country,
-        phone: address.phone || undefined,
-      },
       notes,
-      payment_intent_id: paymentIntentId, // Pass existing payment intent ID
+      payment_intent_id: paymentIntentId,
     };
 
     console.log("Creating order with data:", orderData);

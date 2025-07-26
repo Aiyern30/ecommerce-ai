@@ -10,6 +10,7 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as CreateOrderRequest & {
       user_id: string;
       payment_intent_id?: string;
+      address_id: string; // Add address_id to the request body type
     };
     console.log("Request body:", body);
 
@@ -115,27 +116,27 @@ export async function POST(request: NextRequest) {
     // Create order in database using admin client to bypass RLS
     console.log("Creating order with data:", {
       user_id: body.user_id,
+      address_id: body.address_id, // Use address_id instead
       subtotal,
       shipping_cost,
       tax,
       total,
       payment_status: paymentStatus,
       payment_intent_id: body.payment_intent_id,
-      shipping_address: body.shipping_address,
     });
 
     const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
       .insert({
         user_id: body.user_id,
+        address_id: body.address_id, // Store address ID only
         status: "pending",
-        payment_status: paymentStatus, // "paid" if payment completed, "pending" otherwise
+        payment_status: paymentStatus,
         payment_intent_id: body.payment_intent_id,
         subtotal: subtotal,
         shipping_cost: shipping_cost,
         tax: tax,
         total: total,
-        shipping_address: body.shipping_address,
         notes: body.notes,
       })
       .select()

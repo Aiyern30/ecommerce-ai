@@ -18,14 +18,27 @@ import Link from "next/link";
 import Image from "next/image";
 import { getUserOrders } from "@/lib/order/api";
 
-// Define the order structure based on your API
+// Define the order structure based on your updated API
 interface OrderItem {
+  id: string;
   product_id: string;
   name: string;
   price: number;
   quantity: number;
   variant_type?: string;
   image_url?: string;
+}
+
+interface Address {
+  id: string;
+  full_name: string;
+  phone?: string;
+  address_line1: string;
+  address_line2?: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  country: string;
 }
 
 interface Order {
@@ -38,17 +51,9 @@ interface Order {
   shipping_cost: number;
   tax: number;
   total: number;
-  shipping_address: {
-    full_name: string;
-    address_line1: string;
-    address_line2?: string;
-    city: string;
-    state: string;
-    postal_code: string;
-    country: string;
-    phone?: string;
-  };
-  order_items: OrderItem[];
+  address_id: string;
+  addresses?: Address; // This comes from the JOIN
+  order_items?: OrderItem[];
   created_at: string;
   updated_at: string;
   notes?: string;
@@ -74,6 +79,7 @@ export default function OrderSuccessPage() {
         const foundOrder = orders.find((o: Order) => o.id === orderId);
 
         if (foundOrder) {
+          console.log("Found order:", foundOrder);
           setOrder(foundOrder);
         }
       } catch (error) {
@@ -111,6 +117,46 @@ export default function OrderSuccessPage() {
             <p className="text-gray-600 dark:text-gray-400 mb-8">
               We couldn't find the order you're looking for. Please check your
               order confirmation email or contact support.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/profile/orders">
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto bg-transparent"
+                >
+                  View All Orders
+                </Button>
+              </Link>
+              <Link href="/products">
+                <Button className="w-full sm:w-auto">
+                  Continue Shopping
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Get address data from the JOIN
+  const shippingAddress = order.addresses;
+
+  if (!shippingAddress) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
+        <div className="max-w-2xl w-full">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
+            <div className="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-6">
+              <MapPin className="w-10 h-10 text-yellow-600" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              Address Not Found
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-8">
+              The shipping address for this order could not be found. Please
+              contact support.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/profile/orders">
@@ -318,28 +364,25 @@ export default function OrderSuccessPage() {
                     Shipping Address
                   </h3>
                   <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                    <p className="font-medium">
-                      {order.shipping_address.full_name}
-                    </p>
+                    <p className="font-medium">{shippingAddress.full_name}</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {order.shipping_address.address_line1}
+                      {shippingAddress.address_line1}
                     </p>
-                    {order.shipping_address.address_line2 && (
+                    {shippingAddress.address_line2 && (
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {order.shipping_address.address_line2}
+                        {shippingAddress.address_line2}
                       </p>
                     )}
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {order.shipping_address.city},{" "}
-                      {order.shipping_address.state}{" "}
-                      {order.shipping_address.postal_code}
+                      {shippingAddress.city}, {shippingAddress.state}{" "}
+                      {shippingAddress.postal_code}
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {order.shipping_address.country}
+                      {shippingAddress.country}
                     </p>
-                    {order.shipping_address.phone && (
+                    {shippingAddress.phone && (
                       <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                        Phone: {order.shipping_address.phone}
+                        Phone: {shippingAddress.phone}
                       </p>
                     )}
                   </div>

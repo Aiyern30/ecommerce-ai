@@ -128,7 +128,7 @@ export default function CheckoutConfirmPage() {
       const orderResult = await createOrderAPI(
         user.id,
         cartItems,
-        addressData,
+        addressData.id, // ✅ Pass just the address ID string
         paymentData?.paymentIntentId, // Pass the existing PaymentIntent ID
         undefined // notes
       );
