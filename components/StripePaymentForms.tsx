@@ -15,6 +15,8 @@ import { createOrderAPI } from "@/lib/order/api";
 import { useUser } from "@supabase/auth-helpers-react";
 import { useCart } from "@/components/CartProvider";
 import type { Address } from "@/lib/user/address";
+import { clearPaymentSession } from "./StripeProvider";
+import { calculateCartTotals } from "@/lib/cart/calculations";
 import { getCountryCode } from "@/utils/country-codes";
 
 interface BillingDetails {
@@ -31,9 +33,9 @@ interface BillingDetails {
 }
 
 interface StripePaymentFormProps {
-  onSuccess: (orderId: string) => void; // Changed to return order ID instead of payment intent
+  onSuccess: (orderId: string) => void;
   billingDetails: BillingDetails;
-  shippingAddress: Address; // Add shipping address for order creation
+  shippingAddress: Address;
 }
 
 export function StripePaymentForm({
@@ -47,6 +49,9 @@ export function StripePaymentForm({
   const { cartItems, refreshCart } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Calculate total amount
+  const totals = calculateCartTotals(cartItems);
 
   // PaymentElement options
   const paymentElementOptions: StripePaymentElementOptions = {
@@ -84,10 +89,43 @@ export function StripePaymentForm({
     }
 
     try {
-      // Confirm payment with the PaymentElement
+      // Step 1: Submit the form to validate payment details
+      console.log("Submitting payment form...");
+      const { error: submitError } = await elements.submit();
+
+      if (submitError) {
+        setError(submitError.message || "Payment form validation failed");
+        setIsProcessing(false);
+        return;
+      }
+
+      console.log("Creating PaymentIntent for amount:", totals.total, "RM");
+
+      // Step 2: Create PaymentIntent after form validation
+      const paymentIntentResponse = await fetch("/api/create-payment-intent", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: totals.total, // Send in RM
+          currency: "myr",
+        }),
+      });
+
+      if (!paymentIntentResponse.ok) {
+        throw new Error("Failed to create payment intent");
+      }
+
+      const { clientSecret, paymentIntentId } =
+        await paymentIntentResponse.json();
+      console.log("PaymentIntent created:", paymentIntentId);
+
+      // Step 3: Confirm payment with the newly created PaymentIntent
       const { error: stripeError, paymentIntent } = await stripe.confirmPayment(
         {
           elements,
+          clientSecret, // Use the newly created client secret
           confirmParams: {
             return_url: `${window.location.origin}/checkout/confirm`,
             payment_method_data: {
@@ -116,7 +154,7 @@ export function StripePaymentForm({
       }
 
       if (paymentIntent && paymentIntent.status === "succeeded") {
-        // Payment completed successfully - NOW CREATE THE ORDER IMMEDIATELY
+        // Step 4: Payment completed successfully - CREATE THE ORDER IMMEDIATELY
         console.log(
           "Payment succeeded, creating order immediately:",
           paymentIntent.id
@@ -138,14 +176,21 @@ export function StripePaymentForm({
 
           console.log("Order created successfully:", orderResult.order_id);
 
-          // Clear payment data from localStorage (no longer needed)
-          localStorage.removeItem("checkout-payment");
+          // Clear payment session data since payment is completed
+          clearPaymentSession();
 
-          // Refresh cart to reflect the cleared items
-          await refreshCart();
+          // Force refresh cart to reflect the cleared items
+          try {
+            await refreshCart();
+            console.log("Cart refreshed after order creation");
+          } catch (refreshError) {
+            console.warn("Failed to refresh cart:", refreshError);
+          }
 
-          // Redirect directly to success page with order ID
-          onSuccess(orderResult.order_id);
+          // Small delay to ensure cart state is updated
+          setTimeout(() => {
+            onSuccess(orderResult.order_id);
+          }, 500);
         } catch (orderError) {
           console.error("Error creating order after payment:", orderError);
           setError(
@@ -157,6 +202,7 @@ export function StripePaymentForm({
         // Handle 3D Secure or other authentication
         const { error: confirmError } = await stripe.confirmPayment({
           elements,
+          clientSecret,
           confirmParams: {
             return_url: `${window.location.origin}/checkout/confirm`,
           },
@@ -219,6 +265,16 @@ export function StripePaymentForm({
           </div>
         </div>
 
+        {/* Order Total Display */}
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+          <div className="flex justify-between items-center">
+            <span className="text-lg font-semibold">Total Amount:</span>
+            <span className="text-2xl font-bold text-blue-600">
+              RM{totals.total.toFixed(2)}
+            </span>
+          </div>
+        </div>
+
         {/* Submit Button */}
         <Button
           type="submit"
@@ -234,7 +290,7 @@ export function StripePaymentForm({
           ) : (
             <div className="flex items-center justify-center space-x-2">
               <Shield className="h-4 w-4" />
-              <span>Complete Payment & Place Order</span>
+              <span>Pay RM{totals.total.toFixed(2)} & Place Order</span>
             </div>
           )}
         </Button>

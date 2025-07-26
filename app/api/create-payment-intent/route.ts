@@ -1,26 +1,41 @@
+import { type NextRequest, NextResponse } from "next/server";
 import stripe from "@/lib/stripe/server";
 
-export async function POST(req: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json();
-    const amount = body.amount;
-    if (!amount || typeof amount !== "number") {
-      return new Response(JSON.stringify({ error: "Invalid amount" }), {
-        status: 400,
-      });
+    const { amount } = await request.json();
+
+    // Validate amount
+    if (!amount || amount < 1) {
+      return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
     }
 
+    console.log("Creating PaymentIntent for amount:", amount, "RM");
+
+    // Create PaymentIntent
     const paymentIntent = await stripe.paymentIntents.create({
-      amount,
+      amount: Math.round(amount * 100), // Convert RM to sen (cents)
       currency: "myr",
-      automatic_payment_methods: { enabled: true },
+      automatic_payment_methods: {
+        enabled: true,
+      },
+      // Add metadata to help track
+      metadata: {
+        created_at: new Date().toISOString(),
+        amount_rm: amount.toString(),
+      },
     });
 
-    return Response.json({ clientSecret: paymentIntent.client_secret });
+    console.log("PaymentIntent created:", paymentIntent.id);
+
+    return NextResponse.json({
+      clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id,
+    });
   } catch (error) {
-    console.error(error);
-    return new Response(
-      JSON.stringify({ error: "Unable to create PaymentIntent" }),
+    console.error("Error creating PaymentIntent:", error);
+    return NextResponse.json(
+      { error: "Failed to create payment intent" },
       { status: 500 }
     );
   }

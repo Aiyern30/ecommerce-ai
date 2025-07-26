@@ -182,30 +182,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Clear selected cart items after successful order creation
+    // Clear selected cart items after successful order creation using your existing logic
     try {
-      // Get user's cart
-      const { data: cart } = await supabase
+      // Use the same logic as your clearCart function but with admin client
+      const { data: cartData } = await supabaseAdmin
         .from("carts")
         .select("id")
         .eq("user_id", body.user_id)
         .single();
 
-      if (cart) {
-        // Delete selected cart items
-        await supabaseAdmin
+      if (cartData?.id) {
+        // Clear only selected items (or all items if you prefer)
+        const { error: deleteError } = await supabaseAdmin
           .from("cart_items")
           .delete()
-          .eq("cart_id", cart.id)
-          .eq("selected", true);
-        console.log("Selected cart items cleared");
+          .eq("cart_id", cartData.id)
+          .eq("selected", true); // Only clear selected items
+
+        if (deleteError) {
+          console.warn("Failed to clear selected cart items:", deleteError);
+        } else {
+          console.log("Selected cart items cleared successfully");
+        }
       }
     } catch (cartError) {
       console.warn("Failed to clear cart items:", cartError);
       // Don't fail the order creation if cart clearing fails
     }
 
-    // Only return client_secret if we need to create a new payment (shouldn't happen in this flow)
     return NextResponse.json({
       order_id: order.id,
       amount: total,
