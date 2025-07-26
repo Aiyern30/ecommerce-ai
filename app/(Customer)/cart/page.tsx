@@ -25,11 +25,11 @@ import {
 import {
   TypographyH1,
   TypographyH3,
-  TypographyH4,
   TypographyP,
 } from "@/components/ui/Typography";
 import { toast } from "sonner";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
+import { CheckoutSummary } from "@/components/Checkout/CheckoutSummary";
 import { useCart } from "@/components/CartProvider";
 import {
   updateCartItemQuantity,
@@ -38,7 +38,7 @@ import {
   selectAllCartItems,
 } from "@/lib/cart/utils";
 import { useUser } from "@supabase/auth-helpers-react";
-import { CartItem } from "@/type/cart";
+import type { CartItem } from "@/type/cart";
 
 export default function CartPage() {
   const { cartItems, refreshCart, isLoading } = useCart();
@@ -52,26 +52,12 @@ export default function CartPage() {
     cartItems.length > 0 && cartItems.every((item) => item.selected);
   const selectedItems = cartItems.filter((item) => item.selected);
 
-  console.log("Cart state:", {
-    totalItems: cartItems.length,
-    selectedItems: selectedItems.length,
-    selectAll,
-    cartItems: cartItems.map((item) => ({
-      id: item.id,
-      name: item.product?.name,
-      selected: item.selected,
-    })),
-  }); // Debug log
-
   // Handle individual item selection
   const handleItemSelect = async (itemId: string, checked: boolean) => {
-    console.log("Updating selection for item:", itemId, "to:", checked); // Debug log
     const success = await updateCartItemSelection(itemId, checked);
     if (success) {
-      console.log("Selection updated successfully, refreshing cart"); // Debug log
-      await refreshCart(); // Refresh to get updated selection state
+      await refreshCart();
     } else {
-      console.error("Failed to update selection"); // Debug log
       toast.error("Failed to update selection");
     }
   };
@@ -79,15 +65,11 @@ export default function CartPage() {
   // Handle select all
   const handleSelectAll = async (checked: boolean) => {
     if (!user?.id) return;
-
-    console.log("Select all triggered:", checked, "for user:", user.id); // Debug log
     const success = await selectAllCartItems(user.id, checked);
     if (success) {
-      console.log("Select all successful, refreshing cart"); // Debug log
-      await refreshCart(); // Refresh to get updated selection state
+      await refreshCart();
       toast.success(checked ? "All items selected" : "All items deselected");
     } else {
-      console.error("Failed to update select all"); // Debug log
       toast.error("Failed to update selection");
     }
   };
@@ -126,31 +108,21 @@ export default function CartPage() {
       });
       return;
     }
-
     // Go directly to the address step
     router.push("/checkout/address");
   };
-
-  const subtotal = selectedItems.reduce(
-    (sum, item) => sum + (item.product?.price || 0) * item.quantity,
-    0
-  );
-  const total = subtotal; // Simplified total without discount and delivery fee
 
   return (
     <div className="min-h-screen mb-4">
       <div className="container mx-auto px-4 py-6">
         <BreadcrumbNav showFilterButton={false} />
-
         <TypographyH1 className="mb-8 mt-8">YOUR CART</TypographyH1>
 
         {isLoading ? (
           <div className="mt-8 grid gap-8 lg:grid-cols-3">
             {/* Cart Items Skeleton */}
             <div className="lg:col-span-2">
-              {/* Single Card Container Skeleton */}
               <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                {/* Header Skeleton */}
                 <div className="flex items-center gap-3 p-6 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
                   <Skeleton className="h-5 w-5 rounded" />
                   <Skeleton className="h-7 w-48" />
@@ -158,39 +130,27 @@ export default function CartPage() {
                     <Skeleton className="h-4 w-32" />
                   </div>
                 </div>
-
-                {/* Product Items Skeleton */}
                 <div className="divide-y divide-gray-200 dark:divide-gray-700">
                   {[...Array(2)].map((_, index) => (
                     <div key={index} className="p-6">
                       <div className="flex gap-4">
-                        {/* Checkbox Skeleton */}
                         <div className="flex items-start pt-3">
                           <Skeleton className="h-5 w-5 rounded" />
                         </div>
-
-                        {/* Product Image Skeleton */}
                         <Skeleton className="h-24 w-24 md:h-28 md:w-28 rounded-xl flex-shrink-0" />
-
                         <div className="flex flex-1 flex-col justify-between min-h-[96px] md:min-h-[112px]">
                           <div className="flex flex-col md:flex-row md:justify-between md:items-start">
                             <div className="flex-1 pr-4 space-y-2">
-                              {/* Product Name */}
                               <Skeleton className="h-7 w-64" />
-                              {/* Size and Color */}
                               <div className="flex gap-4">
                                 <Skeleton className="h-4 w-20" />
                                 <Skeleton className="h-4 w-24" />
                               </div>
                             </div>
-                            {/* Delete Button */}
                             <Skeleton className="h-9 w-9 rounded-lg ml-auto md:ml-0" />
                           </div>
-
                           <div className="flex items-center justify-between mt-4">
-                            {/* Price */}
                             <Skeleton className="h-8 w-20" />
-                            {/* Quantity Controls */}
                             <Skeleton className="h-10 w-28 rounded-lg" />
                           </div>
                         </div>
@@ -200,71 +160,9 @@ export default function CartPage() {
                 </div>
               </div>
             </div>
-
             {/* Order Summary Skeleton */}
             <div className="lg:col-span-1 self-start sticky top-28">
-              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                {/* Header Skeleton */}
-                <div className="p-6 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-                  <Skeleton className="h-7 w-48" />
-                </div>
-
-                {/* Content Skeleton */}
-                <div className="p-6">
-                  <div className="space-y-4">
-                    {/* Cart Items in Summary */}
-                    {[...Array(2)].map((_, index) => (
-                      <div key={index} className="flex gap-3 py-3">
-                        {/* Product Image Skeleton */}
-                        <Skeleton className="h-12 w-12 rounded-lg flex-shrink-0" />
-
-                        {/* Product Details Skeleton */}
-                        <div className="flex-1 min-w-0">
-                          <Skeleton className="h-4 w-32 mb-2" />
-                          <div className="flex gap-2">
-                            <Skeleton className="h-3 w-12" />
-                            <Skeleton className="h-3 w-16" />
-                          </div>
-                        </div>
-
-                        {/* Price Skeleton */}
-                        <Skeleton className="h-4 w-16" />
-                      </div>
-                    ))}
-
-                    {/* Divider */}
-                    <div className="border-t-2 border-gray-200 dark:border-gray-700 my-6"></div>
-
-                    {/* Summary Calculations */}
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <Skeleton className="h-4 w-20" />
-                        <Skeleton className="h-4 w-24" />
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <Skeleton className="h-4 w-16" />
-                        <Skeleton className="h-4 w-12" />
-                      </div>
-                      <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
-                        <div className="flex justify-between items-center">
-                          <Skeleton className="h-5 w-16" />
-                          <Skeleton className="h-6 w-24" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Checkout Button */}
-                  <div className="mt-8">
-                    <Skeleton className="h-14 w-full rounded-xl" />
-                  </div>
-
-                  {/* Security Badge */}
-                  <div className="mt-4 flex justify-center">
-                    <Skeleton className="h-4 w-40" />
-                  </div>
-                </div>
-              </div>
+              <CheckoutSummary showCheckoutButton={true} />
             </div>
           </div>
         ) : !user ? (
@@ -305,7 +203,6 @@ export default function CartPage() {
           <div className="mt-8 grid gap-8 lg:grid-cols-3">
             {/* Cart Items */}
             <div className="lg:col-span-2">
-              {/* Single Card Container for All Products */}
               <Card className="overflow-hidden shadow-sm py-0 gap-0">
                 {/* Choose All Product Header */}
                 <CardHeader className="p-6 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
@@ -315,7 +212,6 @@ export default function CartPage() {
                         id="select-all"
                         checked={selectAll}
                         onCheckedChange={(checked) => {
-                          console.log("Checkbox onCheckedChange:", checked); // Debug log
                           handleSelectAll(checked === true);
                         }}
                         className="h-5 w-5"
@@ -330,7 +226,6 @@ export default function CartPage() {
                     </TypographyP>
                   </div>
                 </CardHeader>
-
                 {/* Product Items */}
                 <CardContent className="p-0">
                   <div className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -363,7 +258,6 @@ export default function CartPage() {
                               className="h-5 w-5"
                             />
                           </div>
-
                           {/* Product Image */}
                           <div className="relative h-24 w-24 md:h-28 md:w-28 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-700">
                             <Image
@@ -375,7 +269,6 @@ export default function CartPage() {
                               className="object-cover group-hover:scale-105 transition-transform duration-300"
                             />
                           </div>
-
                           {/* Product Details */}
                           <div className="flex flex-1 flex-col justify-between min-h-[96px] md:min-h-[112px]">
                             <div className="flex flex-col md:flex-row md:justify-between md:items-start">
@@ -391,7 +284,6 @@ export default function CartPage() {
                                   <span>Color: White</span>
                                 </div>
                               </div>
-
                               {/* Delete Button - Top Right */}
                               <button
                                 onClick={(e) => {
@@ -404,13 +296,11 @@ export default function CartPage() {
                                 <Trash2 className="h-5 w-5" />
                               </button>
                             </div>
-
                             {/* Price and Quantity Controls */}
                             <div className="flex items-center justify-between mt-4">
                               <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                                 RM{item.product?.price}
                               </div>
-
                               {/* Quantity Controls */}
                               <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-600 shadow-sm">
                                 <button
@@ -462,156 +352,15 @@ export default function CartPage() {
               </Card>
             </div>
 
-            {/* Order Summary */}
+            {/* Order Summary with Checkout Button */}
             <div className="lg:col-span-1">
               <div className="sticky top-6 z-10">
-                <Card className="overflow-hidden shadow-sm py-0 gap-0">
-                  {/* Header */}
-                  <CardHeader className="p-6 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-                    <CardTitle className="text-xl font-bold flex items-center gap-2">
-                      <ShoppingCart className="h-5 w-5" />
-                      Order Summary
-                    </CardTitle>
-                  </CardHeader>
-
-                  {/* Content */}
-                  <CardContent className="p-6">
-                    {selectedItems.length === 0 ? (
-                      <div className="text-center text-gray-500 dark:text-gray-400 py-12">
-                        <ShoppingCart className="h-16 w-16 mx-auto mb-4 opacity-30" />
-                        <TypographyH4 className="mb-2">
-                          No items selected
-                        </TypographyH4>
-                        <TypographyP className="text-sm !mt-0">
-                          Select items to see summary
-                        </TypographyP>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {/* Selected Items */}
-                        <div className="space-y-3">
-                          {selectedItems.map((item) => (
-                            <div
-                              key={item.id}
-                              className="flex gap-3 py-3 group hover:bg-gray-50 dark:hover:bg-gray-900/30 rounded-lg p-2 transition-all duration-200"
-                            >
-                              {/* Product Image */}
-                              <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
-                                <Image
-                                  src={
-                                    item.product?.image_url ||
-                                    "/placeholder.svg"
-                                  }
-                                  alt={item.product?.name || "Product"}
-                                  fill
-                                  className="object-cover group-hover:scale-105 transition-transform duration-200"
-                                />
-                              </div>
-
-                              {/* Product Details */}
-                              <div className="flex-1 min-w-0">
-                                <TypographyH4 className="text-sm font-medium line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                                  {item.product?.name}
-                                </TypographyH4>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <span className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded text-gray-600 dark:text-gray-300">
-                                    Qty: {item.quantity}
-                                  </span>
-                                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                                    @ RM{item.product?.price}
-                                  </span>
-                                </div>
-                              </div>
-
-                              {/* Price */}
-                              <div className="text-right">
-                                <span className="font-bold text-gray-900 dark:text-gray-100 text-sm">
-                                  RM
-                                  {(
-                                    (item.product?.price || 0) * item.quantity
-                                  ).toFixed(2)}
-                                </span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Divider */}
-                        <div className="border-t-2 border-gray-200 dark:border-gray-700 my-6"></div>
-
-                        {/* Summary Calculations */}
-                        <div className="space-y-3">
-                          {/* Items Count */}
-                          <div className="flex justify-between items-center text-sm">
-                            <span className="text-gray-600 dark:text-gray-400">
-                              Items ({selectedItems.length})
-                            </span>
-                            <span className="font-medium text-gray-900 dark:text-gray-100">
-                              RM{subtotal.toFixed(2)}
-                            </span>
-                          </div>
-
-                          {/* Shipping */}
-                          <div className="flex justify-between items-center text-sm">
-                            <span className="text-gray-600 dark:text-gray-400">
-                              Shipping
-                            </span>
-                            <span className="font-medium text-green-600 dark:text-green-400">
-                              FREE
-                            </span>
-                          </div>
-
-                          {/* Total */}
-                          <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
-                            <div className="flex justify-between items-center">
-                              <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                                Total
-                              </span>
-                              <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                                RM{total.toFixed(2)}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Checkout Button */}
-                    <div className="mt-8">
-                      <Button
-                        className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-4 rounded-xl text-base transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none"
-                        size="lg"
-                        disabled={selectedItems.length === 0}
-                        onClick={handleProceedToCheckout}
-                      >
-                        <div className="flex items-center justify-center gap-2">
-                          <span>Proceed to Checkout</span>
-                          {selectedItems.length > 0 && (
-                            <span className="bg-white/20 text-white px-2 py-1 rounded-full text-sm font-bold">
-                              {selectedItems.length}
-                            </span>
-                          )}
-                        </div>
-                      </Button>
-                    </div>
-
-                    {/* Security Badge */}
-                    <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                      <svg
-                        className="h-4 w-4"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      <span>Secure checkout guaranteed</span>
-                    </div>
-                  </CardContent>
-                </Card>
+                <CheckoutSummary
+                  showCheckoutButton={true}
+                  onCheckout={handleProceedToCheckout}
+                  checkoutButtonText="Proceed to Checkout"
+                  checkoutButtonDisabled={selectedItems.length === 0}
+                />
               </div>
             </div>
           </div>
@@ -630,7 +379,6 @@ export default function CartPage() {
               action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-
           {itemToDelete && (
             <div className="flex gap-4 p-4 border rounded-xl bg-gray-50 dark:bg-gray-900">
               <div className="h-16 w-16 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden shrink-0">
@@ -658,7 +406,6 @@ export default function CartPage() {
               </div>
             </div>
           )}
-
           <AlertDialogFooter className="gap-2">
             <AlertDialogCancel className="rounded-lg">Cancel</AlertDialogCancel>
             <AlertDialogAction

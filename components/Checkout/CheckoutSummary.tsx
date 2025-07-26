@@ -1,19 +1,32 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
-import { ShoppingCart } from "lucide-react";
+import { Button } from "@/components/ui";
+import { ShoppingCart, ArrowRight } from "lucide-react";
 import { useCart } from "@/components/CartProvider";
 import { calculateCartTotals, formatCurrency } from "@/lib/cart/calculations";
 import Image from "next/image";
 
-export function CheckoutSummary() {
+interface CheckoutSummaryProps {
+  showCheckoutButton?: boolean;
+  onCheckout?: () => void;
+  checkoutButtonText?: string;
+  checkoutButtonDisabled?: boolean;
+}
+
+export function CheckoutSummary({
+  showCheckoutButton = false,
+  onCheckout,
+  checkoutButtonText = "Proceed to Checkout",
+  checkoutButtonDisabled = false,
+}: CheckoutSummaryProps) {
   const { cartItems, isLoading } = useCart();
   const totals = calculateCartTotals(cartItems);
   const selectedItems = cartItems.filter((item) => item.selected);
 
   if (isLoading) {
     return (
-      <Card className="overflow-hidden shadow-sm">
+      <Card className="overflow-hidden shadow-sm py-0 gap-0">
         <CardHeader className="p-6 bg-gray-50 dark:bg-gray-900 border-b">
           <CardTitle className="text-xl font-bold flex items-center gap-2">
             <ShoppingCart className="h-5 w-5" />
@@ -33,7 +46,7 @@ export function CheckoutSummary() {
 
   if (selectedItems.length === 0) {
     return (
-      <Card className="overflow-hidden shadow-sm">
+      <Card className="overflow-hidden shadow-sm py-0 gap-0">
         <CardHeader className="p-6 bg-gray-50 dark:bg-gray-900 border-b">
           <CardTitle className="text-xl font-bold flex items-center gap-2">
             <ShoppingCart className="h-5 w-5" />
@@ -45,13 +58,20 @@ export function CheckoutSummary() {
             <ShoppingCart className="h-12 w-12 mx-auto mb-4 opacity-30" />
             <p className="text-sm">No items selected</p>
           </div>
+          {showCheckoutButton && (
+            <div className="mt-6">
+              <Button className="w-full" disabled={true} size="lg">
+                Select items to checkout
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="overflow-hidden shadow-sm">
+    <Card className="overflow-hidden shadow-sm py-0 gap-0">
       <CardHeader className="p-6 bg-gray-50 dark:bg-gray-900 border-b">
         <CardTitle className="text-xl font-bold flex items-center gap-2">
           <ShoppingCart className="h-5 w-5" />
@@ -148,6 +168,42 @@ export function CheckoutSummary() {
                 </span>
               </div>
             </div>
+          </div>
+
+          {/* Checkout Button */}
+          {showCheckoutButton && (
+            <div className="mt-8">
+              <Button
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-4 rounded-xl text-base transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none"
+                size="lg"
+                disabled={checkoutButtonDisabled || selectedItems.length === 0}
+                onClick={onCheckout}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <span>{checkoutButtonText}</span>
+                  {selectedItems.length > 0 && (
+                    <>
+                      <span className="bg-white/20 text-white px-2 py-1 rounded-full text-sm font-bold">
+                        {selectedItems.length}
+                      </span>
+                      <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
+                </div>
+              </Button>
+            </div>
+          )}
+
+          {/* Security Badge */}
+          <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <span>Secure checkout guaranteed</span>
           </div>
         </div>
       </CardContent>
