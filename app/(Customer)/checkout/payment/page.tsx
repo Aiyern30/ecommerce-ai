@@ -13,11 +13,12 @@ import { CheckoutSummary } from "@/components/Checkout/CheckoutSummary";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import type { Address } from "@/lib/user/address";
-import { useCart } from "@/components/CartProvider";
+
 import {
   calculateCartTotals,
   convertToStripeAmount,
 } from "@/lib/cart/calculations";
+import { useCart } from "@/components/CartProvider";
 import { getCountryCode } from "@/utils/country-codes";
 
 export default function CheckoutPaymentPage() {
@@ -74,6 +75,12 @@ export default function CheckoutPaymentPage() {
     const stripeAmount = convertToStripeAmount(totals.total);
     setTotalAmount(stripeAmount);
   }, [cartItems, router, isLoading]);
+
+  // Handle successful payment and order creation
+  const handlePaymentSuccess = (orderId: string) => {
+    console.log("Payment and order completed, redirecting to success page");
+    router.push(`/order-success?orderId=${orderId}`);
+  };
 
   if (!addressData || totalAmount === 0 || isLoading) {
     return (
@@ -154,11 +161,8 @@ export default function CheckoutPaymentPage() {
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
               <h2 className="text-xl font-semibold mb-6">Payment Details</h2>
               <StripePaymentForm
-                onSuccess={() =>
-                  router.push(
-                    `/checkout/confirm?addressId=${addressId}&paymentSuccess=true`
-                  )
-                }
+                onSuccess={handlePaymentSuccess} // Now expects order ID
+                shippingAddress={addressData} // Pass address for order creation
                 billingDetails={{
                   name: addressData.full_name,
                   address: {

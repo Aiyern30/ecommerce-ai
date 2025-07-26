@@ -7,13 +7,14 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
-import type {
-  PaymentIntent,
-  StripePaymentElementOptions,
-} from "@stripe/stripe-js";
+import type { StripePaymentElementOptions } from "@stripe/stripe-js";
 import { useState } from "react";
 import { Button } from "@/components/ui";
 import { Loader2, CreditCard, Shield } from "lucide-react";
+import { createOrderAPI } from "@/lib/order/api";
+import { useUser } from "@supabase/auth-helpers-react";
+import { useCart } from "@/components/CartProvider";
+import type { Address } from "@/lib/user/address";
 import { getCountryCode } from "@/utils/country-codes";
 
 interface BillingDetails {
@@ -29,15 +30,21 @@ interface BillingDetails {
   phone?: string;
 }
 
+interface StripePaymentFormProps {
+  onSuccess: (orderId: string) => void; // Changed to return order ID instead of payment intent
+  billingDetails: BillingDetails;
+  shippingAddress: Address; // Add shipping address for order creation
+}
+
 export function StripePaymentForm({
   onSuccess,
   billingDetails,
-}: {
-  onSuccess: (paymentResult: PaymentIntent) => void;
-  billingDetails: BillingDetails;
-}) {
+  shippingAddress,
+}: StripePaymentFormProps) {
   const stripe = useStripe();
   const elements = useElements();
+  const user = useUser();
+  const { cartItems, refreshCart } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,80 +77,101 @@ export function StripePaymentForm({
     setIsProcessing(true);
     setError(null);
 
-    if (!stripe || !elements) {
-      setError("Stripe not loaded");
+    if (!stripe || !elements || !user) {
+      setError("Payment system not ready or user not logged in");
       setIsProcessing(false);
       return;
     }
 
-    // Confirm payment with the PaymentElement
-    const { error: stripeError, paymentIntent } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: `${window.location.origin}/checkout/confirm`,
-        payment_method_data: {
-          billing_details: {
-            name: billingDetails.name,
-            address: {
-              line1: billingDetails.address.line1,
-              line2: billingDetails.address.line2,
-              city: billingDetails.address.city,
-              state: billingDetails.address.state,
-              postal_code: billingDetails.address.postal_code,
-              country: getCountryCode(billingDetails.address.country),
+    try {
+      // Confirm payment with the PaymentElement
+      const { error: stripeError, paymentIntent } = await stripe.confirmPayment(
+        {
+          elements,
+          confirmParams: {
+            return_url: `${window.location.origin}/checkout/confirm`,
+            payment_method_data: {
+              billing_details: {
+                name: billingDetails.name,
+                address: {
+                  line1: billingDetails.address.line1,
+                  line2: billingDetails.address.line2,
+                  city: billingDetails.address.city,
+                  state: billingDetails.address.state,
+                  postal_code: billingDetails.address.postal_code,
+                  country: getCountryCode(billingDetails.address.country),
+                },
+                phone: billingDetails.phone,
+              },
             },
-            phone: billingDetails.phone,
           },
-        },
-      },
-      redirect: "if_required", // Only redirect for payment methods that require it (like FPX)
-    });
+          redirect: "if_required", // Only redirect for payment methods that require it (like FPX)
+        }
+      );
 
-    if (stripeError) {
-      setError(stripeError.message || "Payment failed");
-      setIsProcessing(false);
-    } else if (paymentIntent && paymentIntent.status === "succeeded") {
-      // Save payment data to localStorage for the confirm page
-      const paymentData = {
-        paymentMethod: "card", // or determine from the payment method used
-        paymentIntentId: paymentIntent.id,
-        amount: paymentIntent.amount,
-        currency: paymentIntent.currency,
-      };
-
-      // Save address data to localStorage
-      const addressData = {
-        firstName: billingDetails.name.split(" ")[0] || "",
-        lastName: billingDetails.name.split(" ").slice(1).join(" ") || "",
-        email: "", // You might want to pass this from the parent component
-        phone: billingDetails.phone || "",
-        address: billingDetails.address.line1,
-        apartment: billingDetails.address.line2,
-        city: billingDetails.address.city,
-        state: billingDetails.address.state,
-        postalCode: billingDetails.address.postal_code,
-        country: billingDetails.address.country,
-      };
-
-      localStorage.setItem("checkout-payment", JSON.stringify(paymentData));
-      localStorage.setItem("checkout-address", JSON.stringify(addressData));
-
-      onSuccess(paymentIntent);
-    } else if (paymentIntent && paymentIntent.status === "requires_action") {
-      // Handle 3D Secure or other authentication
-      const { error: confirmError } = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: `${window.location.origin}/checkout/confirm`,
-        },
-      });
-
-      if (confirmError) {
-        setError(confirmError.message || "Payment authentication failed");
+      if (stripeError) {
+        setError(stripeError.message || "Payment failed");
+        setIsProcessing(false);
+        return;
       }
-      setIsProcessing(false);
-    } else {
-      setError("Payment processing failed. Please try again.");
+
+      if (paymentIntent && paymentIntent.status === "succeeded") {
+        // Payment completed successfully - NOW CREATE THE ORDER IMMEDIATELY
+        console.log(
+          "Payment succeeded, creating order immediately:",
+          paymentIntent.id
+        );
+
+        try {
+          // Create order with the completed PaymentIntent ID
+          const orderResult = await createOrderAPI(
+            user.id,
+            cartItems,
+            shippingAddress,
+            paymentIntent.id, // Pass the completed PaymentIntent ID
+            undefined // notes
+          );
+
+          if (!orderResult) {
+            throw new Error("Failed to create order after successful payment");
+          }
+
+          console.log("Order created successfully:", orderResult.order_id);
+
+          // Clear payment data from localStorage (no longer needed)
+          localStorage.removeItem("checkout-payment");
+
+          // Refresh cart to reflect the cleared items
+          await refreshCart();
+
+          // Redirect directly to success page with order ID
+          onSuccess(orderResult.order_id);
+        } catch (orderError) {
+          console.error("Error creating order after payment:", orderError);
+          setError(
+            "Payment succeeded but failed to create order. Please contact support with payment ID: " +
+              paymentIntent.id
+          );
+        }
+      } else if (paymentIntent && paymentIntent.status === "requires_action") {
+        // Handle 3D Secure or other authentication
+        const { error: confirmError } = await stripe.confirmPayment({
+          elements,
+          confirmParams: {
+            return_url: `${window.location.origin}/checkout/confirm`,
+          },
+        });
+
+        if (confirmError) {
+          setError(confirmError.message || "Payment authentication failed");
+        }
+      } else {
+        setError("Payment processing failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("Payment processing error:", error);
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
       setIsProcessing(false);
     }
   };
@@ -201,12 +229,12 @@ export function StripePaymentForm({
           {isProcessing ? (
             <div className="flex items-center justify-center space-x-2">
               <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Processing Payment...</span>
+              <span>Processing Payment & Creating Order...</span>
             </div>
           ) : (
             <div className="flex items-center justify-center space-x-2">
               <Shield className="h-4 w-4" />
-              <span>Complete Payment</span>
+              <span>Complete Payment & Place Order</span>
             </div>
           )}
         </Button>

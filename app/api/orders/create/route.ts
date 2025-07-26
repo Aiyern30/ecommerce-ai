@@ -1,36 +1,60 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import stripe from "@/lib/stripe/server";
 import { supabase } from "@/lib/supabase/client";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { CreateOrderRequest } from "@/type/order";
+import type { CreateOrderRequest } from "@/type/order";
 
 export async function POST(request: NextRequest) {
   try {
-    console.log("Create order API called"); // Debug log
-
+    console.log("Create order API called");
     const body = (await request.json()) as CreateOrderRequest & {
       user_id: string;
+      payment_intent_id?: string;
     };
-
-    console.log("Request body:", body); // Debug log
+    console.log("Request body:", body);
 
     // Validate request
     if (!body.items || body.items.length === 0) {
-      console.log("No items in order"); // Debug log
+      console.log("No items in order");
       return NextResponse.json({ error: "No items in order" }, { status: 400 });
+    }
+
+    // If payment_intent_id is provided, verify it's completed
+    let paymentStatus = "pending";
+    if (body.payment_intent_id) {
+      try {
+        const paymentIntent = await stripe.paymentIntents.retrieve(
+          body.payment_intent_id
+        );
+        if (paymentIntent.status === "succeeded") {
+          paymentStatus = "paid";
+          console.log("Using completed payment:", body.payment_intent_id);
+        } else {
+          console.log("Payment intent status:", paymentIntent.status);
+          return NextResponse.json(
+            { error: `Payment not completed. Status: ${paymentIntent.status}` },
+            { status: 400 }
+          );
+        }
+      } catch (stripeError) {
+        console.error("Error verifying payment intent:", stripeError);
+        return NextResponse.json(
+          { error: "Invalid payment intent" },
+          { status: 400 }
+        );
+      }
     }
 
     // Fetch product details from database
     const productIds = body.items.map((item) => item.product_id);
-    console.log("Fetching products:", productIds); // Debug log
-
+    console.log("Fetching products:", productIds);
     const { data: products, error: productError } = await supabase
       .from("products")
       .select("*")
       .in("id", productIds);
 
     if (productError) {
-      console.error("Product fetch error:", productError); // Debug log
+      console.error("Product fetch error:", productError);
       return NextResponse.json(
         { error: `Failed to fetch product details: ${productError.message}` },
         { status: 400 }
@@ -38,7 +62,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!products) {
-      console.log("No products found"); // Debug log
+      console.log("No products found");
       return NextResponse.json({ error: "No products found" }, { status: 400 });
     }
 
@@ -56,7 +80,6 @@ export async function POST(request: NextRequest) {
       }
 
       let price = product.price;
-
       // Check for variant pricing
       if (item.variant_type) {
         const { data: variant } = await supabase
@@ -65,7 +88,6 @@ export async function POST(request: NextRequest) {
           .eq("product_id", item.product_id)
           .eq("variant_type", item.variant_type)
           .single();
-
         if (variant) {
           price = variant.price;
         }
@@ -85,8 +107,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate shipping and tax
-    const shipping_cost = 15.0; // Fixed shipping for now
-    const tax_rate = 0.08; // 8% tax
+    const shipping_cost = subtotal >= 100 ? 0 : 10; // Free shipping over RM100
+    const tax_rate = 0.06; // 6% SST
     const tax = subtotal * tax_rate;
     const total = subtotal + shipping_cost + tax;
 
@@ -97,15 +119,18 @@ export async function POST(request: NextRequest) {
       shipping_cost,
       tax,
       total,
+      payment_status: paymentStatus,
+      payment_intent_id: body.payment_intent_id,
       shipping_address: body.shipping_address,
-    }); // Debug log
+    });
 
     const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
       .insert({
         user_id: body.user_id,
         status: "pending",
-        payment_status: "pending",
+        payment_status: paymentStatus, // "paid" if payment completed, "pending" otherwise
+        payment_intent_id: body.payment_intent_id,
         subtotal: subtotal,
         shipping_cost: shipping_cost,
         tax: tax,
@@ -117,24 +142,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (orderError) {
-      console.error("Order creation error:", orderError); // Debug log
-      console.error("Full error details:", JSON.stringify(orderError, null, 2)); // More detailed error
-
-      // Check if error is due to missing table
-      if (
-        orderError.message?.includes('relation "orders" does not exist') ||
-        orderError.code === "PGRST116" ||
-        orderError.details?.includes("does not exist")
-      ) {
-        return NextResponse.json(
-          {
-            error:
-              "Database tables not found. Please run the database setup first.",
-          },
-          { status: 500 }
-        );
-      }
-
+      console.error("Order creation error:", orderError);
       return NextResponse.json(
         {
           error: `Failed to create order: ${
@@ -148,7 +156,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!order) {
-      console.log("No order returned"); // Debug log
+      console.log("No order returned");
       return NextResponse.json(
         { error: "Failed to create order - no data returned" },
         { status: 500 }
@@ -174,29 +182,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create Stripe PaymentIntent
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(total * 100), // Convert to sen (MYR cents)
-      currency: "myr",
-      metadata: {
-        order_id: order.id,
-        user_id: body.user_id,
-      },
-      automatic_payment_methods: {
-        enabled: true,
-      },
-    });
+    // Clear selected cart items after successful order creation
+    try {
+      // Get user's cart
+      const { data: cart } = await supabase
+        .from("carts")
+        .select("id")
+        .eq("user_id", body.user_id)
+        .single();
 
-    // Update order with payment intent ID using admin client
-    await supabaseAdmin
-      .from("orders")
-      .update({ payment_intent_id: paymentIntent.id })
-      .eq("id", order.id);
+      if (cart) {
+        // Delete selected cart items
+        await supabaseAdmin
+          .from("cart_items")
+          .delete()
+          .eq("cart_id", cart.id)
+          .eq("selected", true);
+        console.log("Selected cart items cleared");
+      }
+    } catch (cartError) {
+      console.warn("Failed to clear cart items:", cartError);
+      // Don't fail the order creation if cart clearing fails
+    }
 
+    // Only return client_secret if we need to create a new payment (shouldn't happen in this flow)
     return NextResponse.json({
       order_id: order.id,
-      client_secret: paymentIntent.client_secret,
       amount: total,
+      payment_completed: paymentStatus === "paid",
     });
   } catch (error) {
     console.error("Error creating order:", error);
