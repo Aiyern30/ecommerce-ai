@@ -1,7 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useUser } from "@supabase/auth-helpers-react";
 import { Button } from "@/components/ui";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { CheckoutStepper } from "@/components/Checkout/CheckoutStepper";
@@ -17,52 +19,76 @@ import { useCart } from "@/components/CartProvider";
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
-
-interface AddressData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  address: string;
-  apartment?: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-  notes?: string;
-}
+import type { Address } from "@/lib/user/address";
+import { createOrderAPI } from "@/lib/order/api";
 
 interface PaymentData {
-  paymentMethod: "card" | "bank_transfer" | "cash_on_delivery";
+  paymentMethod: "card" | "fpx" | "cash_on_delivery";
+  paymentIntentId?: string;
+  amount?: number;
+  currency?: string;
 }
 
 export default function CheckoutConfirmPage() {
   const router = useRouter();
-  const { cartItems } = useCart();
+  const searchParams = useSearchParams();
+  const supabase = createClientComponentClient();
+  const user = useUser();
+  const { cartItems, refreshCart } = useCart();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [addressData, setAddressData] = useState<AddressData | null>(null);
+  const [addressData, setAddressData] = useState<Address | null>(null);
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
-  const [orderPlaced, setOrderPlaced] = useState(false);
+
+  const addressId = searchParams.get("addressId");
+  const paymentSuccess = searchParams.get("paymentSuccess");
 
   useEffect(() => {
-    // Check if all required data exists
-    const savedAddress = localStorage.getItem("checkout-address");
-    const savedPayment = localStorage.getItem("checkout-payment");
+    const loadData = async () => {
+      // Load address from database using addressId
+      if (addressId && user) {
+        const { data, error } = await supabase
+          .from("addresses")
+          .select("*")
+          .eq("id", addressId)
+          .eq("user_id", user.id)
+          .single();
 
-    if (!savedAddress || !savedPayment) {
-      router.push("/checkout/address");
-      return;
-    }
+        if (data && !error) {
+          setAddressData(data);
+        } else {
+          console.error("Failed to fetch address:", error);
+          router.push("/checkout/address");
+          return;
+        }
+      } else {
+        router.push("/checkout/address");
+        return;
+      }
 
-    setAddressData(JSON.parse(savedAddress));
-    setPaymentData(JSON.parse(savedPayment));
-  }, [router]);
+      // Load payment data from localStorage
+      const savedPayment = localStorage.getItem("checkout-payment");
+      if (savedPayment) {
+        setPaymentData(JSON.parse(savedPayment));
+      } else if (paymentSuccess === "true") {
+        // Fallback: if payment was successful but no localStorage data
+        setPaymentData({
+          paymentMethod: "card",
+        });
+      } else {
+        // No payment data available, redirect to payment page
+        router.push(`/checkout/payment?addressId=${addressId}`);
+        return;
+      }
+    };
+
+    loadData();
+  }, [addressId, paymentSuccess, router, supabase, user]);
 
   const getPaymentIcon = (method: string) => {
     switch (method) {
       case "card":
         return <CreditCard className="h-5 w-5 text-blue-600" />;
-      case "bank_transfer":
+      case "fpx":
         return <Building className="h-5 w-5 text-green-600" />;
       case "cash_on_delivery":
         return <Truck className="h-5 w-5 text-orange-600" />;
@@ -74,9 +100,9 @@ export default function CheckoutConfirmPage() {
   const getPaymentLabel = (method: string) => {
     switch (method) {
       case "card":
-        return "Credit/Debit Card";
-      case "bank_transfer":
-        return "Bank Transfer";
+        return "Credit/Debit Card (Stripe)";
+      case "fpx":
+        return "FPX Online Banking";
       case "cash_on_delivery":
         return "Cash on Delivery";
       default:
@@ -85,23 +111,35 @@ export default function CheckoutConfirmPage() {
   };
 
   const handlePlaceOrder = async () => {
+    if (!user || !addressData) {
+      toast.error("Missing user or address information");
+      return;
+    }
+
     setIsSubmitting(true);
-
     try {
-      // Simulate API call to place order
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Create order using your API
+      const orderResult = await createOrderAPI(
+        user.id,
+        cartItems,
+        addressData
+        // You can add notes here if needed
+      );
 
-      // Clear checkout data
-      localStorage.removeItem("checkout-address");
+      if (!orderResult) {
+        throw new Error("Failed to create order");
+      }
+
+      // Clear payment data from localStorage
       localStorage.removeItem("checkout-payment");
 
-      setOrderPlaced(true);
+      // Refresh cart to remove purchased items (your API should handle this)
+      await refreshCart();
+
       toast.success("Order placed successfully!");
 
-      // Redirect to success page after a delay
-      setTimeout(() => {
-        router.push("/order-success");
-      }, 2000);
+      // Redirect to success page with order ID
+      router.push(`/order-success?orderId=${orderResult.order_id}`);
     } catch (error) {
       console.error("Error placing order:", error);
       toast.error("Failed to place order. Please try again.");
@@ -121,20 +159,6 @@ export default function CheckoutConfirmPage() {
     );
   }
 
-  if (orderPlaced) {
-    return (
-      <div className="max-w-2xl mx-auto text-center py-16">
-        <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-6" />
-        <h1 className="text-3xl font-bold mb-4">Order Placed Successfully!</h1>
-        <p className="text-gray-600 mb-6">
-          Thank you for your order. We&apos;ll send you a confirmation email
-          shortly.
-        </p>
-        <Button onClick={() => router.push("/")}>Continue Shopping</Button>
-      </div>
-    );
-  }
-
   const selectedItems = cartItems.filter((item) => item.selected);
 
   return (
@@ -147,14 +171,16 @@ export default function CheckoutConfirmPage() {
             { label: "Cart", href: "/cart" },
             { label: "Checkout", href: "/checkout" },
             { label: "Address", href: "/checkout/address" },
-            { label: "Payment", href: "/checkout/payment" },
+            {
+              label: "Payment",
+              href: `/checkout/payment?addressId=${addressId}`,
+            },
             { label: "Confirm" },
           ]}
         />
-
         <div className="flex items-center justify-between mt-4">
           <h1 className="text-2xl font-bold">Review Your Order</h1>
-          <Link href="/checkout/payment">
+          <Link href={`/checkout/payment?addressId=${addressId}`}>
             <Button variant="outline" size="sm">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Payment
@@ -183,24 +209,17 @@ export default function CheckoutConfirmPage() {
               </Link>
             </div>
             <div className="text-sm">
-              <p className="font-medium">
-                {addressData.firstName} {addressData.lastName}
-              </p>
-              <p>{addressData.address}</p>
-              {addressData.apartment && <p>{addressData.apartment}</p>}
+              <p className="font-medium">{addressData.full_name}</p>
+              <p>{addressData.address_line1}</p>
+              {addressData.address_line2 && <p>{addressData.address_line2}</p>}
               <p>
-                {addressData.city}, {addressData.state} {addressData.postalCode}
+                {addressData.city}, {addressData.state}{" "}
+                {addressData.postal_code}
               </p>
               <p>{addressData.country}</p>
               <p className="mt-2 font-medium">Contact:</p>
               <p>{addressData.phone}</p>
-              <p>{addressData.email}</p>
-              {addressData.notes && (
-                <>
-                  <p className="mt-2 font-medium">Delivery Notes:</p>
-                  <p className="text-gray-600">{addressData.notes}</p>
-                </>
-              )}
+              <p>{user?.email}</p>
             </div>
           </div>
 
@@ -208,7 +227,7 @@ export default function CheckoutConfirmPage() {
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Payment Method</h3>
-              <Link href="/checkout/payment">
+              <Link href={`/checkout/payment?addressId=${addressId}`}>
                 <Button variant="ghost" size="sm">
                   Edit
                 </Button>
@@ -219,21 +238,17 @@ export default function CheckoutConfirmPage() {
               <span className="font-medium">
                 {getPaymentLabel(paymentData.paymentMethod)}
               </span>
+              {paymentData.paymentIntentId && (
+                <span className="text-xs text-gray-500">
+                  (Payment ID: {paymentData.paymentIntentId.slice(-8)})
+                </span>
+              )}
             </div>
-
-            {paymentData.paymentMethod === "bank_transfer" && (
-              <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-md">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Please transfer to account 1234567890 (Maybank) using your
-                  order ID as reference.
-                </p>
-              </div>
-            )}
-
-            {paymentData.paymentMethod === "cash_on_delivery" && (
-              <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Pay with cash when your order is delivered. COD fee: RM5.00
+            {paymentSuccess === "true" && (
+              <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-md">
+                <p className="text-sm text-green-600 dark:text-green-400 flex items-center">
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Payment completed successfully
                 </p>
               </div>
             )}
@@ -294,7 +309,6 @@ export default function CheckoutConfirmPage() {
                 </>
               )}
             </Button>
-
             <p className="text-xs text-gray-500 text-center mt-3">
               By placing this order, you agree to our Terms of Service and
               Privacy Policy.
