@@ -4,7 +4,6 @@ import type React from "react";
 
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
-import { useState, useEffect } from "react";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
@@ -16,79 +15,29 @@ interface StripeProviderProps {
 }
 
 export function StripeProvider({ children, amount }: StripeProviderProps) {
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // No state needed since we're not managing PaymentIntent creation here
 
-  useEffect(() => {
-    const createPaymentIntent = async () => {
-      try {
-        const response = await fetch("/api/create-payment-intent", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ amount }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to create payment intent");
-        }
-
-        const data = await response.json();
-        setClientSecret(data.clientSecret);
-      } catch (err) {
-        console.error("Error creating payment intent:", err);
-        setError("Failed to initialize payment. Please try again.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (amount > 0) {
-      createPaymentIntent();
-    } else {
-      setError("Invalid amount");
-      setIsLoading(false);
-    }
-  }, [amount]);
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p>Setting up payment...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !clientSecret) {
+  // Validate amount
+  if (amount < 100) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
         <div className="text-center">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
-            <h3 className="text-red-800 font-semibold mb-2">
-              Payment Setup Failed
-            </h3>
-            <p className="text-red-600 text-sm mb-4">
-              {error || "Unable to initialize payment. Please try again."}
+            <h3 className="text-red-800 font-semibold mb-2">Invalid Amount</h3>
+            <p className="text-red-600 text-sm">
+              Minimum order amount is RM1.00
             </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-red-600 text-white px-4 py-2 rounded text-sm hover:bg-red-700"
-            >
-              Retry
-            </button>
           </div>
         </div>
       </div>
     );
   }
 
+  // No clientSecret needed upfront - we'll create PaymentIntent when user confirms payment
   const options = {
-    clientSecret,
+    mode: "payment" as const,
+    amount: amount,
+    currency: "myr",
     appearance: {
       theme: "stripe" as const,
       variables: {
@@ -108,4 +57,12 @@ export function StripeProvider({ children, amount }: StripeProviderProps) {
       {children}
     </Elements>
   );
+}
+
+// Utility function to clear payment data when order is completed
+export function clearPaymentSession() {
+  sessionStorage.removeItem("stripe-client-secret");
+  sessionStorage.removeItem("stripe-amount");
+  sessionStorage.removeItem("stripe-payment-intent-id");
+  console.log("Payment session data cleared");
 }
