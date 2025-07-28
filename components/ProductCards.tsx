@@ -28,6 +28,7 @@ interface ProductCardProps {
   showCompare?: boolean;
   isCompared?: boolean;
   onCompareToggle?: (id: string, add: boolean) => void;
+  compareCount?: number;
 }
 
 export function ProductCard({
@@ -41,6 +42,7 @@ export function ProductCard({
   showCompare,
   isCompared = false,
   onCompareToggle,
+  compareCount = 0,
 }: ProductCardProps) {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const router = useRouter();
@@ -152,9 +154,10 @@ export function ProductCard({
             {showCompare && (
               <button
                 onClick={handleCompareClick}
+                disabled={!isCompared && compareCount >= 4}
                 className={`p-2 bg-white rounded-full shadow-md hover:bg-gray-200 ${
                   isCompared ? "text-blue-600" : "text-gray-400"
-                }`}
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
                 title={isCompared ? "Remove from Compare" : "Add to Compare"}
               >
                 <SlidersHorizontal className="h-5 w-5" />
