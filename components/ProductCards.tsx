@@ -6,6 +6,7 @@ import {
   Heart,
   ZoomIn,
   SlidersHorizontal,
+  Check,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -25,7 +26,7 @@ interface ProductCardProps {
   image: string;
   href?: string;
   showCompare?: boolean;
-  isCompared?: boolean; // controlled from parent
+  isCompared?: boolean;
   onCompareToggle?: (id: string, add: boolean) => void;
 }
 
@@ -113,6 +114,14 @@ export function ProductCard({
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
 
+          {/* 🟢 Badge shown at top-right when compared */}
+          {showCompare && isCompared && (
+            <div className="absolute top-2 right-2 bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-semibold shadow">
+              <Check className="h-4 w-4" />
+            </div>
+          )}
+
+          {/* Hover Icons */}
           <div className="absolute left-4 bottom-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <button
               onClick={handleAddToCart}
