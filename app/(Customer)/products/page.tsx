@@ -61,7 +61,6 @@ export default function ProductListPage() {
     <section className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">All Products</h1>
 
-      {/* Compare buttons */}
       <div className="mb-4 flex gap-2">
         <button
           onClick={handleCompare}
@@ -94,6 +93,7 @@ export default function ProductListPage() {
               image={product.image_url ?? "/placeholder.svg"}
               href={`/products/${product.id}`}
               showCompare
+              isCompared={selectedIds.includes(product.id)}
               onCompareToggle={handleCompareToggle}
             />
           ))}
