@@ -1,7 +1,8 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Bell, Check } from "lucide-react";
+import { Bell, Check, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useUser } from "@supabase/auth-helpers-react";
 import {
@@ -11,10 +12,22 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-  Badge,
+  ScrollArea,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
 } from "@/components/ui";
 import Link from "next/link";
-
 import { Notification } from "@/type/notification";
 import {
   clearAllNotifications,
@@ -30,6 +43,32 @@ export default function NotificationSheet() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [notificationToDelete, setNotificationToDelete] =
+    useState<Notification | null>(null);
+  const handleDeleteClick = (notification: Notification) => {
+    setNotificationToDelete(notification);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (notificationToDelete) {
+      const success = await clearAllNotifications(notificationToDelete.user_id); // You may want a deleteNotificationById API
+      if (success) {
+        setNotifications((items) =>
+          items.filter((n) => n.id !== notificationToDelete.id)
+        );
+        setUnreadCount((prev) =>
+          Math.max(0, prev - (notificationToDelete.read ? 0 : 1))
+        );
+        toast.success("Notification deleted");
+      } else {
+        toast.error("Failed to delete notification");
+      }
+      setDeleteDialogOpen(false);
+      setNotificationToDelete(null);
+    }
+  };
 
   const fetchNotifications = useCallback(async () => {
     if (!user?.id) return;
@@ -153,88 +192,108 @@ export default function NotificationSheet() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setIsOpen(true)}
           className="relative"
+          onClick={() => setIsOpen(true)}
         >
-          <Bell className="h-5 w-5 text-gray-800 dark:text-gray-200" />
+          <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
-            <Badge
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-red-500"
-              variant="destructive"
-            >
+            <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
               {unreadCount > 99 ? "99+" : unreadCount}
-            </Badge>
+            </span>
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent
-        side="right"
-        className="flex flex-col h-full p-4 pt-0 bg-white dark:bg-gray-900"
-      >
-        <SheetHeader className="px-0 border-b dark:border-gray-700">
-          <div className="flex flex-col gap-2">
-            <SheetTitle className="font-bold text-gray-900 dark:text-white">
-              Notifications
-            </SheetTitle>
-            {notifications.length > 0 && (
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleMarkAllAsRead}
-                  disabled={unreadCount === 0}
-                >
-                  Mark all read
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleClearAllNotifications}
-                >
-                  Clear all
-                </Button>
-              </div>
-            )}
-          </div>
+      <SheetContent className="w-full sm:max-w-lg flex flex-col">
+        <SheetHeader className="space-y-2 pb-4">
+          <SheetTitle className="text-lg font-medium text-left">
+            Notifications
+          </SheetTitle>
+          {notifications.length > 0 && (
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleMarkAllAsRead}
+                disabled={unreadCount === 0}
+              >
+                Mark all read
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClearAllNotifications}
+              >
+                Clear all
+              </Button>
+            </div>
+          )}
         </SheetHeader>
-        <div className="flex-1 overflow-y-auto mt-4 space-y-4">
-          {isLoading ? (
-            <div className="flex justify-center items-center h-32">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-          ) : notifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center text-center h-full">
-              <Bell className="h-16 w-16 text-gray-300 dark:text-gray-500 mb-4" />
-              <p className="text-gray-500 dark:text-gray-400 text-xl">
-                No notifications
-              </p>
-              <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">
-                We&apos;ll notify you when something arrives
-              </p>
-            </div>
-          ) : (
-            notifications.map((notification) => {
-              // Defensive: skip if missing required fields
-              if (
-                !notification ||
-                !notification.id ||
-                !notification.title ||
-                !notification.message
-              )
-                return null;
-              const type = notification.type || "system";
-              return (
-                <div
-                  key={notification.id}
-                  className={`p-4 rounded-lg border dark:border-gray-700 ${
-                    notification.read
-                      ? "bg-gray-50 dark:bg-gray-800"
-                      : "bg-white dark:bg-gray-900"
-                  }`}
-                >
-                  <div className="flex justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
+        <div className="flex flex-col flex-1 min-h-0">
+          <ScrollArea className="flex-1">
+            {isLoading ? (
+              <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+                <div className="text-center space-y-2">
+                  <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+                  <p className="text-sm text-muted-foreground">
+                    Loading notifications...
+                  </p>
+                </div>
+              </div>
+            ) : !user ? (
+              <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-6 text-center space-y-6">
+                <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                  <Bell className="h-12 w-12 text-gray-400" />
+                </div>
+                <div className="space-y-3">
+                  <span className="block text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    Login Required
+                  </span>
+                  <p className="text-sm text-muted-foreground max-w-sm">
+                    Please login to view your notifications.
+                  </p>
+                </div>
+                <Link href="/login" onClick={() => setIsOpen(false)}>
+                  <Button>Login to Continue</Button>
+                </Link>
+              </div>
+            ) : notifications.length === 0 ? (
+              <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-6 text-center space-y-6">
+                <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                  <Bell className="h-12 w-12 text-gray-500" />
+                </div>
+                <div className="space-y-3">
+                  <span className="block text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    No notifications
+                  </span>
+                  <p className="text-sm text-muted-foreground max-w-sm">
+                    We'll notify you when something arrives.
+                  </p>
+                </div>
+                <Link href="/products" onClick={() => setIsOpen(false)}>
+                  <Button>Browse Products</Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4 mx-4">
+                {notifications.map((notification) => {
+                  if (
+                    !notification ||
+                    !notification.id ||
+                    !notification.title ||
+                    !notification.message
+                  )
+                    return null;
+                  const type = notification.type || "system";
+                  return (
+                    <Card
+                      key={notification.id}
+                      className={`transition-colors border dark:border-gray-700${
+                        notification.read
+                          ? "bg-gray-50 dark:bg-gray-800"
+                          : "bg-white dark:bg-gray-900"
+                      } hover:bg-gray-50 dark:hover:bg-gray-900/30`}
+                    >
+                      <CardHeader className="pb-2 flex flex-row items-center gap-2">
                         <span
                           className={`text-xs px-2 py-1 rounded ${getTypeColor(
                             type
@@ -247,42 +306,97 @@ export default function NotificationSheet() {
                         {!notification.read && (
                           <span className="h-2 w-2 rounded-full bg-blue-500 dark:bg-blue-400"></span>
                         )}
-                      </div>
-                      <h3 className="font-medium mt-1 text-gray-900 dark:text-white">
-                        {notification.title}
-                      </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                        {notification.message}
-                      </p>
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                        {formatTime(notification.created_at)}
-                      </p>
-                    </div>
-                    {!notification.read && (
-                      <button
-                        onClick={() => handleMarkAsRead(notification.id)}
-                        className="text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 self-start ml-2"
-                        title="Mark as read"
-                      >
-                        <Check className="h-5 w-5" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })
-          )}
+                        <span className="ml-auto flex gap-2">
+                          {!notification.read && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0 border rounded-lg text-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950"
+                              onClick={() => handleMarkAsRead(notification.id)}
+                              title="Mark as read"
+                            >
+                              <Check className="h-4 w-4" />
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 border rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                            onClick={() => handleDeleteClick(notification)}
+                            title="Delete notification"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </span>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <CardTitle className="text-base font-medium text-gray-900 dark:text-white mb-1 line-clamp-2">
+                          {notification.title}
+                        </CardTitle>
+                        <CardDescription className="block text-xs text-gray-500 mb-2 !mt-0">
+                          {notification.message}
+                        </CardDescription>
+                        <span className="block text-xs text-gray-400 dark:text-gray-500 mt-2">
+                          {formatTime(notification.created_at)}
+                        </span>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </ScrollArea>
         </div>
         {notifications.length > 0 && (
-          <div className="border-t dark:border-gray-700 pt-4">
-            <Link href="/notifications">
-              <Button className="w-full mt-4" onClick={() => setIsOpen(false)}>
+          <div className="border-t p-4 space-y-4 bg-gray-50 dark:bg-gray-900/30">
+            <Link href="/notifications" onClick={() => setIsOpen(false)}>
+              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
                 View All Notifications
               </Button>
             </Link>
+            <span className="block text-xs text-center text-gray-500 !mt-2">
+              Manage your notifications and stay up to date
+            </span>
           </div>
         )}
       </SheetContent>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete notification?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this notification? This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {notificationToDelete && (
+            <div className="flex gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+              <div className="flex-1">
+                <span className="block font-medium text-gray-900 dark:text-white mb-1">
+                  {notificationToDelete.title}
+                </span>
+                <span className="block text-xs text-gray-500 mb-2 !mt-0">
+                  {notificationToDelete.message}
+                </span>
+                <span className="block text-xs text-gray-400 dark:text-gray-500 mt-2">
+                  {formatTime(notificationToDelete.created_at)}
+                </span>
+              </div>
+            </div>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Sheet>
   );
 }
