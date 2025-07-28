@@ -1,6 +1,7 @@
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { CreateNotificationData } from "@/type/notification";
+import { Notification } from "@/type/notification";
 
 // Create notification (server-side)
 export async function createNotification(
