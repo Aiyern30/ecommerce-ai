@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { ProductCard } from "@/components/ProductCards";
+import { Button } from "@/components/ui";
+import { SlidersHorizontal, X } from "lucide-react";
 
 type SimpleProduct = {
   id: string;
@@ -62,20 +64,30 @@ export default function ProductListPage() {
       <h1 className="text-3xl font-bold mb-6">All Products</h1>
 
       <div className="mb-4 flex gap-2">
-        <button
+        <Button
           onClick={handleCompare}
           disabled={selectedIds.length < 2}
-          className="px-4 py-2 bg-blue-600 text-white rounded disabled:bg-gray-300"
+          variant="default"
+          className="flex items-center gap-2"
         >
+          <SlidersHorizontal
+            className={`h-4 w-4 ${
+              selectedIds.length < 2
+                ? "text-gray-400 dark:text-gray-500"
+                : "text-white dark:text-black"
+            }`}
+          />
           Compare ({selectedIds.length})
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={clearSelection}
           disabled={selectedIds.length === 0}
-          className="px-4 py-2 bg-gray-200 rounded disabled:bg-gray-100"
+          variant="secondary"
+          className="flex items-center gap-2"
         >
+          <X className="h-4 w-4 text-gray-600 dark:text-gray-300" />
           Clear
-        </button>
+        </Button>
       </div>
 
       {isLoading ? (
