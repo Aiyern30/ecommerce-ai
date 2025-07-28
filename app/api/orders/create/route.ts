@@ -3,6 +3,7 @@ import stripe from "@/lib/stripe/server";
 import { supabase } from "@/lib/supabase/client";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import type { CreateOrderRequest } from "@/type/order";
+import { createNotification } from "@/lib/notification/api";
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,7 +11,7 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as CreateOrderRequest & {
       user_id: string;
       payment_intent_id?: string;
-      address_id: string; // Add address_id to the request body type
+      address_id: string;
     };
     console.log("Request body:", body);
 
@@ -116,7 +117,7 @@ export async function POST(request: NextRequest) {
     // Create order in database using admin client to bypass RLS
     console.log("Creating order with data:", {
       user_id: body.user_id,
-      address_id: body.address_id, // Use address_id instead
+      address_id: body.address_id,
       subtotal,
       shipping_cost,
       tax,
@@ -129,7 +130,7 @@ export async function POST(request: NextRequest) {
       .from("orders")
       .insert({
         user_id: body.user_id,
-        address_id: body.address_id, // Store address ID only
+        address_id: body.address_id,
         status: "pending",
         payment_status: paymentStatus,
         payment_intent_id: body.payment_intent_id,
@@ -182,6 +183,29 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // Create notification for successful order
+    const orderIdFormatted = order.id;
+    const notificationTitle =
+      paymentStatus === "paid" ? "Order Placed Successfully!" : "Order Created";
+    const notificationMessage =
+      paymentStatus === "paid"
+        ? `Your order ${orderIdFormatted} has been placed successfully and payment confirmed. Total: RM${total.toFixed(
+            2
+          )}`
+        : `Your order ${orderIdFormatted} has been created. Total: RM${total.toFixed(
+            2
+          )}`;
+
+    await createNotification({
+      user_id: body.user_id,
+      title: notificationTitle,
+      message: notificationMessage,
+      type: "order",
+      order_id: order.id,
+    });
+
+    console.log("Order notification created");
 
     // Clear selected cart items after successful order creation using your existing logic
     try {
