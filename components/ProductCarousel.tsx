@@ -18,16 +18,16 @@ export default function ProductCarousel() {
   const [products, setProducts] = useState<Product[]>([]);
   const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>({
     loop: true,
-    slides: { perView: 4, spacing: 24 },
+    slides: { perView: 4, spacing: 32 }, // increase spacing here
     breakpoints: {
       "(max-width: 1024px)": {
-        slides: { perView: 3, spacing: 20 },
+        slides: { perView: 3, spacing: 24 },
       },
       "(max-width: 768px)": {
         slides: { perView: 2, spacing: 16 },
       },
       "(max-width: 640px)": {
-        slides: { perView: 1.25, spacing: 12 }, // Show 1 full + 25% of next
+        slides: { perView: 1.25, spacing: 12 },
       },
     },
   });
@@ -38,37 +38,36 @@ export default function ProductCarousel() {
         .from("products")
         .select("id, name, price, image_url")
         .order("created_at", { ascending: false })
-        .limit(4);
-
-      if (error) {
-        console.error("Error fetching products:", error.message);
-      } else {
-        setProducts(data || []);
-      }
+        .limit(8); // maybe fetch more for a longer scroll
+      if (error) console.error("Error fetching products:", error.message);
+      else setProducts(data || []);
     };
-
     fetchProducts();
   }, []);
+  useEffect(() => {
+    if (products.length > 0 && instanceRef.current) {
+      instanceRef.current.update();
+    }
+  }, [instanceRef, products]);
 
   return (
     <section className="relative py-16 bg-gray-50 dark:bg-gray-900">
       <div className="container mx-auto px-4">
         <h2 className="text-3xl font-bold mb-8 text-center">Our Products</h2>
 
-        {/* Carousel */}
         <div className="relative">
-          {/* Navigation buttons - positioned outside the carousel */}
-          {products.length > 4 && (
+          {/* Navigation */}
+          {products.length > 1 && (
             <>
               <button
                 onClick={() => instanceRef.current?.prev()}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-16 p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10 hidden lg:block"
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-8 p-3 rounded-full bg-white dark:bg-gray-800 shadow hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10 hidden lg:block"
               >
                 <ChevronLeft size={20} />
               </button>
               <button
                 onClick={() => instanceRef.current?.next()}
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-16 p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10 hidden lg:block"
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-8 p-3 rounded-full bg-white dark:bg-gray-800 shadow hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10 hidden lg:block"
               >
                 <ChevronRight size={20} />
               </button>
@@ -76,10 +75,12 @@ export default function ProductCarousel() {
           )}
 
           <div className="overflow-hidden">
-            <div ref={sliderRef} className="keen-slider">
+            <div ref={sliderRef} className="keen-slider px-1">
               {products.map((product) => (
                 <div key={product.id} className="keen-slider__slide">
-                  <div className="h-80 w-full px-1 sm:px-0">
+                  <div className="px-1">
+                    {" "}
+                    {/* extra gap inside each slide */}
                     <ProductCard
                       id={product.id}
                       name={product.name}
@@ -95,7 +96,7 @@ export default function ProductCarousel() {
             </div>
           </div>
 
-          {/* Mobile swipe indicator */}
+          {/* Mobile indicator */}
           <div className="flex justify-center mt-4 sm:hidden">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <div className="flex gap-1">
