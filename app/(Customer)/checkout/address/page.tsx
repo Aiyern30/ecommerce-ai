@@ -5,12 +5,11 @@ import { useRouter } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useUser } from "@supabase/auth-helpers-react";
 import { Button } from "@/components/ui";
-import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { CheckoutStepper } from "@/components/Checkout/CheckoutStepper";
 import { CheckoutSummary } from "@/components/Checkout/CheckoutSummary";
 import { AddressForm } from "@/components/AddressForm";
 import { AddressCard } from "@/components/AddressCard";
-import { Plus, MapPin, X } from "lucide-react";
+import { Plus, MapPin, X, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/components/CartProvider";
 import {
@@ -19,6 +18,7 @@ import {
   TypographyP,
 } from "@/components/ui/Typography";
 import type { Address } from "@/lib/user/address";
+import Link from "next/link";
 
 export default function CheckoutAddressPage() {
   const router = useRouter();
@@ -157,8 +157,16 @@ export default function CheckoutAddressPage() {
     return (
       <div className="min-h-screen mb-4">
         <div className="container mx-auto px-4 py-6">
-          <BreadcrumbNav showFilterButton={false} />
-          <TypographyH1 className="mb-8 mt-8">SHIPPING ADDRESS</TypographyH1>
+          <div className="flex items-center justify-between">
+            <TypographyH1 className="mb-8 mt-14">SHIPPING ADDRESS</TypographyH1>
+
+            <Link href="/cart">
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Cart
+              </Button>
+            </Link>
+          </div>
 
           <div className="mb-8">
             <CheckoutStepper currentStep={2} />
@@ -179,8 +187,16 @@ export default function CheckoutAddressPage() {
     return (
       <div className="min-h-screen mb-4">
         <div className="container mx-auto px-4 py-6">
-          <BreadcrumbNav showFilterButton={false} />
-          <TypographyH1 className="mb-8 mt-8">SHIPPING ADDRESS</TypographyH1>
+          <div className="flex items-center justify-between">
+            <TypographyH1 className="mb-8 mt-12">SHIPPING ADDRESS</TypographyH1>
+
+            <Link href="/cart">
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Cart
+              </Button>
+            </Link>
+          </div>
 
           <div className="flex justify-center items-center min-h-[400px]">
             <div className="text-center">
@@ -198,8 +214,16 @@ export default function CheckoutAddressPage() {
 
   return (
     <div className="container mx-auto px-4 py-6">
-      <BreadcrumbNav showFilterButton={false} />
-      <TypographyH1 className="mb-8 mt-8">SHIPPING ADDRESS</TypographyH1>
+      <div className="flex items-center justify-between">
+        <TypographyH1 className="mb-8 mt-12">SHIPPING ADDRESS</TypographyH1>
+
+        <Link href="/cart">
+          <Button variant="outline" size="sm">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Cart
+          </Button>
+        </Link>
+      </div>
 
       <div className="mb-8">
         <CheckoutStepper currentStep={2} />

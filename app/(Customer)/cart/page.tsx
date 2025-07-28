@@ -28,7 +28,6 @@ import {
   TypographyP,
 } from "@/components/ui/Typography";
 import { toast } from "sonner";
-import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { CheckoutSummary } from "@/components/Checkout/CheckoutSummary";
 import { useCart } from "@/components/CartProvider";
 import {
@@ -115,8 +114,7 @@ export default function CartPage() {
   return (
     <div className="min-h-screen mb-4">
       <div className="container mx-auto px-4 py-6">
-        <BreadcrumbNav showFilterButton={false} />
-        <TypographyH1 className="mb-8 mt-8">YOUR CART</TypographyH1>
+        <TypographyH1 className="mb-8 mt-14">YOUR CART</TypographyH1>
 
         {isLoading ? (
           <div className="mt-8 grid gap-8 lg:grid-cols-3">
