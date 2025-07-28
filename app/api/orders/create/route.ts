@@ -3,7 +3,7 @@ import stripe from "@/lib/stripe/server";
 import { supabase } from "@/lib/supabase/client";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import type { CreateOrderRequest } from "@/type/order";
-import { createNotification } from "@/lib/notification/api";
+import { createNotification } from "@/lib/notification/server";
 
 export async function POST(request: NextRequest) {
   try {
