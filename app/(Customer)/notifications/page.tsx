@@ -18,15 +18,15 @@ import {
   TypographyH3,
   TypographyP,
 } from "@/components/ui/Typography";
-import {
-  clearAllNotifications,
-  getUserNotifications,
-  markAllNotificationsAsRead,
-  markNotificationAsRead,
-  deleteNotification,
-} from "@/lib/notification/api";
 
 import { Notification } from "@/type/notification";
+import {
+  getUserNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  deleteNotification,
+  clearAllNotifications,
+} from "@/lib/notification/client";
 
 export default function NotificationsPage() {
   const user = useUser();
