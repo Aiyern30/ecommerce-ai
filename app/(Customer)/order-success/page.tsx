@@ -196,10 +196,6 @@ export default function OrderSuccessPage() {
     );
   }
 
-  const formatOrderId = (id: string) => {
-    return `ORD-${id.slice(-8).toUpperCase()}`;
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-MY", {
       year: "numeric",
@@ -267,7 +263,7 @@ export default function OrderSuccessPage() {
               Order ID
             </TypographyP>
             <TypographyP className="text-lg font-bold text-blue-600 !mt-0">
-              {formatOrderId(order.id)}
+              {order.id}
             </TypographyP>
             <TypographyP className="text-xs text-gray-500 mt-1 !mt-0">
               Placed on {formatDate(order.created_at)}
