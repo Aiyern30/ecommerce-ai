@@ -7,7 +7,6 @@ import { useUser } from "@supabase/auth-helpers-react";
 import { Button } from "@/components/ui";
 import { StripeProvider } from "@/components/StripeProvider";
 import { StripePaymentForm } from "@/components/StripePaymentForms";
-import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { CheckoutStepper } from "@/components/Checkout/CheckoutStepper";
 import { CheckoutSummary } from "@/components/Checkout/CheckoutSummary";
 import { ArrowLeft } from "lucide-react";
@@ -20,6 +19,7 @@ import {
 } from "@/lib/cart/calculations";
 import { useCart } from "@/components/CartProvider";
 import { getCountryCode } from "@/utils/country-codes";
+import { TypographyH1 } from "@/components/ui/Typography";
 
 export default function CheckoutPaymentPage() {
   const router = useRouter();
@@ -110,27 +110,17 @@ export default function CheckoutPaymentPage() {
   }
 
   return (
-    <StripeProvider amount={totalAmount}>
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-6">
-          <BreadcrumbNav
-            customItems={[
-              { label: "Home", href: "/" },
-              { label: "Cart", href: "/cart" },
-              { label: "Checkout", href: "/checkout" },
-              { label: "Address", href: "/checkout/address" },
-              { label: "Payment" },
-            ]}
-          />
-          <div className="flex items-center justify-between mt-4">
-            <h1 className="text-2xl font-bold">Payment Method</h1>
-            <Link href="/checkout/address">
-              <Button variant="outline" size="sm">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Address
-              </Button>
-            </Link>
-          </div>
+    <div className="container mx-auto px-4 py-6">
+      <StripeProvider amount={totalAmount}>
+        <div className="flex items-center justify-between">
+          <TypographyH1 className="mb-8 mt-14">PAYMENT METHOD</TypographyH1>
+
+          <Link href="/checkout/address">
+            <Button variant="outline" size="sm">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Address
+            </Button>
+          </Link>
         </div>
 
         <div className="mb-8">
@@ -183,7 +173,7 @@ export default function CheckoutPaymentPage() {
             <CheckoutSummary />
           </div>
         </div>
-      </div>
-    </StripeProvider>
+      </StripeProvider>
+    </div>
   );
 }
