@@ -14,14 +14,15 @@ import {
   Badge,
 } from "@/components/ui";
 import Link from "next/link";
+
+import { Notification } from "@/type/notification";
 import {
   clearAllNotifications,
   getUnreadNotificationCount,
   getUserNotifications,
   markAllNotificationsAsRead,
   markNotificationAsRead,
-} from "@/lib/notification/api";
-import { Notification } from "@/type/notification";
+} from "@/lib/notification/client";
 
 export default function NotificationSheet() {
   const user = useUser();
