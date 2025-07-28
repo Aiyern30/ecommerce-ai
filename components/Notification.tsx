@@ -51,7 +51,6 @@ export default function NotificationSheet() {
     setNotificationToDelete(notification);
     setDeleteDialogOpen(true);
   };
-
   const confirmDelete = async () => {
     if (notificationToDelete) {
       const success = await deleteNotification(notificationToDelete.id);
