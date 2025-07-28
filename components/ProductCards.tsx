@@ -1,6 +1,12 @@
 "use client";
 
-import { Star, ShoppingCart, Heart, ZoomIn } from "lucide-react";
+import {
+  Star,
+  ShoppingCart,
+  Heart,
+  ZoomIn,
+  SlidersHorizontal,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/";
@@ -14,26 +20,43 @@ interface ProductCardProps {
   id: string;
   name: string;
   price: number;
-  originalPrice?: number;
   rating: number;
   reviews: number;
   image: string;
   href?: string;
+  showCompare?: boolean;
+  onCompareToggle?: (id: string, add: boolean) => void;
 }
 
 export function ProductCard({
   id,
   name,
   price,
-  originalPrice,
+
   rating,
   reviews,
   image,
   href = "#",
+  showCompare,
 }: ProductCardProps) {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const router = useRouter();
   const user = useUser();
+
+  const [isCompared, setIsCompared] = useState(false);
+
+  const handleCompareToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsCompared((prev) => !prev);
+
+    if (!isCompared) {
+      toast.success(`${name} added to comparison`);
+      // Optionally: update compare list in localStorage or context
+    } else {
+      toast.info(`${name} removed from comparison`);
+    }
+  };
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation when clicking cart button
@@ -128,6 +151,17 @@ export function ProductCard({
             >
               <Heart className="h-5 w-5 text-blue-600" />
             </button>
+            {showCompare && (
+              <button
+                onClick={handleCompareToggle}
+                className={`absolute top-2 right-2 p-1 rounded-full bg-white shadow hover:bg-gray-100 ${
+                  isCompared ? "text-blue-600" : "text-gray-400"
+                }`}
+                title="Add to compare"
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -151,17 +185,6 @@ export function ProductCard({
           </div>
           <div className="flex items-center gap-2">
             <span className="font-medium">RM{price}</span>
-            {originalPrice && (
-              <span className="text-sm text-muted-foreground line-through">
-                RM{originalPrice}
-              </span>
-            )}
-            {originalPrice && (
-              <span className="text-sm text-red-500">
-                {Math.round(((originalPrice - price) / originalPrice) * 100)}%
-                OFF
-              </span>
-            )}
           </div>
         </CardContent>
       </Card>
