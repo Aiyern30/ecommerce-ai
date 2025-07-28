@@ -44,9 +44,17 @@ export default function ProductListPage() {
   }, []);
 
   const handleCompareToggle = (id: string, add: boolean) => {
-    setSelectedIds((prev) =>
-      add ? [...prev, id] : prev.filter((item) => item !== id)
-    );
+    setSelectedIds((prev) => {
+      if (add) {
+        if (prev.length >= 4) {
+          toast.warning("You can only compare up to 4 products");
+          return prev;
+        }
+        return [...prev, id];
+      } else {
+        return prev.filter((item) => item !== id);
+      }
+    });
   };
 
   const handleCompare = () => {
@@ -113,6 +121,7 @@ export default function ProductListPage() {
               showCompare
               isCompared={selectedIds.includes(product.id)}
               onCompareToggle={handleCompareToggle}
+              compareCount={selectedIds.length}
             />
           ))}
         </div>
