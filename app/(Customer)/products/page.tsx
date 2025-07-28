@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { ProductCard } from "@/components/ProductCards";
-import { Button } from "@/components/ui";
+import { Button } from "@/components/ui/";
 import { SlidersHorizontal, X } from "lucide-react";
+import { Skeleton } from "@/components/ui/";
+import { TypographyH1 } from "@/components/ui/Typography";
 
 type SimpleProduct = {
   id: string;
@@ -61,7 +63,7 @@ export default function ProductListPage() {
 
   return (
     <section className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">All Products</h1>
+      <TypographyH1 className="mb-8 mt-14">ALL PRODUCTS</TypographyH1>
 
       <div className="mb-4 flex gap-2">
         <Button
@@ -91,7 +93,11 @@ export default function ProductListPage() {
       </div>
 
       {isLoading ? (
-        <p>Loading...</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <ProductCardSkeleton key={i} />
+          ))}
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {products.map((product) => (
@@ -112,5 +118,18 @@ export default function ProductListPage() {
         </div>
       )}
     </section>
+  );
+}
+
+function ProductCardSkeleton() {
+  return (
+    <Skeleton>
+      <Skeleton className="aspect-square w-full" />
+      <div className="p-4 space-y-2">
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-3 w-1/2" />
+        <Skeleton className="h-4 w-1/3" />
+      </div>
+    </Skeleton>
   );
 }
