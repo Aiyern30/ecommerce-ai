@@ -31,6 +31,7 @@ import Link from "next/link";
 import { Notification } from "@/type/notification";
 import {
   clearAllNotifications,
+  deleteNotification,
   getUnreadNotificationCount,
   getUserNotifications,
   markAllNotificationsAsRead,
@@ -53,7 +54,7 @@ export default function NotificationSheet() {
 
   const confirmDelete = async () => {
     if (notificationToDelete) {
-      const success = await clearAllNotifications(notificationToDelete.user_id); // You may want a deleteNotificationById API
+      const success = await deleteNotification(notificationToDelete.id);
       if (success) {
         setNotifications((items) =>
           items.filter((n) => n.id !== notificationToDelete.id)
