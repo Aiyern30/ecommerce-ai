@@ -14,9 +14,9 @@ import { PricingTab } from "@/components/Comparison/Tabs/PricingTab";
 import type { Product } from "@/type/product";
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "sonner";
-import { ComparisonProductCard } from "@/components/Comparison/ComparisonProductCard";
 import { OverviewTabs } from "@/components/Comparison/Tabs/OverviewTab";
 import { SpecificationsTable } from "@/components/Comparison/Tabs/SpecificationTab";
+import { ProductSelector } from "@/components/Comparison/ProductSelector";
 import { TypographyH1 } from "@/components/ui/Typography";
 import { BarChart3 } from "lucide-react";
 
@@ -107,7 +107,7 @@ export default function CompareProductsContent() {
 
   return (
     <div className="min-h-screen w-full overflow-x-hidden">
-      <div className="container mx-auto px-4 py-6 ">
+      <div className="container mx-auto px-4 py-6 max-w-7xl">
         <TypographyH1 className="mb-8 mt-14">COMPARE OUR PRODUCTS</TypographyH1>
 
         {loading ? (
@@ -125,7 +125,7 @@ export default function CompareProductsContent() {
           </div>
         ) : comparedProducts.length === 0 ? (
           <div className="text-center py-16 flex-1 flex flex-col justify-center">
-            <div className="mx-auto">
+            <div className="max-w-md mx-auto">
               <div className="mb-6">
                 <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
                   <BarChart3 className="w-12 h-12 text-gray-400" />
@@ -147,73 +147,64 @@ export default function CompareProductsContent() {
             </div>
           </div>
         ) : (
-          <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="mb-6 w-full max-w-md">
-              <TabsTrigger value="overview" className="flex-1">
-                Overview
-              </TabsTrigger>
-              <TabsTrigger value="specifications" className="flex-1">
-                Specifications
-              </TabsTrigger>
-              <TabsTrigger value="features" className="flex-1">
-                Features
-              </TabsTrigger>
-              <TabsTrigger value="pricing" className="flex-1">
-                Pricing
-              </TabsTrigger>
-            </TabsList>
+          <>
+            {/* Product Selector - Now at the top level */}
+            <ProductSelector
+              products={products}
+              comparedProducts={comparedProducts}
+              onProductChange={changeProductAtIndex}
+            />
 
-            <TabsContent value="overview" className="mt-0">
-              <OverviewTabs
-                products={products}
-                comparedProducts={comparedProducts}
-                onProductChange={changeProductAtIndex}
-              />
+            {/* Tabs */}
+            <Tabs defaultValue="overview" className="w-full">
+              <TabsList className="mb-6 w-full max-w-md">
+                <TabsTrigger value="overview" className="flex-1">
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger value="specifications" className="flex-1">
+                  Specifications
+                </TabsTrigger>
+                <TabsTrigger value="features" className="flex-1">
+                  Features
+                </TabsTrigger>
+                <TabsTrigger value="pricing" className="flex-1">
+                  Pricing
+                </TabsTrigger>
+              </TabsList>
 
-              {/* Fixed grid layout with proper responsive breakpoints */}
-              <div className="w-full overflow-hidden">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6 mb-8">
-                  {comparedProducts.map((product, index) => (
-                    <div
-                      key={`${product.id}-${index}`}
-                      className="w-full min-w-0"
-                    >
-                      <ComparisonProductCard
-                        product={product}
-                        onRemove={() => removeProductFromCompare(product.id)}
-                        showRemove={comparedProducts.length > 2}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="specifications" className="mt-0">
-              <div className="w-full overflow-x-auto">
-                <SpecificationsTable products={comparedProducts} />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="features" className="mt-0">
-              <div className="text-center py-8">
-                <p className="text-gray-500">
-                  Features comparison coming soon...
-                </p>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="pricing" className="mt-0">
-              <div className="w-full overflow-x-auto">
-                <PricingTab
-                  products={comparedProducts}
-                  itemCount={
-                    comparedProducts.length.toString() as "2" | "3" | "4"
-                  }
+              <TabsContent value="overview" className="mt-0">
+                <OverviewTabs
+                  comparedProducts={comparedProducts}
+                  onRemove={removeProductFromCompare}
                 />
-              </div>
-            </TabsContent>
-          </Tabs>
+              </TabsContent>
+
+              <TabsContent value="specifications" className="mt-0">
+                <div className="w-full overflow-x-auto">
+                  <SpecificationsTable products={comparedProducts} />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="features" className="mt-0">
+                <div className="text-center py-8">
+                  <p className="text-gray-500">
+                    Features comparison coming soon...
+                  </p>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="pricing" className="mt-0">
+                <div className="w-full overflow-x-auto">
+                  <PricingTab
+                    products={comparedProducts}
+                    itemCount={
+                      comparedProducts.length.toString() as "2" | "3" | "4"
+                    }
+                  />
+                </div>
+              </TabsContent>
+            </Tabs>
+          </>
         )}
       </div>
     </div>

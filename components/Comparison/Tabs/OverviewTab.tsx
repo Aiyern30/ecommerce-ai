@@ -1,74 +1,84 @@
 "use client";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/";
 import type { Product } from "@/type/product";
-import Image from "next/image";
+import { Package } from "lucide-react";
+import { ComparisonProductCard } from "@/components/Comparison/ComparisonProductCard";
 
 interface OverviewTabsProps {
-  products: Product[];
   comparedProducts: Product[];
-  onProductChange: (index: number, newProductId: string) => void;
+  onRemove?: (id: string) => void;
 }
 
 export function OverviewTabs({
-  products,
   comparedProducts,
-  onProductChange,
+  onRemove,
 }: OverviewTabsProps) {
   return (
-    <div className="mb-6">
-      <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
-        Select Products to Compare
-      </h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {comparedProducts.map((product, index) => (
-          <div key={index} className="space-y-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Product {index + 1}
-            </label>
-            <Select
-              value={product.id}
-              onValueChange={(newProductId) =>
-                onProductChange(index, newProductId)
-              }
-            >
-              <SelectTrigger className="w-full bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
-                {products.map((availableProduct) => (
-                  <SelectItem
-                    key={availableProduct.id}
-                    value={availableProduct.id}
-                    className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Image
-                        src={
-                          availableProduct.product_images?.[0]?.image_url ||
-                          availableProduct.image_url ||
-                          "/placeholder.svg" ||
-                          "/placeholder.svg"
-                        }
-                        alt={availableProduct.name}
-                        width={20}
-                        height={20}
-                        className="rounded bg-gray-50 dark:bg-gray-700"
-                      />
-                      <span className="truncate">{availableProduct.name}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+    <div className="space-y-6">
+      {/* Comparison Summary */}
+      <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-2 mb-4">
+          <Package className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            Comparison Summary
+          </h3>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              {comparedProducts.length}
+            </div>
+            <div className="text-gray-600 dark:text-gray-400">Products</div>
           </div>
-        ))}
+          <div className="text-center">
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              RM{Math.min(...comparedProducts.map((p) => p.price)).toFixed(0)} -
+              RM
+              {Math.max(...comparedProducts.map((p) => p.price)).toFixed(0)}
+            </div>
+            <div className="text-gray-600 dark:text-gray-400">Price Range</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              {
+                [
+                  ...new Set(
+                    comparedProducts.map((p) => p.category).filter(Boolean)
+                  ),
+                ].length
+              }
+            </div>
+            <div className="text-gray-600 dark:text-gray-400">Categories</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              RM
+              {(
+                comparedProducts.reduce((sum, p) => sum + p.price, 0) /
+                comparedProducts.length
+              ).toFixed(0)}
+            </div>
+            <div className="text-gray-600 dark:text-gray-400">Avg Price</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Comparison Product Cards */}
+      <div className="w-full overflow-hidden">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          Product Comparison
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+          {comparedProducts.map((product, index) => (
+            <div key={`${product.id}-${index}`} className="w-full min-w-0">
+              <ComparisonProductCard
+                product={product}
+                onRemove={onRemove ? () => onRemove(product.id) : undefined}
+                showRemove={comparedProducts.length > 2 && !!onRemove}
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
