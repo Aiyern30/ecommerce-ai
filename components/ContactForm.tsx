@@ -1,9 +1,9 @@
-// components/ContactForm.tsx
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { useState } from "react";
 import {
   Form,
   FormControl,
@@ -15,6 +15,8 @@ import {
   Input,
   Button,
 } from "@/components/ui/";
+import { toast } from "sonner";
+import { insertEnquiry } from "@/lib/enquiry/insertEnquiry";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -28,14 +30,23 @@ const formSchema = z.object({
 });
 
 export default function ContactForm() {
+  const [loading, setLoading] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { name: "", email: "", subject: "", message: "" },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
-    // Add your submit logic here
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      setLoading(true);
+      await insertEnquiry(values);
+      toast.success("Your enquiry has been sent! ✅");
+      form.reset();
+    } catch {
+      toast.error("Failed to send enquiry. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -97,8 +108,8 @@ export default function ContactForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">
-          Send Message
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? "Sending..." : "Send Message"}
         </Button>
       </form>
     </Form>
