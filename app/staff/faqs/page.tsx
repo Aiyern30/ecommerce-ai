@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search, FileText } from "lucide-react";
+import { Search, FileText, Plus } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import {
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import { Faq } from "@/type/faqs";
+import Link from "next/link";
 
 function EmptyFaqsState() {
   return (
@@ -120,6 +121,15 @@ export default function FaqsPage() {
     <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex items-center justify-between">
         <TypographyH2 className="border-none pb-0">FAQs</TypographyH2>
+
+        <div className="flex items-center gap-2">
+          <Link href="/staff/faqs/new">
+            <Button size="sm">
+              <Plus className="mr-2 h-4 w-4" />
+              Add FAQs
+            </Button>
+          </Link>
+        </div>
       </div>
       <div className="flex flex-col sm:flex-row flex-wrap gap-2">
         <div className="relative flex-1 min-w-[200px]">
@@ -155,7 +165,7 @@ export default function FaqsPage() {
               value={section}
               className="border rounded-lg bg-card shadow-sm"
             >
-              <AccordionTrigger className="px-4 py-3 text-base sm:text-lg font-semibold bg-gray-50 dark:bg-gray-900 rounded-t-lg">
+              <AccordionTrigger className="px-4">
                 <div className="flex items-center justify-between w-full">
                   <span>{section}</span>
                   <span className="ml-2 text-xs text-gray-500">
