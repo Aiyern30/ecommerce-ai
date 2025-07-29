@@ -21,41 +21,48 @@ export function SpecificationsTable({ products }: SpecificationsTableProps) {
   if (products.length === 0) return null;
 
   return (
-    <Card className="border border-gray-200 dark:border-gray-700">
+    <Card className="py-0 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                <TableHead className="text-left font-semibold text-gray-900 dark:text-gray-100 sticky left-0 z-10 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 w-[180px] p-4">
+              <TableRow className="border-b bg-gray-50 dark:bg-gray-800">
+                <TableHead className="text-left font-semibold text-gray-900 dark:text-gray-100 sticky left-0 z-10 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 w-[180px] p-4 rounded-tl-xl">
                   Specifications
                 </TableHead>
                 {products.map((product, index) => (
                   <TableHead
-                    key={product.id + index}
-                    className="text-center font-semibold w-[200px] text-gray-900 dark:text-gray-100 p-4"
+                    key={product.id}
+                    className={`text-center font-semibold w-[200px] text-gray-900 dark:text-gray-100 p-4 bg-gray-50 dark:bg-gray-800 ${
+                      index === products.length - 1 ? "rounded-tr-xl" : ""
+                    }`}
                   >
-                    <div className="flex flex-col items-center space-y-2">
-                      <Image
-                        src={
-                          product.product_images?.[0]?.image_url ||
-                          product.image_url ||
-                          "/placeholder.svg"
-                        }
-                        alt={product.name}
-                        width={40}
-                        height={40}
-                        className="rounded object-contain bg-white dark:bg-gray-700 p-1 border border-gray-200 dark:border-gray-600"
-                      />
-                      <div className="text-center">
+                    <div className="flex items-center gap-3">
+                      {/* Product Image - Left */}
+                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-white dark:bg-gray-700 flex-shrink-0 border border-gray-200 dark:border-gray-600">
+                        <Image
+                          src={
+                            product.product_images?.[0]?.image_url ||
+                            product.image_url ||
+                            "/placeholder.svg" ||
+                            "/placeholder.svg"
+                          }
+                          alt={product.name}
+                          width={48}
+                          height={48}
+                          className="w-full h-full object-contain p-1"
+                        />
+                      </div>
+                      {/* Product Info - Right */}
+                      <div className="flex-1 text-left min-w-0">
                         <div
-                          className="font-semibold text-sm truncate max-w-[160px]"
+                          className="font-semibold text-sm truncate text-gray-900 dark:text-gray-100"
                           title={product.name}
                         >
                           {product.name}
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {product.category}
+                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                          {product.category || "No category"}
                         </div>
                       </div>
                     </div>
@@ -80,7 +87,6 @@ export function SpecificationsTable({ products }: SpecificationsTableProps) {
                   </TableCell>
                 ))}
               </TableRow>
-
               {/* Category Row */}
               <TableRow className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                 <TableCell className="font-medium bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-100 sticky left-0 z-10 border-r border-gray-200 dark:border-gray-700 p-4">
@@ -95,7 +101,6 @@ export function SpecificationsTable({ products }: SpecificationsTableProps) {
                   </TableCell>
                 ))}
               </TableRow>
-
               {/* Unit Row */}
               <TableRow className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                 <TableCell className="font-medium bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-100 sticky left-0 z-10 border-r border-gray-200 dark:border-gray-700 p-4">
@@ -110,7 +115,22 @@ export function SpecificationsTable({ products }: SpecificationsTableProps) {
                   </TableCell>
                 ))}
               </TableRow>
-
+              {/* Grade Row */}
+              {products.some((p) => p.grade) && (
+                <TableRow className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                  <TableCell className="font-medium bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-100 sticky left-0 z-10 border-r border-gray-200 dark:border-gray-700 p-4">
+                    Grade
+                  </TableCell>
+                  {products.map((product) => (
+                    <TableCell
+                      key={product.id}
+                      className="text-center text-gray-700 dark:text-gray-300 p-4"
+                    >
+                      {product.grade || "N/A"}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              )}
               {/* Stock Quantity Row */}
               <TableRow className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                 <TableCell className="font-medium bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-100 sticky left-0 z-10 border-r border-gray-200 dark:border-gray-700 p-4">
@@ -139,7 +159,6 @@ export function SpecificationsTable({ products }: SpecificationsTableProps) {
                   </TableCell>
                 ))}
               </TableRow>
-
               {/* Tags Row */}
               <TableRow className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                 <TableCell className="font-medium bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-100 sticky left-0 z-10 border-r border-gray-200 dark:border-gray-700 p-4">
@@ -161,7 +180,6 @@ export function SpecificationsTable({ products }: SpecificationsTableProps) {
                   </TableCell>
                 ))}
               </TableRow>
-
               {/* Certificates Row */}
               <TableRow className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                 <TableCell className="font-medium bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-100 sticky left-0 z-10 border-r border-gray-200 dark:border-gray-700 p-4">
@@ -184,14 +202,18 @@ export function SpecificationsTable({ products }: SpecificationsTableProps) {
                   </TableCell>
                 ))}
               </TableRow>
-
-              {/* Description Row */}
+              {/* Description Row - Last row with bottom rounded corners */}
               <TableRow className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                <TableCell className="font-medium bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-100 sticky left-0 z-10 border-r border-gray-200 dark:border-gray-700 p-4">
+                <TableCell className="font-medium bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-100 sticky left-0 z-10 border-r border-gray-200 dark:border-gray-700 p-4 rounded-bl-xl">
                   Description
                 </TableCell>
-                {products.map((product) => (
-                  <TableCell key={product.id} className="text-center p-4">
+                {products.map((product, index) => (
+                  <TableCell
+                    key={product.id}
+                    className={`text-center p-4 ${
+                      index === products.length - 1 ? "rounded-br-xl" : ""
+                    }`}
+                  >
                     <div className="text-sm text-gray-600 dark:text-gray-400 max-w-[180px] mx-auto">
                       {product.description || "No description available"}
                     </div>

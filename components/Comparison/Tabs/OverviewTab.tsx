@@ -3,6 +3,7 @@
 import type { Product } from "@/type/product";
 import { Package } from "lucide-react";
 import { ComparisonProductCard } from "@/components/Comparison/ComparisonProductCard";
+import { cn } from "@/lib/utils";
 
 interface OverviewTabsProps {
   comparedProducts: Product[];
@@ -68,7 +69,15 @@ export function OverviewTabs({
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
           Product Comparison
         </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+        <div
+          className={cn(
+            "grid gap-6 mb-8",
+            comparedProducts.length === 2 && "grid-cols-2",
+            comparedProducts.length === 3 && "grid-cols-3",
+            comparedProducts.length >= 4 && "grid-cols-4"
+          )}
+        >
+          {" "}
           {comparedProducts.map((product, index) => (
             <div key={`${product.id}-${index}`} className="w-full min-w-0">
               <ComparisonProductCard

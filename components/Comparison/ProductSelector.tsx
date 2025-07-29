@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/";
 import type { Product } from "@/type/product";
 import Image from "next/image";
-import { ChevronDown, Shuffle } from "lucide-react";
+import { Shuffle } from "lucide-react";
 
 interface ProductSelectorProps {
   products: Product[];
@@ -62,6 +62,7 @@ export function ProductSelector({
                         product.image_url ||
                         "/placeholder.svg" ||
                         "/placeholder.svg" ||
+                        "/placeholder.svg" ||
                         "/placeholder.svg"
                       }
                       alt={product.name}
@@ -76,7 +77,6 @@ export function ProductSelector({
                     </div>
                   </div>
                 </div>
-                <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
               </SelectTrigger>
 
               <SelectContent className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg min-w-[280px] max-h-[300px]">
@@ -92,6 +92,7 @@ export function ProductSelector({
                           src={
                             availableProduct.product_images?.[0]?.image_url ||
                             availableProduct.image_url ||
+                            "/placeholder.svg" ||
                             "/placeholder.svg" ||
                             "/placeholder.svg" ||
                             "/placeholder.svg"
