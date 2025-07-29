@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import {
   Card,
@@ -13,18 +13,29 @@ import {
   Textarea,
   Skeleton,
   Badge,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Edit, Trash2 } from "lucide-react";
 import { Faq } from "@/type/faqs";
 
 export default function FaqViewPage() {
   const params = useParams();
+  const router = useRouter();
   const id = params?.id as string;
   const [faq, setFaq] = useState<Faq | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -42,14 +53,82 @@ export default function FaqViewPage() {
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
-      <BreadcrumbNav
-        customItems={[
-          { label: "Dashboard", href: "/staff/dashboard" },
-          { label: "FAQs", href: "/staff/faqs" },
-          { label: faq?.question || "FAQ Details" },
-        ]}
-      />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col gap-2">
+          <BreadcrumbNav
+            customItems={[
+              { label: "Dashboard", href: "/staff/dashboard" },
+              { label: "FAQs", href: "/staff/faqs" },
+              { label: faq?.question || "FAQ Details" },
+            ]}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push(`/staff/faqs/${faq?.id}/edit`)}
+            className="flex items-center gap-2"
+          >
+            <Edit className="h-4 w-4" />
+            Edit
+          </Button>
 
+          <Dialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+          >
+            <DialogTrigger asChild>
+              <Button
+                variant="destructive"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Confirm Deletion</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to delete this FAQ? This action cannot
+                  be undone.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsDeleteDialogOpen(false)}
+                  disabled={isDeleting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={async () => {
+                    setIsDeleting(true);
+                    const { error } = await supabase
+                      .from("faq")
+                      .delete()
+                      .eq("id", id);
+                    setIsDeleting(false);
+                    setIsDeleteDialogOpen(false);
+                    if (!error) {
+                      router.push("/staff/faqs");
+                    } else {
+                      alert("Failed to delete FAQ: " + error.message);
+                    }
+                  }}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? "Deleting..." : "Delete FAQ"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
       <div className="flex items-center justify-between">
         <TypographyH2 className="border-none pb-0">FAQ Details</TypographyH2>
         <Link href="/staff/faqs">
