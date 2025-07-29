@@ -26,6 +26,7 @@ export default function CompareProductsContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [comparedProducts, setComparedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("overview"); // Add state for active tab
 
   useEffect(() => {
     async function fetchProducts() {
@@ -107,7 +108,7 @@ export default function CompareProductsContent() {
 
   return (
     <div className="min-h-screen w-full overflow-x-hidden">
-      <div className="container mx-auto px-4 py-6 max-w-7xl">
+      <div className="container mx-auto px-4 py-6">
         <TypographyH1 className="mb-8 mt-14">COMPARE OUR PRODUCTS</TypographyH1>
 
         {loading ? (
@@ -155,8 +156,12 @@ export default function CompareProductsContent() {
               onProductChange={changeProductAtIndex}
             />
 
-            {/* Tabs */}
-            <Tabs defaultValue="overview" className="w-full">
+            {/* Tabs with controlled state */}
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
               <TabsList className="mb-6 w-full max-w-md">
                 <TabsTrigger value="overview" className="flex-1">
                   Overview
