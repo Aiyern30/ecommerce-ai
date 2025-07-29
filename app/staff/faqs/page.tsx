@@ -19,6 +19,7 @@ import {
   AccordionItem,
   AccordionTrigger,
   AccordionContent,
+  Badge,
 } from "@/components/ui/";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import { Faq } from "@/type/faqs";
@@ -48,7 +49,7 @@ function FaqTableSkeleton() {
             <TableRow>
               <TableHead className="min-w-[150px]">Question</TableHead>
               <TableHead className="min-w-[250px]">Answer</TableHead>
-              <TableHead className="min-w-[100px]">Created</TableHead>
+              <TableHead className="min-w-[100px]">Status</TableHead>
               <TableHead className="text-right min-w-[80px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -175,15 +176,19 @@ export default function FaqsPage() {
               </AccordionTrigger>
               <AccordionContent className="bg-background rounded-b-lg py-0">
                 <div className="overflow-x-auto">
-                  <Table>
+                  <Table className="table-fixed">
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="min-w-[180px]">
+                        <TableHead className="min-w-[200px] text-left">
                           Question
                         </TableHead>
-                        <TableHead className="min-w-[300px]">Answer</TableHead>
-                        <TableHead className="min-w-[120px]">Created</TableHead>
-                        <TableHead className="text-right min-w-[80px]">
+                        <TableHead className="min-w-[200px] text-left">
+                          Answer
+                        </TableHead>
+                        <TableHead className="w-[110px] min-w-[90px] max-w-[120px] text-left">
+                          Status
+                        </TableHead>
+                        <TableHead className="w-[90px] min-w-[80px] max-w-[100px] text-left">
                           Actions
                         </TableHead>
                       </TableRow>
@@ -196,23 +201,36 @@ export default function FaqsPage() {
                           className="cursor-pointer hover:bg-muted/50 transition-colors"
                         >
                           <TableCell
-                            className="font-medium max-w-xs truncate"
+                            className="min-w-[200px] font-medium truncate"
                             title={faq.question}
                           >
                             {faq.question}
                           </TableCell>
                           <TableCell
-                            className="max-w-md truncate text-gray-600 dark:text-gray-300"
+                            className="min-w-[200px] truncate text-gray-600 dark:text-gray-300"
                             title={faq.answer}
                           >
                             {faq.answer}
                           </TableCell>
-                          <TableCell>
-                            {faq.created_at
-                              ? new Date(faq.created_at).toLocaleDateString()
-                              : "-"}
+                          <TableCell className="w-[110px] min-w-[90px] max-w-[120px]">
+                            <Badge
+                              variant={
+                                faq.status === "published"
+                                  ? "default"
+                                  : "secondary"
+                              }
+                              className={
+                                faq.status === "published"
+                                  ? "bg-green-100 text-green-800 border-green-200"
+                                  : "bg-yellow-100 text-yellow-800 border-yellow-200"
+                              }
+                            >
+                              {faq.status === "published"
+                                ? "Published"
+                                : "Draft"}
+                            </Badge>
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="w-[90px] min-w-[80px] max-w-[100px]">
                             <Button
                               variant="outline"
                               size="sm"
