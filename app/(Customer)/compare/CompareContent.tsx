@@ -10,13 +10,10 @@ import {
   TabsTrigger,
   Button,
 } from "@/components/ui/";
-import { ComparisonHeader } from "@/components/Comparison/ComparisonHeader";
-import { ComparisonSummary } from "@/components/Comparison/ComparisonSummary";
 import { PricingTab } from "@/components/Comparison/Tabs/PricingTab";
 import type { Product } from "@/type/product";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { supabase } from "@/lib/supabase/client";
-import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { ComparisonProductCard } from "@/components/Comparison/ComparisonProductCard";
 import { OverviewTabs } from "@/components/Comparison/Tabs/OverviewTab";
@@ -27,7 +24,6 @@ export default function CompareProductsContent() {
   const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [comparedProducts, setComparedProducts] = useState<Product[]>([]);
-  const [showSummary, setShowSummary] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -125,18 +121,6 @@ export default function CompareProductsContent() {
         <BreadcrumbNav showFilterButton={false} />
       </div>
 
-      {/* Back Button */}
-      <div className="mb-4">
-        <Button
-          variant="outline"
-          onClick={() => router.push("/products")}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Product Selection
-        </Button>
-      </div>
-
       {loading ? (
         <div className="space-y-4">
           <Skeleton className="h-6 w-40" />
@@ -155,15 +139,26 @@ export default function CompareProductsContent() {
           <div className="max-w-md mx-auto">
             <div className="mb-6">
               <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                <svg
+                  className="w-12 h-12 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  />
                 </svg>
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                 No Products to Compare
               </h3>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
-                You haven&apos;t selected any products to compare yet. Browse our products and select items to start comparing.
+                You haven&apos;t selected any products to compare yet. Browse
+                our products and select items to start comparing.
               </p>
               <Button
                 onClick={() => router.push("/products")}
@@ -176,15 +171,6 @@ export default function CompareProductsContent() {
         </div>
       ) : (
         <>
-          <ComparisonHeader
-            itemCount={comparedProducts.length.toString() as "2" | "3" | "4"}
-            setItemCount={() => {}}
-            showSummary={showSummary}
-            setShowSummary={setShowSummary}
-          />
-
-          {showSummary && <ComparisonSummary products={comparedProducts} />}
-
           <Tabs defaultValue="overview" className="w-full">
             <TabsList className="mb-6">
               <TabsTrigger value="overview">Overview</TabsTrigger>
