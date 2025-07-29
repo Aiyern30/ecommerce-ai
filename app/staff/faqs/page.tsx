@@ -144,28 +144,38 @@ export default function FaqsPage() {
           No matching FAQs found.
         </div>
       ) : (
-        <Accordion type="multiple" className="w-full">
+        <Accordion
+          type="multiple"
+          className="w-full space-y-2"
+          defaultValue={Object.keys(faqsBySection)}
+        >
           {Object.entries(faqsBySection).map(([section, faqsInSection]) => (
             <AccordionItem
               key={section}
               value={section}
-              className="border rounded-md mb-2"
+              className="border rounded-lg bg-card shadow-sm"
             >
-              <AccordionTrigger className="px-4 py-2 text-lg font-semibold bg-gray-50 dark:bg-gray-900">
-                {section}{" "}
-                <span className="ml-2 text-xs text-gray-500">
-                  ({faqsInSection.length})
-                </span>
+              <AccordionTrigger className="px-4 py-3 text-base sm:text-lg font-semibold bg-gray-50 dark:bg-gray-900 rounded-t-lg">
+                <div className="flex items-center justify-between w-full">
+                  <span>{section}</span>
+                  <span className="ml-2 text-xs text-gray-500">
+                    ({faqsInSection.length})
+                  </span>
+                </div>
               </AccordionTrigger>
-              <AccordionContent className="bg-white dark:bg-gray-950">
+              <AccordionContent className="bg-background rounded-b-lg py-0">
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Question</TableHead>
-                        <TableHead>Answer</TableHead>
-                        <TableHead>Created</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead className="min-w-[180px]">
+                          Question
+                        </TableHead>
+                        <TableHead className="min-w-[300px]">Answer</TableHead>
+                        <TableHead className="min-w-[120px]">Created</TableHead>
+                        <TableHead className="text-right min-w-[80px]">
+                          Actions
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -173,20 +183,19 @@ export default function FaqsPage() {
                         <TableRow
                           key={faq.id}
                           onClick={() => router.push(`/staff/faqs/${faq.id}`)}
-                          className="cursor-pointer"
+                          className="cursor-pointer hover:bg-muted/50 transition-colors"
                         >
-                          <TableCell className="font-medium max-w-xs">
-                            <div className="truncate" title={faq.question}>
-                              {faq.question}
-                            </div>
+                          <TableCell
+                            className="font-medium max-w-xs truncate"
+                            title={faq.question}
+                          >
+                            {faq.question}
                           </TableCell>
-                          <TableCell className="max-w-xs">
-                            <div
-                              className="truncate text-gray-600"
-                              title={faq.answer}
-                            >
-                              {faq.answer}
-                            </div>
+                          <TableCell
+                            className="max-w-md truncate text-gray-600 dark:text-gray-300"
+                            title={faq.answer}
+                          >
+                            {faq.answer}
                           </TableCell>
                           <TableCell>
                             {faq.created_at
@@ -195,7 +204,7 @@ export default function FaqsPage() {
                           </TableCell>
                           <TableCell className="text-right">
                             <Button
-                              variant="default"
+                              variant="outline"
                               size="sm"
                               onClick={(e) => {
                                 e.stopPropagation();
