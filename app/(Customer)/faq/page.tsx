@@ -14,7 +14,7 @@ import {
   Input,
   Button,
 } from "@/components/ui/";
-import { BreadcrumbNav } from "@/components/BreadcrumbNav";
+import { TypographyH1, TypographyP } from "@/components/ui/Typography";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -71,17 +71,14 @@ export default function ContactPage() {
   ];
 
   return (
-    <div className="container mx-auto mb-4">
-      <div className="p-4 container mx-auto">
-        <BreadcrumbNav showFilterButton={false} />
-      </div>
-      <div className="text-center mb-16">
-        <h1 className="text-4xl font-bold mb-4">Frequently Asked Questions</h1>
-        <p className="text-gray-600 max-w-2xl mx-auto">
-          Find answers to common questions about our services, policies, and
-          more. If you need further help, feel free to contact us
-        </p>
-      </div>
+    <div className="container mx-auto px-4 py-6">
+      <TypographyH1 className="mb-8 mt-14">
+        Frequently Asked Questions
+      </TypographyH1>
+      <TypographyP className="text-gray-600 max-w-2xl">
+        Find answers to common questions about our services, policies, and more.
+        If you need further help, feel free to contact us
+      </TypographyP>
 
       {/* Main Content */}
       <div className="grid md:grid-cols-2 gap-12 mb-16">
