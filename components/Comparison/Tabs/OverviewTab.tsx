@@ -4,6 +4,7 @@ import type { Product } from "@/type/product";
 import { Package } from "lucide-react";
 import { ComparisonProductCard } from "@/components/Comparison/ComparisonProductCard";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface OverviewTabsProps {
   comparedProducts: Product[];
@@ -14,6 +15,8 @@ export function OverviewTabs({
   comparedProducts,
   onRemove,
 }: OverviewTabsProps) {
+  const isMobile = useIsMobile();
+
   return (
     <div className="space-y-6">
       {/* Comparison Summary */}
@@ -72,12 +75,12 @@ export function OverviewTabs({
         <div
           className={cn(
             "grid gap-6 mb-8",
-            comparedProducts.length === 2 && "grid-cols-2",
-            comparedProducts.length === 3 && "grid-cols-3",
-            comparedProducts.length >= 4 && "grid-cols-4"
+            isMobile && "grid-cols-1",
+            !isMobile && comparedProducts.length === 2 && "grid-cols-2",
+            !isMobile && comparedProducts.length === 3 && "grid-cols-3",
+            !isMobile && comparedProducts.length >= 4 && "grid-cols-4"
           )}
         >
-          {" "}
           {comparedProducts.map((product, index) => (
             <div key={`${product.id}-${index}`} className="w-full min-w-0">
               <ComparisonProductCard
