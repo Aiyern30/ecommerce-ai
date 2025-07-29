@@ -10,7 +10,6 @@ import {
   TabsTrigger,
   Button,
 } from "@/components/ui/";
-import { PricingTab } from "@/components/Comparison/Tabs/PricingTab";
 import type { Product } from "@/type/product";
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "sonner";
@@ -169,12 +168,6 @@ export default function CompareProductsContent() {
                 <TabsTrigger value="specifications" className="flex-1">
                   Specifications
                 </TabsTrigger>
-                <TabsTrigger value="features" className="flex-1">
-                  Features
-                </TabsTrigger>
-                <TabsTrigger value="pricing" className="flex-1">
-                  Pricing
-                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview" className="mt-0">
@@ -187,25 +180,6 @@ export default function CompareProductsContent() {
               <TabsContent value="specifications" className="mt-0">
                 <div className="w-full overflow-x-auto">
                   <SpecificationsTable products={comparedProducts} />
-                </div>
-              </TabsContent>
-
-              <TabsContent value="features" className="mt-0">
-                <div className="text-center py-8">
-                  <p className="text-gray-500">
-                    Features comparison coming soon...
-                  </p>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="pricing" className="mt-0">
-                <div className="w-full overflow-x-auto">
-                  <PricingTab
-                    products={comparedProducts}
-                    itemCount={
-                      comparedProducts.length.toString() as "2" | "3" | "4"
-                    }
-                  />
                 </div>
               </TabsContent>
             </Tabs>
