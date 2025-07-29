@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import {
@@ -28,11 +28,15 @@ import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-// Define Zod schema
+// Import Combobox (assuming you have one; you can also use shadcn/ui's Combobox or react-select)
+import { Combobox } from "@/components/ui/Combobox";
+
+// Define schema
 const faqSchema = z.object({
   question: z.string().min(1, "Question is required"),
   answer: z.string().min(1, "Answer is required"),
   status: z.enum(["draft", "published"]).optional(),
+  section: z.string().min(1, "Section name is required"), // we'll handle section separately
 });
 
 type FaqFormData = z.infer<typeof faqSchema>;
@@ -40,6 +44,7 @@ type FaqFormData = z.infer<typeof faqSchema>;
 export default function NewFaqPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sections, setSections] = useState<string[]>([]);
 
   const form = useForm<FaqFormData>({
     resolver: zodResolver(faqSchema),
@@ -47,26 +52,84 @@ export default function NewFaqPage() {
       question: "",
       answer: "",
       status: "draft",
+      section: "",
     },
   });
+
+  // Fetch sections on mount
+  useEffect(() => {
+    const fetchSections = async () => {
+      const { data, error } = await supabase
+        .from("faq_sections")
+        .select("name")
+        .order("created_at", { ascending: false });
+      if (!error && data) {
+        setSections(data.map((s) => s.name));
+      }
+    };
+    fetchSections();
+  }, []);
 
   const onSubmit = async (data: FaqFormData) => {
     setIsSubmitting(true);
 
-    const { error } = await supabase.from("faqs").insert(data);
+    try {
+      let sectionId: string | null = null;
 
-    if (error) {
-      toast.error("Failed to save FAQ: " + error.message);
-    } else {
-      toast.success(
-        data.status === "draft"
-          ? "Draft saved successfully."
-          : "FAQ published successfully."
+      const existing = sections.find(
+        (s) => s.toLowerCase() === data.section.toLowerCase()
       );
-      router.push("/staff/faqs");
-    }
 
-    setIsSubmitting(false);
+      if (existing) {
+        const { data: sectionData, error } = await supabase
+          .from("faq_sections")
+          .select("id")
+          .eq("name", existing)
+          .single();
+        if (error || !sectionData) {
+          toast.error("Failed to find selected section.");
+          setIsSubmitting(false);
+          return;
+        }
+        sectionId = sectionData.id;
+      } else {
+        const { data: newSection, error } = await supabase
+          .from("faq_sections")
+          .insert({ name: data.section })
+          .select()
+          .single();
+        if (error || !newSection) {
+          toast.error("Failed to create new section: " + error?.message);
+          setIsSubmitting(false);
+          return;
+        }
+        sectionId = newSection.id;
+        setSections((prev) => [newSection.name, ...prev]);
+      }
+
+      const { error: insertError } = await supabase.from("faq").insert({
+        question: data.question,
+        answer: data.answer,
+        section_id: sectionId,
+        status: data.status,
+      });
+
+      if (insertError) {
+        toast.error("Failed to save FAQ: " + insertError.message);
+      } else {
+        toast.success(
+          data.status === "draft"
+            ? "Draft saved successfully."
+            : "FAQ published successfully."
+        );
+        router.push("/staff/faqs");
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Unexpected error occurred.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSaveDraft = () => {
@@ -105,7 +168,7 @@ export default function NewFaqPage() {
               <CardTitle>FAQ Details</CardTitle>
               <CardDescription>
                 <TypographyP>
-                  Fill in the question and answer for this FAQ item.
+                  Fill in the question, answer, and section.
                 </TypographyP>
               </CardDescription>
             </CardHeader>
@@ -146,6 +209,26 @@ export default function NewFaqPage() {
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="section"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Section *</FormLabel>
+                    <FormControl>
+                      {/* Replace this with your combobox */}
+                      <Combobox
+                        options={sections}
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="Select or add new section..."
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </CardContent>
           </Card>
 
@@ -164,7 +247,7 @@ export default function NewFaqPage() {
               onClick={handlePublish}
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Saving..." : "Publish FAQ"}
+              {isSubmitting ? "Publishing..." : "Publish FAQ"}
             </Button>
           </div>
         </form>

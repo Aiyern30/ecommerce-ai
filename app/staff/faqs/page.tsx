@@ -15,6 +15,10 @@ import {
   TableHead,
   TableCell,
   Skeleton,
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
 } from "@/components/ui/";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import { Faq } from "@/type/faqs";
@@ -76,14 +80,13 @@ export default function FaqsPage() {
   const [faqs, setFaqs] = useState<Faq[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
 
   const fetchFaqs = useCallback(async () => {
     setLoading(true);
+    // Join section name from faq_sections
     const { data, error } = await supabase
-      .from("faqs")
-      .select("*")
+      .from("faq")
+      .select("*, section:faq_sections(name)")
       .order("created_at", { ascending: false });
     if (!error) {
       setFaqs(data || []);
@@ -97,6 +100,7 @@ export default function FaqsPage() {
     fetchFaqs();
   }, [fetchFaqs]);
 
+  // Group FAQs by section name
   const filteredFaqs = faqs.filter((faq) => {
     if (!search) return true;
     return (
@@ -105,15 +109,12 @@ export default function FaqsPage() {
     );
   });
 
-  const totalPages = Math.ceil(filteredFaqs.length / itemsPerPage);
-  const currentPageData = filteredFaqs.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+  const faqsBySection: { [section: string]: Faq[] } = {};
+  filteredFaqs.forEach((faq) => {
+    const section = faq.section?.name || "Uncategorized";
+    if (!faqsBySection[section]) faqsBySection[section] = [];
+    faqsBySection[section].push(faq);
+  });
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
@@ -130,7 +131,6 @@ export default function FaqsPage() {
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
-              setCurrentPage(1);
             }}
           />
         </div>
@@ -144,78 +144,76 @@ export default function FaqsPage() {
           No matching FAQs found.
         </div>
       ) : (
-        <div className="w-full overflow-x-auto rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Question</TableHead>
-                <TableHead>Answer</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {currentPageData.map((faq) => (
-                <TableRow
-                  key={faq.id}
-                  onClick={() => router.push(`/staff/faqs/${faq.id}`)}
-                  className="cursor-pointer"
-                >
-                  <TableCell className="font-medium max-w-xs">
-                    <div className="truncate" title={faq.question}>
-                      {faq.question}
-                    </div>
-                  </TableCell>
-                  <TableCell className="max-w-xs">
-                    <div className="truncate text-gray-600" title={faq.answer}>
-                      {faq.answer}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {faq.created_at
-                      ? new Date(faq.created_at).toLocaleDateString()
-                      : "-"}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(`/staff/faqs/${faq.id}/edit`);
-                      }}
-                    >
-                      Edit
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-end space-x-2 py-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1 || loading}
-          >
-            Previous
-          </Button>
-          <span className="text-sm text-gray-700">
-            Page {currentPage} of {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages || loading}
-          >
-            Next
-          </Button>
-        </div>
+        <Accordion type="multiple" className="w-full">
+          {Object.entries(faqsBySection).map(([section, faqsInSection]) => (
+            <AccordionItem
+              key={section}
+              value={section}
+              className="border rounded-md mb-2"
+            >
+              <AccordionTrigger className="px-4 py-2 text-lg font-semibold bg-gray-50 dark:bg-gray-900">
+                {section}{" "}
+                <span className="ml-2 text-xs text-gray-500">
+                  ({faqsInSection.length})
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="bg-white dark:bg-gray-950">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Question</TableHead>
+                        <TableHead>Answer</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {faqsInSection.map((faq) => (
+                        <TableRow
+                          key={faq.id}
+                          onClick={() => router.push(`/staff/faqs/${faq.id}`)}
+                          className="cursor-pointer"
+                        >
+                          <TableCell className="font-medium max-w-xs">
+                            <div className="truncate" title={faq.question}>
+                              {faq.question}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-xs">
+                            <div
+                              className="truncate text-gray-600"
+                              title={faq.answer}
+                            >
+                              {faq.answer}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {faq.created_at
+                              ? new Date(faq.created_at).toLocaleDateString()
+                              : "-"}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/staff/faqs/${faq.id}/edit`);
+                              }}
+                            >
+                              Edit
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
       )}
     </div>
   );
