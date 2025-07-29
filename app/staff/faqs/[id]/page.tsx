@@ -24,8 +24,7 @@ import {
 } from "@/components/ui/";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
-import Link from "next/link";
-import { ArrowLeft, Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { Faq } from "@/type/faqs";
 
 export default function FaqViewPage() {
@@ -131,12 +130,6 @@ export default function FaqViewPage() {
       </div>
       <div className="flex items-center justify-between">
         <TypographyH2 className="border-none pb-0">FAQ Details</TypographyH2>
-        <Link href="/staff/faqs">
-          <button className="inline-flex items-center px-3 py-2 border rounded text-sm font-medium bg-background hover:bg-muted transition-colors">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to FAQs
-          </button>
-        </Link>
       </div>
 
       <Card>
