@@ -1,8 +1,8 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
-import { Plus, Search, FileText } from "lucide-react";
+import { Search, FileText } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import {
@@ -25,16 +25,11 @@ function EmptyFaqsState() {
       <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
         <FileText className="w-12 h-12 text-gray-400" />
       </div>
-      <TypographyH2 className="mb-2">No FAQs found</TypographyH2>
+      <TypographyH2 className="mb-2">No FAQs available</TypographyH2>
       <TypographyP className="text-muted-foreground text-center mb-6 max-w-sm">
-        Get started by creating your first FAQ to help your users.
+        We haven't published any frequently asked questions yet. Please check
+        back later.
       </TypographyP>
-      <Link href="/staff/faqs/new">
-        <Button className="flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Create Your First FAQ
-        </Button>
-      </Link>
     </div>
   );
 }
@@ -124,14 +119,6 @@ export default function FaqsPage() {
     <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex items-center justify-between">
         <TypographyH2 className="border-none pb-0">FAQs</TypographyH2>
-        <div className="flex items-center gap-2">
-          <Link href="/staff/faqs/new">
-            <Button size="sm">
-              <Plus className="mr-2 h-4 w-4" />
-              Add FAQ
-            </Button>
-          </Link>
-        </div>
       </div>
       <div className="flex flex-col sm:flex-row flex-wrap gap-2">
         <div className="relative flex-1 min-w-[200px]">
