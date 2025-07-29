@@ -31,7 +31,7 @@ export function ComparisonProductCard({
       )}
 
       {/* Full-width Image - completely flush to card edges */}
-      <div className="relative w-full h-48 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 overflow-hidden">
+      <div className="relative w-full h-96 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 overflow-hidden">
         <Image
           src={
             product.product_images?.[0]?.image_url ||
@@ -41,7 +41,7 @@ export function ComparisonProductCard({
           }
           alt={product.name}
           fill
-          className="object-contain p-4 hover:scale-105 transition-transform duration-300"
+          className="object-cover hover:scale-105 transition-transform duration-300"
         />
 
         {/* Grade badge overlay */}
