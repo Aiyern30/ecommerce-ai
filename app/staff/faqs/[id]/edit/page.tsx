@@ -28,6 +28,7 @@ import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Combobox } from "@/components/ui/Combobox";
+import { Faq } from "@/type/faqs";
 
 const faqSchema = z.object({
   question: z.string().min(1, "Question is required"),
@@ -45,6 +46,7 @@ export default function EditFaqPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sections, setSections] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [faqData, setFaqData] = useState<Faq | null>(null); // Add state to track FAQ data
 
   const form = useForm<FaqFormData>({
     resolver: zodResolver(faqSchema),
@@ -60,8 +62,21 @@ export default function EditFaqPage() {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const [{ data: sectionData }, { data: faqData, error: faqError }] =
-        await Promise.all([
+
+      // Add validation for ID
+      if (!id) {
+        toast.error("No FAQ ID provided");
+        setLoading(false);
+        return;
+      }
+
+      console.log("Fetching FAQ with ID:", id); // Debug log
+
+      try {
+        const [
+          { data: sectionData, error: sectionError },
+          { data: faqData, error: faqError },
+        ] = await Promise.all([
           supabase
             .from("faq_sections")
             .select("name")
@@ -72,78 +87,177 @@ export default function EditFaqPage() {
             .eq("id", id)
             .single(),
         ]);
-      if (sectionData) setSections(sectionData.map((s) => s.name));
-      if (faqData) {
-        form.reset({
-          question: faqData.question || "",
-          answer: faqData.answer || "",
-          status: faqData.status || "draft",
-          section: faqData.faq_sections?.name || "",
-        });
-      } else if (faqError) {
-        toast.error("Failed to load FAQ: " + faqError.message);
+
+        // Better error handling for sections
+        if (sectionError) {
+          console.error("Section fetch error:", sectionError);
+          toast.error("Failed to load sections: " + sectionError.message);
+        } else if (sectionData) {
+          setSections(sectionData.map((s) => s.name));
+          console.log(
+            "Loaded sections:",
+            sectionData.map((s) => s.name)
+          ); // Debug log
+        }
+
+        // Better error handling for FAQ data
+        if (faqError) {
+          console.error("FAQ fetch error:", faqError);
+          toast.error("Failed to load FAQ: " + faqError.message);
+          // Don't return early, still set loading to false
+        } else if (faqData) {
+          console.log("Loaded FAQ data:", faqData); // Debug log
+          setFaqData(faqData); // Store the original data
+
+          form.reset({
+            question: faqData.question || "",
+            answer: faqData.answer || "",
+            status: (faqData.status as "draft" | "published") || "draft",
+            section: faqData.faq_sections?.name || "",
+          });
+
+          console.log("Form reset with:", {
+            question: faqData.question || "",
+            answer: faqData.answer || "",
+            status: faqData.status || "draft",
+            section: faqData.faq_sections?.name || "",
+          }); // Debug log
+        } else {
+          toast.error("FAQ not found");
+        }
+      } catch (error) {
+        console.error("Unexpected error:", error);
+        toast.error("Failed to load data");
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
-    if (id) fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+
+    if (id) {
+      fetchData();
+    } else {
+      setLoading(false);
+    }
+  }, [id, form]);
 
   const onSubmit = async (data: FaqFormData) => {
+    console.log("Submitting form with data:", data); // Debug log
+
     setIsSubmitting(true);
     try {
+      // First, verify the FAQ still exists
+      const { data: existingFaq, error: verifyError } = await supabase
+        .from("faq")
+        .select("id")
+        .eq("id", id)
+        .single();
+
+      if (verifyError || !existingFaq) {
+        console.error("FAQ verification failed:", verifyError);
+        toast.error("FAQ not found. It may have been deleted.");
+        router.push("/staff/faqs");
+        return;
+      }
+
+      console.log("FAQ exists, proceeding with update for ID:", id);
       let sectionId: string | null = null;
+
+      // Find or create section
       const existing = sections.find(
         (s) => s.toLowerCase() === data.section.toLowerCase()
       );
+
       if (existing) {
+        console.log("Using existing section:", existing); // Debug log
         const { data: sectionData, error } = await supabase
           .from("faq_sections")
           .select("id")
           .eq("name", existing)
           .single();
-        if (error || !sectionData) {
-          toast.error("Failed to find selected section.");
-          setIsSubmitting(false);
+
+        if (error) {
+          console.error("Section lookup error:", error);
+          toast.error("Failed to find selected section: " + error.message);
           return;
         }
+
+        if (!sectionData) {
+          toast.error("Selected section not found.");
+          return;
+        }
+
         sectionId = sectionData.id;
       } else {
+        console.log("Creating new section:", data.section); // Debug log
         const { data: newSection, error } = await supabase
           .from("faq_sections")
           .insert({ name: data.section })
           .select()
           .single();
-        if (error || !newSection) {
-          toast.error("Failed to create new section: " + error?.message);
-          setIsSubmitting(false);
+
+        if (error) {
+          console.error("Section creation error:", error);
+          toast.error("Failed to create new section: " + error.message);
           return;
         }
+
+        if (!newSection) {
+          toast.error("Failed to create new section.");
+          return;
+        }
+
         sectionId = newSection.id;
         setSections((prev) => [newSection.name, ...prev]);
       }
-      const { error: updateError } = await supabase
+
+      console.log("Using section ID:", sectionId); // Debug log
+
+      // Update FAQ
+      const updateData = {
+        question: data.question,
+        answer: data.answer,
+        section_id: sectionId,
+        status: data.status,
+        updated_at: new Date().toISOString(), // Explicitly set updated_at
+      };
+
+      console.log("Updating FAQ with:", updateData); // Debug log
+      console.log("Updating FAQ with ID:", id); // Debug the ID being used
+
+      const { data: updatedFaq, error: updateError } = await supabase
         .from("faq")
-        .update({
-          question: data.question,
-          answer: data.answer,
-          section_id: sectionId,
-          status: data.status,
-        })
-        .eq("id", id);
+        .update(updateData)
+        .eq("id", id)
+        .select(); // Add select to get updated data
 
       if (updateError) {
+        console.error("FAQ update error:", updateError);
         toast.error("Failed to update FAQ: " + updateError.message);
-      } else {
-        toast.success(
-          data.status === "draft"
-            ? "Draft updated successfully."
-            : "FAQ updated and published successfully."
-        );
-        router.push("/staff/faqs");
+        return;
       }
+
+      console.log("FAQ updated successfully:", updatedFaq); // Debug log
+
+      // Check if any rows were actually updated
+      if (!updatedFaq || updatedFaq.length === 0) {
+        console.error(
+          "No FAQ rows were updated. This usually means the ID doesn't exist."
+        );
+        toast.error(
+          "FAQ not found or could not be updated. Please check if the FAQ still exists."
+        );
+        return;
+      }
+
+      toast.success(
+        data.status === "draft"
+          ? "Draft updated successfully."
+          : "FAQ updated and published successfully."
+      );
+
+      router.push("/staff/faqs");
     } catch (e) {
-      console.error(e);
+      console.error("Unexpected error during submission:", e);
       toast.error("Unexpected error occurred.");
     } finally {
       setIsSubmitting(false);
@@ -159,6 +273,50 @@ export default function EditFaqPage() {
     form.setValue("status", "published");
     form.handleSubmit(onSubmit)();
   };
+
+  // Add loading state display
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-6 w-full">
+        <BreadcrumbNav
+          customItems={[
+            { label: "Dashboard", href: "/staff/dashboard" },
+            { label: "FAQs", href: "/staff/faqs" },
+            { label: "Edit FAQ" },
+          ]}
+        />
+        <div className="flex items-center justify-center p-8">
+          <p>Loading FAQ data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Add error state if FAQ not found
+  if (!faqData && !loading) {
+    return (
+      <div className="flex flex-col gap-6 w-full">
+        <BreadcrumbNav
+          customItems={[
+            { label: "Dashboard", href: "/staff/dashboard" },
+            { label: "FAQs", href: "/staff/faqs" },
+            { label: "Edit FAQ" },
+          ]}
+        />
+        <div className="flex items-center justify-center p-8">
+          <div className="text-center">
+            <p className="text-red-500 mb-4">FAQ not found</p>
+            <Link href="/staff/faqs">
+              <Button variant="outline">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to FAQs
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6 w-full">
@@ -178,6 +336,7 @@ export default function EditFaqPage() {
           </Button>
         </Link>
       </div>
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Card>
@@ -200,7 +359,7 @@ export default function EditFaqPage() {
                       <Input
                         placeholder="e.g. What is your return policy?"
                         {...field}
-                        disabled={loading}
+                        disabled={loading || isSubmitting}
                       />
                     </FormControl>
                     <FormMessage />
@@ -219,7 +378,7 @@ export default function EditFaqPage() {
                         placeholder="Provide a detailed answer..."
                         className="resize-none"
                         {...field}
-                        disabled={loading}
+                        disabled={loading || isSubmitting}
                       />
                     </FormControl>
                     <FormMessage />
