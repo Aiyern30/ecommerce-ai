@@ -70,7 +70,7 @@ export default function ProductListPage() {
   const clearSelection = () => setSelectedIds([]);
 
   return (
-    <section className="container mx-auto px-4 py-0">
+    <section className="container mx-auto px-4 pt-0 pb-4">
       <TypographyH1 className="my-8">ALL PRODUCTS</TypographyH1>
 
       <div className="mb-4 flex gap-2">

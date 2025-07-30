@@ -22,7 +22,7 @@ export default function PrivacyPolicy() {
   const router = useRouter();
 
   return (
-    <div className="container mx-auto px-4 py-0">
+    <div className="container mx-auto px-4 pt-0 pb-4">
       {/* Header Section */}
       <div className="text-center mb-8">
         <div className="flex items-center justify-center gap-2 mb-4">

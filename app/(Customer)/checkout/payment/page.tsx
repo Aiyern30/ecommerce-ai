@@ -110,7 +110,7 @@ export default function CheckoutPaymentPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-0">
+    <div className="container mx-auto px-4 pt-0 pb-4">
       <StripeProvider amount={totalAmount}>
         <div className="flex items-center justify-between">
           <TypographyH1 className="my-8">PAYMENT METHOD</TypographyH1>

@@ -70,7 +70,7 @@ export default function PublicProductDetailPage() {
     );
 
   return (
-    <div className="container mx-auto px-4 py-0 lg:px-6 lg:py-8">
+    <div className="container mx-auto px-4 pt-0 pb-4 lg:px-6 lg:py-8">
       <div className="flex flex-col gap-6 w-full max-w-full">
         <div className="flex flex-col gap-2">
           <BreadcrumbNav
