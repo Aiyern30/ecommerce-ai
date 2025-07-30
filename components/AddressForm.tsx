@@ -1,20 +1,27 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import type React from "react";
-
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useUser } from "@supabase/auth-helpers-react";
-import { Button, Input, Label } from "@/components/ui";
-import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui";
+import { Input } from "@/components/ui";
+import { Label } from "@/components/ui";
+import { Checkbox } from "@/components/ui";
+import {
+  AddressAutocomplete,
+  AddressAutocompleteRef,
+  AddressComponents,
+} from "@/components/GoogleMaps/AddressAutocomplete";
+import { MapDisplay } from "@/components/GoogleMaps/MapDisplay";
 import { toast } from "sonner";
-import { TypographyH4, TypographyP } from "@/components/ui/Typography";
+import { MapPin, Map } from "lucide-react";
 import type { Address } from "@/lib/user/address";
 
 interface AddressFormProps {
   onSuccess: (address: Address) => void;
   onCancel: () => void;
-  initialData?: Partial<Address>;
+  initialData?: Address;
   isEditing?: boolean;
 }
 
@@ -26,7 +33,9 @@ export function AddressForm({
 }: AddressFormProps) {
   const supabase = createClientComponentClient();
   const user = useUser();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const autocompleteRef = useRef<AddressAutocompleteRef>(null);
+
+  // Updated form structure to match your Address interface
   const [formData, setFormData] = useState({
     full_name: initialData?.full_name || "",
     phone: initialData?.phone || "",
@@ -39,52 +48,123 @@ export function AddressForm({
     is_default: initialData?.is_default || false,
   });
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value, type } = e.target;
+  const [selectedGoogleAddress, setSelectedGoogleAddress] = useState<
+    AddressComponents | undefined
+  >();
+  const [isAddressValid, setIsAddressValid] = useState(false);
+  const [showMap, setShowMap] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Convert form data to AddressComponents for map display
+  const formAddressForMap: AddressComponents | undefined =
+    selectedGoogleAddress?.lat && selectedGoogleAddress?.lng
+      ? selectedGoogleAddress
+      : undefined;
+
+  const handleAddressSelect = (address: AddressComponents) => {
+    setSelectedGoogleAddress(address);
+
+    // Auto-fill form fields from Google Places
     setFormData((prev) => ({
       ...prev,
-      [name]:
-        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      // Combine street_number and route for address_line1
+      address_line1:
+        [address.street_number, address.route]
+          .filter(Boolean)
+          .join(" ")
+          .trim() || prev.address_line1,
+
+      city: address.locality || prev.city,
+      state: address.administrative_area_level_1 || prev.state,
+      postal_code: address.postal_code || prev.postal_code,
+      country: address.country || prev.country,
+    }));
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+  const handleCheckboxChange = (checked: boolean) => {
+    setFormData((prev) => ({
+      ...prev,
+      is_default: checked,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
 
-    setIsSubmitting(true);
+    if (!user) {
+      toast.error("Please login to continue");
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
+      // Validation
+      if (!formData.full_name.trim()) {
+        toast.error("Please enter full name");
+        return;
+      }
+      if (!formData.phone.trim()) {
+        toast.error("Please enter phone number");
+        return;
+      }
+      if (!formData.address_line1.trim()) {
+        toast.error("Please enter address line 1");
+        return;
+      }
+      if (!formData.city.trim()) {
+        toast.error("Please enter city");
+        return;
+      }
+      if (!formData.state.trim()) {
+        toast.error("Please enter state");
+        return;
+      }
+      if (!formData.postal_code.trim()) {
+        toast.error("Please enter postal code");
+        return;
+      }
+
       const addressData = {
-        ...formData,
         user_id: user.id,
+        full_name: formData.full_name.trim(),
+        phone: formData.phone.trim(),
+        address_line1: formData.address_line1.trim(),
+        address_line2: formData.address_line2?.trim() || null,
+        city: formData.city.trim(),
+        state: formData.state.trim(),
+        postal_code: formData.postal_code.trim(),
+        country: formData.country,
+        is_default: formData.is_default,
       };
 
       let result;
-      if (isEditing && initialData?.id) {
-        const { data, error } = await supabase
+      if (isEditing && initialData) {
+        result = await supabase
           .from("addresses")
           .update(addressData)
           .eq("id", initialData.id)
           .eq("user_id", user.id)
           .select()
           .single();
-
-        result = { data, error };
       } else {
-        const { data, error } = await supabase
+        result = await supabase
           .from("addresses")
           .insert(addressData)
           .select()
           .single();
-
-        result = { data, error };
       }
 
       if (result.error) throw result.error;
 
-      // If this is set as default, update other addresses
+      // If this address is set as default, unset other default addresses
       if (formData.is_default) {
         await supabase
           .from("addresses")
@@ -94,179 +174,230 @@ export function AddressForm({
       }
 
       onSuccess(result.data);
-      toast.success(
-        isEditing
-          ? "Address updated successfully!"
-          : "Address added successfully!"
-      );
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving address:", error);
-      toast.error("Failed to save address. Please try again.");
+      toast.error(error.message || "Failed to save address");
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
+  };
+
+  const clearForm = () => {
+    setFormData({
+      full_name: "",
+      phone: "",
+      address_line1: "",
+      address_line2: "",
+      city: "",
+      state: "",
+      postal_code: "",
+      country: "Malaysia",
+      is_default: false,
+    });
+    setSelectedGoogleAddress(undefined);
+    setIsAddressValid(false);
+    autocompleteRef.current?.clearInput();
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Personal Information */}
-      <div className="space-y-4">
-        <TypographyH4>Personal Information</TypographyH4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="full_name">
-              Full Name <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="full_name"
-              name="full_name"
-              value={formData.full_name}
-              onChange={handleInputChange}
-              placeholder="Enter your full name"
-              required
+      {/* Google Places Autocomplete */}
+      <div className="space-y-2">
+        <Label htmlFor="google-address" className="text-sm font-medium">
+          Search Address with Google Maps
+        </Label>
+        <div className="flex gap-2">
+          <div className="flex-1">
+            <AddressAutocomplete
+              ref={autocompleteRef}
+              onAddressSelect={handleAddressSelect}
+              onValidationChange={setIsAddressValid}
+              placeholder="Type to search for your address..."
+              className="w-full"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="phone">
-              Phone Number <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="phone"
-              name="phone"
-              type="tel"
-              value={formData.phone}
-              onChange={handleInputChange}
-              placeholder="e.g., +60123456789"
-              required
-            />
-          </div>
+          {selectedGoogleAddress?.lat && selectedGoogleAddress?.lng ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowMap(!showMap)}
+              className="flex items-center gap-2"
+            >
+              <Map className="h-4 w-4" />
+              {showMap ? "Hide" : "Show"} Map
+            </Button>
+          ) : null}
         </div>
+        {isAddressValid && (
+          <p className="text-sm text-green-600">
+            ✓ Address found and coordinates saved
+          </p>
+        )}
       </div>
 
-      {/* Address Information */}
-      <div className="space-y-4">
-        <TypographyH4>Address Information</TypographyH4>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="address_line1">
-              Address Line 1 <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="address_line1"
-              name="address_line1"
-              value={formData.address_line1}
-              onChange={handleInputChange}
-              placeholder="Street address, building name, etc."
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="address_line2">Address Line 2 (Optional)</Label>
-            <Input
-              id="address_line2"
-              name="address_line2"
-              value={formData.address_line2}
-              onChange={handleInputChange}
-              placeholder="Apartment, suite, unit, etc."
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="city">
-                City <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="city"
-                name="city"
-                value={formData.city}
-                onChange={handleInputChange}
-                placeholder="City"
-                required
-              />
+      {/* Map Display */}
+      {showMap &&
+        formAddressForMap &&
+        formAddressForMap.lat &&
+        formAddressForMap.lng && (
+          <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
+            <div className="flex items-center gap-2 mb-3">
+              <MapPin className="h-4 w-4" />
+              <span className="text-sm font-medium">Address Location</span>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="state">
-                State <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="state"
-                name="state"
-                value={formData.state}
-                onChange={handleInputChange}
-                placeholder="State"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="postal_code">
-                Postal Code <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="postal_code"
-                name="postal_code"
-                value={formData.postal_code}
-                onChange={handleInputChange}
-                placeholder="12345"
-                required
-              />
-            </div>
+            <MapDisplay address={formAddressForMap} height="300px" zoom={16} />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="country">
-              Country <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="country"
-              name="country"
-              value={formData.country}
-              onChange={handleInputChange}
-              placeholder="Country"
-              required
-            />
-          </div>
+        )}
+
+      {/* Manual Address Fields */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="full_name">Full Name *</Label>
+          <Input
+            id="full_name"
+            name="full_name"
+            type="text"
+            value={formData.full_name}
+            onChange={handleInputChange}
+            placeholder="Full name"
+            required
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="phone">Phone Number *</Label>
+          <Input
+            id="phone"
+            name="phone"
+            type="tel"
+            value={formData.phone}
+            onChange={handleInputChange}
+            placeholder="+60123456789"
+            required
+          />
+        </div>
+
+        <div className="md:col-span-2">
+          <Label htmlFor="address_line1">Address Line 1 *</Label>
+          <Input
+            id="address_line1"
+            name="address_line1"
+            type="text"
+            value={formData.address_line1}
+            onChange={handleInputChange}
+            placeholder="Street address, building name, etc."
+            required
+          />
+        </div>
+
+        <div className="md:col-span-2">
+          <Label htmlFor="address_line2">Address Line 2</Label>
+          <Input
+            id="address_line2"
+            name="address_line2"
+            type="text"
+            value={formData.address_line2}
+            onChange={handleInputChange}
+            placeholder="Apartment, suite, unit, etc. (optional)"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="city">City *</Label>
+          <Input
+            id="city"
+            name="city"
+            type="text"
+            value={formData.city}
+            onChange={handleInputChange}
+            placeholder="City"
+            required
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="state">State *</Label>
+          <Input
+            id="state"
+            name="state"
+            type="text"
+            value={formData.state}
+            onChange={handleInputChange}
+            placeholder="State"
+            required
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="postal_code">Postal Code *</Label>
+          <Input
+            id="postal_code"
+            name="postal_code"
+            type="text"
+            value={formData.postal_code}
+            onChange={handleInputChange}
+            placeholder="12345"
+            required
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="country">Country</Label>
+          <Input
+            id="country"
+            name="country"
+            type="text"
+            value={formData.country}
+            onChange={handleInputChange}
+            placeholder="Malaysia"
+            required
+          />
         </div>
       </div>
 
       {/* Default Address Checkbox */}
       <div className="flex items-center space-x-2">
-        <input
-          type="checkbox"
+        <Checkbox
           id="is_default"
           name="is_default"
           checked={formData.is_default}
-          onChange={handleInputChange}
-          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          onCheckedChange={handleCheckboxChange}
         />
-        <Label htmlFor="is_default" className="text-sm font-medium">
+
+        <Label htmlFor="is_default" className="text-sm">
           Set as default address
         </Label>
       </div>
 
-      {/* Form Actions */}
-      <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
+      {/* Action Buttons */}
+      <div className="flex gap-3 pt-4">
+        <Button type="submit" disabled={isLoading} className="flex-1">
+          {isLoading
+            ? "Saving..."
+            : isEditing
+            ? "Update Address"
+            : "Save Address"}
+        </Button>
         <Button
           type="button"
           variant="outline"
           onClick={onCancel}
-          className="flex-1 bg-transparent"
+          disabled={isLoading}
         >
           Cancel
         </Button>
-        <Button type="submit" disabled={isSubmitting} className="flex-1">
-          {isSubmitting ? (
-            <div className="flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>{isEditing ? "Updating..." : "Adding..."}</span>
-            </div>
-          ) : (
-            <span>{isEditing ? "Update Address" : "Add Address"}</span>
-          )}
-        </Button>
+        {!isEditing && (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={clearForm}
+            disabled={isLoading}
+          >
+            Clear
+          </Button>
+        )}
       </div>
-
-      <TypographyP className="text-xs text-gray-500 text-center">
-        <span className="text-red-500">*</span> Required fields
-      </TypographyP>
     </form>
   );
 }

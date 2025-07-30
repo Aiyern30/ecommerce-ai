@@ -8,7 +8,18 @@ import React, {
   useImperativeHandle,
 } from "react";
 import { Loader } from "@googlemaps/js-api-loader";
-import { AddressComponents } from "@/lib/user/address";
+
+interface AddressComponents {
+  street_number?: string;
+  route?: string;
+  locality?: string;
+  administrative_area_level_1?: string;
+  postal_code?: string;
+  country?: string;
+  formatted_address?: string;
+  lat?: number;
+  lng?: number;
+}
 
 interface AddressAutocompleteProps {
   onAddressSelect: (address: AddressComponents) => void;
