@@ -25,3 +25,15 @@ export interface CreateAddressData {
   country: string;
   is_default?: boolean;
 }
+
+export interface AddressComponents {
+  street_number?: string;
+  route?: string;
+  locality?: string;
+  administrative_area_level_1?: string;
+  postal_code?: string;
+  country?: string;
+  formatted_address?: string;
+  lat?: number;
+  lng?: number;
+}
