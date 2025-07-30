@@ -37,6 +37,7 @@ export const MapDisplay: React.FC<MapDisplayProps> = ({
         const loader = new Loader({
           apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
           version: "weekly",
+          libraries: ["places"],
         });
 
         await loader.load();
