@@ -173,9 +173,9 @@ export default function NotificationsPage() {
 
   if (!user) {
     return (
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-0">
         <BreadcrumbNav showFilterButton={false} />
-        <TypographyH1 className="mb-8 mt-12">NOTIFICATIONS</TypographyH1>
+        <TypographyH1 className="my-8">NOTIFICATIONS</TypographyH1>
         <div className="flex justify-center items-center min-h-[400px]">
           <div className="text-center">
             <TypographyP>Please login to view notifications</TypographyP>
@@ -186,9 +186,9 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="container mx-auto px-4 py-0">
       <BreadcrumbNav showFilterButton={false} />
-      <TypographyH1 className="mb-8 mt-12">NOTIFICATIONS</TypographyH1>
+      <TypographyH1 className="my-8">NOTIFICATIONS</TypographyH1>
 
       {/* Header Actions */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center mb-6">

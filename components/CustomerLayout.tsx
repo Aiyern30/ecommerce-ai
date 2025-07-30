@@ -47,7 +47,7 @@ export function CustomerLayout({ children }: LayoutProps) {
   const renderContent = () => (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="flex-1 pt-[70px]">
+      <main className="flex-1 pt-[140px] sm:pt-[120px]">
         {children}
         <Toaster richColors />
       </main>
