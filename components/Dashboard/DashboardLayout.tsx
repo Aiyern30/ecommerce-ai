@@ -13,6 +13,8 @@ import {
   Users,
   FileText,
   BookOpen,
+  MessageSquare,
+  HelpCircle,
 } from "lucide-react";
 
 import {
@@ -65,6 +67,16 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       icon: Home,
     },
     {
+      label: "Products",
+      href: "/staff/products",
+      icon: Package,
+    },
+    {
+      label: "Orders",
+      href: "/staff/orders",
+      icon: Package,
+    },
+    {
       label: "Posts",
       href: "/staff/posts",
       icon: FileText,
@@ -75,14 +87,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       icon: BookOpen,
     },
     {
-      label: "Products",
-      href: "/staff/products",
-      icon: Package,
+      label: "FAQs",
+      href: "/staff/faqs",
+      icon: HelpCircle,
     },
     {
-      label: "Orders",
-      href: "/staff/orders",
-      icon: Package,
+      label: "Enquiries",
+      href: "/staff/enquiries",
+      icon: MessageSquare,
     },
     {
       label: "Customers",
