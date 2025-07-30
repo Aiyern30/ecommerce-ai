@@ -102,7 +102,7 @@ export default function OrderSuccessPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-0">
+      <div className="container mx-auto px-4 pt-0 pb-4">
         <BreadcrumbNav showFilterButton={false} />
         <TypographyH1 className="my-8">ORDER SUCCESS</TypographyH1>
         <div className="flex justify-center items-center min-h-[400px]">
@@ -117,7 +117,7 @@ export default function OrderSuccessPage() {
 
   if (!order) {
     return (
-      <div className="container mx-auto px-4 py-0">
+      <div className="container mx-auto px-4 pt-0 pb-4">
         <BreadcrumbNav showFilterButton={false} />
         <TypographyH1 className="my-8">ORDER NOT FOUND</TypographyH1>
         <div className="max-w-2xl mx-auto">
@@ -159,7 +159,7 @@ export default function OrderSuccessPage() {
 
   if (!shippingAddress) {
     return (
-      <div className="container mx-auto px-4 py-0">
+      <div className="container mx-auto px-4 pt-0 pb-4">
         <BreadcrumbNav showFilterButton={false} />
         <TypographyH1 className="my-8">ADDRESS ERROR</TypographyH1>
         <div className="max-w-2xl mx-auto">
@@ -239,7 +239,7 @@ export default function OrderSuccessPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-0">
+    <div className="container mx-auto px-4 pt-0 pb-4">
       <BreadcrumbNav showFilterButton={false} />
       <TypographyH1 className="my-8">ORDER SUCCESS</TypographyH1>
 

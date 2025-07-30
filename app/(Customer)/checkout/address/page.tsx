@@ -156,7 +156,7 @@ export default function CheckoutAddressPage() {
   if (cartLoading || isLoading) {
     return (
       <div className="min-h-screen mb-4">
-        <div className="container mx-auto px-4 py-0">
+        <div className="container mx-auto px-4 pt-0 pb-4">
           <div className="flex items-center justify-between">
             <TypographyH1 className="my-8">SHIPPING ADDRESS</TypographyH1>
 
@@ -186,7 +186,7 @@ export default function CheckoutAddressPage() {
   if (!cartLoading && selectedItems.length === 0) {
     return (
       <div className="min-h-screen mb-4">
-        <div className="container mx-auto px-4 py-0">
+        <div className="container mx-auto px-4 pt-0 pb-4">
           <div className="flex items-center justify-between">
             <TypographyH1 className="my-8">SHIPPING ADDRESS</TypographyH1>
 
@@ -213,7 +213,7 @@ export default function CheckoutAddressPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-0">
+    <div className="container mx-auto px-4 pt-0 pb-4">
       <div className="flex items-center justify-between">
         <TypographyH1 className="my-8">SHIPPING ADDRESS</TypographyH1>
 

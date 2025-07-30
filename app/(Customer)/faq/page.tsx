@@ -108,7 +108,7 @@ export default function FaqPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-0">
+    <div className="container mx-auto px-4 pt-0 pb-4">
       <TypographyH1 className="my-8">Frequently Asked Questions</TypographyH1>
       <TypographyP className="text-gray-600 max-w-2xl mb-8">
         Find answers to common questions about our services, policies, and more.
