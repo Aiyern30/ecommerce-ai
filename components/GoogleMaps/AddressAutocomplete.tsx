@@ -53,20 +53,17 @@ export const AddressAutocomplete = forwardRef<
       null
     );
     const [isLoaded, setIsLoaded] = useState(false);
-    const [inputValue, setInputValue] = useState(defaultValue);
 
     useImperativeHandle(ref, () => ({
       clearInput: () => {
         if (inputRef.current) {
           inputRef.current.value = "";
-          setInputValue("");
           onValidationChange(false);
         }
       },
       setInputValue: (value: string) => {
         if (inputRef.current) {
           inputRef.current.value = value;
-          setInputValue(value);
         }
       },
     }));
@@ -161,7 +158,6 @@ export const AddressAutocomplete = forwardRef<
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
-      setInputValue(value);
 
       // Reset validation when user types
       if (value === "") {
@@ -191,3 +187,6 @@ export const AddressAutocomplete = forwardRef<
 );
 
 AddressAutocomplete.displayName = "AddressAutocomplete";
+
+// Export the AddressComponents type for use in other files
+export type { AddressComponents };
