@@ -6,6 +6,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
+  Skeleton,
 } from "@/components/ui/";
 import {
   TypographyH1,
@@ -70,25 +71,39 @@ export default function FaqPage() {
           <AccordionItem
             key={i}
             value={`skeleton-${i}`}
-            className="border rounded-lg bg-card shadow-sm animate-pulse"
+            className="border rounded-lg bg-card shadow-sm"
           >
             <AccordionTrigger className="px-4">
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
+              <Skeleton className="h-4 w-1/3" />
             </AccordionTrigger>
             <AccordionContent className="bg-background rounded-b-lg py-4 space-y-4">
               {Array.from({ length: 2 }).map((_, j) => (
                 <div key={j} className="space-y-2 px-6">
                   <div className="flex items-center space-x-2">
-                    <div className="h-3 w-4 bg-gray-200 dark:bg-gray-700 rounded" />
-                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
+                    <Skeleton className="h-3 w-4" />
+                    <Skeleton className="h-3 w-2/3" />
                   </div>
-                  <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-5/6 ml-4" />
+                  <Skeleton className="h-3 w-5/6 ml-4" />
                 </div>
               ))}
             </AccordionContent>
           </AccordionItem>
         ))}
       </Accordion>
+    );
+  }
+
+  function ContactFormSkeleton() {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-6 w-1/3" />
+        <div className="space-y-2">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-10 w-32" />
+        </div>
+      </div>
     );
   }
 
@@ -149,7 +164,7 @@ export default function FaqPage() {
         </div>
 
         {/* Right: Contact form */}
-        <ContactForm />
+        {loading ? <ContactFormSkeleton /> : <ContactForm />}
       </div>
     </div>
   );
