@@ -102,9 +102,9 @@ export default function OrderSuccessPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-0">
         <BreadcrumbNav showFilterButton={false} />
-        <TypographyH1 className="mb-8 mt-12">ORDER SUCCESS</TypographyH1>
+        <TypographyH1 className="my-8">ORDER SUCCESS</TypographyH1>
         <div className="flex justify-center items-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
@@ -117,9 +117,9 @@ export default function OrderSuccessPage() {
 
   if (!order) {
     return (
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-0">
         <BreadcrumbNav showFilterButton={false} />
-        <TypographyH1 className="mb-8 mt-12">ORDER NOT FOUND</TypographyH1>
+        <TypographyH1 className="my-8">ORDER NOT FOUND</TypographyH1>
         <div className="max-w-2xl mx-auto">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 text-center">
             <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6">
@@ -159,9 +159,9 @@ export default function OrderSuccessPage() {
 
   if (!shippingAddress) {
     return (
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-0">
         <BreadcrumbNav showFilterButton={false} />
-        <TypographyH1 className="mb-8 mt-12">ADDRESS ERROR</TypographyH1>
+        <TypographyH1 className="my-8">ADDRESS ERROR</TypographyH1>
         <div className="max-w-2xl mx-auto">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 text-center">
             <div className="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-6">
@@ -239,9 +239,9 @@ export default function OrderSuccessPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="container mx-auto px-4 py-0">
       <BreadcrumbNav showFilterButton={false} />
-      <TypographyH1 className="mb-8 mt-12">ORDER SUCCESS</TypographyH1>
+      <TypographyH1 className="my-8">ORDER SUCCESS</TypographyH1>
 
       {/* Success Banner */}
       <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-8 text-center mb-8">

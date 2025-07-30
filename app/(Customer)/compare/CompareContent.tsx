@@ -107,8 +107,8 @@ export default function CompareProductsContent() {
 
   return (
     <div className="min-h-screen w-full overflow-x-hidden">
-      <div className="container mx-auto px-4 py-6">
-        <TypographyH1 className="mb-8 mt-14">COMPARE OUR PRODUCTS</TypographyH1>
+      <div className="container mx-auto px-4 py-0">
+        <TypographyH1 className="my-8">COMPARE OUR PRODUCTS</TypographyH1>
 
         {loading ? (
           <div className="space-y-4">

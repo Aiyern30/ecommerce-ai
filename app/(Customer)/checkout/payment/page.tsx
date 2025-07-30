@@ -110,10 +110,10 @@ export default function CheckoutPaymentPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="container mx-auto px-4 py-0">
       <StripeProvider amount={totalAmount}>
         <div className="flex items-center justify-between">
-          <TypographyH1 className="mb-8 mt-14">PAYMENT METHOD</TypographyH1>
+          <TypographyH1 className="my-8">PAYMENT METHOD</TypographyH1>
 
           <Link href="/checkout/address">
             <Button variant="outline" size="sm">

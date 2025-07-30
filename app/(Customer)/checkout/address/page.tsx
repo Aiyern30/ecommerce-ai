@@ -156,9 +156,9 @@ export default function CheckoutAddressPage() {
   if (cartLoading || isLoading) {
     return (
       <div className="min-h-screen mb-4">
-        <div className="container mx-auto px-4 py-6">
+        <div className="container mx-auto px-4 py-0">
           <div className="flex items-center justify-between">
-            <TypographyH1 className="mb-8 mt-14">SHIPPING ADDRESS</TypographyH1>
+            <TypographyH1 className="my-8">SHIPPING ADDRESS</TypographyH1>
 
             <Link href="/cart">
               <Button variant="outline" size="sm">
@@ -186,9 +186,9 @@ export default function CheckoutAddressPage() {
   if (!cartLoading && selectedItems.length === 0) {
     return (
       <div className="min-h-screen mb-4">
-        <div className="container mx-auto px-4 py-6">
+        <div className="container mx-auto px-4 py-0">
           <div className="flex items-center justify-between">
-            <TypographyH1 className="mb-8 mt-12">SHIPPING ADDRESS</TypographyH1>
+            <TypographyH1 className="my-8">SHIPPING ADDRESS</TypographyH1>
 
             <Link href="/cart">
               <Button variant="outline" size="sm">
@@ -213,9 +213,9 @@ export default function CheckoutAddressPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="container mx-auto px-4 py-0">
       <div className="flex items-center justify-between">
-        <TypographyH1 className="mb-8 mt-12">SHIPPING ADDRESS</TypographyH1>
+        <TypographyH1 className="my-8">SHIPPING ADDRESS</TypographyH1>
 
         <Link href="/cart">
           <Button variant="outline" size="sm">

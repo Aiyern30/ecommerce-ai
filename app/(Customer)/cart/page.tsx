@@ -115,12 +115,8 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen mb-4">
-      <div className={`container mx-auto ${isMobile ? "px-3" : "px-4"} py-6`}>
-        <TypographyH1
-          className={`mb-8 ${isMobile ? "mt-8 text-2xl" : "mt-14"}`}
-        >
-          YOUR CART
-        </TypographyH1>
+      <div className="container mx-auto px-4 py-0">
+        <TypographyH1 className="my-8">YOUR CART</TypographyH1>
 
         {isLoading ? (
           <div
