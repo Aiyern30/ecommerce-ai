@@ -65,20 +65,30 @@ export default function FaqPage() {
 
   function FaqSkeleton() {
     return (
-      <div className="space-y-4">
+      <Accordion type="multiple" className="space-y-4">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div
+          <AccordionItem
             key={i}
-            className="border rounded-lg bg-card shadow-sm p-4 space-y-2 animate-pulse"
+            value={`skeleton-${i}`}
+            className="border rounded-lg bg-card shadow-sm animate-pulse"
           >
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
-            <div className="space-y-1">
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
-            </div>
-          </div>
+            <AccordionTrigger className="px-4">
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
+            </AccordionTrigger>
+            <AccordionContent className="bg-background rounded-b-lg py-4 space-y-4">
+              {Array.from({ length: 2 }).map((_, j) => (
+                <div key={j} className="space-y-2 px-6">
+                  <div className="flex items-center space-x-2">
+                    <div className="h-3 w-4 bg-gray-200 dark:bg-gray-700 rounded" />
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
+                  </div>
+                  <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-5/6 ml-4" />
+                </div>
+              ))}
+            </AccordionContent>
+          </AccordionItem>
         ))}
-      </div>
+      </Accordion>
     );
   }
 
