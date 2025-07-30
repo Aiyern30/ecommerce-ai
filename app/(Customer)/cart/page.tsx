@@ -38,9 +38,11 @@ import {
 } from "@/lib/cart/utils";
 import { useUser } from "@supabase/auth-helpers-react";
 import type { CartItem } from "@/type/cart";
+import { useDeviceType } from "@/utils/useDeviceTypes";
 
 export default function CartPage() {
   const { cartItems, refreshCart, isLoading } = useCart();
+  const { isMobile } = useDeviceType(); // Use the hook
   const user = useUser();
   const router = useRouter();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -113,13 +115,19 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen mb-4">
-      <div className="container mx-auto px-4 py-6">
-        <TypographyH1 className="mb-8 mt-14">YOUR CART</TypographyH1>
+      <div className={`container mx-auto ${isMobile ? "px-3" : "px-4"} py-6`}>
+        <TypographyH1
+          className={`mb-8 ${isMobile ? "mt-8 text-2xl" : "mt-14"}`}
+        >
+          YOUR CART
+        </TypographyH1>
 
         {isLoading ? (
-          <div className="mt-8 grid gap-8 lg:grid-cols-3">
+          <div
+            className={`mt-8 grid gap-8 ${isMobile ? "" : "lg:grid-cols-3"}`}
+          >
             {/* Cart Items Skeleton */}
-            <div className="lg:col-span-2">
+            <div className={isMobile ? "" : "lg:col-span-2"}>
               <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
                 <div className="flex items-center gap-3 p-6 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
                   <Skeleton className="h-5 w-5 rounded" />
@@ -159,9 +167,11 @@ export default function CartPage() {
               </div>
             </div>
             {/* Order Summary Skeleton */}
-            <div className="lg:col-span-1 self-start sticky top-28">
-              <CheckoutSummary showCheckoutButton={true} />
-            </div>
+            {!isMobile && (
+              <div className="lg:col-span-1 self-start sticky top-28">
+                <CheckoutSummary showCheckoutButton={true} />
+              </div>
+            )}
           </div>
         ) : !user ? (
           <div className="flex flex-col items-center justify-center text-center h-[60vh] space-y-6">
@@ -198,12 +208,20 @@ export default function CartPage() {
             </Link>
           </div>
         ) : (
-          <div className="mt-8 grid gap-8 lg:grid-cols-3">
+          <div
+            className={`mt-8 ${
+              isMobile ? "space-y-6" : "grid gap-8 lg:grid-cols-3"
+            }`}
+          >
             {/* Cart Items */}
-            <div className="lg:col-span-2">
+            <div className={isMobile ? "" : "lg:col-span-2"}>
               <Card className="overflow-hidden shadow-sm py-0 gap-0">
                 {/* Choose All Product Header */}
-                <CardHeader className="p-6 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                <CardHeader
+                  className={`${
+                    isMobile ? "p-4" : "p-6"
+                  } bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700`}
+                >
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <Checkbox
@@ -214,15 +232,30 @@ export default function CartPage() {
                         }}
                         className="h-5 w-5"
                       />
-                      <CardTitle className="text-xl font-bold cursor-pointer">
+                      <CardTitle
+                        className={`${
+                          isMobile ? "text-lg" : "text-xl"
+                        } font-bold cursor-pointer`}
+                      >
                         Choose All Product
                       </CardTitle>
                     </div>
-                    <TypographyP className="text-sm text-gray-600 dark:text-gray-400 font-medium !mt-0">
+                    <TypographyP
+                      className={`text-sm text-gray-600 dark:text-gray-400 font-medium !mt-0 ${
+                        isMobile ? "hidden" : ""
+                      }`}
+                    >
                       {selectedItems.length} of {cartItems.length} items
                       selected
                     </TypographyP>
                   </div>
+                  {/* Mobile: Show selection count below on mobile */}
+                  {isMobile && (
+                    <TypographyP className="text-xs text-gray-600 dark:text-gray-400 font-medium !mt-2">
+                      {selectedItems.length} of {cartItems.length} items
+                      selected
+                    </TypographyP>
+                  )}
                 </CardHeader>
                 {/* Product Items */}
                 <CardContent className="p-0">
@@ -230,7 +263,9 @@ export default function CartPage() {
                     {cartItems.map((item) => (
                       <div
                         key={item.id}
-                        className="p-6 hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-all duration-200 cursor-pointer group"
+                        className={`${
+                          isMobile ? "p-4" : "p-6"
+                        } hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-all duration-200 cursor-pointer group`}
                         onClick={(e) => {
                           // Only navigate if not clicking on interactive elements
                           const target = e.target as HTMLElement;
@@ -243,9 +278,13 @@ export default function CartPage() {
                           }
                         }}
                       >
-                        <div className="flex gap-4">
+                        <div className={`flex ${isMobile ? "gap-3" : "gap-4"}`}>
                           {/* Checkbox for individual item */}
-                          <div className="flex items-start pt-3">
+                          <div
+                            className={`flex items-start ${
+                              isMobile ? "pt-2" : "pt-3"
+                            }`}
+                          >
                             <Checkbox
                               id={`item-${item.id}`}
                               checked={item.selected}
@@ -257,7 +296,13 @@ export default function CartPage() {
                             />
                           </div>
                           {/* Product Image */}
-                          <div className="relative h-24 w-24 md:h-28 md:w-28 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-700">
+                          <div
+                            className={`relative ${
+                              isMobile
+                                ? "h-20 w-20"
+                                : "h-24 w-24 md:h-28 md:w-28"
+                            } flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-700`}
+                          >
                             <Image
                               src={
                                 item.product?.image_url || "/placeholder.svg"
@@ -268,39 +313,89 @@ export default function CartPage() {
                             />
                           </div>
                           {/* Product Details */}
-                          <div className="flex flex-1 flex-col justify-between min-h-[96px] md:min-h-[112px]">
-                            <div className="flex flex-col md:flex-row md:justify-between md:items-start">
-                              <div className="flex-1 pr-4">
-                                <TypographyH3 className="font-bold text-xl mb-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          <div
+                            className={`flex flex-1 flex-col justify-between ${
+                              isMobile
+                                ? "min-h-[80px]"
+                                : "min-h-[96px] md:min-h-[112px]"
+                            }`}
+                          >
+                            <div
+                              className={`flex ${
+                                isMobile
+                                  ? "flex-col"
+                                  : "flex-col md:flex-row md:justify-between md:items-start"
+                              }`}
+                            >
+                              <div className="flex-1 pr-2">
+                                <TypographyH3
+                                  className={`font-bold ${
+                                    isMobile
+                                      ? "text-base leading-tight"
+                                      : "text-xl"
+                                  } mb-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors`}
+                                >
                                   {item.product?.name}
                                 </TypographyH3>
-                                <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4 text-sm text-gray-500 dark:text-gray-400">
-                                  <span>
-                                    Size: {item.product?.unit || "per bag"}
-                                  </span>
-                                  <span className="hidden md:inline">•</span>
-                                  <span>Color: White</span>
-                                </div>
+                                {!isMobile && (
+                                  <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4 text-sm text-gray-500 dark:text-gray-400">
+                                    <span>
+                                      Size: {item.product?.unit || "per bag"}
+                                    </span>
+                                    <span className="hidden md:inline">•</span>
+                                    <span>Color: White</span>
+                                  </div>
+                                )}
                               </div>
-                              {/* Delete Button - Top Right */}
+                              {/* Delete Button - Positioned differently on mobile */}
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleDeleteClick(item);
                                 }}
-                                className="text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition-all duration-200 ml-auto md:ml-0 opacity-0 group-hover:opacity-100"
+                                className={`text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition-all duration-200 ${
+                                  isMobile
+                                    ? "absolute top-2 right-2 opacity-70"
+                                    : "ml-auto md:ml-0 opacity-0 group-hover:opacity-100"
+                                }`}
                                 aria-label="Remove item"
                               >
-                                <Trash2 className="h-5 w-5" />
+                                <Trash2
+                                  className={`${
+                                    isMobile ? "h-4 w-4" : "h-5 w-5"
+                                  }`}
+                                />
                               </button>
                             </div>
+                            {/* Mobile: Product details */}
+                            {isMobile && (
+                              <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mb-2">
+                                <span>
+                                  Size: {item.product?.unit || "per bag"}
+                                </span>
+                                <span>•</span>
+                                <span>Color: White</span>
+                              </div>
+                            )}
                             {/* Price and Quantity Controls */}
-                            <div className="flex items-center justify-between mt-4">
-                              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                            <div
+                              className={`flex items-center justify-between ${
+                                isMobile ? "mt-2" : "mt-4"
+                              }`}
+                            >
+                              <div
+                                className={`${
+                                  isMobile ? "text-lg" : "text-2xl"
+                                } font-bold text-gray-900 dark:text-gray-100`}
+                              >
                                 RM{item.product?.price}
                               </div>
                               {/* Quantity Controls */}
-                              <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-600 shadow-sm">
+                              <div
+                                className={`flex items-center bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-600 shadow-sm ${
+                                  isMobile ? "scale-90" : ""
+                                }`}
+                              >
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -324,9 +419,19 @@ export default function CartPage() {
                                       : "Decrease quantity"
                                   }
                                 >
-                                  <Minus className="h-3.5 w-3.5 group-hover:scale-110 transition-transform duration-200" />
+                                  <Minus
+                                    className={`${
+                                      isMobile ? "h-3 w-3" : "h-3.5 w-3.5"
+                                    } group-hover:scale-110 transition-transform duration-200`}
+                                  />
                                 </button>
-                                <span className="px-3 py-2 font-bold min-w-[2.5rem] text-center text-gray-900 dark:text-gray-100 text-sm border-x border-gray-200 dark:border-gray-600">
+                                <span
+                                  className={`${
+                                    isMobile
+                                      ? "px-2 py-1.5 min-w-[2rem] text-xs"
+                                      : "px-3 py-2 min-w-[2.5rem] text-sm"
+                                  } font-bold text-center text-gray-900 dark:text-gray-100 border-x border-gray-200 dark:border-gray-600`}
+                                >
                                   {item.quantity}
                                 </span>
                                 <button
@@ -337,7 +442,11 @@ export default function CartPage() {
                                   className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-r-lg group"
                                   aria-label="Increase quantity"
                                 >
-                                  <Plus className="h-3.5 w-3.5 group-hover:scale-110 transition-transform duration-200" />
+                                  <Plus
+                                    className={`${
+                                      isMobile ? "h-3 w-3" : "h-3.5 w-3.5"
+                                    } group-hover:scale-110 transition-transform duration-200`}
+                                  />
                                 </button>
                               </div>
                             </div>
@@ -351,8 +460,8 @@ export default function CartPage() {
             </div>
 
             {/* Order Summary with Checkout Button */}
-            <div className="lg:col-span-1">
-              <div className="sticky top-6 z-10">
+            <div className={isMobile ? "" : "lg:col-span-1"}>
+              <div className={isMobile ? "" : "sticky top-6 z-10"}>
                 <CheckoutSummary
                   showCheckoutButton={true}
                   onCheckout={handleProceedToCheckout}
@@ -367,35 +476,63 @@ export default function CartPage() {
 
       {/* Enhanced Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="max-w-md">
+        <AlertDialogContent
+          className={`${isMobile ? "max-w-sm mx-4" : "max-w-md"}`}
+        >
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-lg font-semibold">
+            <AlertDialogTitle
+              className={`${isMobile ? "text-base" : "text-lg"} font-semibold`}
+            >
               Remove item from cart?
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-600 dark:text-gray-400">
+            <AlertDialogDescription
+              className={`text-gray-600 dark:text-gray-400 ${
+                isMobile ? "text-sm" : ""
+              }`}
+            >
               Are you sure you want to remove this item from your cart? This
               action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           {itemToDelete && (
-            <div className="flex gap-4 p-4 border rounded-xl bg-gray-50 dark:bg-gray-900">
-              <div className="h-16 w-16 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden shrink-0">
+            <div
+              className={`flex gap-4 ${
+                isMobile ? "p-3" : "p-4"
+              } border rounded-xl bg-gray-50 dark:bg-gray-900`}
+            >
+              <div
+                className={`${
+                  isMobile ? "h-12 w-12" : "h-16 w-16"
+                } bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden shrink-0`}
+              >
                 <Image
                   src={itemToDelete.product?.image_url || "/placeholder.svg"}
                   alt={itemToDelete.product?.name || "Product"}
-                  width={64}
-                  height={64}
+                  width={isMobile ? 48 : 64}
+                  height={isMobile ? 48 : 64}
                   className="h-full w-full object-cover"
                 />
               </div>
               <div className="flex-1">
-                <h4 className="font-semibold text-sm mb-1 text-gray-900 dark:text-gray-100">
+                <h4
+                  className={`font-semibold ${
+                    isMobile ? "text-xs" : "text-sm"
+                  } mb-1 text-gray-900 dark:text-gray-100`}
+                >
                   {itemToDelete.product?.name}
                 </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                <p
+                  className={`${
+                    isMobile ? "text-xs" : "text-sm"
+                  } text-gray-600 dark:text-gray-400 mb-1`}
+                >
                   Quantity: {itemToDelete.quantity}
                 </p>
-                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                <p
+                  className={`${
+                    isMobile ? "text-xs" : "text-sm"
+                  } font-semibold text-gray-900 dark:text-gray-100`}
+                >
                   RM
                   {(
                     (itemToDelete.product?.price || 0) * itemToDelete.quantity
