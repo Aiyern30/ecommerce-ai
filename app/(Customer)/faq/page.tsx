@@ -7,7 +7,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/";
-import { TypographyH1, TypographyP } from "@/components/ui/Typography";
+import {
+  TypographyH1,
+  TypographyH6,
+  TypographyP,
+} from "@/components/ui/Typography";
 import { supabase } from "@/lib/supabase/client";
 import ContactForm from "@/components/ContactForm";
 
@@ -69,7 +73,11 @@ export default function FaqPage() {
       <div className="grid md:grid-cols-2 gap-12 mb-16">
         {/* Left: FAQ */}
         <div className="space-y-4">
-          <Accordion type="multiple" defaultValue={Object.keys(grouped)}>
+          <Accordion
+            type="multiple"
+            defaultValue={Object.keys(grouped)}
+            className="space-y-4"
+          >
             {Object.entries(grouped).map(([section, items]) => (
               <AccordionItem
                 key={section}
@@ -84,19 +92,18 @@ export default function FaqPage() {
                     </span>
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="bg-background rounded-b-lg py-0">
-                  <Accordion type="multiple" className="divide-y">
-                    {items.map((faq) => (
-                      <AccordionItem key={faq.id} value={faq.id}>
-                        <AccordionTrigger className="px-4 text-left">
-                          {faq.question}
-                        </AccordionTrigger>
-                        <AccordionContent className="px-4 text-gray-600">
-                          {faq.answer}
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
+                <AccordionContent className="bg-background rounded-b-lg py-4 space-y-4">
+                  {items.map((faq, index) => (
+                    <div key={faq.id} className="space-y-2 px-6">
+                      <TypographyH6 className="flex items-start">
+                        <span className="font-semibold mr-2">{index + 1}.</span>
+                        <span className="font-medium">{faq.question}</span>
+                      </TypographyH6>
+                      <TypographyP className="text-gray-600 ml-4">
+                        {faq.answer}
+                      </TypographyP>
+                    </div>
+                  ))}
                 </AccordionContent>
               </AccordionItem>
             ))}
