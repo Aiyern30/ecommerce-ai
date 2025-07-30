@@ -26,6 +26,7 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
+  Skeleton,
 } from "@/components/ui";
 import Link from "next/link";
 import { Notification } from "@/type/notification";
@@ -178,6 +179,26 @@ export default function NotificationSheet() {
     return date.toLocaleDateString();
   };
 
+  // Skeleton loading component for notifications
+  const NotificationSkeleton = () => (
+    <Card className="border dark:border-gray-700">
+      <CardHeader className="pb-2 flex flex-row items-center gap-2">
+        <Skeleton className="h-6 w-16 rounded" />
+        <Skeleton className="h-2 w-2 rounded-full" />
+        <div className="ml-auto flex gap-2">
+          <Skeleton className="h-7 w-7 rounded-lg" />
+          <Skeleton className="h-7 w-7 rounded-lg" />
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0 space-y-2">
+        <Skeleton className="h-5 w-3/4" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-2/3" />
+        <Skeleton className="h-3 w-16 mt-2" />
+      </CardContent>
+    </Card>
+  );
+
   if (!user) {
     return (
       <Button variant="ghost" size="icon" disabled>
@@ -208,36 +229,41 @@ export default function NotificationSheet() {
           <SheetTitle className="text-lg font-medium text-left">
             Notifications
           </SheetTitle>
-          {notifications.length > 0 && (
+          {isLoading ? (
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleMarkAllAsRead}
-                disabled={unreadCount === 0}
-              >
-                Mark all read
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleClearAllNotifications}
-              >
-                Clear all
-              </Button>
+              <Skeleton className="h-8 w-24" />
+              <Skeleton className="h-8 w-20" />
             </div>
+          ) : (
+            notifications.length > 0 && (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleMarkAllAsRead}
+                  disabled={unreadCount === 0}
+                >
+                  Mark all read
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleClearAllNotifications}
+                >
+                  Clear all
+                </Button>
+              </div>
+            )
           )}
         </SheetHeader>
         <div className="flex flex-col flex-1 min-h-0">
           <ScrollArea className="flex-1">
             {isLoading ? (
-              <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-                <div className="text-center space-y-2">
-                  <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-                  <p className="text-sm text-muted-foreground">
-                    Loading notifications...
-                  </p>
-                </div>
+              <div className="space-y-4 mx-4">
+                {/* Generate 5 skeleton notification cards */}
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <NotificationSkeleton key={index} />
+                ))}
               </div>
             ) : !user ? (
               <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-6 text-center space-y-6">
@@ -289,9 +315,9 @@ export default function NotificationSheet() {
                       key={notification.id}
                       className={`transition-colors border dark:border-gray-700${
                         notification.read
-                          ? "bg-gray-50 dark:bg-gray-800"
+                          ? "bg-gray-100 dark:bg-gray-800"
                           : "bg-white dark:bg-gray-900"
-                      } hover:bg-gray-50 dark:hover:bg-gray-900/30`}
+                      } hover:bg-gray-100 dark:hover:bg-gray-900/30`}
                     >
                       <CardHeader className="pb-2 flex flex-row items-center gap-2">
                         <span
@@ -347,17 +373,24 @@ export default function NotificationSheet() {
             )}
           </ScrollArea>
         </div>
-        {notifications.length > 0 && (
-          <div className="border-t p-4 space-y-4 bg-gray-50 dark:bg-gray-900/30">
-            <Link href="/notifications" onClick={() => setIsOpen(false)}>
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                View All Notifications
-              </Button>
-            </Link>
-            <span className="block text-xs text-center text-gray-500 !mt-2">
-              Manage your notifications and stay up to date
-            </span>
+        {isLoading ? (
+          <div className="border-t p-4 space-y-4 bg-gray-100 dark:bg-gray-900/30">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-3 w-3/4 mx-auto" />
           </div>
+        ) : (
+          notifications.length > 0 && (
+            <div className="border-t p-4 space-y-4 bg-gray-100 dark:bg-gray-900/30">
+              <Link href="/notifications" onClick={() => setIsOpen(false)}>
+                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                  View All Notifications
+                </Button>
+              </Link>
+              <span className="block text-xs text-center text-gray-500 !mt-2">
+                Manage your notifications and stay up to date
+              </span>
+            </div>
+          )
         )}
       </SheetContent>
 
@@ -372,7 +405,7 @@ export default function NotificationSheet() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           {notificationToDelete && (
-            <div className="flex gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+            <div className="flex gap-4 p-4 border rounded-lg bg-gray-100 dark:bg-gray-900">
               <div className="flex-1">
                 <span className="block font-medium text-gray-900 dark:text-white mb-1">
                   {notificationToDelete.title}
