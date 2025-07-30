@@ -24,9 +24,11 @@ type FaqItem = {
 
 export default function FaqPage() {
   const [faqs, setFaqs] = useState<FaqItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchFaqs = async () => {
+      setLoading(true);
       const { data, error } = await supabase
         .from("faq")
         .select("id, question, answer, section:faq_sections(name)")
@@ -47,6 +49,7 @@ export default function FaqPage() {
           }))
         );
       }
+      setLoading(false);
     };
 
     fetchFaqs();
@@ -59,6 +62,25 @@ export default function FaqPage() {
     acc[sectionName].push(faq);
     return acc;
   }, {});
+
+  function FaqSkeleton() {
+    return (
+      <div className="space-y-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={i}
+            className="border rounded-lg bg-card shadow-sm p-4 space-y-2 animate-pulse"
+          >
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
+            <div className="space-y-1">
+              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -73,41 +95,47 @@ export default function FaqPage() {
       <div className="grid md:grid-cols-2 gap-12 mb-16">
         {/* Left: FAQ */}
         <div className="space-y-4">
-          <Accordion
-            type="multiple"
-            defaultValue={Object.keys(grouped)}
-            className="space-y-4"
-          >
-            {Object.entries(grouped).map(([section, items]) => (
-              <AccordionItem
-                key={section}
-                value={section}
-                className="border rounded-lg bg-card shadow-sm"
-              >
-                <AccordionTrigger className="px-4 capitalize">
-                  <div className="flex justify-between items-center w-full">
-                    <span>{section}</span>
-                    <span className="ml-2 text-xs text-gray-500">
-                      ({items.length})
-                    </span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="bg-background rounded-b-lg py-4 space-y-4">
-                  {items.map((faq, index) => (
-                    <div key={faq.id} className="space-y-2 px-6">
-                      <TypographyH6 className="flex items-start">
-                        <span className="font-semibold mr-2">{index + 1}.</span>
-                        <span className="font-medium">{faq.question}</span>
-                      </TypographyH6>
-                      <TypographyP className="text-gray-600 ml-4">
-                        {faq.answer}
-                      </TypographyP>
+          {loading ? (
+            <FaqSkeleton />
+          ) : (
+            <Accordion
+              type="multiple"
+              defaultValue={Object.keys(grouped)}
+              className="space-y-4"
+            >
+              {Object.entries(grouped).map(([section, items]) => (
+                <AccordionItem
+                  key={section}
+                  value={section}
+                  className="border rounded-lg bg-card shadow-sm"
+                >
+                  <AccordionTrigger className="px-4 capitalize">
+                    <div className="flex justify-between items-center w-full">
+                      <span>{section}</span>
+                      <span className="ml-2 text-xs text-gray-500">
+                        ({items.length})
+                      </span>
                     </div>
-                  ))}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
+                  </AccordionTrigger>
+                  <AccordionContent className="bg-background rounded-b-lg py-4 space-y-4">
+                    {items.map((faq, index) => (
+                      <div key={faq.id} className="space-y-2 px-6">
+                        <TypographyH6 className="flex items-start">
+                          <span className="font-semibold mr-2">
+                            {index + 1}.
+                          </span>
+                          <span className="font-medium">{faq.question}</span>
+                        </TypographyH6>
+                        <TypographyP className="text-gray-600 ml-4">
+                          {faq.answer}
+                        </TypographyP>
+                      </div>
+                    ))}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          )}
         </div>
 
         {/* Right: Contact form */}
