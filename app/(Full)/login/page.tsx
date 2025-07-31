@@ -31,7 +31,7 @@ export default function LoginPage() {
             isLoading={isLoading}
             setIsLoading={setIsLoading}
             mode="signin"
-            providers={["google", "azure", "apple", "github"]}
+            providers={["google", "azure", "apple"]}
           />
 
           {/* Terms and Privacy */}

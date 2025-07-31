@@ -27,7 +27,7 @@ const GoogleIcon = ({ size = 20 }: { size?: number }) => (
   </svg>
 );
 
-const azureIcon = ({ size = 20 }: { size?: number }) => (
+const AzureIcon = ({ size = 20 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <path d="M11.4 11.4H2V2h9.4v9.4z" fill="#F25022" />
     <path d="M22 11.4h-9.4V2H22v9.4z" fill="#7FBA00" />
@@ -82,44 +82,50 @@ const AuthButton = ({
     google: {
       name: "Google",
       icon: GoogleIcon,
-      bgColor: "bg-white hover:bg-gray-50",
-      textColor: "text-gray-700",
-      borderColor: "border-gray-300",
+      bgColor:
+        "bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700",
+      textColor: "text-gray-700 dark:text-gray-100",
+      borderColor: "border-gray-300 dark:border-gray-600",
     },
     azure: {
-      name: "azure",
-      icon: azureIcon,
-      bgColor: "bg-white hover:bg-gray-50",
-      textColor: "text-gray-700",
-      borderColor: "border-gray-300",
+      name: "Microsoft",
+      icon: AzureIcon,
+      bgColor:
+        "bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700",
+      textColor: "text-gray-700 dark:text-gray-100",
+      borderColor: "border-gray-300 dark:border-gray-600",
     },
     apple: {
       name: "Apple",
       icon: AppleIcon,
-      bgColor: "bg-black hover:bg-gray-800",
+      bgColor:
+        "bg-black hover:bg-gray-800 dark:bg-black dark:hover:bg-gray-800",
       textColor: "text-white",
-      borderColor: "border-black",
+      borderColor: "border-black dark:border-gray-700",
     },
     github: {
       name: "GitHub",
       icon: GitHubIcon,
-      bgColor: "bg-gray-900 hover:bg-gray-800",
-      textColor: "text-white",
-      borderColor: "border-gray-900",
+      bgColor:
+        "bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700",
+      textColor: "text-gray-700 dark:text-gray-100",
+      borderColor: "border-gray-300 dark:border-gray-600",
     },
     facebook: {
       name: "Facebook",
       icon: FacebookIcon,
-      bgColor: "bg-[#1877F2] hover:bg-[#166FE5]",
+      bgColor:
+        "bg-[#1877F2] hover:bg-[#166FE5] dark:bg-[#1877F2] dark:hover:bg-[#166FE5]",
       textColor: "text-white",
-      borderColor: "border-[#1877F2]",
+      borderColor: "border-[#1877F2] dark:border-[#166FE5]",
     },
     discord: {
       name: "Discord",
       icon: DiscordIcon,
-      bgColor: "bg-[#5865F2] hover:bg-[#4752C4]",
+      bgColor:
+        "bg-[#5865F2] hover:bg-[#4752C4] dark:bg-[#5865F2] dark:hover:bg-[#4752C4]",
       textColor: "text-white",
-      borderColor: "border-[#5865F2]",
+      borderColor: "border-[#5865F2] dark:border-[#4752C4]",
     },
   };
 
