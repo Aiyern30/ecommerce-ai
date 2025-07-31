@@ -1,6 +1,6 @@
 // components/UseCases.tsx
 "use client";
-import { motion } from "framer-motion";
+import { motion, easeOut } from "framer-motion";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/";
 import { Typography } from "@/components/ui/Typography";
@@ -53,7 +53,7 @@ export function UseCases() {
       y: 0,
       transition: {
         duration: 0.6,
-        ease: "easeOut",
+        ease: easeOut,
       },
     },
   };
@@ -65,7 +65,7 @@ export function UseCases() {
       x: 0,
       transition: {
         duration: 0.8,
-        ease: "easeOut",
+        ease: easeOut,
       },
     },
   };
