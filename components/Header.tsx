@@ -55,11 +55,6 @@ const Header = () => {
     setMenuOpen(false);
   };
 
-  const handleRegisterClick = () => {
-    router.push("/SignUp");
-    setMenuOpen(false);
-  };
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/login");
@@ -291,23 +286,14 @@ const Header = () => {
 
             {/* Auth Buttons (only show when not logged in) */}
             {!user && (
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleLoginClick}
-                  className="border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
-                >
-                  Sign In
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={handleRegisterClick}
-                  className="bg-[#ff7a5c] hover:bg-[#ff6642] text-white transition-colors"
-                >
-                  Register
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLoginClick}
+                className="border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
+              >
+                Sign In
+              </Button>
             )}
           </div>
         </div>
@@ -408,21 +394,13 @@ const Header = () => {
                   className="border-t dark:border-gray-800 pt-4"
                 >
                   {!user ? (
-                    <div className="space-y-3">
-                      <Button
-                        onClick={handleLoginClick}
-                        variant="outline"
-                        className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
-                      >
-                        Sign In
-                      </Button>
-                      <Button
-                        onClick={handleRegisterClick}
-                        className="w-full bg-[#ff7a5c] hover:bg-[#ff6642] text-white"
-                      >
-                        Register
-                      </Button>
-                    </div>
+                    <Button
+                      onClick={handleLoginClick}
+                      variant="outline"
+                      className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+                    >
+                      Sign In
+                    </Button>
                   ) : (
                     <div className="space-y-2">
                       <Link
