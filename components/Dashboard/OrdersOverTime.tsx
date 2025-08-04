@@ -32,7 +32,7 @@ interface Order {
   created_at: string;
 }
 
-type FilterType = "week" | "month";
+type FilterType = "day" | "week" | "month";
 
 const CustomTooltip = ({
   active,
@@ -53,6 +53,52 @@ const CustomTooltip = ({
   }
   return null;
 };
+
+function generateHourlyPeriods() {
+  const periods = [];
+  const today = new Date();
+
+  // Generate 24 hours (0-23)
+  for (let hour = 0; hour < 24; hour++) {
+    const startOfHour = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+      hour,
+      0,
+      0,
+      0
+    );
+    const endOfHour = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+      hour,
+      59,
+      59,
+      999
+    );
+
+    // Format hour for display (12-hour format)
+    const displayHour =
+      hour === 0
+        ? "12am"
+        : hour < 12
+        ? `${hour}am`
+        : hour === 12
+        ? "12pm"
+        : `${hour - 12}pm`;
+
+    periods.push({
+      start: startOfHour,
+      end: endOfHour,
+      label: displayHour,
+      sortDate: startOfHour.toISOString(),
+    });
+  }
+
+  return periods;
+}
 
 function generateWeeklyPeriods(weeksBack: number = 8) {
   const periods = [];
@@ -128,7 +174,7 @@ function groupOrdersByPeriod(orders: Order[], periods: any[]) {
 
 export function OrdersOverTimeChart() {
   const [data, setData] = useState<OrdersData[]>([]);
-  const [filter, setFilter] = useState<FilterType>("week");
+  const [filter, setFilter] = useState<FilterType>("month");
   const [loading, setLoading] = useState(true);
   const [totalOrders, setTotalOrders] = useState(0);
 
@@ -136,17 +182,38 @@ export function OrdersOverTimeChart() {
     async function fetchOrders() {
       setLoading(true);
       try {
-        // Calculate how far back to fetch data
-        const daysBack = filter === "week" ? 56 : 180; // 8 weeks or 6 months
-        const since = new Date();
-        since.setDate(since.getDate() - daysBack);
-        since.setHours(0, 0, 0, 0);
+        let since: Date;
+        let queryData;
 
-        const { data: orders, error } = await supabase
-          .from("orders")
-          .select("created_at")
-          .gte("created_at", since.toISOString())
-          .order("created_at", { ascending: true });
+        if (filter === "day") {
+          // For daily view, get today's data only
+          since = new Date();
+          since.setHours(0, 0, 0, 0);
+
+          const endOfDay = new Date();
+          endOfDay.setHours(23, 59, 59, 999);
+
+          queryData = await supabase
+            .from("orders")
+            .select("created_at")
+            .gte("created_at", since.toISOString())
+            .lte("created_at", endOfDay.toISOString())
+            .order("created_at", { ascending: true });
+        } else {
+          // For week/month views, get historical data
+          const daysBack = filter === "week" ? 56 : 180; // 8 weeks or 6 months
+          since = new Date();
+          since.setDate(since.getDate() - daysBack);
+          since.setHours(0, 0, 0, 0);
+
+          queryData = await supabase
+            .from("orders")
+            .select("created_at")
+            .gte("created_at", since.toISOString())
+            .order("created_at", { ascending: true });
+        }
+
+        const { data: orders, error } = queryData;
 
         if (error) {
           console.error("Error fetching orders:", error);
@@ -155,7 +222,9 @@ export function OrdersOverTimeChart() {
 
         // Generate periods based on filter
         const periods =
-          filter === "week"
+          filter === "day"
+            ? generateHourlyPeriods()
+            : filter === "week"
             ? generateWeeklyPeriods(8)
             : generateMonthlyPeriods(6);
 
@@ -178,12 +247,13 @@ export function OrdersOverTimeChart() {
   }, [filter]);
 
   const filterOptions = [
+    { value: "day" as FilterType, label: "Today", desc: "Hourly breakdown" },
     { value: "week" as FilterType, label: "Weekly", desc: "Last 8 weeks" },
     { value: "month" as FilterType, label: "Monthly", desc: "Last 6 months" },
   ];
 
   const currentFilterLabel =
-    filterOptions.find((opt) => opt.value === filter)?.label || "Weekly";
+    filterOptions.find((opt) => opt.value === filter)?.label || "Today";
 
   return (
     <Card className="col-span-full">
@@ -255,7 +325,12 @@ export function OrdersOverTimeChart() {
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={data}
-                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                  margin={{
+                    top: 10,
+                    right: 30,
+                    left: 0,
+                    bottom: filter === "day" ? 20 : 0,
+                  }}
                 >
                   <defs>
                     <linearGradient
@@ -275,10 +350,13 @@ export function OrdersOverTimeChart() {
                   </defs>
                   <XAxis
                     dataKey="period"
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: filter === "day" ? 10 : 12 }}
                     tickLine={false}
                     axisLine={false}
                     className="text-gray-600 dark:text-gray-400"
+                    angle={filter === "day" ? -45 : 0}
+                    textAnchor={filter === "day" ? "end" : "middle"}
+                    height={filter === "day" ? 60 : 30}
                   />
                   <YAxis
                     tick={{ fontSize: 12 }}
@@ -323,7 +401,12 @@ export function OrdersOverTimeChart() {
                   {data.length > 0 ? Math.round(totalOrders / data.length) : 0}
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
-                  Avg per {filter === "week" ? "Week" : "Month"}
+                  Avg per{" "}
+                  {filter === "day"
+                    ? "Hour"
+                    : filter === "week"
+                    ? "Week"
+                    : "Month"}
                 </div>
               </div>
               <div className="text-center">
@@ -331,7 +414,12 @@ export function OrdersOverTimeChart() {
                   {Math.max(...data.map((d) => d.orders), 0)}
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
-                  Peak {filter === "week" ? "Week" : "Month"}
+                  Peak{" "}
+                  {filter === "day"
+                    ? "Hour"
+                    : filter === "week"
+                    ? "Week"
+                    : "Month"}
                 </div>
               </div>
             </div>
