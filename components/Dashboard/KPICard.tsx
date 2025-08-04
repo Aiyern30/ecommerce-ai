@@ -17,8 +17,7 @@ interface KpiData {
   ordersGrowth: number;
   totalProducts: number;
   productsGrowth: number;
-  newUsers: number;
-  usersGrowth: number;
+  totalEnquiries: number;
 }
 
 export function KpiCards() {
@@ -31,6 +30,7 @@ export function KpiCards() {
         const res = await fetch("/api/admin/kpi-metrics");
         const data = await res.json();
         console.log("KPI data:", data);
+
         setKpiData(data);
       } catch (error) {
         console.error("Failed to fetch KPI data:", error);
@@ -42,17 +42,13 @@ export function KpiCards() {
     fetchKpiData();
   }, []);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-MY", {
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat("en-MY", {
       style: "currency",
       currency: "MYR",
-      minimumFractionDigits: 2,
     }).format(amount);
-  };
 
-  const formatNumber = (num: number) => {
-    return new Intl.NumberFormat().format(num);
-  };
+  const formatNumber = (num: number) => new Intl.NumberFormat().format(num);
 
   const renderGrowthIndicator = (growth: number) => {
     const isPositive = growth >= 0;
@@ -80,9 +76,9 @@ export function KpiCards() {
         {[...Array(4)].map((_, i) => (
           <Card key={i}>
             <CardContent className="p-6">
-              <div className="animate-pulse">
-                <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
-                <div className="h-8 bg-gray-200 rounded w-16 mb-4"></div>
+              <div className="animate-pulse space-y-2">
+                <div className="h-4 bg-gray-200 rounded w-24"></div>
+                <div className="h-8 bg-gray-200 rounded w-16"></div>
                 <div className="h-4 bg-gray-200 rounded w-20"></div>
               </div>
             </CardContent>
@@ -160,24 +156,23 @@ export function KpiCards() {
         </CardContent>
       </Card>
 
-      {/* New Users */}
+      {/* Open Enquiries */}
       <Card>
         <CardContent className="p-6">
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">
-                  New Users (30d)
+                  Open Enquiries
                 </p>
                 <h3 className="text-2xl font-bold">
-                  {kpiData ? formatNumber(kpiData.newUsers) : "0"}
+                  {kpiData ? formatNumber(kpiData.totalEnquiries) : "0"}
                 </h3>
               </div>
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600">
                 <Users className="h-4 w-4" />
               </div>
             </div>
-            {kpiData && renderGrowthIndicator(kpiData.usersGrowth)}
           </div>
         </CardContent>
       </Card>
