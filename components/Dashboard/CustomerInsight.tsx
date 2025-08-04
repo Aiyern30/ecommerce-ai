@@ -36,45 +36,11 @@ export function CustomerInsights() {
 
   useEffect(() => {
     const fetchData = async () => {
-      // This would query:
-      // - Unique users with orders
-      // - Users with multiple orders
-      // - Geographic distribution from addresses
-      // - Customer segmentation by order value/frequency
-
-      const mockData: CustomerInsightsData = {
-        totalCustomers: 1247,
-        repeatCustomers: 423,
-        averageOrderValue: 285.5,
-        customerLifetimeValue: 1250.75,
-        orderFrequency: [
-          { frequency: "1 order", customers: 824 },
-          { frequency: "2-3 orders", customers: 298 },
-          { frequency: "4-5 orders", customers: 89 },
-          { frequency: "6+ orders", customers: 36 },
-        ],
-        topStates: [
-          { state: "Selangor", customers: 345, orders: 892 },
-          { state: "Kuala Lumpur", customers: 234, orders: 567 },
-          { state: "Johor", customers: 189, orders: 423 },
-          { state: "Penang", customers: 156, orders: 334 },
-          { state: "Perak", customers: 123, orders: 245 },
-        ],
-        customerSegments: [
-          { segment: "High Value", count: 89, value: 2500, color: "#10b981" },
-          { segment: "Regular", count: 456, value: 850, color: "#3b82f6" },
-          { segment: "Occasional", count: 567, value: 320, color: "#f59e0b" },
-          { segment: "New", count: 135, value: 150, color: "#6b7280" },
-        ],
-      };
-
-      setTimeout(() => {
-        setData(mockData);
-        setLoading(false);
-      }, 1000);
+      const res = await fetch("/api/admin/customer_insights");
+      const json = await res.json();
+      setData(json);
     };
-
-    fetchData();
+    fetchData().finally(() => setLoading(false));
   }, []);
 
   if (loading) {

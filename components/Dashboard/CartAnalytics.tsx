@@ -34,7 +34,6 @@ interface CartAnalyticsData {
 
 export function CartAnalytics() {
   const [data, setData] = useState<CartAnalyticsData | null>(null);
-  console.log("CartAnalytics data:", data);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
