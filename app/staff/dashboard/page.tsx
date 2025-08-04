@@ -11,6 +11,7 @@ import { TopProducts } from "@/components/Dashboard/TopProduct";
 import { TrafficAnalytics } from "@/components/Dashboard/TrafficAnalytics";
 import { OrdersOverTime } from "@/components/Dashboard/OrdersOverTime";
 import { CartAnalytics } from "@/components/Dashboard/CartAnalytics";
+import { CustomerInsights } from "@/components/Dashboard/CustomerInsight";
 
 export default function Dashboard() {
   return (
@@ -31,6 +32,9 @@ export default function Dashboard() {
       </div>
       <div className="space-y-4 my-4">
         <CartAnalytics />
+      </div>
+      <div className="space-y-4 my-4">
+        <CustomerInsights />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2 w-full">
