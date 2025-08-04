@@ -5,11 +5,11 @@ import { FiSettings } from "react-icons/fi";
 
 import { KpiCards } from "@/components/Dashboard/KPICard";
 import { RevenueOverTime } from "@/components/Dashboard/RevenueOverTime";
-import { OrdersOverTimeChart } from "@/components/Dashboard/OrdersOverTime";
 import { RecentTransactions } from "@/components/Dashboard/RecentTransaction";
 import { RevenueByDevice } from "@/components/Dashboard/RevenueByDevices";
 import { TopProducts } from "@/components/Dashboard/TopProduct";
 import { TrafficAnalytics } from "@/components/Dashboard/TrafficAnalytics";
+import { OrdersOverTime } from "@/components/Dashboard/OrdersOverTime";
 
 export default function Dashboard() {
   return (
@@ -25,7 +25,7 @@ export default function Dashboard() {
       <KpiCards />
 
       <div className="space-y-4 my-4">
-        <OrdersOverTimeChart />
+        <OrdersOverTime />
         <RevenueOverTime />
       </div>
 
