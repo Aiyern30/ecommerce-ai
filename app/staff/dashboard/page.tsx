@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/";
 import { FiSettings } from "react-icons/fi";
 
 import { KpiCards } from "@/components/Dashboard/KPICard";
-import { LastSevenDaysSales } from "@/components/Dashboard/LastSeenSevenDays";
+import { RevenueOverTime } from "@/components/Dashboard/RevenueOverTime";
 import { OrdersOverTimeChart } from "@/components/Dashboard/OrdersOverTime";
 import { RecentTransactions } from "@/components/Dashboard/RecentTransaction";
 import { RevenueByDevice } from "@/components/Dashboard/RevenueByDevices";
@@ -27,9 +27,9 @@ export default function Dashboard() {
 
       <KpiCards />
 
-      <div className="grid gap-4 lg:grid-cols-2 w-full">
+      <div className="space-y-4 my-4">
         <OrdersOverTimeChart />
-        <LastSevenDaysSales />
+        <RevenueOverTime />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2 w-full">
