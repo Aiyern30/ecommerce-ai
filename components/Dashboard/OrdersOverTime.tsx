@@ -1,5 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase/browserClient";
 import { Card, CardContent } from "@/components/ui/";
 import { ChevronDown } from "lucide-react";
 import {
@@ -14,41 +17,57 @@ import {
 
 interface OrdersData {
   time: string;
-  May21: number;
-  May22: number;
+  Today: number;
+  Yesterday: number;
 }
 
-const data: OrdersData[] = [
-  { time: "4am", May21: 5, May22: 8 },
-  { time: "5am", May21: 3, May22: 4 },
-  { time: "6am", May21: 6, May22: 12 },
-  { time: "7am", May21: 8, May22: 8 },
-  { time: "8am", May21: 12, May22: 20 },
-  { time: "9am", May21: 10, May22: 16 },
-  { time: "10am", May21: 14, May22: 24 },
-  { time: "11am", May21: 18, May22: 32 },
-  { time: "12pm", May21: 10, May22: 16 },
-  { time: "1pm", May21: 8, May22: 12 },
-  { time: "2pm", May21: 12, May22: 20 },
-  { time: "3pm", May21: 10, May22: 16 },
-];
-
-interface CustomTooltipProps {
-  active?: boolean;
-  payload?: { value: number }[];
-  label?: string;
+interface Order {
+  created_at: string;
+  // ...other fields
 }
 
-const CustomTooltip: React.FC<CustomTooltipProps> = ({
+const hours = Array.from({ length: 12 }, (_, i) => {
+  const hour = 4 + i;
+  const ampm = hour < 12 ? "am" : hour === 12 ? "pm" : `${hour - 12}pm`;
+  return `${hour <= 12 ? hour : hour - 12}${ampm}`;
+});
+
+function groupOrdersByHour(orders: Order[], date: Date) {
+  const result: Record<string, number> = {};
+  hours.forEach((h) => (result[h] = 0));
+  orders.forEach((order) => {
+    const d = new Date(order.created_at);
+    if (
+      d.getFullYear() === date.getFullYear() &&
+      d.getMonth() === date.getMonth() &&
+      d.getDate() === date.getDate()
+    ) {
+      const hour = d.getHours();
+      if (hour >= 4 && hour < 16) {
+        const label = `${hour <= 12 ? hour : hour - 12}${
+          hour < 12 ? "am" : "pm"
+        }`;
+        if (result[label] !== undefined) result[label]++;
+      }
+    }
+  });
+  return result;
+}
+
+const CustomTooltip = ({
   active,
   payload,
   label,
+}: {
+  active?: boolean;
+  payload?: any[];
+  label?: string;
 }) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-gray-800 text-white px-3 py-2 rounded-md text-xs">
         <p>{`${payload[0].value} Orders`}</p>
-        {label && <p>{`May 22, ${label}`}</p>}
+        {label && <p>{label}</p>}
       </div>
     );
   }
@@ -56,6 +75,44 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
 };
 
 export function OrdersOverTimeChart() {
+  const [data, setData] = useState<OrdersData[]>([]);
+
+  useEffect(() => {
+    async function fetchOrders() {
+      // Fetch all orders from the last 2 days
+      const since = new Date();
+      since.setDate(since.getDate() - 1);
+      since.setHours(0, 0, 0, 0);
+
+      const { data: orders, error } = await supabase
+        .from("orders")
+        .select("created_at")
+        .gte("created_at", since.toISOString());
+
+      if (error) {
+        // handle error
+        return;
+      }
+
+      const today = new Date();
+      const yesterday = new Date();
+      yesterday.setDate(today.getDate() - 1);
+
+      const todayCounts = groupOrdersByHour(orders, today);
+      const yesterdayCounts = groupOrdersByHour(orders, yesterday);
+
+      const chartData = hours.map((h) => ({
+        time: h,
+        Today: todayCounts[h],
+        Yesterday: yesterdayCounts[h],
+      }));
+
+      setData(chartData);
+    }
+
+    fetchOrders();
+  }, []);
+
   return (
     <Card>
       <CardContent className="p-6">
@@ -67,18 +124,6 @@ export function OrdersOverTimeChart() {
               <ChevronDown className="h-4 w-4 ml-1" />
             </div>
           </div>
-
-          <div className="flex items-center gap-6 mb-2">
-            <div>
-              <h4 className="text-2xl font-bold">645</h4>
-              <p className="text-sm text-gray-500">Orders on May 22</p>
-            </div>
-            <div>
-              <h4 className="text-2xl font-bold">472</h4>
-              <p className="text-sm text-gray-500">Orders on May 21</p>
-            </div>
-          </div>
-
           <div className="h-[240px] w-full max-w-full overflow-hidden">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
@@ -86,11 +131,17 @@ export function OrdersOverTimeChart() {
                 margin={{ top: 10, right: 10, left: -40, bottom: 0 }}
               >
                 <defs>
-                  <linearGradient id="colorMay22" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="colorToday" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
                     <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1} />
                   </linearGradient>
-                  <linearGradient id="colorMay21" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient
+                    id="colorYesterday"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
                     <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.8} />
                     <stop offset="95%" stopColor="#94a3b8" stopOpacity={0.1} />
                   </linearGradient>
@@ -115,18 +166,18 @@ export function OrdersOverTimeChart() {
                 <Tooltip content={<CustomTooltip />} />
                 <Area
                   type="monotone"
-                  dataKey="May21"
+                  dataKey="Yesterday"
                   stroke="#94a3b8"
                   fillOpacity={1}
-                  fill="url(#colorMay21)"
+                  fill="url(#colorYesterday)"
                   strokeWidth={2}
                 />
                 <Area
                   type="monotone"
-                  dataKey="May22"
+                  dataKey="Today"
                   stroke="#3b82f6"
                   fillOpacity={1}
-                  fill="url(#colorMay22)"
+                  fill="url(#colorToday)"
                   strokeWidth={2}
                 />
               </AreaChart>
