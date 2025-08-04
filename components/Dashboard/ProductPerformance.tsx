@@ -38,94 +38,16 @@ interface ProductPerformanceData {
 
 export function ProductPerformance() {
   const [data, setData] = useState<ProductPerformanceData | null>(null);
+  console.log("ProductPerformance data:", data);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      // This would query:
-      // - Products with highest order_items count
-      // - Revenue by category
-      // - Stock levels vs sales velocity
-      // - Price distribution analysis
-
-      const mockData: ProductPerformanceData = {
-        topSellingProducts: [
-          {
-            name: "Premium Oak Flooring",
-            sales: 145,
-            revenue: 181250,
-            category: "Flooring",
-          },
-          {
-            name: "Bamboo Panels",
-            sales: 98,
-            revenue: 87220,
-            category: "Panels",
-          },
-          {
-            name: "Teak Decking",
-            sales: 67,
-            revenue: 140700,
-            category: "Decking",
-          },
-          {
-            name: "Pine Lumber",
-            sales: 234,
-            revenue: 46800,
-            category: "Lumber",
-          },
-        ],
-        categoryPerformance: [
-          {
-            category: "Flooring",
-            products: 23,
-            revenue: 245000,
-            avgPrice: 1250,
-          },
-          { category: "Panels", products: 18, revenue: 156000, avgPrice: 890 },
-          {
-            category: "Decking",
-            products: 12,
-            revenue: 198000,
-            avgPrice: 2100,
-          },
-          { category: "Lumber", products: 45, revenue: 89000, avgPrice: 200 },
-        ],
-        lowStockProducts: [
-          {
-            name: "Mahogany Planks",
-            stock: 5,
-            category: "Lumber",
-            reorderLevel: 20,
-          },
-          {
-            name: "Cedar Shingles",
-            stock: 8,
-            category: "Roofing",
-            reorderLevel: 25,
-          },
-          {
-            name: "Walnut Flooring",
-            stock: 3,
-            category: "Flooring",
-            reorderLevel: 15,
-          },
-        ],
-        priceAnalysis: [
-          { priceRange: "RM0-500", products: 45, sales: 234 },
-          { priceRange: "RM500-1000", products: 23, sales: 156 },
-          { priceRange: "RM1000-2000", products: 18, sales: 89 },
-          { priceRange: "RM2000+", products: 12, sales: 45 },
-        ],
-      };
-
-      setTimeout(() => {
-        setData(mockData);
-        setLoading(false);
-      }, 1000);
+      const res = await fetch("/api/admin/product-performance");
+      const json = await res.json();
+      setData(json);
     };
-
-    fetchData();
+    fetchData().finally(() => setLoading(false));
   }, []);
 
   if (loading) {
