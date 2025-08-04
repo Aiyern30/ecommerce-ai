@@ -4,20 +4,8 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    // Get cookies() synchronously
     const cookieStore = cookies();
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
-
-    // Revenue (paid orders only)
-    const { data: revenue, error: revenueError } = await supabase
-      .from("orders")
-      .select("total, created_at")
-      .eq("payment_status", "paid");
-
-    if (revenueError) throw revenueError;
-
-    const totalRevenue =
-      revenue?.reduce((sum, order) => sum + Number(order.total || 0), 0) || 0;
 
     const today = new Date();
     const thirtyDaysAgo = new Date(today);
@@ -25,28 +13,42 @@ export async function GET() {
     const sixtyDaysAgo = new Date(today);
     sixtyDaysAgo.setDate(today.getDate() - 60);
 
+    // -------------------
+    // 1️⃣ Revenue
+    const { data: revenueData, error: revenueError } = await supabase
+      .from("orders")
+      .select("total, created_at")
+      .eq("payment_status", "paid");
+
+    if (revenueError) throw revenueError;
+
+    const totalRevenue =
+      revenueData?.reduce((sum, order) => sum + Number(order.total || 0), 0) ||
+      0;
+
     const recentRevenue =
-      revenue
-        ?.filter((order) => new Date(order.created_at) >= thirtyDaysAgo)
-        .reduce((sum, order) => sum + Number(order.total || 0), 0) || 0;
+      revenueData
+        ?.filter((o) => new Date(o.created_at) >= thirtyDaysAgo)
+        .reduce((sum, o) => sum + Number(o.total || 0), 0) || 0;
 
     const previousRevenue =
-      revenue
+      revenueData
         ?.filter(
-          (order) =>
-            new Date(order.created_at) >= sixtyDaysAgo &&
-            new Date(order.created_at) < thirtyDaysAgo
+          (o) =>
+            new Date(o.created_at) >= sixtyDaysAgo &&
+            new Date(o.created_at) < thirtyDaysAgo
         )
-        .reduce((sum, order) => sum + Number(order.total || 0), 0) || 0;
+        .reduce((sum, o) => sum + Number(o.total || 0), 0) || 0;
 
     const revenueGrowth =
       previousRevenue > 0
         ? ((recentRevenue - previousRevenue) / previousRevenue) * 100
         : 0;
 
-    // Orders
+    // -------------------
+    // 2️⃣ Orders
     const {
-      data: orders,
+      data: ordersData,
       count: totalOrders,
       error: ordersError,
     } = await supabase.from("orders").select("created_at", { count: "exact" });
@@ -54,14 +56,14 @@ export async function GET() {
     if (ordersError) throw ordersError;
 
     const recentOrders =
-      orders?.filter((order) => new Date(order.created_at) >= thirtyDaysAgo)
+      ordersData?.filter((o) => new Date(o.created_at) >= thirtyDaysAgo)
         .length || 0;
 
     const previousOrders =
-      orders?.filter(
-        (order) =>
-          new Date(order.created_at) >= sixtyDaysAgo &&
-          new Date(order.created_at) < thirtyDaysAgo
+      ordersData?.filter(
+        (o) =>
+          new Date(o.created_at) >= sixtyDaysAgo &&
+          new Date(o.created_at) < thirtyDaysAgo
       ).length || 0;
 
     const ordersGrowth =
@@ -69,9 +71,10 @@ export async function GET() {
         ? ((recentOrders - previousOrders) / previousOrders) * 100
         : 0;
 
-    // Products
+    // -------------------
+    // 3️⃣ Products
     const {
-      data: products,
+      data: productsData,
       count: totalProducts,
       error: productsError,
     } = await supabase
@@ -82,15 +85,14 @@ export async function GET() {
     if (productsError) throw productsError;
 
     const recentProducts =
-      products?.filter(
-        (product) => new Date(product.created_at) >= thirtyDaysAgo
-      ).length || 0;
+      productsData?.filter((p) => new Date(p.created_at) >= thirtyDaysAgo)
+        .length || 0;
 
     const previousProducts =
-      products?.filter(
-        (product) =>
-          new Date(product.created_at) >= sixtyDaysAgo &&
-          new Date(product.created_at) < thirtyDaysAgo
+      productsData?.filter(
+        (p) =>
+          new Date(p.created_at) >= sixtyDaysAgo &&
+          new Date(p.created_at) < thirtyDaysAgo
       ).length || 0;
 
     const productsGrowth =
@@ -98,31 +100,24 @@ export async function GET() {
         ? ((recentProducts - previousProducts) / previousProducts) * 100
         : 0;
 
-    // Users (commented out, see note above)
-    // let newUsers = 0;
-    // let usersGrowth = 0;
-    // try {
-    //   const { data: allUsers, error: usersError } = await supabase
-    //     .from("users") // <-- use your custom users table if you have one
-    //     .select("created_at");
-    //   if (usersError) throw usersError;
-    //   newUsers =
-    //     allUsers?.filter((user) => new Date(user.created_at) >= thirtyDaysAgo)
-    //       .length || 0;
-    //   const previousNewUsers =
-    //     allUsers?.filter(
-    //       (user) =>
-    //         new Date(user.created_at) >= sixtyDaysAgo &&
-    //         new Date(user.created_at) < thirtyDaysAgo
-    //     ).length || 0;
-    //   usersGrowth =
-    //     previousNewUsers > 0
-    //       ? ((newUsers - previousNewUsers) / previousNewUsers) * 100
-    //       : 0;
-    // } catch (e) {
-    //   // ignore users error if table doesn't exist
-    // }
+    // -------------------
+    // 4️⃣ Open Enquiries (unread enquiries)
+    let totalEnquiries = 0;
+    try {
+      const { count, error } = await supabase
+        .from("enquiries")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "open");
 
+      if (error) throw error;
+
+      totalEnquiries = count || 0;
+    } catch {
+      // silently ignore if enquiries table not found
+    }
+
+    // -------------------
+    // ✅ Return
     return NextResponse.json({
       totalRevenue,
       revenueGrowth,
@@ -130,8 +125,7 @@ export async function GET() {
       ordersGrowth,
       totalProducts: totalProducts || 0,
       productsGrowth,
-      // newUsers,
-      // usersGrowth,
+      totalEnquiries,
     });
   } catch (error) {
     console.error("Error fetching KPI metrics:", error);
