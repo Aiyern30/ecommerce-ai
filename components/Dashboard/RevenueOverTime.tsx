@@ -186,7 +186,7 @@ function groupRevenueByPeriod(orders: Order[], periods: any[]) {
   });
 }
 
-export function LastSevenDaysSales() {
+export function RevenueOverTime() {
   const [data, setData] = useState<RevenueData[]>([]);
   const [filter, setFilter] = useState<FilterType>("month");
   const [loading, setLoading] = useState(true);
@@ -286,7 +286,7 @@ export function LastSevenDaysSales() {
   };
 
   return (
-    <Card className="col-span-full lg:col-span-1">
+    <Card className="col-span-full">
       <CardContent className="p-6">
         <div className="flex flex-col gap-6">
           {/* Header */}
