@@ -5,7 +5,13 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/browserClient";
 import { Card, CardContent } from "@/components/ui/";
 import { Button } from "@/components/ui/";
-import { ChevronDown, Calendar, DollarSign } from "lucide-react";
+import {
+  ChevronDown,
+  Calendar,
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,14 +54,17 @@ const CustomTooltip = ({
   if (active && payload && payload.length) {
     const value = payload[0].value;
     return (
-      <div className="bg-gray-800 text-white px-3 py-2 rounded-md shadow-lg">
-        <p className="font-medium">
-          RM{" "}
-          {new Intl.NumberFormat("en-MY", { minimumFractionDigits: 2 }).format(
-            value
-          )}
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 px-4 py-3 rounded-xl shadow-xl backdrop-blur-sm">
+        <p className="font-semibold text-gray-900 dark:text-white text-lg">
+          {new Intl.NumberFormat("en-MY", {
+            style: "currency",
+            currency: "MYR",
+            minimumFractionDigits: 2,
+          }).format(value)}
         </p>
-        <p className="text-gray-300 text-sm">{label}</p>
+        <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">
+          {label}
+        </p>
       </div>
     );
   }
@@ -66,7 +75,6 @@ function generateHourlyPeriods() {
   const periods = [];
   const today = new Date();
 
-  // Generate 24 hours (0-23)
   for (let hour = 0; hour < 24; hour++) {
     const startOfHour = new Date(
       today.getFullYear(),
@@ -87,7 +95,6 @@ function generateHourlyPeriods() {
       999
     );
 
-    // Format hour for display (12-hour format)
     const displayHour =
       hour === 0
         ? "12am"
@@ -104,11 +111,10 @@ function generateHourlyPeriods() {
       sortDate: startOfHour.toISOString(),
     });
   }
-
   return periods;
 }
 
-function generateWeeklyPeriods(weeksBack: number = 8) {
+function generateWeeklyPeriods(weeksBack = 8) {
   const periods = [];
   const today = new Date();
 
@@ -130,11 +136,10 @@ function generateWeeklyPeriods(weeksBack: number = 8) {
       sortDate: startOfWeek.toISOString(),
     });
   }
-
   return periods;
 }
 
-function generateMonthlyPeriods(monthsBack: number = 6) {
+function generateMonthlyPeriods(monthsBack = 6) {
   const periods = [];
   const today = new Date();
 
@@ -161,7 +166,6 @@ function generateMonthlyPeriods(monthsBack: number = 6) {
       sortDate: startOfMonth.toISOString(),
     });
   }
-
   return periods;
 }
 
@@ -176,7 +180,7 @@ function groupRevenueByPeriod(orders: Order[], periods: any[]) {
           order.payment_status === "paid"
         );
       })
-      .reduce((sum, order) => sum + parseFloat(order.total || "0"), 0);
+      .reduce((sum, order) => sum + Number.parseFloat(order.total || "0"), 0);
 
     return {
       period: period.label,
@@ -192,6 +196,7 @@ export function RevenueOverTime() {
   const [loading, setLoading] = useState(true);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [totalOrders, setTotalOrders] = useState(0);
+  const [previousPeriodRevenue, setPreviousPeriodRevenue] = useState(0);
 
   useEffect(() => {
     async function fetchRevenue() {
@@ -201,10 +206,8 @@ export function RevenueOverTime() {
         let queryData;
 
         if (filter === "day") {
-          // For daily view, get today's data only
           since = new Date();
           since.setHours(0, 0, 0, 0);
-
           const endOfDay = new Date();
           endOfDay.setHours(23, 59, 59, 999);
 
@@ -215,8 +218,7 @@ export function RevenueOverTime() {
             .lte("created_at", endOfDay.toISOString())
             .order("created_at", { ascending: true });
         } else {
-          // For week/month views, get historical data
-          const daysBack = filter === "week" ? 56 : 180; // 8 weeks or 6 months
+          const daysBack = filter === "week" ? 56 : 180;
           since = new Date();
           since.setDate(since.getDate() - daysBack);
           since.setHours(0, 0, 0, 0);
@@ -229,13 +231,11 @@ export function RevenueOverTime() {
         }
 
         const { data: orders, error } = queryData;
-
         if (error) {
           console.error("Error fetching revenue:", error);
           return;
         }
 
-        // Generate periods based on filter
         const periods =
           filter === "day"
             ? generateHourlyPeriods()
@@ -243,21 +243,32 @@ export function RevenueOverTime() {
             ? generateWeeklyPeriods(8)
             : generateMonthlyPeriods(6);
 
-        // Group revenue by period
         const chartData = groupRevenueByPeriod(orders || [], periods);
-
-        // Calculate totals for paid orders only
         const paidOrders =
           orders?.filter((order) => order.payment_status === "paid") || [];
         const total = paidOrders.reduce(
-          (sum, order) => sum + parseFloat(order.total || "0"),
+          (sum, order) => sum + Number.parseFloat(order.total || "0"),
           0
         );
         const orderCount = paidOrders.length;
 
+        // Calculate previous period for comparison
+        // const currentPeriodData = chartData.slice(
+        //   -Math.ceil(chartData.length / 2)
+        // );
+        const previousPeriodData = chartData.slice(
+          0,
+          Math.floor(chartData.length / 2)
+        );
+        const prevTotal = previousPeriodData.reduce(
+          (sum, item) => sum + item.revenue,
+          0
+        );
+
         setData(chartData);
         setTotalRevenue(total);
         setTotalOrders(orderCount);
+        setPreviousPeriodRevenue(prevTotal);
       } catch (error) {
         console.error("Error fetching revenue:", error);
       } finally {
@@ -285,53 +296,66 @@ export function RevenueOverTime() {
     }).format(amount);
   };
 
+  const revenueChange =
+    previousPeriodRevenue > 0
+      ? ((totalRevenue - previousPeriodRevenue) / previousPeriodRevenue) * 100
+      : 0;
+
   return (
-    <Card className="col-span-full">
-      <CardContent className="p-6">
-        <div className="flex flex-col gap-6">
+    <Card className="col-span-full bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 border-0 shadow-xl">
+      <CardContent className="p-8">
+        <div className="flex flex-col gap-8">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
-                <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl shadow-lg">
+                <DollarSign className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
                   Revenue Overview
                 </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-gray-600 dark:text-gray-400 font-medium">
                   {currentFilterLabel} breakdown
                 </p>
               </div>
             </div>
 
-            {/* Filter Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="gap-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm"
+                >
                   <Calendar className="h-4 w-4" />
                   {currentFilterLabel}
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent
+                align="end"
+                className="w-56 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+              >
                 {filterOptions.map((option) => (
                   <DropdownMenuItem
                     key={option.value}
                     onClick={() => setFilter(option.value)}
-                    className="flex flex-col items-start gap-1 p-3"
+                    className="flex flex-col items-start gap-1 p-4 hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       <div
-                        className={`w-2 h-2 rounded-full ${
+                        className={`w-3 h-3 rounded-full ${
                           filter === option.value
-                            ? "bg-green-600"
-                            : "bg-gray-300"
+                            ? "bg-emerald-500 shadow-lg shadow-emerald-500/30"
+                            : "bg-gray-300 dark:bg-gray-600"
                         }`}
                       />
-                      <span className="font-medium">{option.label}</span>
+                      <span className="font-semibold text-gray-900 dark:text-white">
+                        {option.label}
+                      </span>
                     </div>
-                    <span className="text-xs text-gray-500 ml-4">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 ml-6">
                       {option.desc}
                     </span>
                   </DropdownMenuItem>
@@ -341,84 +365,133 @@ export function RevenueOverTime() {
           </div>
 
           {/* Summary Stats */}
-          <div className="flex items-center gap-6 pb-2 border-b border-gray-200 dark:border-gray-700">
-            <div>
-              <h4 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {totalOrders}
-              </h4>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    Total Revenue
+                  </p>
+                  <h4 className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+                    {formatCurrency(totalRevenue)}
+                  </h4>
+                </div>
+                <div
+                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${
+                    revenueChange >= 0
+                      ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
+                      : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                  }`}
+                >
+                  {revenueChange >= 0 ? (
+                    <TrendingUp className="h-4 w-4" />
+                  ) : (
+                    <TrendingDown className="h-4 w-4" />
+                  )}
+                  {Math.abs(revenueChange).toFixed(1)}%
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                 Paid Orders
               </p>
-            </div>
-            <div>
-              <h4 className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {formatCurrency(totalRevenue)}
+              <h4 className="text-3xl font-bold text-gray-900 dark:text-white">
+                {totalOrders.toLocaleString()}
               </h4>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Total Revenue
-              </p>
             </div>
+
             {totalOrders > 0 && (
-              <div>
-                <h4 className="text-lg font-bold text-gray-700 dark:text-gray-300">
-                  {formatCurrency(totalRevenue / totalOrders)}
-                </h4>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                   Avg Order Value
                 </p>
+                <h4 className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {formatCurrency(totalRevenue / totalOrders)}
+                </h4>
               </div>
             )}
           </div>
 
           {/* Chart */}
-          <div className="h-[240px] w-full">
-            {loading ? (
-              <div className="flex items-center justify-center h-full">
-                <div className="animate-pulse flex flex-col items-center gap-2">
-                  <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
-                  <span className="text-sm text-gray-500">
-                    Loading chart...
-                  </span>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+            <div className="h-[320px] w-full">
+              {loading ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-green-600 rounded-full animate-pulse"></div>
+                    <span className="text-gray-600 dark:text-gray-400 font-medium">
+                      Loading chart...
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={data}
-                  margin={{
-                    top: 10,
-                    right: 10,
-                    left: 0,
-                    bottom: filter === "day" ? 20 : 0,
-                  }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    vertical={false}
-                    stroke="#e2e8f0"
-                    className="dark:stroke-gray-700"
-                  />
-                  <XAxis
-                    dataKey="period"
-                    tick={{ fontSize: filter === "day" ? 10 : 12 }}
-                    tickLine={false}
-                    axisLine={false}
-                    className="text-gray-600 dark:text-gray-400"
-                    angle={filter === "day" ? -45 : 0}
-                    textAnchor={filter === "day" ? "end" : "middle"}
-                    height={filter === "day" ? 60 : 30}
-                  />
-                  <YAxis hide={true} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar
-                    dataKey="revenue"
-                    fill="#10b981"
-                    radius={[4, 4, 0, 0]}
-                    barSize={filter === "day" ? 16 : 20}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={data}
+                    margin={{
+                      top: 20,
+                      right: 20,
+                      left: 0,
+                      bottom: filter === "day" ? 40 : 20,
+                    }}
+                  >
+                    <defs>
+                      <linearGradient
+                        id="revenueGradient"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="0%"
+                          stopColor="#10b981"
+                          stopOpacity={0.9}
+                        />
+                        <stop
+                          offset="100%"
+                          stopColor="#059669"
+                          stopOpacity={0.7}
+                        />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke="#e5e7eb"
+                      className="dark:stroke-gray-600"
+                      opacity={0.5}
+                    />
+                    <XAxis
+                      dataKey="period"
+                      tick={{
+                        fontSize: filter === "day" ? 11 : 13,
+                        fill: "currentColor",
+                      }}
+                      tickLine={false}
+                      axisLine={false}
+                      className="text-gray-600 dark:text-gray-400"
+                      angle={filter === "day" ? -45 : 0}
+                      textAnchor={filter === "day" ? "end" : "middle"}
+                      height={filter === "day" ? 80 : 40}
+                    />
+                    <YAxis hide={true} />
+                    <Tooltip
+                      content={<CustomTooltip />}
+                      cursor={{ fill: "rgba(16, 185, 129, 0.1)" }}
+                    />
+                    <Bar
+                      dataKey="revenue"
+                      fill="url(#revenueGradient)"
+                      radius={[8, 8, 0, 0]}
+                      barSize={filter === "day" ? 20 : 24}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
           </div>
         </div>
       </CardContent>
