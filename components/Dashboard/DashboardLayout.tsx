@@ -45,6 +45,7 @@ import { supabase } from "@/lib/supabase/browserClient";
 import { useUser } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/navigation";
 import { Product } from "@/type/product";
+
 interface DashboardLayoutProps {
   children: ReactNode;
 }
@@ -250,9 +251,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
+
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full">
+      <div className="flex min-h-screen w-full bg-gray-50 dark:bg-gray-900">
         <Sidebar
           className="border-r bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 border-slate-200 dark:border-slate-700 shadow-lg data-[collapsible=icon]:w-16"
           collapsible="icon"
@@ -332,59 +334,64 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
           </SidebarFooter>
         </Sidebar>
-        <SidebarInset>
-          <header className="w-full bg-white dark:bg-gray-900 shadow-md border-b z-50 dark:border-gray-800">
-            <div className="container mx-auto flex items-center justify-between p-4 flex-nowrap">
-              <SidebarTrigger className="h-8 w-8 text-gray-500" />
+
+        <SidebarInset className="flex flex-1 flex-col min-w-0">
+          <header className="w-full bg-white dark:bg-gray-900 shadow-md border-b z-50 dark:border-gray-800 sticky top-0">
+            <div className="flex items-center justify-between p-4 min-w-0">
+              <SidebarTrigger className="h-8 w-8 text-gray-500 flex-shrink-0" />
 
               <form
                 onSubmit={handleSearch}
-                className="relative flex items-center gap-2"
+                className="relative flex items-center gap-2 flex-shrink min-w-0"
                 encType="multipart/form-data"
               >
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                {/* Search Input */}
-                <Input
-                  type="text"
-                  name="query"
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  placeholder="Search for products..."
-                  className="w-[300px] pl-10 dark:bg-gray-800 dark:border-gray-700"
-                />
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                  {/* Search Input */}
+                  <Input
+                    type="text"
+                    name="query"
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    placeholder="Search for products..."
+                    className="w-[200px] sm:w-[300px] pl-10 dark:bg-gray-800 dark:border-gray-700"
+                  />
 
-                {/* Result Dropdown */}
-                <div className="absolute top-full mt-1 w-[300px] z-50 bg-white dark:bg-gray-800 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                  {isDropdownOpen &&
-                    searchResults.map((product: Product) => (
-                      <Link
-                        key={product.id}
-                        href={`/staff/products/${product.id}`}
-                        onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                      >
-                        <div className="relative w-10 h-10 rounded overflow-hidden bg-gray-200">
-                          <Image
-                            src={
-                              product.image_url ||
-                              product.product_images?.[0]?.image_url ||
-                              "/placeholder.png"
-                            }
-                            alt={product.name}
-                            fill
-                            className="object-cover"
-                            sizes="40px"
-                          />
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="font-medium">{product.name}</span>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
-                            RM {product.price.toFixed(2)} /{" "}
-                            {product.unit || "unit"}
-                          </span>
-                        </div>
-                      </Link>
-                    ))}
+                  {/* Result Dropdown */}
+                  <div className="absolute top-full mt-1 w-full z-50 bg-white dark:bg-gray-800 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    {isDropdownOpen &&
+                      searchResults.map((product: Product) => (
+                        <Link
+                          key={product.id}
+                          href={`/staff/products/${product.id}`}
+                          onClick={() => setDropdownOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2 text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
+                          <div className="relative w-10 h-10 rounded overflow-hidden bg-gray-200 flex-shrink-0">
+                            <Image
+                              src={
+                                product.image_url ||
+                                product.product_images?.[0]?.image_url ||
+                                "/placeholder.png"
+                              }
+                              alt={product.name}
+                              fill
+                              className="object-cover"
+                              sizes="40px"
+                            />
+                          </div>
+                          <div className="flex flex-col min-w-0 flex-1">
+                            <span className="font-medium truncate">
+                              {product.name}
+                            </span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              RM {product.price.toFixed(2)} /{" "}
+                              {product.unit || "unit"}
+                            </span>
+                          </div>
+                        </Link>
+                      ))}
+                  </div>
                 </div>
 
                 {/* Hidden File Input */}
@@ -404,6 +411,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     variant="ghost"
                     title="Upload Image"
                     onClick={triggerFileInput}
+                    className="flex-shrink-0"
                   >
                     🖼️
                   </Button>
@@ -411,7 +419,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
                 {/* Uploaded Image Preview */}
                 {imageFile && (
-                  <div className="w-10 h-10 relative rounded overflow-hidden">
+                  <div className="w-10 h-10 relative rounded overflow-hidden flex-shrink-0">
                     <Image
                       src={URL.createObjectURL(imageFile)}
                       alt="Uploaded"
@@ -427,6 +435,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   size="icon"
                   onClick={toggleTheme}
                   aria-label="Toggle theme"
+                  className="flex-shrink-0"
                 >
                   {theme === "dark" ? (
                     <Sun className="h-[1.2rem] w-[1.2rem]" />
@@ -439,7 +448,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 {user && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Avatar className="h-9 w-9 cursor-pointer border-2 border-[#ff7a5c]">
+                      <Avatar className="h-9 w-9 cursor-pointer border-2 border-[#ff7a5c] flex-shrink-0">
                         <AvatarImage
                           src={user.user_metadata?.avatar_url || undefined}
                           alt="User avatar"
@@ -465,8 +474,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
           </header>
 
-          <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
-            {children}
+          <main className="flex-1 p-4 md:p-6 min-w-0 overflow-auto">
+            <div className="w-full max-w-full">{children}</div>
           </main>
         </SidebarInset>
       </div>
