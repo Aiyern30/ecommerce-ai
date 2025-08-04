@@ -16,10 +16,7 @@ export default function Dashboard() {
     <>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <Button
-          variant="outline"
-          className="gap-2 text-blue-600 border-blue-200 hover:bg-blue-50"
-        >
+        <Button variant="outline" className="gap-2">
           <FiSettings size={18} />
           Manage
         </Button>
