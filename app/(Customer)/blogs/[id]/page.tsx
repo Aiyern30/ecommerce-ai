@@ -104,80 +104,125 @@ export default function BlogPost() {
         <BreadcrumbNav showFilterButton={false} />
       </div>
 
-      <div className="lg:w-3/4 mx-auto">
-        <Card>
-          <div className="relative w-full h-[300px] md:h-[400px] mb-6 group">
-            {/* Main image (shows by default, hides on hover if hoverImage exists) */}
+      <Card>
+        {/* Top Images Section */}
+        {blog.blog_images && blog.blog_images.length === 1 && (
+          <div className="relative w-full h-[300px] md:h-[400px] mb-6">
             <Image
-              src={blog.blog_images?.[0]?.image_url || "/placeholder.svg"}
+              src={blog.blog_images[0].image_url}
               alt={blog.title}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 50vw"
-              className={`object-cover rounded-md transition-opacity duration-300 z-10
-                ${
-                  blog.blog_images && blog.blog_images.length > 1
-                    ? "opacity-100 group-hover:opacity-0"
-                    : ""
-                }
-              `}
-              style={{ transition: "opacity 0.3s" }}
+              className="object-cover rounded-md"
               priority
             />
-            {/* Hover image (if exists, only on hover, always behind content/buttons) */}
-            {blog.blog_images && blog.blog_images.length > 1 && (
+          </div>
+        )}
+        {blog.blog_images && blog.blog_images.length === 2 && (
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
               <Image
-                src={blog.blog_images[1].image_url}
-                alt={blog.title + " (alt)"}
+                src={blog.blog_images[0].image_url}
+                alt={blog.title + " 1"}
                 fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 50vw"
-                className="object-cover rounded-md absolute inset-0 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                style={{ transition: "opacity 0.3s" }}
+                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 40vw, 40vw"
+                className="object-cover"
                 priority
               />
-            )}
-            {/* Buttons or overlays can go here, above both images if needed */}
-          </div>
-
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-blue-900 mb-6 px-6">
-            {blog.title}
-          </h1>
-
-          <div className="space-y-6 text-gray-700 px-6 mb-12">
-            <p>{blog.description}</p>
-          </div>
-
-          {/* Previous / Next Navigation */}
-          {(prevBlog || nextBlog) && (
-            <div className="border-t pt-6 flex justify-between items-center px-6">
-              <div className="flex text-sm text-gray-500 w-full justify-between">
-                {prevBlog ? (
-                  <Link
-                    href={`/blogs/${prevBlog.id}`}
-                    className="flex items-center text-blue-700"
-                  >
-                    <ChevronLeft className="h-4 w-4 mr-1" />
-                    <span>Previous</span>
-                  </Link>
-                ) : (
-                  <span />
-                )}
-
-                {nextBlog ? (
-                  <Link
-                    href={`/blogs/${nextBlog.id}`}
-                    className="flex items-center text-blue-700"
-                  >
-                    <span>Next</span>
-                    <ChevronRight className="h-4 w-4 ml-1" />
-                  </Link>
-                ) : (
-                  <span />
-                )}
-              </div>
             </div>
-          )}
-        </Card>
-      </div>
+            <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+              <Image
+                src={blog.blog_images[1].image_url}
+                alt={blog.title + " 2"}
+                fill
+                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 40vw, 40vw"
+                className="object-cover"
+                priority
+              />
+            </div>
+          </div>
+        )}
+
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-blue-900 mb-6 px-6">
+          {blog.title}
+        </h1>
+
+        <div className="space-y-6 text-gray-700 px-6 mb-12">
+          <p>{blog.description}</p>
+        </div>
+
+        {/* Third image below content */}
+        {blog.blog_images && blog.blog_images.length >= 3 && (
+          <div className="w-full mb-6">
+            <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+              <Image
+                src={blog.blog_images[2].image_url}
+                alt={blog.title + " 3"}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 50vw"
+                className="object-cover"
+                priority
+              />
+            </div>
+          </div>
+        )}
+        {/* Fourth image below content, left/right if present */}
+        {blog.blog_images && blog.blog_images.length === 4 && (
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+              <Image
+                src={blog.blog_images[2].image_url}
+                alt={blog.title + " 3"}
+                fill
+                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 40vw, 40vw"
+                className="object-cover"
+                priority
+              />
+            </div>
+            <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+              <Image
+                src={blog.blog_images[3].image_url}
+                alt={blog.title + " 4"}
+                fill
+                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 40vw, 40vw"
+                className="object-cover"
+                priority
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Previous / Next Navigation */}
+        {(prevBlog || nextBlog) && (
+          <div className="border-t pt-6 flex justify-between items-center px-6">
+            <div className="flex text-sm text-gray-500 w-full justify-between">
+              {prevBlog ? (
+                <Link
+                  href={`/blogs/${prevBlog.id}`}
+                  className="flex items-center text-blue-700"
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  <span>Previous</span>
+                </Link>
+              ) : (
+                <span />
+              )}
+
+              {nextBlog ? (
+                <Link
+                  href={`/blogs/${nextBlog.id}`}
+                  className="flex items-center text-blue-700"
+                >
+                  <span>Next</span>
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              ) : (
+                <span />
+              )}
+            </div>
+          </div>
+        )}
+      </Card>
     </article>
   );
 }
