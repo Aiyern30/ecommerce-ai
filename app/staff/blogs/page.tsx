@@ -314,10 +314,10 @@ export default function Page() {
     }
 
     // Filter by link
-    if (filters.hasLink === "with-link" && !blog.external_link) {
+    if (filters.hasLink === "with-link" && !blog.link) {
       return false;
     }
-    if (filters.hasLink === "without-link" && blog.external_link) {
+    if (filters.hasLink === "without-link" && blog.link) {
       return false;
     }
 
