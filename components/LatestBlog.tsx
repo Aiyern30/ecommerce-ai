@@ -27,6 +27,7 @@ export default function LatestBlog() {
         .select(
           `
           id, title, description, external_link, status, created_at, updated_at,
+          link, link_name,
           blog_images ( image_url ),
           blog_tags ( tags ( id, name ) )
         `
