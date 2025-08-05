@@ -8,30 +8,30 @@ import { Typography } from "@/components/ui/Typography";
 const features = [
   {
     number: "01",
-    title: "Pure Organic",
+    title: "Market Leadership",
     description:
-      "From soothing aloe Vera to revitalizing lavender, each element is handpicked",
+      "As the largest ready-mixed concrete company in Malaysia, we have over 70 batching plants and a fleet of over 1,000 trucks, ensuring efficient supply.",
     color: "text-cyan-500",
   },
   {
     number: "02",
-    title: "No Chemicals",
+    title: "Innovative Products",
     description:
-      "Reprehenderit esse labore id veniam ut veniam non ex adipisicing amet ullamco",
+      "Our products, like the ECOConcrete™ range, are developed with meticulous research to provide high performance while reducing environmental impact.",
     color: "text-cyan-500",
   },
   {
     number: "03",
-    title: "Transformative",
+    title: "Nation-Building Legacy",
     description:
-      "Experience hair that's not only clean but also deeply nourished and beautifully rejuvenated.",
+      "We have contributed to some of Malaysia’s most iconic projects, including the Petronas Twin Towers, Merdeka 118, and KLIA.",
     color: "text-cyan-500",
   },
   {
     number: "04",
-    title: "Environmentally",
+    title: "Environmental Commitment",
     description:
-      "We are committed to reducing our carbon footprint. Our packaging is eco-friendly,",
+      "We are committed to sustainable practices through our ECO Product Range, which offers low-carbon alternatives to conventional materials.",
     color: "text-cyan-500",
   },
 ];
@@ -122,25 +122,22 @@ export function WhyChooseUs() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.3 }}
               >
-                <div className="bg-white dark:bg-gray-800 rounded-xl lg:rounded-2xl p-3 sm:p-4 shadow-lg hover:shadow-xl dark:hover:shadow-2xl transition-shadow duration-300">
-                  <div className="relative w-full h-28 sm:h-32 lg:h-40 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-lg overflow-hidden">
-                    <Image
-                      src="/401.png"
-                      alt="Product 1"
-                      fill
-                      className="object-contain p-2 sm:p-3 lg:p-4"
-                    />
-                  </div>
+                <div className="relative w-full h-28 sm:h-32 lg:h-40 ">
+                  <Image
+                    src="/c1.jpeg"
+                    alt="Product 1"
+                    fill
+                    className="object-contain"
+                  />
                 </div>
-                <div className="bg-white dark:bg-gray-800 rounded-xl lg:rounded-2xl p-3 sm:p-4 shadow-lg hover:shadow-xl dark:hover:shadow-2xl transition-shadow duration-300">
-                  <div className="relative w-full h-28 sm:h-32 lg:h-40 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-lg overflow-hidden">
-                    <Image
-                      src="/401.png"
-                      alt="Product 2"
-                      fill
-                      className="object-contain p-2 sm:p-3 lg:p-4"
-                    />
-                  </div>
+
+                <div className="relative w-full h-28 sm:h-32 lg:h-40 ">
+                  <Image
+                    src="/c2.jpeg"
+                    alt="Product 2"
+                    fill
+                    className="object-contain"
+                  />
                 </div>
               </motion.div>
 
@@ -152,25 +149,22 @@ export function WhyChooseUs() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.4 }}
               >
-                <div className="bg-white dark:bg-gray-800 rounded-xl lg:rounded-2xl p-3 sm:p-4 shadow-lg hover:shadow-xl dark:hover:shadow-2xl transition-shadow duration-300">
-                  <div className="relative w-full h-28 sm:h-32 lg:h-40 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-lg overflow-hidden">
-                    <Image
-                      src="/401.png"
-                      alt="Product 3"
-                      fill
-                      className="object-contain p-2 sm:p-3 lg:p-4"
-                    />
-                  </div>
+                <div className="relative w-full h-28 sm:h-32 lg:h-40 ">
+                  <Image
+                    src="/c3.jpeg"
+                    alt="Product 3"
+                    fill
+                    className="object-contain"
+                  />
                 </div>
-                <div className="bg-white dark:bg-gray-800 rounded-xl lg:rounded-2xl p-3 sm:p-4 shadow-lg hover:shadow-xl dark:hover:shadow-2xl transition-shadow duration-300">
-                  <div className="relative w-full h-28 sm:h-32 lg:h-40 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-lg overflow-hidden">
-                    <Image
-                      src="/401.png"
-                      alt="Product 4"
-                      fill
-                      className="object-contain p-2 sm:p-3 lg:p-4"
-                    />
-                  </div>
+
+                <div className="relative w-full h-28 sm:h-32 lg:h-40 ">
+                  <Image
+                    src="/c4.jpeg"
+                    alt="Product 4"
+                    fill
+                    className="object-contain"
+                  />
                 </div>
               </motion.div>
             </div>
