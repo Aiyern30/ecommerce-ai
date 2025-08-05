@@ -4,7 +4,6 @@ import { supabase } from "@/lib/supabase/client";
 import { usePathname, useRouter } from "next/navigation";
 import {
   ArrowLeft,
-  ExternalLink,
   Calendar,
   Edit,
   Trash2,
@@ -519,22 +518,6 @@ export default function BlogDetailPage() {
                     }
                     className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline"
                   >
-                    {blog.link.startsWith("http://") ||
-                    blog.link.startsWith("https://") ? (
-                      <ExternalLink className="w-4 h-4" />
-                    ) : (
-                      <span>
-                        <svg
-                          className="w-4 h-4 text-green-500 inline"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth={2}
-                          viewBox="0 0 24 24"
-                        >
-                          <path d="M10 13a5 5 0 0 1 7 7l-1.5 1.5a5 5 0 0 1-7-7l1.5-1.5" />
-                        </svg>
-                      </span>
-                    )}
                     <TypographySmall>
                       {blog.link_name ||
                         (blog.link.startsWith("http://") ||
