@@ -59,6 +59,7 @@ export default function HeroCarousel() {
   const [carouselItems, setCarouselItems] = useState<CarouselItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  console.log("HeroCarousel rendered", carouselItems);
 
   const fetchPosts = useCallback(async () => {
     try {
@@ -173,7 +174,17 @@ export default function HeroCarousel() {
                     asChild
                     className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-8 py-6 text-base md:text-lg rounded-lg transition-all duration-300 hover:scale-105"
                   >
-                    <Link href={item.buttonLink}>{item.buttonText}</Link>
+                    {item.buttonLink.includes("http") ? (
+                      <a
+                        href={item.buttonLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {item.buttonText}
+                      </a>
+                    ) : (
+                      <Link href={item.buttonLink}>{item.buttonText}</Link>
+                    )}
                   </Button>
                 </div>
               </div>
