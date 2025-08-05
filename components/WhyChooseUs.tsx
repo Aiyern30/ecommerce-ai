@@ -4,6 +4,7 @@ import { motion, easeOut } from "framer-motion";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/";
 import { Typography } from "@/components/ui/Typography";
+import { AspectRatio } from "@/components/ui/";
 
 import c1 from "@/public/WhyChooseUs/c1.jpeg";
 import c2 from "@/public/WhyChooseUs/c2.jpeg";
@@ -127,23 +128,24 @@ export function WhyChooseUs() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.3 }}
               >
-                <div className="relative w-full h-28 sm:h-32 lg:h-40 ">
+                <AspectRatio ratio={4 / 3}>
                   <Image
                     src={c1}
                     alt="Product 1"
                     fill
-                    className="object-contain"
+                    className="object-contain rounded-lg"
+                    style={{ objectFit: "contain" }}
                   />
-                </div>
-
-                <div className="relative w-full h-28 sm:h-32 lg:h-40 ">
+                </AspectRatio>
+                <AspectRatio ratio={4 / 3}>
                   <Image
                     src={c2}
                     alt="Product 2"
                     fill
-                    className="object-contain"
+                    className="object-contain rounded-lg"
+                    style={{ objectFit: "contain" }}
                   />
-                </div>
+                </AspectRatio>
               </motion.div>
 
               {/* Second column */}
@@ -154,23 +156,24 @@ export function WhyChooseUs() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.4 }}
               >
-                <div className="relative w-full h-28 sm:h-32 lg:h-40 ">
+                <AspectRatio ratio={4 / 3}>
                   <Image
                     src={c3}
                     alt="Product 3"
                     fill
-                    className="object-contain"
+                    className="object-contain rounded-lg"
+                    style={{ objectFit: "contain" }}
                   />
-                </div>
-
-                <div className="relative w-full h-28 sm:h-32 lg:h-40 ">
+                </AspectRatio>
+                <AspectRatio ratio={4 / 3}>
                   <Image
                     src={c4}
                     alt="Product 4"
                     fill
-                    className="object-contain"
+                    className="object-contain rounded-lg"
+                    style={{ objectFit: "contain" }}
                   />
-                </div>
+                </AspectRatio>
               </motion.div>
             </div>
           </motion.div>
