@@ -15,6 +15,8 @@ export interface Blog {
         }[];
       }[]
     | null;
+  link: string | null;
+  link_name: string | null;
 }
 
 export interface Tag {
