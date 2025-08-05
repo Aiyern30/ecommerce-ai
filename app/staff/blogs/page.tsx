@@ -11,6 +11,7 @@ import {
   Trash2,
   ExternalLink,
   BookOpen,
+  LinkIcon,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -362,6 +363,32 @@ export default function Page() {
     });
   };
 
+  // Helper to determine link type and display
+  const renderLinkDisplay = (link: string | null, linkName: string | null) => {
+    if (!link) {
+      return <span className="text-gray-400 text-sm">No link</span>;
+    }
+    const isExternal =
+      link.startsWith("http://") || link.startsWith("https://");
+    const displayText =
+      linkName || (isExternal ? "External Link" : "Internal Link");
+    return (
+      <div className="flex items-center gap-2">
+        {isExternal ? (
+          <ExternalLink className="h-4 w-4 text-blue-500 flex-shrink-0" />
+        ) : (
+          <LinkIcon className="h-4 w-4 text-green-500 flex-shrink-0" />
+        )}
+        <span
+          className="text-sm font-medium truncate max-w-[120px]"
+          title={displayText}
+        >
+          {displayText}
+        </span>
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
       {/* Header with Breadcrumb */}
@@ -684,21 +711,9 @@ export default function Page() {
                         )}
                     </div>
                   </TableCell>
-
+                  {/* Link column: use renderLinkDisplay */}
                   <TableCell>
-                    {blog.external_link ? (
-                      <div className="flex items-center gap-2">
-                        <ExternalLink className="h-4 w-4 text-blue-500 flex-shrink-0" />
-                        <span
-                          className="text-sm font-medium truncate max-w-[120px]"
-                          title={blog.external_link}
-                        >
-                          External Link
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-gray-400 text-sm">No link</span>
-                    )}
+                    {renderLinkDisplay(blog.link, blog.link_name)}
                   </TableCell>
                   <TableCell>{formatDate(blog.created_at)}</TableCell>
                   <TableCell
