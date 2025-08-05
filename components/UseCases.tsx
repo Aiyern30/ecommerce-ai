@@ -4,6 +4,10 @@ import { motion, easeOut } from "framer-motion";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/";
 import { Typography } from "@/components/ui/Typography";
+import u1 from "@/public/UseCases/u1.jpeg";
+import u2 from "@/public/UseCases/u2.jpeg";
+import u3 from "@/public/UseCases/u5.webp";
+import u4 from "@/public/UseCases/u4.jpeg";
 
 const useCases = [
   {
@@ -177,25 +181,21 @@ export function UseCases() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.3 }}
               >
-                <div className="bg-white dark:bg-gray-800 rounded-xl lg:rounded-2xl p-3 sm:p-4 shadow-lg hover:shadow-xl dark:hover:shadow-2xl transition-shadow duration-300">
-                  <div className="relative w-full h-28 sm:h-32 lg:h-40 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-lg overflow-hidden">
-                    <Image
-                      src="/401.png"
-                      alt="Construction Project 1"
-                      fill
-                      className="object-contain p-2 sm:p-3 lg:p-4"
-                    />
-                  </div>
+                <div className="relative w-full h-28 sm:h-32 lg:h-40">
+                  <Image
+                    src={u1}
+                    alt="Construction Project 1"
+                    fill
+                    className="object-contain"
+                  />
                 </div>
-                <div className="bg-white dark:bg-gray-800 rounded-xl lg:rounded-2xl p-3 sm:p-4 shadow-lg hover:shadow-xl dark:hover:shadow-2xl transition-shadow duration-300">
-                  <div className="relative w-full h-28 sm:h-32 lg:h-40 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-lg overflow-hidden">
-                    <Image
-                      src="/401.png"
-                      alt="Construction Project 2"
-                      fill
-                      className="object-contain p-2 sm:p-3 lg:p-4"
-                    />
-                  </div>
+                <div className="relative w-full h-28 sm:h-32 lg:h-40">
+                  <Image
+                    src={u2}
+                    alt="Construction Project 2"
+                    fill
+                    className="object-contain"
+                  />
                 </div>
               </motion.div>
 
@@ -207,25 +207,21 @@ export function UseCases() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.4 }}
               >
-                <div className="bg-white dark:bg-gray-800 rounded-xl lg:rounded-2xl p-3 sm:p-4 shadow-lg hover:shadow-xl dark:hover:shadow-2xl transition-shadow duration-300">
-                  <div className="relative w-full h-28 sm:h-32 lg:h-40 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-lg overflow-hidden">
-                    <Image
-                      src="/401.png"
-                      alt="Construction Project 3"
-                      fill
-                      className="object-contain p-2 sm:p-3 lg:p-4"
-                    />
-                  </div>
+                <div className="relative w-full h-28 sm:h-32 lg:h-40">
+                  <Image
+                    src={u3}
+                    alt="Construction Project 3"
+                    fill
+                    className="object-contain"
+                  />
                 </div>
-                <div className="bg-white dark:bg-gray-800 rounded-xl lg:rounded-2xl p-3 sm:p-4 shadow-lg hover:shadow-xl dark:hover:shadow-2xl transition-shadow duration-300">
-                  <div className="relative w-full h-28 sm:h-32 lg:h-40 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-lg overflow-hidden">
-                    <Image
-                      src="/401.png"
-                      alt="Construction Project 4"
-                      fill
-                      className="object-contain p-2 sm:p-3 lg:p-4"
-                    />
-                  </div>
+                <div className="relative w-full h-28 sm:h-32 lg:h-40">
+                  <Image
+                    src={u4}
+                    alt="Construction Project 4"
+                    fill
+                    className="object-contain"
+                  />
                 </div>
               </motion.div>
             </div>
