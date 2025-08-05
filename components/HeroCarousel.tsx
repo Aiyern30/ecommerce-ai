@@ -76,9 +76,9 @@ export default function HeroCarousel() {
       const { data: posts, error: fetchError } = await supabase
         .from("posts")
         .select("*")
+        .eq("status", "published")
         .not("image_url", "is", null)
-        .order("created_at", { ascending: false })
-        .limit(4);
+        .order("created_at", { ascending: false });
 
       if (fetchError) {
         throw fetchError;
