@@ -32,7 +32,7 @@ export default function BlogsPage() {
       .from("blogs")
       .select(
         `
-        id, title, description, external_link, status, created_at, updated_at,
+        id, title, description, status, created_at, updated_at,
         link, link_name,
         blog_images ( image_url ),
         blog_tags ( tags ( id, name ) )
@@ -90,7 +90,9 @@ export default function BlogsPage() {
                   src={post.blog_images?.[0]?.image_url || "/placeholder.svg"}
                   alt={post.title}
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                   className="object-cover rounded-t-lg transition-transform duration-300 group-hover:scale-105"
+                  priority
                 />
                 <div className="absolute left-3 bottom-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <button className="p-2 bg-white rounded-full shadow hover:bg-gray-200">
