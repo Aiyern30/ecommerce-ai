@@ -4,6 +4,7 @@ import { motion, easeOut } from "framer-motion";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/";
 import { Typography } from "@/components/ui/Typography";
+import { AspectRatio } from "@/components/ui/";
 import u1 from "@/public/UseCases/u1.jpeg";
 import u2 from "@/public/UseCases/u2.jpeg";
 import u3 from "@/public/UseCases/u5.webp";
@@ -181,22 +182,24 @@ export function UseCases() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.3 }}
               >
-                <div className="relative w-full h-28 sm:h-32 lg:h-40">
+                <AspectRatio ratio={4 / 3}>
                   <Image
                     src={u1}
                     alt="Construction Project 1"
                     fill
-                    className="object-contain"
+                    className="object-contain rounded-lg"
+                    style={{ objectFit: "contain" }}
                   />
-                </div>
-                <div className="relative w-full h-28 sm:h-32 lg:h-40">
+                </AspectRatio>
+                <AspectRatio ratio={4 / 3}>
                   <Image
                     src={u2}
                     alt="Construction Project 2"
                     fill
-                    className="object-contain"
+                    className="object-contain rounded-lg"
+                    style={{ objectFit: "contain" }}
                   />
-                </div>
+                </AspectRatio>
               </motion.div>
 
               {/* Second column */}
@@ -207,22 +210,24 @@ export function UseCases() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.4 }}
               >
-                <div className="relative w-full h-28 sm:h-32 lg:h-40">
+                <AspectRatio ratio={4 / 3}>
                   <Image
                     src={u3}
                     alt="Construction Project 3"
                     fill
-                    className="object-contain"
+                    className="object-contain rounded-lg"
+                    style={{ objectFit: "contain" }}
                   />
-                </div>
-                <div className="relative w-full h-28 sm:h-32 lg:h-40">
+                </AspectRatio>
+                <AspectRatio ratio={4 / 3}>
                   <Image
                     src={u4}
                     alt="Construction Project 4"
                     fill
-                    className="object-contain"
+                    className="object-contain rounded-lg"
+                    style={{ objectFit: "contain" }}
                   />
-                </div>
+                </AspectRatio>
               </motion.div>
             </div>
           </motion.div>
