@@ -1,8 +1,9 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 import Link from "next/link";
 import type React from "react";
 
-import { ArrowLeft, X, Plus } from "lucide-react";
+import { ArrowLeft, X, Plus, ExternalLink, LinkIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -53,12 +54,12 @@ const blogSchema = z.object({
     .string()
     .max(500, "Description must be less than 500 characters")
     .nullish(),
-  external_link: z
+  link_name: z
     .string()
-    .url("Must be a valid URL")
-    .nullish()
-    .or(z.literal("")),
-  status: z.enum(["draft", "published"]).optional(),
+    .max(100, "Link name must be less than 100 characters")
+    .nullish(),
+  link: z.string().nullish().or(z.literal("")),
+  linkType: z.enum(["internal", "external"]),
   tags: z.array(z.object({ tag_id: z.string() })).optional(),
 });
 
@@ -68,7 +69,7 @@ export default function Page() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDraftSaving, setIsDraftSaving] = useState(false);
-  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const [selectedImageFiles, setSelectedImageFiles] = useState<File[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
 
@@ -77,8 +78,9 @@ export default function Page() {
     defaultValues: {
       title: "",
       description: "",
-      external_link: "",
-      status: "draft",
+      link_name: "",
+      link: "",
+      linkType: "internal",
       tags: [],
     },
   });
@@ -112,46 +114,59 @@ export default function Page() {
   }, []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
+    if (e.target.files && e.target.files.length > 0) {
+      const files = Array.from(e.target.files);
+      const validFiles: File[] = [];
+      let error: string | null = null;
 
-      if (!file.type.startsWith("image/")) {
-        setImageError("File must be an image.");
-        setSelectedImageFile(null);
-        e.target.value = "";
-        return;
+      for (const file of files) {
+        if (!file.type.startsWith("image/")) {
+          error = "All files must be images.";
+          continue;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+          error = "Each file must be less than 10MB.";
+          continue;
+        }
+        validFiles.push(file);
       }
 
-      if (file.size > 10 * 1024 * 1024) {
-        setImageError("File size must be less than 10MB.");
-        setSelectedImageFile(null);
-        e.target.value = "";
-        return;
-      }
-
-      setSelectedImageFile(file);
-      setImageError(null);
+      setSelectedImageFiles(validFiles);
+      setImageError(error);
     } else {
-      setSelectedImageFile(null);
+      setSelectedImageFiles([]);
       setImageError(null);
     }
   };
 
-  const handleRemoveImage = () => {
-    setSelectedImageFile(null);
+  const handleRemoveImage = (index: number) => {
+    setSelectedImageFiles((prev) => prev.filter((_, i) => i !== index));
     setImageError(null);
-    // Reset the file input
-    const fileInput = document.querySelector(
-      'input[type="file"]'
-    ) as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = "";
+    // Reset the file input if no images left
+    if (selectedImageFiles.length === 1) {
+      const fileInput = document.querySelector(
+        'input[type="file"]'
+      ) as HTMLInputElement;
+      if (fileInput) {
+        fileInput.value = "";
+      }
     }
   };
 
   const addTag = (tagId: string) => {
     if (!tagFields.some((field) => field.tag_id === tagId)) {
       appendTag({ tag_id: tagId });
+    }
+  };
+
+  const validateLink = (link: string, type: string) => {
+    if (!link) return true; // Empty link is allowed
+
+    if (type === "external") {
+      return link.startsWith("http://") || link.startsWith("https://");
+    } else {
+      // Internal link should start with / and not be a full URL
+      return link.startsWith("/") && !link.includes("://");
     }
   };
 
@@ -163,6 +178,21 @@ export default function Page() {
     }
     setImageError(null);
 
+    // Validate link based on type
+    if (data.link && !validateLink(data.link, data.linkType)) {
+      if (data.linkType === "external") {
+        toast.error("External links must start with http:// or https://");
+      } else {
+        toast.error("Internal links must start with / (e.g., /staff/products)");
+      }
+      if (isDraft) {
+        setIsDraftSaving(false);
+      } else {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
     try {
       // Insert blog data
       const { data: blogInsertData, error: blogInsertError } = await supabase
@@ -170,7 +200,8 @@ export default function Page() {
         .insert({
           title: data.title,
           description: data.description || null,
-          external_link: data.external_link || null,
+          link_name: data.link_name || null,
+          link: data.link || null,
           status: isDraft ? "draft" : "published",
         })
         .select("id")
@@ -188,47 +219,49 @@ export default function Page() {
 
       const blogId = blogInsertData.id;
 
-      // Upload image if selected
-      let imageUrl = null;
-      if (selectedImageFile) {
-        const fileExt = selectedImageFile.name.split(".").pop();
-        const filePath = `blogs/${blogId}/${Date.now()}-${Math.random()
-          .toString(36)
-          .substring(2, 15)}.${fileExt}`;
+      // Upload images if selected
+      if (selectedImageFiles.length > 0) {
+        for (const file of selectedImageFiles) {
+          const fileExt = file.name.split(".").pop();
+          const filePath = `blogs/${blogId}/${Date.now()}-${Math.random()
+            .toString(36)
+            .substring(2, 15)}.${fileExt}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from("blogs")
-          .upload(filePath, selectedImageFile, {
-            cacheControl: "3600",
-            upsert: false,
-          });
+          const { error: uploadError } = await supabase.storage
+            .from("blogs")
+            .upload(filePath, file, {
+              cacheControl: "3600",
+              upsert: false,
+            });
 
-        if (uploadError) {
-          console.error("Image upload failed:", uploadError.message);
-          toast.error("Failed to upload image: " + uploadError.message);
-          setIsSubmitting(false);
-          return;
-        }
+          if (uploadError) {
+            console.error("Image upload failed:", uploadError.message);
+            toast.error("Failed to upload image: " + uploadError.message);
+            continue;
+          }
 
-        const { data: publicData } = supabase.storage
-          .from("blogs")
-          .getPublicUrl(filePath);
-        imageUrl = publicData.publicUrl;
-      }
+          const { data: publicData } = supabase.storage
+            .from("blogs")
+            .getPublicUrl(filePath);
+          const imageUrl = publicData.publicUrl;
 
-      // Update blog with image URL if uploaded
-      if (imageUrl) {
-        const { error: updateError } = await supabase
-          .from("blogs")
-          .update({ image_url: imageUrl })
-          .eq("id", blogId);
+          // Insert image record into blog_images table
+          const { error: imageInsertError } = await supabase
+            .from("blog_images")
+            .insert({
+              blog_id: blogId,
+              image_url: imageUrl,
+            });
 
-        if (updateError) {
-          console.error(
-            "Failed to update blog with image:",
-            updateError.message
-          );
-          toast.error("Failed to link image to blog: " + updateError.message);
+          if (imageInsertError) {
+            console.error(
+              "Failed to insert blog image:",
+              imageInsertError.message
+            );
+            toast.error(
+              "Failed to save blog image: " + imageInsertError.message
+            );
+          }
         }
       }
 
@@ -369,59 +402,138 @@ export default function Page() {
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="external_link"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>External Link</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="https://example.com"
-                          {...field}
-                          value={field.value || ""}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Optional external link related to this blog.
-                      </FormDescription>
-                      <div className="min-h-[10px]">
-                        <FormMessage />
-                      </div>
-                    </FormItem>
-                  )}
-                />
+                {/* Link Section */}
+                <div className="space-y-6 pt-6 border-t">
+                  <div>
+                    <TypographyH3>Link (Optional)</TypographyH3>
+                    <TypographyP className="!mt-0">
+                      Add an internal page link or external website link.
+                    </TypographyP>
+                  </div>
 
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Status</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value || "draft"}
-                      >
+                  <FormField
+                    control={form.control}
+                    name="linkType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Link Type</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select link type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="internal">
+                              <div className="flex items-center gap-2">
+                                <LinkIcon className="h-4 w-4 text-green-500" />
+                                Internal Page
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="external">
+                              <div className="flex items-center gap-2">
+                                <ExternalLink className="h-4 w-4 text-blue-500" />
+                                External Website
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          Choose whether to link to an internal page or external
+                          website.
+                        </FormDescription>
+                        <div className="min-h-[10px]">
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="link_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Link Display Name</FormLabel>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select status" />
-                          </SelectTrigger>
+                          <Input
+                            placeholder={
+                              form.watch("linkType") === "external"
+                                ? "Visit Our Website"
+                                : "Explore Products"
+                            }
+                            {...field}
+                            value={field.value || ""}
+                          />
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="draft">Draft</SelectItem>
-                          <SelectItem value="published">Published</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>
-                        Draft blogs are not visible to customers. Published
-                        blogs are live on the website.
-                      </FormDescription>
-                      <div className="min-h-[10px]">
-                        <FormMessage />
+                        <FormDescription>
+                          A human-readable name for the link (e.g., "Explore
+                          Products", "Read More", "Visit Website")
+                        </FormDescription>
+                        <div className="min-h-[10px]">
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="link"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {form.watch("linkType") === "external"
+                            ? "External URL"
+                            : "Internal Page Path"}
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder={
+                              form.watch("linkType") === "external"
+                                ? "https://example.com"
+                                : "/staff/products"
+                            }
+                            {...field}
+                            value={field.value || ""}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {form.watch("linkType") === "external"
+                            ? "Full URL starting with http:// or https://"
+                            : "Internal page path starting with / (e.g., /staff/products, /comparison)"}
+                        </FormDescription>
+                        <div className="min-h-[10px]">
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Link Preview */}
+                  {form.watch("link") && (
+                    <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                      <div className="flex items-center gap-2 text-sm">
+                        {form.watch("linkType") === "external" ? (
+                          <ExternalLink className="h-4 w-4 text-blue-500" />
+                        ) : (
+                          <LinkIcon className="h-4 w-4 text-green-500" />
+                        )}
+                        <span className="font-medium">
+                          {form.watch("linkType") === "external"
+                            ? "External Link:"
+                            : "Internal Link:"}
+                        </span>
+                        <code className="bg-white dark:bg-gray-700 px-2 py-1 rounded text-xs">
+                          {form.watch("link")}
+                        </code>
                       </div>
-                    </FormItem>
+                    </div>
                   )}
-                />
+                </div>
 
                 {/* Tags Section */}
                 <div className="space-y-4 pt-6 border-t">
@@ -493,16 +605,16 @@ export default function Page() {
                 </CardTitle>
                 <CardDescription>
                   <TypographyP className="!mt-0">
-                    Upload an optional image for the blog.
+                    Upload one or more images for the blog.
                   </TypographyP>
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <FormItem>
-                  <FormLabel>Image File</FormLabel>
+                  <FormLabel>Image File(s)</FormLabel>
                   <FormDescription>
-                    Upload an image for your blog. Accepted formats: JPG, PNG,
-                    GIF. Max size: 10MB.
+                    Upload one or more images for your blog. Accepted formats:
+                    JPG, PNG, GIF. Max size: 10MB per image.
                   </FormDescription>
                   <div className="min-h-[10px]">
                     {imageError && <FormMessage>{imageError}</FormMessage>}
@@ -513,36 +625,39 @@ export default function Page() {
                   {/* Main Image Display */}
                   <AspectRatio ratio={4 / 3} className="mb-4">
                     <div className="relative w-full h-full border-2 border-dashed border-muted rounded-lg overflow-hidden bg-input">
-                      {selectedImageFile ? (
-                        <>
-                          <Image
-                            src={URL.createObjectURL(selectedImageFile)}
-                            alt="Blog image preview"
-                            className="w-full h-full object-cover"
-                            fill
-                            priority
-                          />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            className="absolute top-2 right-2 h-8 w-8 rounded-full shadow-lg z-10"
-                            onClick={handleRemoveImage}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
+                      {selectedImageFiles.length > 0 ? (
+                        <div className="flex flex-wrap gap-2 w-full h-full items-center justify-center">
+                          {selectedImageFiles.map((file, idx) => (
+                            <div key={idx} className="relative w-24 h-20">
+                              <Image
+                                src={URL.createObjectURL(file)}
+                                alt={`Blog image preview ${idx + 1}`}
+                                className="w-full h-full object-cover rounded"
+                                fill
+                                priority
+                              />
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                className="absolute top-1 right-1 h-6 w-6 rounded-full shadow-lg z-10"
+                                onClick={() => handleRemoveImage(idx)}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
                           {/* Change image overlay */}
-                          <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <label
-                              htmlFor="image-upload"
-                              className="cursor-pointer"
-                            >
-                              <div className="bg-white rounded-lg px-4 py-2 text-sm font-medium text-black hover:bg-gray-100 transition-colors">
-                                Change Image
-                              </div>
-                            </label>
-                          </div>
-                        </>
+                          <label
+                            htmlFor="image-upload"
+                            className="flex flex-col items-center justify-center w-24 h-20 cursor-pointer hover:bg-muted/50 transition-colors border border-dashed border-muted rounded"
+                          >
+                            <Plus className="h-6 w-6 text-muted-foreground mb-1" />
+                            <span className="text-xs text-muted-foreground">
+                              Add More
+                            </span>
+                          </label>
+                        </div>
                       ) : (
                         <label
                           htmlFor="image-upload"
@@ -550,10 +665,10 @@ export default function Page() {
                         >
                           <Plus className="h-8 w-8 text-muted-foreground mb-2" />
                           <p className="text-sm text-muted-foreground text-center">
-                            Click to upload image
+                            Click to upload image(s)
                           </p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            JPG, PNG, GIF up to 10MB
+                            JPG, PNG, GIF up to 10MB each
                           </p>
                         </label>
                       )}
@@ -565,6 +680,7 @@ export default function Page() {
                     id="image-upload"
                     type="file"
                     accept="image/*"
+                    multiple
                     onChange={handleImageChange}
                     className="hidden"
                   />
