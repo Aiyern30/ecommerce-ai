@@ -13,32 +13,24 @@ import { CarouselItem } from "@/type/carousel";
 
 function CarouselSkeleton() {
   return (
-    <div className="relative w-full h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="relative w-full h-[calc(100vh-120px)] overflow-hidden">
       <div className="flex h-full">
         <div className="w-full flex-shrink-0 h-full">
           <div className="relative flex flex-col md:flex-row items-center h-full">
-            {/* Content skeleton - shows first on mobile */}
             <div className="w-full md:w-1/2 h-1/2 md:h-full p-6 md:p-12 bg-white/90 dark:bg-gray-800/90 order-2 md:order-1 flex items-center">
               <div className="max-w-xl mx-auto space-y-4 w-full">
-                {/* Title skeleton */}
                 <div className="space-y-2">
                   <div className="h-8 md:h-12 lg:h-16 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"></div>
                   <div className="h-8 md:h-12 lg:h-16 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse w-3/4"></div>
                 </div>
-
-                {/* Description skeleton */}
                 <div className="space-y-2">
                   <div className="h-4 md:h-5 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                   <div className="h-4 md:h-5 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-5/6"></div>
                   <div className="h-4 md:h-5 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-4/6"></div>
                 </div>
-
-                {/* Button skeleton */}
                 <div className="h-12 md:h-14 w-36 md:w-40 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               </div>
             </div>
-
-            {/* Image skeleton - shows second on mobile */}
             <div className="w-full md:w-1/2 h-1/2 md:h-full relative bg-gray-200 dark:bg-gray-700 animate-pulse order-1 md:order-2">
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-16 h-16 bg-gray-300 dark:bg-gray-600 rounded-lg animate-pulse"></div>
@@ -80,9 +72,7 @@ export default function HeroCarousel() {
         .not("image_url", "is", null)
         .order("created_at", { ascending: false });
 
-      if (fetchError) {
-        throw fetchError;
-      }
+      if (fetchError) throw fetchError;
 
       if (!posts || posts.length === 0) {
         setCarouselItems(getDefaultCarouselItems());
@@ -151,39 +141,17 @@ export default function HeroCarousel() {
 
   useEffect(() => {
     if (!isAutoPlaying || carouselItems.length <= 1) return;
-
     const interval = setInterval(nextSlide, 5000);
     return () => clearInterval(interval);
   }, [isAutoPlaying, nextSlide, carouselItems.length]);
 
-  if (loading) {
-    return <CarouselSkeleton />;
-  }
-
-  if (error && carouselItems.length === 0) {
-    return (
-      <div className="relative w-full h-[calc(100vh-4rem)] bg-gray-100 dark:bg-gray-800">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-gray-500 dark:text-gray-400 mb-2">
-              Unable to load carousel
-            </div>
-            <Button onClick={fetchPosts} variant="outline" size="sm">
-              Try Again
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (carouselItems.length === 0) {
-    return null;
-  }
+  if (loading) return <CarouselSkeleton />;
+  if (error && carouselItems.length === 0) return null;
+  if (carouselItems.length === 0) return null;
 
   return (
     <div
-      className="relative w-full h-[calc(100vh-4rem)] overflow-hidden"
+      className="relative w-full h-[calc(100vh-120px)] overflow-hidden"
       {...handlers}
     >
       <div
@@ -193,7 +161,6 @@ export default function HeroCarousel() {
         {carouselItems.map((item, index) => (
           <div key={index} className="w-full flex-shrink-0 h-full">
             <div className="relative flex flex-col md:flex-row items-center h-full">
-              {/* Content section - shows second on mobile, first on desktop */}
               <div className="w-full md:w-1/2 h-1/2 md:h-full p-6 md:p-12 lg:p-16 bg-white/90 dark:bg-transparent order-2 md:order-1 flex items-center">
                 <div className="max-w-2xl mx-auto">
                   <TypographyH1 className="text-gray-800 dark:text-white mb-4 md:mb-6 leading-tight">
@@ -211,7 +178,6 @@ export default function HeroCarousel() {
                 </div>
               </div>
 
-              {/* Image section - shows first on mobile, second on desktop */}
               <div className="w-full md:w-1/2 h-1/2 md:h-full relative order-1 md:order-2">
                 <Image
                   src={item.imageSrc || "/placeholder.svg"}
@@ -220,7 +186,6 @@ export default function HeroCarousel() {
                   className="object-cover"
                   priority={index === 0}
                 />
-                {/* Optional gradient overlay for better text contrast */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent md:hidden"></div>
               </div>
             </div>
@@ -228,8 +193,9 @@ export default function HeroCarousel() {
         ))}
       </div>
 
+      {/* Dots: Only show on medium and larger screens */}
       {carouselItems.length > 1 && (
-        <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 flex space-x-3 z-20">
+        <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 hidden md:flex space-x-3 z-20">
           {carouselItems.map((_, index) => (
             <button
               key={index}
@@ -246,61 +212,50 @@ export default function HeroCarousel() {
         </div>
       )}
 
-      {/* Navigation arrows for larger screens */}
-      {carouselItems.length > 1 && (
-        <>
-          <button
-            onClick={prevSlide}
-            className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-20 p-2 md:p-3 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all duration-300 hover:scale-110 hidden md:block"
-            aria-label="Previous slide"
+      {/* Left Arrow */}
+      {carouselItems.length > 1 && currentSlide > 0 && (
+        <button
+          onClick={prevSlide}
+          className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-20 p-2 md:p-3 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all duration-300 hover:scale-110 block"
+          aria-label="Previous slide"
+        >
+          <svg
+            className="w-5 h-5 md:w-6 md:h-6 text-white"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            <svg
-              className="w-5 h-5 md:w-6 md:h-6 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </button>
-          <button
-            onClick={nextSlide}
-            className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-20 p-2 md:p-3 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all duration-300 hover:scale-110 hidden md:block"
-            aria-label="Next slide"
-          >
-            <svg
-              className="w-5 h-5 md:w-6 md:h-6 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </button>
-        </>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+        </button>
       )}
 
-      {error && (
-        <div className="absolute top-4 right-4 z-20">
-          <Button
-            onClick={fetchPosts}
-            variant="outline"
-            size="sm"
-            className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"
+      {/* Right Arrow */}
+      {carouselItems.length > 1 && currentSlide < carouselItems.length - 1 && (
+        <button
+          onClick={nextSlide}
+          className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-20 p-2 md:p-3 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all duration-300 hover:scale-110 block"
+          aria-label="Next slide"
+        >
+          <svg
+            className="w-5 h-5 md:w-6 md:h-6 text-white"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            Refresh
-          </Button>
-        </div>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </button>
       )}
     </div>
   );
