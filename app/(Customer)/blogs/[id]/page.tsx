@@ -7,7 +7,7 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { Blog } from "@/type/blogs";
-import { Card, Skeleton } from "@/components/ui";
+import { Button, Card, Skeleton } from "@/components/ui";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { TypographyH1, TypographyP } from "@/components/ui/Typography";
 
@@ -108,7 +108,7 @@ export default function BlogPost() {
             { label: "Blogs", href: "/blogs" },
             { label: blog.title },
           ]}
-        />{" "}
+        />
       </div>
 
       <Card>
@@ -156,6 +156,29 @@ export default function BlogPost() {
 
         <div className="space-y-6 text-gray-700 px-6 mb-12">
           <TypographyP>{blog.description}</TypographyP>
+          {/* Blog Link Button */}
+          {blog.link && (
+            <div className="mt-4">
+              {blog.link.startsWith("http://") ||
+              blog.link.startsWith("https://") ? (
+                <a
+                  href={blog.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 transition"
+                >
+                  {blog.link_name || "Visit Link"}
+                </a>
+              ) : (
+                <Button
+                  variant={"default"}
+                  onClick={() => router.push(blog.link!)}
+                >
+                  {blog.link_name || "Go to Page"}
+                </Button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Third image below content */}
