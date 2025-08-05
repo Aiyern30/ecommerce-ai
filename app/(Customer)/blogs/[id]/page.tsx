@@ -34,7 +34,7 @@ export default function BlogPost() {
         .from("blogs")
         .select(
           `
-    id, title, description, external_link, status, created_at, updated_at,
+    id, title, description, status, created_at, updated_at,
     link, link_name,
     blog_images ( image_url ),
     blog_tags ( tags ( id, name ) )
@@ -106,13 +106,36 @@ export default function BlogPost() {
 
       <div className="lg:w-3/4 mx-auto">
         <Card>
-          <div className="relative w-full h-[300px] md:h-[400px] mb-6">
+          <div className="relative w-full h-[300px] md:h-[400px] mb-6 group">
+            {/* Main image (shows by default, hides on hover if hoverImage exists) */}
             <Image
               src={blog.blog_images?.[0]?.image_url || "/placeholder.svg"}
               alt={blog.title}
               fill
-              className="object-cover rounded-md"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 50vw"
+              className={`object-cover rounded-md transition-opacity duration-300 z-10
+                ${
+                  blog.blog_images && blog.blog_images.length > 1
+                    ? "opacity-100 group-hover:opacity-0"
+                    : ""
+                }
+              `}
+              style={{ transition: "opacity 0.3s" }}
+              priority
             />
+            {/* Hover image (if exists, only on hover, always behind content/buttons) */}
+            {blog.blog_images && blog.blog_images.length > 1 && (
+              <Image
+                src={blog.blog_images[1].image_url}
+                alt={blog.title + " (alt)"}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 50vw"
+                className="object-cover rounded-md absolute inset-0 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                style={{ transition: "opacity 0.3s" }}
+                priority
+              />
+            )}
+            {/* Buttons or overlays can go here, above both images if needed */}
           </div>
 
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-blue-900 mb-6 px-6">
