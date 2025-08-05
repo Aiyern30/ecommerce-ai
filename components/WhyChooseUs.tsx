@@ -5,6 +5,11 @@ import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/";
 import { Typography } from "@/components/ui/Typography";
 
+import c1 from "@/public/WhyChooseUs/c1.jpeg";
+import c2 from "@/public/WhyChooseUs/c2.jpeg";
+import c3 from "@/public/WhyChooseUs/c3.jpeg";
+import c4 from "@/public/WhyChooseUs/c4.jpeg";
+
 const features = [
   {
     number: "01",
@@ -124,7 +129,7 @@ export function WhyChooseUs() {
               >
                 <div className="relative w-full h-28 sm:h-32 lg:h-40 ">
                   <Image
-                    src="/c1.jpeg"
+                    src={c1}
                     alt="Product 1"
                     fill
                     className="object-contain"
@@ -133,7 +138,7 @@ export function WhyChooseUs() {
 
                 <div className="relative w-full h-28 sm:h-32 lg:h-40 ">
                   <Image
-                    src="/c2.jpeg"
+                    src={c2}
                     alt="Product 2"
                     fill
                     className="object-contain"
@@ -151,7 +156,7 @@ export function WhyChooseUs() {
               >
                 <div className="relative w-full h-28 sm:h-32 lg:h-40 ">
                   <Image
-                    src="/c3.jpeg"
+                    src={c3}
                     alt="Product 3"
                     fill
                     className="object-contain"
@@ -160,7 +165,7 @@ export function WhyChooseUs() {
 
                 <div className="relative w-full h-28 sm:h-32 lg:h-40 ">
                   <Image
-                    src="/c4.jpeg"
+                    src={c4}
                     alt="Product 4"
                     fill
                     className="object-contain"
