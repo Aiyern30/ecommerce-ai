@@ -494,20 +494,54 @@ export default function BlogDetailPage() {
                 </div>
               )}
 
-              {/* External Link */}
-              {blog.external_link && (
+              {/* Link Section */}
+              {blog.link && (
                 <div>
                   <TypographySmall className="font-medium text-muted-foreground mb-3">
-                    External Link:
+                    {blog.link.startsWith("http://") ||
+                    blog.link.startsWith("https://")
+                      ? "External Link:"
+                      : "Internal Link:"}
                   </TypographySmall>
                   <a
-                    href={blog.external_link}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={blog.link}
+                    target={
+                      blog.link.startsWith("http://") ||
+                      blog.link.startsWith("https://")
+                        ? "_blank"
+                        : undefined
+                    }
+                    rel={
+                      blog.link.startsWith("http://") ||
+                      blog.link.startsWith("https://")
+                        ? "noopener noreferrer"
+                        : undefined
+                    }
                     className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline"
                   >
-                    <ExternalLink className="w-4 h-4" />
-                    <TypographySmall>View External Link</TypographySmall>
+                    {blog.link.startsWith("http://") ||
+                    blog.link.startsWith("https://") ? (
+                      <ExternalLink className="w-4 h-4" />
+                    ) : (
+                      <span>
+                        <svg
+                          className="w-4 h-4 text-green-500 inline"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M10 13a5 5 0 0 1 7 7l-1.5 1.5a5 5 0 0 1-7-7l1.5-1.5" />
+                        </svg>
+                      </span>
+                    )}
+                    <TypographySmall>
+                      {blog.link_name ||
+                        (blog.link.startsWith("http://") ||
+                        blog.link.startsWith("https://")
+                          ? "External Link"
+                          : "Internal Link")}
+                    </TypographySmall>
                   </a>
                 </div>
               )}
