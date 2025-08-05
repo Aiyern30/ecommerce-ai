@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase/client";
 import { Blog } from "@/type/blogs";
 import { Card, Skeleton } from "@/components/ui";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
+import { TypographyH1, TypographyP } from "@/components/ui/Typography";
 
 export default function BlogPost() {
   const { id } = useParams();
@@ -101,7 +102,13 @@ export default function BlogPost() {
   return (
     <article className="container mx-auto py-8">
       <div className="py-4">
-        <BreadcrumbNav showFilterButton={false} />
+        <BreadcrumbNav
+          customItems={[
+            { label: "Home", href: "/" },
+            { label: "Blogs", href: "/blogs" },
+            { label: blog.title },
+          ]}
+        />{" "}
       </div>
 
       <Card>
@@ -143,12 +150,12 @@ export default function BlogPost() {
           </div>
         )}
 
-        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-blue-900 mb-6 px-6">
+        <TypographyH1 className="mb-6 px-6 text-blue-900">
           {blog.title}
-        </h1>
+        </TypographyH1>
 
         <div className="space-y-6 text-gray-700 px-6 mb-12">
-          <p>{blog.description}</p>
+          <TypographyP>{blog.description}</TypographyP>
         </div>
 
         {/* Third image below content */}
