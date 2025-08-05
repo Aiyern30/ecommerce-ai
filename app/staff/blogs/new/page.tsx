@@ -4,8 +4,8 @@ import Link from "next/link";
 import type React from "react";
 
 import { ArrowLeft, X, Plus, ExternalLink, LinkIcon } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
@@ -31,7 +31,6 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Badge,
   AspectRatio,
 } from "@/components/ui/";
 import {
@@ -42,7 +41,7 @@ import {
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import Image from "next/image";
 import { toast } from "sonner";
-import { Tag } from "@/type/blogs";
+import TagMultiSelect from "@/components/TagMultiSelect";
 
 // Zod schema for blog creation
 const blogSchema = z.object({
@@ -60,7 +59,6 @@ const blogSchema = z.object({
     .nullish(),
   link: z.string().nullish().or(z.literal("")),
   linkType: z.enum(["internal", "external"]),
-  tags: z.array(z.object({ tag_id: z.string() })).optional(),
 });
 
 type BlogFormData = z.infer<typeof blogSchema>;
@@ -71,7 +69,9 @@ export default function Page() {
   const [isDraftSaving, setIsDraftSaving] = useState(false);
   const [selectedImageFiles, setSelectedImageFiles] = useState<File[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
-  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
+  const [selectedTags, setSelectedTags] = useState<
+    { id: string; name: string }[]
+  >([]);
 
   const form = useForm<BlogFormData>({
     resolver: zodResolver(blogSchema),
@@ -81,81 +81,61 @@ export default function Page() {
       link_name: "",
       link: "",
       linkType: "internal",
-      tags: [],
     },
   });
 
-  const {
-    fields: tagFields,
-    append: appendTag,
-    remove: removeTag,
-  } = useFieldArray({
-    control: form.control,
-    name: "tags",
-  });
-
-  // Fetch available tags
-  useEffect(() => {
-    async function fetchTags() {
-      const { data, error } = await supabase
-        .from("tags")
-        .select("*")
-        .order("name");
-
-      if (error) {
-        console.error("Failed to fetch tags:", error);
-        toast.error("Failed to load tags");
-      } else {
-        setAvailableTags(data || []);
-      }
-    }
-
-    fetchTags();
-  }, []);
+  const MAX_IMAGES = 5; // 1 main + 4 additional
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const files = Array.from(e.target.files);
-      const validFiles: File[] = [];
-      let error: string | null = null;
+    if (!e.target.files) return;
 
-      for (const file of files) {
-        if (!file.type.startsWith("image/")) {
-          error = "All files must be images.";
-          continue;
-        }
-        if (file.size > 10 * 1024 * 1024) {
-          error = "Each file must be less than 10MB.";
-          continue;
-        }
-        validFiles.push(file);
-      }
+    const files = Array.from(e.target.files);
+    const currentCount = selectedImageFiles.length;
+    const remainingSlots = MAX_IMAGES - currentCount;
 
-      setSelectedImageFiles(validFiles);
-      setImageError(error);
-    } else {
-      setSelectedImageFiles([]);
-      setImageError(null);
+    if (files.length > remainingSlots) {
+      setImageError(
+        `You can only upload ${remainingSlots} more image${
+          remainingSlots === 1 ? "" : "s"
+        }. Maximum total: ${MAX_IMAGES} images (1 main + 4 additional).`
+      );
+      e.target.value = "";
+      return;
     }
+
+    const newFiles: File[] = [];
+    let hasError = false;
+
+    files.forEach((file) => {
+      if (!file.type.startsWith("image/")) {
+        setImageError(`File "${file.name}" is not an image.`);
+        hasError = true;
+      } else if (file.size > 10 * 1024 * 1024) {
+        setImageError(`File "${file.name}" exceeds 10MB.`);
+        hasError = true;
+      } else {
+        newFiles.push(file);
+      }
+    });
+
+    if (hasError) {
+      e.target.value = "";
+      return;
+    }
+
+    setSelectedImageFiles((prev) => [...prev, ...newFiles]);
+    setImageError(null);
+
+    // Clear the input value to allow re-uploading the same file
+    e.target.value = "";
   };
 
   const handleRemoveImage = (index: number) => {
-    setSelectedImageFiles((prev) => prev.filter((_, i) => i !== index));
-    setImageError(null);
-    // Reset the file input if no images left
+    setSelectedImageFiles((prevFiles) =>
+      prevFiles.filter((_, i) => i !== index)
+    );
     if (selectedImageFiles.length === 1) {
-      const fileInput = document.querySelector(
-        'input[type="file"]'
-      ) as HTMLInputElement;
-      if (fileInput) {
-        fileInput.value = "";
-      }
-    }
-  };
-
-  const addTag = (tagId: string) => {
-    if (!tagFields.some((field) => field.tag_id === tagId)) {
-      appendTag({ tag_id: tagId });
+      setImageError(null);
     }
   };
 
@@ -265,12 +245,12 @@ export default function Page() {
         }
       }
 
-      // Insert tags if any
-      if (data.tags && data.tags.length > 0) {
+      // Insert tags if any (from selectedTags)
+      if (selectedTags && selectedTags.length > 0) {
         const { error: tagsInsertError } = await supabase
           .from("blog_tags")
           .insert(
-            data.tags.map((tag) => ({ blog_id: blogId, tag_id: tag.tag_id }))
+            selectedTags.map((tag) => ({ blog_id: blogId, tag_id: tag.id }))
           );
 
         if (tagsInsertError) {
@@ -535,155 +515,188 @@ export default function Page() {
                   )}
                 </div>
 
-                {/* Tags Section */}
+                {/* Tags Section - moved here, under Link */}
                 <div className="space-y-4 pt-6 border-t">
                   <div>
                     <TypographyH3>Tags</TypographyH3>
                     <TypographyP className="!mt-0">
-                      Select tags to categorize this blog.
+                      Select or create tags to categorize this blog.
                     </TypographyP>
                   </div>
-
-                  <div>
-                    <FormLabel>Add Tags</FormLabel>
-                    <Select onValueChange={addTag}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a tag to add" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableTags
-                          .filter(
-                            (tag) =>
-                              !tagFields.some(
-                                (field) => field.tag_id === tag.id
-                              )
-                          )
-                          .map((tag) => (
-                            <SelectItem key={tag.id} value={tag.id}>
-                              {tag.name}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    {tagFields.map((field, index) => {
-                      const tag = availableTags.find(
-                        (t) => t.id === field.tag_id
-                      );
-                      return (
-                        <Badge
-                          key={field.id}
-                          variant="secondary"
-                          className="flex items-center gap-1"
-                        >
-                          {tag?.name || "Unknown Tag"}
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="h-4 w-4 p-0"
-                            onClick={() => removeTag(index)}
-                          >
-                            <X className="h-3 w-3" />
-                            <span className="sr-only">Remove tag</span>
-                          </Button>
-                        </Badge>
-                      );
-                    })}
-                  </div>
+                  <TagMultiSelect
+                    selectedTags={selectedTags}
+                    setSelectedTags={setSelectedTags}
+                  />
                 </div>
               </CardContent>
             </Card>
 
-            {/* Right Side - Upload Image */}
+            {/* Right Side - Upload Images */}
             <Card>
               <CardHeader>
                 <CardTitle>
-                  <TypographyH3>Blog Image</TypographyH3>
+                  <TypographyH3>Upload Images</TypographyH3>
                 </CardTitle>
                 <CardDescription>
-                  <TypographyP className="!mt-0">
-                    Upload one or more images for the blog.
-                  </TypographyP>
+                  Upload 1 main image and up to 4 additional images for the
+                  blog.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <FormItem>
-                  <FormLabel>Image File(s)</FormLabel>
+                  <FormLabel>Image Files</FormLabel>
                   <FormDescription>
-                    Upload one or more images for your blog. Accepted formats:
-                    JPG, PNG, GIF. Max size: 10MB per image.
+                    Upload 1 main image and up to 4 additional images. Accepted
+                    formats: JPG, PNG, GIF. Max size: 10MB per file.
                   </FormDescription>
                   <div className="min-h-[10px]">
                     {imageError && <FormMessage>{imageError}</FormMessage>}
                   </div>
                 </FormItem>
-
                 <div className="mt-4">
                   {/* Main Image Display */}
                   <AspectRatio ratio={4 / 3} className="mb-4">
                     <div className="relative w-full h-full border-2 border-dashed border-muted rounded-lg overflow-hidden bg-input">
                       {selectedImageFiles.length > 0 ? (
-                        <div className="flex flex-wrap gap-2 w-full h-full items-center justify-center">
-                          {selectedImageFiles.map((file, idx) => (
-                            <div key={idx} className="relative w-24 h-20">
-                              <Image
-                                src={URL.createObjectURL(file)}
-                                alt={`Blog image preview ${idx + 1}`}
-                                className="w-full h-full object-cover rounded"
-                                fill
-                                priority
-                              />
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="icon"
-                                className="absolute top-1 right-1 h-6 w-6 rounded-full shadow-lg z-10"
-                                onClick={() => handleRemoveImage(idx)}
-                              >
-                                <X className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          ))}
-                          {/* Change image overlay */}
-                          <label
-                            htmlFor="image-upload"
-                            className="flex flex-col items-center justify-center w-24 h-20 cursor-pointer hover:bg-muted/50 transition-colors border border-dashed border-muted rounded"
+                        <>
+                          <Image
+                            src={URL.createObjectURL(selectedImageFiles[0])}
+                            alt="Main blog image"
+                            className="w-full h-full object-cover"
+                            fill
+                            priority
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-2 right-2 h-8 w-8 rounded-full shadow-lg z-10"
+                            onClick={() => handleRemoveImage(0)}
                           >
-                            <Plus className="h-6 w-6 text-muted-foreground mb-1" />
-                            <span className="text-xs text-muted-foreground">
-                              Add More
-                            </span>
+                            <X className="h-4 w-4" />
+                          </Button>
+                          {/* Change main image overlay */}
+                          <label
+                            htmlFor="main-image-upload"
+                            className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors cursor-pointer flex items-center justify-center"
+                          >
+                            <div className="bg-white/90 hover:bg-white text-gray-700 px-3 py-2 rounded-md opacity-0 hover:opacity-100 transition-opacity">
+                              Change Image
+                            </div>
                           </label>
-                        </div>
+                          <input
+                            id="main-image-upload"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          />
+                        </>
                       ) : (
                         <label
-                          htmlFor="image-upload"
-                          className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-muted/50 transition-colors"
+                          htmlFor="main-image-upload"
+                          className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-input/80 transition-colors"
                         >
-                          <Plus className="h-8 w-8 text-muted-foreground mb-2" />
-                          <p className="text-sm text-muted-foreground text-center">
-                            Click to upload image(s)
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            JPG, PNG, GIF up to 10MB each
-                          </p>
+                          <div className="flex flex-col items-center justify-center space-y-3">
+                            <div className="w-16 h-16 border-2 border-dashed border-muted-foreground rounded-lg flex items-center justify-center">
+                              <Plus className="h-8 w-8 text-muted-foreground" />
+                            </div>
+                            <div className="text-center">
+                              <p className="text-sm font-medium text-foreground">
+                                Upload main blog image
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                Click to browse files
+                              </p>
+                            </div>
+                          </div>
+                          <input
+                            id="main-image-upload"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          />
                         </label>
                       )}
                     </div>
                   </AspectRatio>
-
-                  {/* Hidden file input */}
-                  <input
-                    id="image-upload"
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageChange}
-                    className="hidden"
-                  />
+                  {/* Additional Images Section */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-medium">Additional Images</h4>
+                      <span className="text-xs text-muted-foreground">
+                        {Math.max(0, selectedImageFiles.length - 1)} of 4
+                        uploaded
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-4 gap-3">
+                      {/* Additional uploaded images */}
+                      {selectedImageFiles.slice(1).map((file, index) => (
+                        <AspectRatio key={index + 1} ratio={1}>
+                          <div className="relative group w-full h-full border border-muted rounded-md overflow-hidden">
+                            <Image
+                              src={URL.createObjectURL(file)}
+                              alt={`Additional image ${index + 1}`}
+                              className="w-full h-full object-cover"
+                              fill
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              className="absolute top-1 right-1 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10"
+                              onClick={() => handleRemoveImage(index + 1)}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </AspectRatio>
+                      ))}
+                      {/* Empty slots for additional images */}
+                      {Array.from(
+                        {
+                          length: Math.max(
+                            0,
+                            4 - Math.max(0, selectedImageFiles.length - 1)
+                          ),
+                        },
+                        (_, index) => {
+                          const currentAdditionalImages = Math.max(
+                            0,
+                            selectedImageFiles.length - 1
+                          );
+                          const slotIndex = currentAdditionalImages + index;
+                          return (
+                            <AspectRatio key={`empty-${index}`} ratio={1}>
+                              <div className="relative w-full h-full border-2 border-dashed border-muted rounded-md bg-input hover:bg-input/80 transition-colors cursor-pointer">
+                                <label
+                                  htmlFor={`additional-image-upload-${slotIndex}`}
+                                  className="flex items-center justify-center w-full h-full cursor-pointer"
+                                >
+                                  <Plus className="h-6 w-6 text-muted-foreground" />
+                                  <span className="sr-only">
+                                    Add additional image
+                                  </span>
+                                </label>
+                                <input
+                                  id={`additional-image-upload-${slotIndex}`}
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleImageChange}
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                />
+                              </div>
+                            </AspectRatio>
+                          );
+                        }
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Upload up to 4 additional images. Accepted formats: JPG,
+                      PNG, GIF. Max size: 10MB per file.
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
