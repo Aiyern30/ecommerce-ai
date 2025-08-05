@@ -81,7 +81,7 @@ export default function LatestBlog() {
                   className="overflow-hidden group relative py-0"
                 >
                   <CardHeader className="p-0 relative h-52">
-                    {/* Main image */}
+                    {/* Main image (shows on default, hides on hover if hoverImage exists) */}
                     <Image
                       src={mainImage}
                       alt={post.title}
@@ -91,17 +91,21 @@ export default function LatestBlog() {
                       `}
                       style={{ transition: "opacity 0.3s, transform 0.3s" }}
                     />
-                    {/* Hover image (if exists) */}
+                    {/* Hover image (if exists, only on hover, always behind buttons) */}
                     {hoverImage && (
                       <Image
                         src={hoverImage}
                         alt={post.title + " (alt)"}
                         fill
-                        className="object-cover rounded-t-lg absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                        style={{ zIndex: 2, transition: "opacity 0.3s" }}
+                        className="object-cover rounded-t-lg absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                        style={{
+                          zIndex: 1,
+                          transition: "opacity 0.3s",
+                        }}
                       />
                     )}
-                    <div className="absolute left-3 bottom-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    {/* Buttons always on top */}
+                    <div className="absolute left-3 bottom-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
                       <button className="p-2 bg-white rounded-full shadow hover:bg-gray-200">
                         <ZoomIn className="h-4 w-4 text-blue-600" />
                       </button>
