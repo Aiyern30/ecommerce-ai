@@ -98,9 +98,52 @@ export function ProductPerformance() {
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data?.topSellingProducts} layout="horizontal">
-                  <XAxis type="number" />
-                  <YAxis dataKey="name" type="category" width={120} />
-                  <Tooltip formatter={(value) => [`${value} units`, "Sales"]} />
+                  <XAxis
+                    type="number"
+                    label={{
+                      value: "Units Sold",
+                      position: "insideBottom",
+                      offset: -5,
+                      style: { fill: "#10b981", fontSize: 13 },
+                    }}
+                  />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    width={120}
+                    label={{
+                      value: "Product",
+                      angle: -90,
+                      position: "insideLeft",
+                      offset: 10,
+                      style: { fill: "#10b981", fontSize: 13 },
+                    }}
+                  />
+                  <Tooltip
+                    cursor={{
+                      fill: "rgba(16, 185, 129, 0.08)",
+                      // Fix: restrict cursor height to bar only, not full chart
+                      // This disables the default cursor and uses a custom one
+                      // See recharts docs: set cursor to false to remove the default
+                      // and use a custom <Rectangle /> if needed
+                      // For now, set to false for best result
+                      // https://recharts.org/en-US/api/Tooltip#cursor
+                      // Remove the fill above and use:
+                      // cursor={false}
+                    }}
+                    content={({ active, payload, label }) =>
+                      active && payload && payload.length ? (
+                        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 px-4 py-3 rounded-xl shadow-xl backdrop-blur-sm">
+                          <div className="font-semibold text-gray-900 dark:text-white text-lg">
+                            {payload[0].value} units
+                          </div>
+                          <div className="text-gray-600 dark:text-gray-400 text-sm font-medium">
+                            {label}
+                          </div>
+                        </div>
+                      ) : null
+                    }
+                  />
                   <Bar dataKey="sales" fill="#10b981" />
                 </BarChart>
               </ResponsiveContainer>
