@@ -46,9 +46,6 @@ import dynamic from "next/dynamic";
 
 // Dynamically import MDEditor (SSR false)
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
-const MarkdownPreview = dynamic(() => import("@uiw/react-markdown-preview"), {
-  ssr: false,
-});
 
 // Zod schema for blog creation
 const blogSchema = z.object({
@@ -725,6 +722,7 @@ export default function Page() {
                 </TypographyP>
               </CardDescription>
             </CardHeader>
+
             <CardContent>
               <FormField
                 control={form.control}
@@ -733,7 +731,7 @@ export default function Page() {
                   <FormItem>
                     <FormLabel>Content</FormLabel>
                     <FormControl>
-                      <div data-color-mode="light">
+                      <div className="flex flex-col" data-color-mode="light">
                         <MDEditor
                           value={field.value}
                           onChange={field.onChange}
@@ -747,25 +745,6 @@ export default function Page() {
                     </FormDescription>
                     <div className="min-h-[10px]">
                       <FormMessage />
-                    </div>
-                    {/* Markdown Preview */}
-                    <div className="mt-6">
-                      <div className="font-semibold mb-2 text-sm text-gray-600 dark:text-gray-400">
-                        Preview
-                      </div>
-                      <div className="border rounded-md p-4 bg-gray-50 dark:bg-gray-800">
-                        <MarkdownPreview
-                          source={field.value || ""}
-                          remarkPlugins={
-                            [
-                              // Disable tables by filtering out the table plugin
-                              // This disables GFM (tables, strikethrough, tasklists, autolink literals)
-                              // If you want to keep other GFM features, you need a custom plugin setup.
-                              // Here, we just don't add remark-gfm at all.
-                            ]
-                          }
-                        />
-                      </div>
                     </div>
                   </FormItem>
                 )}
