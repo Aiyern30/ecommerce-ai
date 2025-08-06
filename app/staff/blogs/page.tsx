@@ -80,6 +80,7 @@ function BlogTableSkeleton() {
             <TableHead className="w-[80px]">Image</TableHead>
             <TableHead>Title</TableHead>
             <TableHead>Description</TableHead>
+            <TableHead>Content</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Tags</TableHead>
             <TableHead>Link</TableHead>
@@ -717,7 +718,7 @@ export default function Page() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[50px]">
+                <TableHead className="w-[50px] min-w-[50px] text-center">
                   <Checkbox
                     checked={
                       selectedBlogs.length === currentPageData.length &&
@@ -727,14 +728,17 @@ export default function Page() {
                     aria-label="Select all"
                   />
                 </TableHead>
-                <TableHead className="w-[80px]">Image</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Tags</TableHead>
-                <TableHead>Link</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="w-[80px] min-w-[80px]">Image</TableHead>
+                <TableHead className="min-w-[180px]">Title</TableHead>
+                <TableHead className="min-w-[220px]">Description</TableHead>
+                <TableHead className="min-w-[180px]">Content</TableHead>
+                <TableHead className="min-w-[100px]">Status</TableHead>
+                <TableHead className="min-w-[120px]">Tags</TableHead>
+                <TableHead className="min-w-[120px]">Link</TableHead>
+                <TableHead className="min-w-[120px]">Created</TableHead>
+                <TableHead className="text-right min-w-[100px]">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -744,7 +748,10 @@ export default function Page() {
                   onClick={() => router.push(`/staff/blogs/${blog.id}`)}
                   className="cursor-pointer"
                 >
-                  <TableCell onClick={(e) => e.stopPropagation()}>
+                  <TableCell
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-center"
+                  >
                     <Checkbox
                       checked={selectedBlogs.includes(blog.id)}
                       onCheckedChange={() => toggleBlogSelection(blog.id)}
@@ -773,21 +780,40 @@ export default function Page() {
                         ))}
                     </div>
                   </TableCell>
-
-                  <TableCell className="font-medium max-w-xs">
+                  <TableCell className="font-medium max-w-xs min-w-[180px]">
                     <div className="truncate" title={blog.title}>
                       {blog.title}
                     </div>
                   </TableCell>
-                  <TableCell className="max-w-xs">
+                  <TableCell className="max-w-xs min-w-[220px]">
                     <div
                       className="truncate text-gray-600"
                       title={blog.description || ""}
                     >
-                      {blog.description || "No description"}
+                      {/* Only show plain text, not markdown */}
+                      {blog.description
+                        ? blog.description.replace(
+                            /[#_*`~>\[\]\(\)\-\!\n\r]/g,
+                            ""
+                          )
+                        : "No description"}
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="max-w-xs min-w-[180px]">
+                    <div
+                      className="truncate text-gray-600"
+                      title={blog.content || ""}
+                    >
+                      {/* Only show plain text, not markdown */}
+                      {blog.content
+                        ? blog.content
+                            .replace(/[#_*`~>\[\]\(\)\-\!\n\r]/g, "")
+                            .slice(0, 100) +
+                          (blog.content.length > 100 ? "..." : "")
+                        : "No content"}
+                    </div>
+                  </TableCell>
+                  <TableCell className="min-w-[100px]">
                     <Badge
                       variant={
                         blog.status === "published" ? "default" : "secondary"
@@ -801,7 +827,7 @@ export default function Page() {
                       {blog.status === "published" ? "Published" : "Draft"}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="min-w-[120px]">
                     <div className="flex flex-wrap gap-1">
                       {blog.blog_tags && blog.blog_tags.length > 0 ? (
                         blog.blog_tags
@@ -830,12 +856,14 @@ export default function Page() {
                     </div>
                   </TableCell>
                   {/* Link column: use renderLinkDisplay */}
-                  <TableCell>
+                  <TableCell className="min-w-[120px]">
                     {renderLinkDisplay(blog.link, blog.link_name)}
                   </TableCell>
-                  <TableCell>{formatDate(blog.created_at)}</TableCell>
+                  <TableCell className="min-w-[120px]">
+                    {formatDate(blog.created_at)}
+                  </TableCell>
                   <TableCell
-                    className="text-right"
+                    className="text-right min-w-[100px]"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Button
