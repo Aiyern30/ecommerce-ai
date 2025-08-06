@@ -53,6 +53,10 @@ const postSchema = z.object({
     .string()
     .max(500, "Description must be less than 500 characters")
     .nullish(),
+  mobile_description: z
+    .string()
+    .max(120, "Mobile description must be less than 120 characters")
+    .nullish(),
   link_name: z
     .string()
     .max(100, "Link name must be less than 100 characters")
@@ -76,6 +80,7 @@ export default function NewPostPage() {
       title: "",
       body: "",
       description: "",
+      mobile_description: "",
       link_name: "",
       link: "",
       linkType: "internal",
@@ -301,6 +306,34 @@ export default function NewPostPage() {
                       </FormControl>
                       <FormDescription>
                         A short description or summary (max 500 characters).
+                      </FormDescription>
+                      <div className="min-h-[10px]">
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                {/* Mobile Description Field */}
+                <FormField
+                  control={form.control}
+                  name="mobile_description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mobile Description</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Short summary for mobile (max 120 characters)..."
+                          className="resize-none"
+                          rows={2}
+                          maxLength={120}
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        A concise description for mobile display (max 120
+                        characters).
                       </FormDescription>
                       <div className="min-h-[10px]">
                         <FormMessage />
