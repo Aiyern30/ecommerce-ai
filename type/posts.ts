@@ -3,6 +3,7 @@ export interface Post {
   title: string;
   body: string;
   description: string | null;
+  mobile_description?: string | null;
   link_name: string | null;
   link: string | null;
   image_url: string | null;
