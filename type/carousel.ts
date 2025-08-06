@@ -5,4 +5,5 @@ export interface CarouselItem {
   buttonLink: string;
   imageSrc: string;
   imageAlt: string;
+  mobile_description?: string;
 }

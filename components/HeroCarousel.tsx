@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase/client";
 import { Post } from "@/type/posts";
 import { CarouselItem } from "@/type/carousel";
+import { useDeviceType } from "@/utils/useDeviceTypes";
 
 function CarouselSkeleton() {
   return (
@@ -59,6 +60,7 @@ export default function HeroCarousel() {
   const [carouselItems, setCarouselItems] = useState<CarouselItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { isMobile } = useDeviceType();
   console.log("HeroCarousel rendered", carouselItems);
 
   const fetchPosts = useCallback(async () => {
@@ -87,6 +89,7 @@ export default function HeroCarousel() {
         buttonLink: post.link || `/staff/posts/${post.id}`,
         imageSrc: post.image_url || "/placeholder.svg",
         imageAlt: post.title,
+        mobile_description: post.mobile_description || undefined,
       }));
 
       setCarouselItems(transformedItems);
@@ -168,7 +171,9 @@ export default function HeroCarousel() {
                     {item.title}
                   </TypographyH1>
                   <TypographyP className="text-gray-600 dark:text-white mb-6 md:mb-8 text-base md:text-lg lg:text-xl leading-relaxed">
-                    {item.description}
+                    {isMobile && item.mobile_description
+                      ? item.mobile_description
+                      : item.description}
                   </TypographyP>
                   <Button
                     asChild
