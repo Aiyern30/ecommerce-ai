@@ -124,6 +124,7 @@ function PostTableSkeletonEnhanced() {
               <TableHead className="w-[80px]">Image</TableHead>
               <TableHead className="min-w-[150px]">Title</TableHead>
               <TableHead className="min-w-[120px]">Description</TableHead>
+              <TableHead className="min-w-[120px]">Mobile Desc</TableHead>
               <TableHead className="min-w-[100px]">Status</TableHead>
               <TableHead className="min-w-[100px]">Link</TableHead>
               <TableHead className="min-w-[100px]">Created</TableHead>
@@ -144,6 +145,9 @@ function PostTableSkeletonEnhanced() {
                 </TableCell>
                 <TableCell>
                   <Skeleton className="h-4 w-full max-w-[150px]" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-full max-w-[100px]" />
                 </TableCell>
                 <TableCell>
                   <Skeleton className="h-6 w-16" />
@@ -712,6 +716,7 @@ export default function PostsPage() {
                 <TableHead className="w-[80px]">Image</TableHead>
                 <TableHead>Title</TableHead>
                 <TableHead>Description</TableHead>
+                <TableHead>Mobile Desc</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Link</TableHead>
                 <TableHead>Created</TableHead>
@@ -721,7 +726,7 @@ export default function PostsPage() {
             <TableBody>
               {currentPageData.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="h-24 text-center">
+                  <TableCell colSpan={9} className="h-24 text-center">
                     No posts found.
                   </TableCell>
                 </TableRow>
@@ -762,6 +767,14 @@ export default function PostsPage() {
                         title={post.description || ""}
                       >
                         {post.description || "No description"}
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-xs">
+                      <div
+                        className="truncate text-gray-600"
+                        title={post.mobile_description || ""}
+                      >
+                        {post.mobile_description || "No mobile desc"}
                       </div>
                     </TableCell>
                     <TableCell>
