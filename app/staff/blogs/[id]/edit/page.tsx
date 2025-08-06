@@ -46,6 +46,9 @@ import { toast } from "sonner";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import TagMultiSelect from "@/components/TagMultiSelect";
 import { ExternalLink, Link as LinkIcon } from "lucide-react";
+import dynamic from "next/dynamic";
+
+const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
 // Zod schema for blog editing
 const blogSchema = z.object({
@@ -63,6 +66,7 @@ const blogSchema = z.object({
     .nullish(),
   link: z.string().nullish().or(z.literal("")),
   linkType: z.enum(["internal", "external"]),
+  content: z.string().min(1, "Content is required"),
 });
 
 type BlogFormData = z.infer<typeof blogSchema>;
@@ -297,6 +301,7 @@ export default function EditBlogPage() {
       link_name: "",
       link: "",
       linkType: "internal",
+      content: "",
     },
   });
 
@@ -353,6 +358,7 @@ export default function EditBlogPage() {
           blogData.link && blogData.link.startsWith("http")
             ? "external"
             : "internal",
+        content: blogData.content || "",
       });
 
       setLoading(false);
@@ -425,6 +431,7 @@ export default function EditBlogPage() {
           description: data.description || null,
           link_name: data.link_name || null,
           link: data.link || null,
+          content: data.content,
           status: isDraft ? "draft" : "published",
           updated_at: new Date().toISOString(),
         })
@@ -939,6 +946,47 @@ export default function EditBlogPage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Content Section - Markdown Editor */}
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                <TypographyH3>Blog Content</TypographyH3>
+              </CardTitle>
+              <CardDescription>
+                <TypographyP className="!mt-0">
+                  Write or edit the main content of your blog using the Markdown editor.
+                </TypographyP>
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <FormField
+                control={form.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Content</FormLabel>
+                    <FormControl>
+                      <div className="flex flex-col" data-color-mode="light">
+                        <MDEditor
+                          value={field.value}
+                          onChange={field.onChange}
+                          height={300}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormDescription>
+                      Write your blog content in Markdown. You can use headings, lists, images, etc.
+                    </FormDescription>
+                    <div className="min-h-[10px]">
+                      <FormMessage />
+                    </div>
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+          </Card>
+
           {/* Submit Buttons */}
           <div className="flex justify-end gap-4">
             <Link href={`/staff/blogs/${blog.id}`}>
