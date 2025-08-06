@@ -25,6 +25,11 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerClose,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
 } from "@/components/ui/";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import { Faq } from "@/type/faqs";
@@ -90,6 +95,7 @@ export default function FaqsPage() {
   const [search, setSearch] = useState("");
   const { isMobile } = useDeviceType();
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const [status, setStatus] = useState<"all" | "draft" | "published">("all");
 
   const fetchFaqs = useCallback(async () => {
     setLoading(true);
@@ -110,8 +116,11 @@ export default function FaqsPage() {
     fetchFaqs();
   }, [fetchFaqs]);
 
-  // Group FAQs by section name
+  // Filter logic: add status filter
   const filteredFaqs = faqs.filter((faq) => {
+    if (status !== "all" && faq.status !== status) {
+      return false;
+    }
     if (!search) return true;
     return (
       faq.question.toLowerCase().includes(search.toLowerCase()) ||
@@ -119,6 +128,7 @@ export default function FaqsPage() {
     );
   });
 
+  // Group FAQs by section name
   const faqsBySection: { [section: string]: Faq[] } = {};
   filteredFaqs.forEach((faq) => {
     const section = faq.section?.name || "Uncategorized";
@@ -164,12 +174,28 @@ export default function FaqsPage() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
+                <Select
+                  value={status}
+                  onValueChange={(value) =>
+                    setStatus(value as "all" | "draft" | "published")
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="published">Published</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
+                  </SelectContent>
+                </Select>
                 <div className="flex gap-2 mt-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => {
                       setSearch("");
+                      setStatus("all");
                       setMobileFilterOpen(false);
                     }}
                     className="flex-1"
@@ -198,6 +224,21 @@ export default function FaqsPage() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
+          <Select
+            value={status}
+            onValueChange={(value) =>
+              setStatus(value as "all" | "draft" | "published")
+            }
+          >
+            <SelectTrigger className="w-full sm:w-[180px] h-9">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="published">Published</SelectItem>
+              <SelectItem value="draft">Draft</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       )}
 
