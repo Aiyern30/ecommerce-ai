@@ -16,6 +16,7 @@ export interface Blog {
     | null;
   link: string | null;
   link_name: string | null;
+  content?: string | null;
 }
 
 export interface Tag {

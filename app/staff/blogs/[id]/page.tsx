@@ -35,6 +35,12 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Blog } from "@/type/blogs";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
+import dynamic from "next/dynamic";
+
+// Dynamically import MarkdownPreview for client-side rendering
+const MarkdownPreview = dynamic(() => import("@uiw/react-markdown-preview"), {
+  ssr: false,
+});
 
 // Blog Not Found Component
 function BlogNotFound() {
@@ -526,6 +532,21 @@ export default function BlogDetailPage() {
                           : "Internal Link")}
                     </TypographySmall>
                   </a>
+                </div>
+              )}
+
+              {/* Blog Content (Markdown) */}
+              {blog.content && (
+                <div>
+                  <TypographySmall className="font-medium text-muted-foreground mb-3">
+                    Content:
+                  </TypographySmall>
+                  <div className="p-0">
+                    <MarkdownPreview
+                      source={blog.content}
+                      style={{ background: "transparent" }}
+                    />
+                  </div>
                 </div>
               )}
 
