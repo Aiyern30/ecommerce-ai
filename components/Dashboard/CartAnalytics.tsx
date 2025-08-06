@@ -176,7 +176,29 @@ export function CartAnalytics() {
                       style: { fill: "#6b7280", fontSize: 13 },
                     }}
                   />
-                  <Tooltip />
+                  <Tooltip
+                    cursor={{ fill: "rgba(59, 130, 246, 0.08)" }}
+                    content={({ active, payload, label }) =>
+                      active && payload && payload.length ? (
+                        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 px-4 py-3 rounded-xl shadow-xl backdrop-blur-sm">
+                          <div className="font-semibold text-gray-900 dark:text-white text-lg">
+                            {payload.find((p) => p.dataKey === "carts")?.value}{" "}
+                            Carts
+                          </div>
+                          <div className="font-semibold text-red-600 dark:text-red-400 text-lg">
+                            {
+                              payload.find((p) => p.dataKey === "abandoned")
+                                ?.value
+                            }{" "}
+                            Abandoned
+                          </div>
+                          <div className="text-gray-600 dark:text-gray-400 text-sm font-medium">
+                            {label}
+                          </div>
+                        </div>
+                      ) : null
+                    }
+                  />
                   <Bar dataKey="carts" fill="#3b82f6" name="Total Carts" />
                   <Bar dataKey="abandoned" fill="#ef4444" name="Abandoned" />
                 </BarChart>
