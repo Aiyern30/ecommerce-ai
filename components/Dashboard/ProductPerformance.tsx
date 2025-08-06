@@ -162,8 +162,24 @@ export function ProductPerformance() {
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={data?.priceAnalysis}>
-                  <XAxis dataKey="priceRange" />
-                  <YAxis />
+                  <XAxis
+                    dataKey="priceRange"
+                    label={{
+                      value: "Price Range",
+                      position: "insideBottom",
+                      offset: -5,
+                      style: { fill: "#3b82f6", fontSize: 13 },
+                    }}
+                  />
+                  <YAxis
+                    label={{
+                      value: "Sales",
+                      angle: -90,
+                      position: "insideLeft",
+                      offset: 10,
+                      style: { fill: "#3b82f6", fontSize: 13 },
+                    }}
+                  />
                   <Tooltip />
                   <Area
                     type="monotone"
