@@ -955,7 +955,8 @@ export default function EditBlogPage() {
               </CardTitle>
               <CardDescription>
                 <TypographyP className="!mt-0">
-                  Write or edit the main content of your blog using the Markdown editor.
+                  Write or edit the main content of your blog using the Markdown
+                  editor.
                 </TypographyP>
               </CardDescription>
             </CardHeader>
@@ -976,7 +977,8 @@ export default function EditBlogPage() {
                       </div>
                     </FormControl>
                     <FormDescription>
-                      Write your blog content in Markdown. You can use headings, lists, images, etc.
+                      Write your blog content in Markdown. You can use headings,
+                      lists, images, etc.
                     </FormDescription>
                     <div className="min-h-[10px]">
                       <FormMessage />
