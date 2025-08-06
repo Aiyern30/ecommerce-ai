@@ -234,7 +234,8 @@ export default function NewPostPage() {
             <Link href="/staff/posts">
               <Button variant="outline" size="sm">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Posts
+                <span className="hidden sm:inline">Back to Posts</span>
+                <span className="inline sm:hidden">Back</span>
               </Button>
             </Link>
           </div>

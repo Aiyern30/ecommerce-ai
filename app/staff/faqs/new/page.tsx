@@ -156,7 +156,8 @@ export default function NewFaqPage() {
         <Link href="/staff/faqs">
           <Button variant="outline" size="sm">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to FAQs
+            <span className="hidden sm:inline">Back to Faqs</span>
+            <span className="inline sm:hidden">Back</span>
           </Button>
         </Link>
       </div>

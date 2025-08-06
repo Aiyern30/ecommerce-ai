@@ -311,7 +311,8 @@ export default function Page() {
             <Link href="/staff/blogs">
               <Button variant="outline" size="sm">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Blogs
+                <span className="hidden sm:inline">Back to Blogs</span>
+                <span className="inline sm:hidden">Back</span>
               </Button>
             </Link>
           </div>
