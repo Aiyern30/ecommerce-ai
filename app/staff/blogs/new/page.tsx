@@ -59,6 +59,7 @@ const blogSchema = z.object({
     .nullish(),
   link: z.string().nullish().or(z.literal("")),
   linkType: z.enum(["internal", "external"]),
+  content: z.string().min(1, "Content is required"),
 });
 
 type BlogFormData = z.infer<typeof blogSchema>;
@@ -81,6 +82,7 @@ export default function Page() {
       link_name: "",
       link: "",
       linkType: "internal",
+      content: "",
     },
   });
 
@@ -182,6 +184,7 @@ export default function Page() {
           description: data.description || null,
           link_name: data.link_name || null,
           link: data.link || null,
+          content: data.content,
           status: isDraft ? "draft" : "published",
         })
         .select("id")
