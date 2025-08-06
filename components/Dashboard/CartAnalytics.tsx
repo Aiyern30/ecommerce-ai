@@ -158,8 +158,24 @@ export function CartAnalytics() {
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data?.cartsByHour}>
-                  <XAxis dataKey="hour" />
-                  <YAxis />
+                  <XAxis
+                    dataKey="hour"
+                    label={{
+                      value: "Hour",
+                      position: "insideBottom",
+                      offset: -5,
+                      style: { fill: "#6b7280", fontSize: 13 },
+                    }}
+                  />
+                  <YAxis
+                    label={{
+                      value: "Carts",
+                      angle: -90,
+                      position: "insideLeft",
+                      offset: 10,
+                      style: { fill: "#6b7280", fontSize: 13 },
+                    }}
+                  />
                   <Tooltip />
                   <Bar dataKey="carts" fill="#3b82f6" name="Total Carts" />
                   <Bar dataKey="abandoned" fill="#ef4444" name="Abandoned" />
