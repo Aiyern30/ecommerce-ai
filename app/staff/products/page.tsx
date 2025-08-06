@@ -52,6 +52,7 @@ import {
 import Image from "next/image";
 import type { Product } from "@/type/product";
 import { ProductFilters } from "@/type/Filter/ProductFilter";
+import { useDeviceType } from "@/utils/useDeviceTypes";
 
 function ProductTableSkeleton() {
   return (
@@ -195,6 +196,8 @@ export default function ProductsPage() {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [productsToDelete, setProductsToDelete] = useState<Product[]>([]);
+  const { isMobile } = useDeviceType();
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   const itemsPerPage = 10;
 
@@ -420,99 +423,234 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row flex-wrap gap-2">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-          <Input
-            type="search"
-            placeholder="Search products by name or ID..."
-            className="pl-8"
-            value={filters.search}
-            onChange={(e) => updateFilter("search", e.target.value)}
-          />
-        </div>
-        <div className="flex flex-wrap gap-2">
+      {/* Filter Controls */}
+      {isMobile ? (
+        <>
           <Button
             variant="outline"
             size="sm"
-            className="flex items-center gap-1 w-full sm:w-auto h-9"
-            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-1 w-full h-9"
+            onClick={() => setMobileFilterOpen(true)}
           >
             <Filter className="h-4 w-4" />
-            Filter
-            {showFilters ? (
-              <ChevronLeft className="ml-1 h-4 w-4" />
-            ) : (
-              <ChevronRight className="ml-1 h-4 w-4" />
-            )}
+            Filters
           </Button>
-          <Select
-            value={filters.category}
-            onValueChange={(value) => {
-              updateFilter("category", value);
-            }}
-          >
-            <SelectTrigger className="w-full sm:w-[180px] h-9">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              <SelectItem value="bagged">Bagged Cement</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select
-            value={filters.stockStatus}
-            onValueChange={(value) => {
-              updateFilter(
-                "stockStatus",
-                value as "all" | "in-stock" | "out-of-stock"
-              );
-            }}
-          >
-            <SelectTrigger className="w-full sm:w-[180px] h-9">
-              <SelectValue placeholder="Stock Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Stock</SelectItem>
-              <SelectItem value="in-stock">In Stock</SelectItem>
-              <SelectItem value="out-of-stock">Out of Stock</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select
-            value={filters.status}
-            onValueChange={(value) => {
-              updateFilter("status", value as "all" | "draft" | "published");
-            }}
-          >
-            <SelectTrigger className="w-full sm:w-[180px] h-9">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="published">Published</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select
-            value={filters.sortBy}
-            onValueChange={(value) => {
-              updateFilter("sortBy", value as ProductFilters["sortBy"]);
-            }}
-          >
-            <SelectTrigger className="w-full sm:w-[180px] h-9">
-              <SelectValue placeholder="Sort By" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-              <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-              <SelectItem value="price-low">Price (Low to High)</SelectItem>
-              <SelectItem value="price-high">Price (High to Low)</SelectItem>
-              <SelectItem value="stock-low">Stock (Low to High)</SelectItem>
-              <SelectItem value="stock-high">Stock (High to High)</SelectItem>
-            </SelectContent>
-          </Select>
+          <Dialog open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
+            <DialogContent className="p-0 max-w-xs w-full">
+              <DialogHeader>
+                <DialogTitle>Filters</DialogTitle>
+              </DialogHeader>
+              <div className="flex flex-col gap-3 p-4">
+                <Input
+                  type="search"
+                  placeholder="Search by name or ID..."
+                  value={filters.search}
+                  onChange={(e) => updateFilter("search", e.target.value)}
+                />
+                <Select
+                  value={filters.category}
+                  onValueChange={(value) => updateFilter("category", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    <SelectItem value="bagged">Bagged Cement</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={filters.stockStatus}
+                  onValueChange={(value) =>
+                    updateFilter(
+                      "stockStatus",
+                      value as "all" | "in-stock" | "out-of-stock"
+                    )
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Stock Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Stock</SelectItem>
+                    <SelectItem value="in-stock">In Stock</SelectItem>
+                    <SelectItem value="out-of-stock">Out of Stock</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={filters.status}
+                  onValueChange={(value) =>
+                    updateFilter(
+                      "status",
+                      value as "all" | "draft" | "published"
+                    )
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="published">Published</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={filters.sortBy}
+                  onValueChange={(value) =>
+                    updateFilter("sortBy", value as ProductFilters["sortBy"])
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sort By" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                    <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+                    <SelectItem value="price-low">
+                      Price (Low to High)
+                    </SelectItem>
+                    <SelectItem value="price-high">
+                      Price (High to Low)
+                    </SelectItem>
+                    <SelectItem value="stock-low">
+                      Stock (Low to High)
+                    </SelectItem>
+                    <SelectItem value="stock-high">
+                      Stock (High to High)
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="flex gap-2">
+                  <Input
+                    id="minPrice"
+                    type="number"
+                    step="0.01"
+                    placeholder="Min Price"
+                    value={filters.minPrice}
+                    onChange={(e) => updateFilter("minPrice", e.target.value)}
+                  />
+                  <Input
+                    id="maxPrice"
+                    type="number"
+                    step="0.01"
+                    placeholder="Max Price"
+                    value={filters.maxPrice}
+                    onChange={(e) => updateFilter("maxPrice", e.target.value)}
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    clearAllFilters();
+                    setMobileFilterOpen(false);
+                  }}
+                >
+                  Clear Filters
+                </Button>
+                <Button size="sm" onClick={() => setMobileFilterOpen(false)}>
+                  Apply
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </>
+      ) : (
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              type="search"
+              placeholder="Search products by name or ID..."
+              className="pl-8"
+              value={filters.search}
+              onChange={(e) => updateFilter("search", e.target.value)}
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-1 w-full sm:w-auto h-9"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <Filter className="h-4 w-4" />
+              Filter
+              {showFilters ? (
+                <ChevronLeft className="ml-1 h-4 w-4" />
+              ) : (
+                <ChevronRight className="ml-1 h-4 w-4" />
+              )}
+            </Button>
+            <Select
+              value={filters.category}
+              onValueChange={(value) => {
+                updateFilter("category", value);
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-[180px] h-9">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="bagged">Bagged Cement</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={filters.stockStatus}
+              onValueChange={(value) => {
+                updateFilter(
+                  "stockStatus",
+                  value as "all" | "in-stock" | "out-of-stock"
+                );
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-[180px] h-9">
+                <SelectValue placeholder="Stock Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Stock</SelectItem>
+                <SelectItem value="in-stock">In Stock</SelectItem>
+                <SelectItem value="out-of-stock">Out of Stock</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={filters.status}
+              onValueChange={(value) => {
+                updateFilter("status", value as "all" | "draft" | "published");
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-[180px] h-9">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="published">Published</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={filters.sortBy}
+              onValueChange={(value) => {
+                updateFilter("sortBy", value as ProductFilters["sortBy"]);
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-[180px] h-9">
+                <SelectValue placeholder="Sort By" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+                <SelectItem value="price-low">Price (Low to High)</SelectItem>
+                <SelectItem value="price-high">Price (High to Low)</SelectItem>
+                <SelectItem value="stock-low">Stock (Low to High)</SelectItem>
+                <SelectItem value="stock-high">Stock (High to High)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-      </div>
+      )}
 
       {showFilters && (
         <Card className="p-4">
