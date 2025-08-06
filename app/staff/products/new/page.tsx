@@ -436,12 +436,15 @@ export default function NewProductPage() {
         />
 
         <div className="flex items-center justify-between">
-          <TypographyH2>Add New Product</TypographyH2>
+          <TypographyH2 className="text-lg sm:text-2xl">
+            Add New Product
+          </TypographyH2>
           <div className="flex items-center gap-2">
             <Link href="/staff/products">
               <Button variant="outline" size="sm">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Products
+                <span className="hidden sm:inline">Back to Products</span>
+                <span className="inline sm:hidden">Back</span>
               </Button>
             </Link>
           </div>
