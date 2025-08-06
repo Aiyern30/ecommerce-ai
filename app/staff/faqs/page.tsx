@@ -20,10 +20,16 @@ import {
   AccordionTrigger,
   AccordionContent,
   Badge,
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerClose,
 } from "@/components/ui/";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import { Faq } from "@/type/faqs";
 import Link from "next/link";
+import { useDeviceType } from "@/utils/useDeviceTypes";
 
 function EmptyFaqsState() {
   return (
@@ -82,6 +88,8 @@ export default function FaqsPage() {
   const [faqs, setFaqs] = useState<Faq[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const { isMobile } = useDeviceType();
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   const fetchFaqs = useCallback(async () => {
     setLoading(true);
@@ -122,7 +130,6 @@ export default function FaqsPage() {
     <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex items-center justify-between">
         <TypographyH2 className="border-none pb-0">FAQs</TypographyH2>
-
         <div className="flex items-center gap-2">
           <Link href="/staff/faqs/new">
             <Button size="sm">
@@ -132,20 +139,68 @@ export default function FaqsPage() {
           </Link>
         </div>
       </div>
-      <div className="flex flex-col sm:flex-row flex-wrap gap-2">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-          <Input
-            type="search"
-            placeholder="Search FAQs by question or answer..."
-            className="pl-8"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-            }}
-          />
+
+      {/* Filter Controls */}
+      {isMobile ? (
+        <>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-1 w-full h-9"
+            onClick={() => setMobileFilterOpen(true)}
+          >
+            <Search className="h-4 w-4" />
+            Filters
+          </Button>
+          <Drawer open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>Filter FAQs</DrawerTitle>
+              </DrawerHeader>
+              <div className="flex flex-col gap-3 p-4">
+                <Input
+                  type="search"
+                  placeholder="Search FAQs by question or answer..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+                <div className="flex gap-2 mt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSearch("");
+                      setMobileFilterOpen(false);
+                    }}
+                    className="flex-1"
+                  >
+                    Clear
+                  </Button>
+                  <DrawerClose asChild>
+                    <Button size="sm" className="flex-1">
+                      Apply
+                    </Button>
+                  </DrawerClose>
+                </div>
+              </div>
+            </DrawerContent>
+          </Drawer>
+        </>
+      ) : (
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              type="search"
+              placeholder="Search FAQs by question or answer..."
+              className="pl-8"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
         </div>
-      </div>
+      )}
+
       {loading ? (
         <FaqTableSkeleton />
       ) : faqs.length === 0 ? (
