@@ -31,6 +31,7 @@ const Header = () => {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const user = useUser();
+  const [isStaff, setIsStaff] = useState(false);
 
   const isActive = (path: string) => pathname.startsWith(path);
 
@@ -40,6 +41,7 @@ const Header = () => {
     { name: "Compare", path: "/compare" },
   ];
 
+  // Add staff dashboard nav if user is staff
   const secondaryNavItems = [
     { name: "FAQ", path: "/faq" },
     { name: "Contact", path: "/contact" },
@@ -82,6 +84,23 @@ const Header = () => {
       });
     }
   }, [user]);
+
+  // Staff check logic
+  useEffect(() => {
+    const checkUser = async () => {
+      const {
+        data: { user: supaUser },
+        error,
+      } = await supabase.auth.getUser();
+
+      if (!error && supaUser && supaUser.user_metadata?.role === "staff") {
+        setIsStaff(true);
+      } else {
+        setIsStaff(false);
+      }
+    };
+    checkUser();
+  }, []);
 
   return (
     <div>
@@ -217,7 +236,7 @@ const Header = () => {
         <div className="hidden md:block border-t dark:border-gray-800">
           <div className="container mx-auto flex items-center justify-between px-4 py-3">
             {/* Navigation */}
-            <nav className="flex items-center">
+            <nav className="flex items-center flex-1">
               <ul className="flex gap-8 items-center">
                 {primaryNavItems.map(({ name, path }) => (
                   <li key={path} className="relative">
@@ -283,7 +302,29 @@ const Header = () => {
                 </li>
               </ul>
             </nav>
-
+            {/* Staff Dashboard nav at the most right */}
+            {isStaff && (
+              <div className="ml-8 flex-shrink-0">
+                <Link
+                  href="/staff/dashboard"
+                  className={`hover:text-gray-600 dark:hover:text-gray-300 transition-colors font-medium ${
+                    isActive("/staff/dashboard")
+                      ? "text-[#ff7a5c] font-semibold"
+                      : "dark:text-gray-300"
+                  }`}
+                >
+                  Staff Dashboard
+                </Link>
+                {isActive("/staff/dashboard") && (
+                  <motion.div
+                    className="h-[2px] w-full bg-[#ff7a5c] rounded-md mt-1"
+                    layoutId="activeIndicator"
+                    initial={false}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                  />
+                )}
+              </div>
+            )}
             {/* Auth Buttons (only show when not logged in) */}
             {!user && (
               <Button
@@ -316,6 +357,34 @@ const Header = () => {
                   transition={{ delay: 0.1, duration: 0.3 }}
                   className="space-y-2"
                 >
+                  {/* Staff Dashboard nav for mobile */}
+                  {isStaff && (
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.15, duration: 0.3 }}
+                    >
+                      <Link
+                        href="/staff/dashboard"
+                        onClick={() => setMenuOpen(false)}
+                        className={`flex items-center justify-between p-3 rounded-lg transition-all duration-200 ${
+                          isActive("/staff/dashboard")
+                            ? "bg-orange-50 dark:bg-orange-900/20 text-[#ff7a5c] font-semibold border-l-4 border-[#ff7a5c]"
+                            : "hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-gray-300"
+                        }`}
+                      >
+                        <span>Staff Dashboard</span>
+                        {isActive("/staff/dashboard") && (
+                          <motion.div
+                            layoutId="mobileActiveIndicator"
+                            className="w-2 h-2 bg-[#ff7a5c] rounded-full"
+                            initial={false}
+                            transition={{ duration: 0.3 }}
+                          />
+                        )}
+                      </Link>
+                    </motion.div>
+                  )}
                   {primaryNavItems.map(({ name, path }, index) => (
                     <motion.div
                       key={path}
