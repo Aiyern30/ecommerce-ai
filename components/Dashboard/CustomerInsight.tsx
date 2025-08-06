@@ -163,8 +163,27 @@ export function CustomerInsights() {
                       style: { fill: "#6b7280", fontSize: 13 },
                     }}
                   />
-                  <Tooltip />
-                  <Bar dataKey="customers" fill="#3b82f6" />
+                  <Tooltip
+                    cursor={{ fill: "rgba(59, 130, 246, 0.08)" }}
+                    content={({ active, payload, label }) =>
+                      active && payload && payload.length ? (
+                        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 px-4 py-3 rounded-xl shadow-xl backdrop-blur-sm">
+                          <p className="font-semibold text-gray-900 dark:text-white text-lg">
+                            {payload[0].value} Customers
+                          </p>
+                          <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">
+                            {label}
+                          </p>
+                        </div>
+                      ) : null
+                    }
+                  />
+                  <Bar
+                    dataKey="customers"
+                    fill="#3b82f6"
+                    radius={[6, 6, 0, 0]}
+                    barSize={32}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
