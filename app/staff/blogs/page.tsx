@@ -45,6 +45,11 @@ import {
   DialogTitle,
   DialogTrigger,
   Badge,
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerClose,
 } from "@/components/ui/";
 import {
   TypographyH2,
@@ -53,6 +58,7 @@ import {
 } from "@/components/ui/Typography";
 import Image from "next/image";
 import { Blog } from "@/type/blogs";
+import { useDeviceType } from "@/utils/useDeviceTypes";
 
 interface BlogFilters {
   search: string;
@@ -182,8 +188,11 @@ export default function Page() {
   const [selectedBlogs, setSelectedBlogs] = useState<string[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [blogsToDelete, setBlogsToDelete] = useState<Blog[]>([]);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   const itemsPerPage = 10;
+
+  const { isMobile } = useDeviceType();
 
   const fetchBlogs = useCallback(async () => {
     setLoading(true);
@@ -476,80 +485,189 @@ export default function Page() {
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row flex-wrap gap-2">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-          <Input
-            type="search"
-            placeholder="Search blogs by title or description..."
-            className="pl-8"
-            value={filters.search}
-            onChange={(e) => updateFilter("search", e.target.value)}
-          />
-        </div>
-        <div className="flex flex-wrap gap-2">
+      {/* Filter Controls */}
+      {isMobile ? (
+        <>
           <Button
             variant="outline"
             size="sm"
-            className="flex items-center gap-1 w-full sm:w-auto bg-transparent h-9"
-            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-1 w-full h-9"
+            onClick={() => setMobileFilterOpen(true)}
           >
             <Filter className="h-4 w-4" />
-            Filter
-            {showFilters ? (
-              <ChevronLeft className="ml-1 h-4 w-4" />
-            ) : (
-              <ChevronRight className="ml-1 h-4 w-4" />
-            )}
+            Filters
           </Button>
-          <Select
-            value={filters.hasImage}
-            onValueChange={(value) => {
-              updateFilter("hasImage", value as BlogFilters["hasImage"]);
-            }}
-          >
-            <SelectTrigger className="w-full sm:w-[180px] h-9">
-              <SelectValue placeholder="Image Filter" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Blogs</SelectItem>
-              <SelectItem value="with-image">With Image</SelectItem>
-              <SelectItem value="without-image">Without Image</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select
-            value={filters.status}
-            onValueChange={(value) => {
-              updateFilter("status", value as BlogFilters["status"]);
-            }}
-          >
-            <SelectTrigger className="w-full sm:w-[180px] h-9">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="published">Published</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select
-            value={filters.sortBy}
-            onValueChange={(value) => {
-              updateFilter("sortBy", value as BlogFilters["sortBy"]);
-            }}
-          >
-            <SelectTrigger className="w-full sm:w-[180px] h-9">
-              <SelectValue placeholder="Sort By" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="date-new">Newest First</SelectItem>
-              <SelectItem value="date-old">Oldest First</SelectItem>
-              <SelectItem value="title-asc">Title (A-Z)</SelectItem>
-              <SelectItem value="title-desc">Title (Z-A)</SelectItem>
-            </SelectContent>
-          </Select>
+          <Drawer open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>Filters</DrawerTitle>
+              </DrawerHeader>
+              <div className="flex flex-col gap-3 p-4">
+                <Input
+                  type="search"
+                  placeholder="Search blogs by title or description..."
+                  value={filters.search}
+                  onChange={(e) => updateFilter("search", e.target.value)}
+                />
+                <Select
+                  value={filters.hasImage}
+                  onValueChange={(value) =>
+                    updateFilter("hasImage", value as BlogFilters["hasImage"])
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Image Filter" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Blogs</SelectItem>
+                    <SelectItem value="with-image">With Image</SelectItem>
+                    <SelectItem value="without-image">Without Image</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={filters.status}
+                  onValueChange={(value) =>
+                    updateFilter("status", value as BlogFilters["status"])
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="published">Published</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={filters.sortBy}
+                  onValueChange={(value) =>
+                    updateFilter("sortBy", value as BlogFilters["sortBy"])
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sort By" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="date-new">Newest First</SelectItem>
+                    <SelectItem value="date-old">Oldest First</SelectItem>
+                    <SelectItem value="title-asc">Title (A-Z)</SelectItem>
+                    <SelectItem value="title-desc">Title (Z-A)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={filters.hasLink}
+                  onValueChange={(value) =>
+                    updateFilter("hasLink", value as BlogFilters["hasLink"])
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Link Filter" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Blogs</SelectItem>
+                    <SelectItem value="with-link">With Link</SelectItem>
+                    <SelectItem value="without-link">Without Link</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="flex gap-2 mt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      clearAllFilters();
+                      setMobileFilterOpen(false);
+                    }}
+                    className="flex-1"
+                  >
+                    Clear
+                  </Button>
+                  <DrawerClose asChild>
+                    <Button size="sm" className="flex-1">
+                      Apply
+                    </Button>
+                  </DrawerClose>
+                </div>
+              </div>
+            </DrawerContent>
+          </Drawer>
+        </>
+      ) : (
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              type="search"
+              placeholder="Search blogs by title or description..."
+              className="pl-8"
+              value={filters.search}
+              onChange={(e) => updateFilter("search", e.target.value)}
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-1 w-full sm:w-auto bg-transparent h-9"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <Filter className="h-4 w-4" />
+              Filter
+              {showFilters ? (
+                <ChevronLeft className="ml-1 h-4 w-4" />
+              ) : (
+                <ChevronRight className="ml-1 h-4 w-4" />
+              )}
+            </Button>
+            <Select
+              value={filters.hasImage}
+              onValueChange={(value) => {
+                updateFilter("hasImage", value as BlogFilters["hasImage"]);
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-[180px] h-9">
+                <SelectValue placeholder="Image Filter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Blogs</SelectItem>
+                <SelectItem value="with-image">With Image</SelectItem>
+                <SelectItem value="without-image">Without Image</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={filters.status}
+              onValueChange={(value) => {
+                updateFilter("status", value as BlogFilters["status"]);
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-[180px] h-9">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="published">Published</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={filters.sortBy}
+              onValueChange={(value) => {
+                updateFilter("sortBy", value as BlogFilters["sortBy"]);
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-[180px] h-9">
+                <SelectValue placeholder="Sort By" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="date-new">Newest First</SelectItem>
+                <SelectItem value="date-old">Oldest First</SelectItem>
+                <SelectItem value="title-asc">Title (A-Z)</SelectItem>
+                <SelectItem value="title-desc">Title (Z-A)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-      </div>
+      )}
 
       {showFilters && (
         <Card className="p-4">
