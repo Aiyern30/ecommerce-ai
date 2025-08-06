@@ -220,7 +220,7 @@ export default function PostDetailPage() {
     async function fetchPost() {
       const { data, error } = await supabase
         .from("posts")
-        .select("*")
+        .select("*, mobile_description")
         .eq("id", postId)
         .single();
 
@@ -412,8 +412,14 @@ export default function PostDetailPage() {
                   {post.description}
                 </p>
               )}
-            </CardHeader>
 
+              {post.mobile_description && (
+                <p className="text-sm text-blue-700 dark:text-blue-300 leading-relaxed mt-2">
+                  <span className="font-semibold">Mobile Description: </span>
+                  {post.mobile_description}
+                </p>
+              )}
+            </CardHeader>
             <CardContent className="pt-0 space-y-6">
               {/* Post Content */}
               <div>
