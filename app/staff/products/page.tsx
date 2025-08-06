@@ -43,6 +43,11 @@ import {
   DialogTitle,
   DialogTrigger,
   Badge,
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerClose,
 } from "@/components/ui/";
 import {
   TypographyH2,
@@ -435,11 +440,11 @@ export default function ProductsPage() {
             <Filter className="h-4 w-4" />
             Filters
           </Button>
-          <Dialog open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
-            <DialogContent className="p-0 max-w-xs w-full">
-              <DialogHeader>
-                <DialogTitle>Filters</DialogTitle>
-              </DialogHeader>
+          <Drawer open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>Filters</DrawerTitle>
+              </DrawerHeader>
               <div className="flex flex-col gap-3 p-4">
                 <Input
                   type="search"
@@ -539,22 +544,27 @@ export default function ProductsPage() {
                     onChange={(e) => updateFilter("maxPrice", e.target.value)}
                   />
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    clearAllFilters();
-                    setMobileFilterOpen(false);
-                  }}
-                >
-                  Clear Filters
-                </Button>
-                <Button size="sm" onClick={() => setMobileFilterOpen(false)}>
-                  Apply
-                </Button>
+                <div className="flex gap-2 mt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      clearAllFilters();
+                      setMobileFilterOpen(false);
+                    }}
+                    className="flex-1"
+                  >
+                    Clear
+                  </Button>
+                  <DrawerClose asChild>
+                    <Button size="sm" className="flex-1">
+                      Apply
+                    </Button>
+                  </DrawerClose>
+                </div>
               </div>
-            </DialogContent>
-          </Dialog>
+            </DrawerContent>
+          </Drawer>
         </>
       ) : (
         <div className="flex flex-col sm:flex-row flex-wrap gap-2">
