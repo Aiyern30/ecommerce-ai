@@ -27,6 +27,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useDeviceType } from "@/utils/useDeviceTypes";
 
 interface OrdersData {
   period: string;
@@ -181,6 +182,7 @@ export function OrdersOverTime() {
   const [loading, setLoading] = useState(true);
   const [totalOrders, setTotalOrders] = useState(0);
   const [previousPeriodOrders, setPreviousPeriodOrders] = useState(0);
+  const { isMobile } = useDeviceType();
 
   useEffect(() => {
     async function fetchOrders() {
@@ -275,70 +277,138 @@ export function OrdersOverTime() {
 
   return (
     <Card className="col-span-full bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-900 dark:to-blue-900/10 border-0 shadow-xl">
-      <CardContent className="p-8">
-        <div className="flex flex-col gap-8">
+      <CardContent className={isMobile ? "p-2" : "p-8"}>
+        <div
+          className={isMobile ? "flex flex-col gap-4" : "flex flex-col gap-8"}
+        >
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg">
-                <BarChart3 className="h-6 w-6 text-white" />
+          {isMobile ? (
+            <div className="flex flex-col gap-2 px-1 pt-2">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
+                  <BarChart3 className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                    Orders Over Time
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-xs font-medium">
+                    {totalOrders} total orders • {currentFilterLabel} view
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Orders Over Time
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 font-medium">
-                  {totalOrders} total orders • {currentFilterLabel} view
-                </p>
+              <div className="flex justify-end">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm"
+                    >
+                      <Calendar className="h-4 w-4" />
+                      {currentFilterLabel}
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-48 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                  >
+                    {filterOptions.map((option) => (
+                      <DropdownMenuItem
+                        key={option.value}
+                        onClick={() => setFilter(option.value)}
+                        className="flex flex-col items-start gap-1 p-3 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`w-2.5 h-2.5 rounded-full ${
+                              filter === option.value
+                                ? "bg-blue-500 shadow-lg shadow-blue-500/30"
+                                : "bg-gray-300 dark:bg-gray-600"
+                            }`}
+                          />
+                          <span className="font-semibold text-gray-900 dark:text-white text-sm">
+                            {option.label}
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-5">
+                          {option.desc}
+                        </span>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="gap-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm"
-                >
-                  <Calendar className="h-4 w-4" />
-                  {currentFilterLabel}
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="w-56 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
-              >
-                {filterOptions.map((option) => (
-                  <DropdownMenuItem
-                    key={option.value}
-                    onClick={() => setFilter(option.value)}
-                    className="flex flex-col items-start gap-1 p-4 hover:bg-gray-50 dark:hover:bg-gray-700"
+          ) : (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg">
+                  <BarChart3 className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    Orders Over Time
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 font-medium">
+                    {totalOrders} total orders • {currentFilterLabel} view
+                  </p>
+                </div>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="gap-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm"
                   >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-3 h-3 rounded-full ${
-                          filter === option.value
-                            ? "bg-blue-500 shadow-lg shadow-blue-500/30"
-                            : "bg-gray-300 dark:bg-gray-600"
-                        }`}
-                      />
-                      <span className="font-semibold text-gray-900 dark:text-white">
-                        {option.label}
+                    <Calendar className="h-4 w-4" />
+                    {currentFilterLabel}
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-56 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                >
+                  {filterOptions.map((option) => (
+                    <DropdownMenuItem
+                      key={option.value}
+                      onClick={() => setFilter(option.value)}
+                      className="flex flex-col items-start gap-1 p-4 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-3 h-3 rounded-full ${
+                            filter === option.value
+                              ? "bg-blue-500 shadow-lg shadow-blue-500/30"
+                              : "bg-gray-300 dark:bg-gray-600"
+                          }`}
+                        />
+                        <span className="font-semibold text-gray-900 dark:text-white">
+                          {option.label}
+                        </span>
+                      </div>
+                      <span className="text-sm text-gray-500 dark:text-gray-400 ml-6">
+                        {option.desc}
                       </span>
-                    </div>
-                    <span className="text-sm text-gray-500 dark:text-gray-400 ml-6">
-                      {option.desc}
-                    </span>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
 
           {/* Chart */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-            <div className="h-[360px] w-full">
+          <div
+            className={
+              isMobile
+                ? "bg-white dark:bg-gray-800 rounded-2xl p-2 shadow-lg border border-gray-100 dark:border-gray-700"
+                : "bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700"
+            }
+          >
+            <div className={isMobile ? "h-[260px] w-full" : "h-[360px] w-full"}>
               {loading ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="flex flex-col items-center gap-4">
@@ -353,10 +423,17 @@ export function OrdersOverTime() {
                   <AreaChart
                     data={data}
                     margin={{
-                      top: 20,
-                      right: 30,
-                      left: 0,
-                      bottom: filter === "day" ? 40 : 20,
+                      top: isMobile ? 10 : 20,
+                      right: isMobile ? 10 : 30,
+                      left: isMobile ? 0 : 0,
+                      bottom:
+                        filter === "day"
+                          ? isMobile
+                            ? 20
+                            : 40
+                          : isMobile
+                          ? 10
+                          : 20,
                     }}
                   >
                     <defs>
@@ -396,6 +473,17 @@ export function OrdersOverTime() {
                       angle={filter === "day" ? -45 : 0}
                       textAnchor={filter === "day" ? "end" : "middle"}
                       height={filter === "day" ? 80 : 40}
+                      label={{
+                        value:
+                          filter === "day"
+                            ? "Hour"
+                            : filter === "week"
+                            ? "Week"
+                            : "Month",
+                        position: "insideBottom",
+                        offset: -5,
+                        style: { fill: "#6b7280", fontSize: 13 },
+                      }}
                     />
                     <YAxis
                       tick={{ fontSize: 12, fill: "currentColor" }}
@@ -403,6 +491,13 @@ export function OrdersOverTime() {
                       axisLine={false}
                       tickFormatter={(value) => `${value}`}
                       className="text-gray-600 dark:text-gray-400"
+                      label={{
+                        value: "Orders",
+                        angle: -90,
+                        position: "insideLeft",
+                        offset: 10,
+                        style: { fill: "#6b7280", fontSize: 13 },
+                      }}
                     />
                     <CartesianGrid
                       strokeDasharray="3 3"
