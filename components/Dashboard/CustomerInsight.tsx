@@ -145,8 +145,24 @@ export function CustomerInsights() {
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data?.orderFrequency}>
-                  <XAxis dataKey="frequency" />
-                  <YAxis />
+                  <XAxis
+                    dataKey="frequency"
+                    label={{
+                      value: "Order Frequency",
+                      position: "insideBottom",
+                      offset: -5,
+                      style: { fill: "#6b7280", fontSize: 13 },
+                    }}
+                  />
+                  <YAxis
+                    label={{
+                      value: "Customers",
+                      angle: -90,
+                      position: "insideLeft",
+                      offset: 10,
+                      style: { fill: "#6b7280", fontSize: 13 },
+                    }}
+                  />
                   <Tooltip />
                   <Bar dataKey="customers" fill="#3b82f6" />
                 </BarChart>
