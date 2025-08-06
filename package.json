@@ -45,6 +45,7 @@
     "@supabase/supabase-js": "^2.50.0",
     "@types/google.maps": "^3.58.1",
     "@uiw/react-markdown-preview": "^5.1.5",
+    "@uiw/react-md-editor": "^4.0.8",
     "ai": "^4.1.53",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
