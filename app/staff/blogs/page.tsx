@@ -74,31 +74,34 @@ function BlogTableSkeleton() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[50px]">
-              <div className="h-4 w-4 rounded-sm bg-gray-200 animate-pulse" />
+            <TableHead className="w-[50px] min-w-[50px] text-center">
+              <div className="h-4 w-4 rounded-sm bg-gray-200 animate-pulse mx-auto" />
             </TableHead>
-            <TableHead className="w-[80px]">Image</TableHead>
-            <TableHead>Title</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Content</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Tags</TableHead>
-            <TableHead>Link</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead className="w-[80px] min-w-[80px]">Image</TableHead>
+            <TableHead className="min-w-[180px]">Title</TableHead>
+            <TableHead className="min-w-[220px]">Description</TableHead>
+            <TableHead className="min-w-[180px]">Content</TableHead>
+            <TableHead className="min-w-[100px]">Status</TableHead>
+            <TableHead className="min-w-[120px]">Tags</TableHead>
+            <TableHead className="min-w-[120px]">Link</TableHead>
+            <TableHead className="min-w-[120px]">Created</TableHead>
+            <TableHead className="text-right min-w-[100px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {Array.from({ length: 5 }).map((_, i) => (
             <TableRow key={i}>
-              <TableCell>
-                <div className="h-4 w-4 rounded-sm bg-gray-200 animate-pulse" />
+              <TableCell className="text-center">
+                <div className="h-4 w-4 rounded-sm bg-gray-200 animate-pulse mx-auto" />
               </TableCell>
               <TableCell>
                 <div className="h-12 w-12 rounded-md bg-gray-200 animate-pulse" />
               </TableCell>
               <TableCell>
                 <div className="h-4 w-3/4 rounded bg-gray-200 animate-pulse" />
+              </TableCell>
+              <TableCell>
+                <div className="h-4 w-1/2 rounded bg-gray-200 animate-pulse" />
               </TableCell>
               <TableCell>
                 <div className="h-4 w-1/2 rounded bg-gray-200 animate-pulse" />
