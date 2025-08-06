@@ -10,12 +10,18 @@ import { Blog } from "@/type/blogs";
 import { Button, Card, Skeleton } from "@/components/ui";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { TypographyH1, TypographyP } from "@/components/ui/Typography";
+import dynamic from "next/dynamic";
+
+const MarkdownPreview = dynamic(() => import("@uiw/react-markdown-preview"), {
+  ssr: false,
+});
 
 export default function BlogPost() {
   const { id } = useParams();
   const router = useRouter();
 
   const [blog, setBlog] = useState<Blog | null>(null);
+  console.log("Blog:", blog);
   const [prevBlog, setPrevBlog] = useState<{
     id: string;
     title: string;
@@ -36,7 +42,7 @@ export default function BlogPost() {
         .select(
           `
     id, title, description, status, created_at, updated_at,
-    link, link_name,
+    link, link_name, content,
     blog_images ( image_url ),
     blog_tags ( tags ( id, name ) )
   `
@@ -156,6 +162,19 @@ export default function BlogPost() {
 
         <div className="space-y-6 text-gray-700 px-6 mb-12">
           <TypographyP>{blog.description}</TypographyP>
+          {/* Blog Content Markdown */}
+          {blog.content && (
+            <MarkdownPreview
+              source={blog.content}
+              style={{
+                background: "transparent",
+                fontSize: 16,
+                color: "#334155",
+                padding: 0,
+              }}
+              className="!bg-transparent"
+            />
+          )}
           {/* Blog Link Button */}
           {blog.link && (
             <div className="mt-4">
