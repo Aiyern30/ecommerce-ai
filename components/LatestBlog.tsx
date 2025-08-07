@@ -59,7 +59,7 @@ export default function LatestBlog() {
       : "grid-cols-4";
 
   return (
-    <section className="h-[calc(100vh-120px)] flex flex-col justify-center">
+    <section className="h-[calc(100vh-120px)] h-full flex flex-col justify-center">
       <div className="container mx-auto px-4 flex flex-col flex-1 justify-center">
         <div className="flex flex-col items-center justify-center gap-8 py-12">
           <TypographyH1 className="text-center">LATEST BLOG</TypographyH1>
