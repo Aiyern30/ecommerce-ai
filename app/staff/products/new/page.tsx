@@ -38,11 +38,10 @@ import {
   TypographyH3,
   TypographyP,
 } from "@/components/ui/Typography";
-import TagMultiSelect from "@/components/TagMultiSelect";
-import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 import Image from "next/image";
 import { toast } from "sonner";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 const productSchema = z.object({
   name: z.string().min(1, "Product name is required"),
@@ -89,9 +88,6 @@ export default function NewProductPage() {
   const [isDraftSaving, setIsDraftSaving] = useState(false);
   const [selectedImageFiles, setSelectedImageFiles] = useState<File[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
-  const [selectedTags, setSelectedTags] = useState<
-    { id: string; name: string }[]
-  >([]);
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -284,23 +280,6 @@ export default function NewProductPage() {
               "Failed to link product images: " + imagesInsertError.message
             );
           }
-        }
-      }
-
-      // 3. Insert blog_tags if selectedTags exist (assuming you have a blog_tags or product_tags table)
-      if (selectedTags && selectedTags.length > 0) {
-        const tagsToInsert = selectedTags.map((tag) => ({
-          blog_id: productId, // or product_id if you have a product_tags table
-          tag_id: tag.id,
-        }));
-
-        const { error: tagsInsertError } = await supabase
-          .from("blog_tags") // Change to "product_tags" if that's your table name
-          .insert(tagsToInsert);
-
-        if (tagsInsertError) {
-          console.error("Product tags insert failed:", tagsInsertError.message);
-          toast.error("Failed to add product tags: " + tagsInsertError.message);
         }
       }
 
@@ -689,20 +668,6 @@ export default function NewProductPage() {
                       )}
                     />
                   </div>
-                </div>
-
-                {/* Tags Section */}
-                <div className="space-y-4 pt-6 border-t">
-                  <div>
-                    <TypographyH3>Product Tags</TypographyH3>
-                    <TypographyP className="!mt-0">
-                      Add relevant tags to help customers find this product.
-                    </TypographyP>
-                  </div>
-                  <TagMultiSelect
-                    selectedTags={selectedTags}
-                    setSelectedTags={setSelectedTags}
-                  />
                 </div>
               </CardContent>
             </Card>
