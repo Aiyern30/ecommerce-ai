@@ -843,7 +843,7 @@ export default function ProductsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[50px]">
+                <TableHead className="w-[50px] min-w-[50px]">
                   <Checkbox
                     checked={
                       selectedProducts.length === currentPageData.length &&
@@ -853,22 +853,24 @@ export default function ProductsPage() {
                     aria-label="Select all"
                   />
                 </TableHead>
-                <TableHead className="w-[80px]">Image</TableHead>
-                <TableHead>Product Name</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Grade</TableHead>
-                <TableHead>Product Type</TableHead>
-                <TableHead>Mortar Ratio</TableHead>
-                <TableHead>Normal Price</TableHead>
-                <TableHead>Pump Price</TableHead>
-                <TableHead>Tremie 1 Price</TableHead>
-                <TableHead>Tremie 2 Price</TableHead>
-                <TableHead>Tremie 3 Price</TableHead>
-                <TableHead>Unit</TableHead>
-                <TableHead>Stock</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="w-[80px] min-w-[80px]">Image</TableHead>
+                <TableHead className="min-w-[160px]">Product Name</TableHead>
+                <TableHead className="min-w-[200px]">Description</TableHead>
+                <TableHead className="min-w-[120px]">Category</TableHead>
+                <TableHead className="min-w-[100px]">Grade</TableHead>
+                <TableHead className="min-w-[120px]">Product Type</TableHead>
+                <TableHead className="min-w-[120px]">Mortar Ratio</TableHead>
+                <TableHead className="min-w-[120px]">Normal Price</TableHead>
+                <TableHead className="min-w-[120px]">Pump Price</TableHead>
+                <TableHead className="min-w-[120px]">Tremie 1 Price</TableHead>
+                <TableHead className="min-w-[120px]">Tremie 2 Price</TableHead>
+                <TableHead className="min-w-[120px]">Tremie 3 Price</TableHead>
+                <TableHead className="min-w-[80px]">Unit</TableHead>
+                <TableHead className="min-w-[80px]">Stock</TableHead>
+                <TableHead className="min-w-[100px]">Status</TableHead>
+                <TableHead className="text-right min-w-[100px]">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
