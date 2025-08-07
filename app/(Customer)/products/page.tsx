@@ -56,6 +56,7 @@ export default function ProductListPage() {
           )
         `
         )
+        .eq("status", "published")
         .order("created_at", { ascending: false });
 
       if (error) {
