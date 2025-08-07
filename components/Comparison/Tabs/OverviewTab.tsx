@@ -46,9 +46,14 @@ export function OverviewTabs({
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              RM{Math.min(...comparedProducts.map((p) => p.price)).toFixed(0)} -
               RM
-              {Math.max(...comparedProducts.map((p) => p.price)).toFixed(0)}
+              {Math.min(
+                ...comparedProducts.map((p) => p.normal_price ?? 0)
+              ).toFixed(0)}
+              {" - "}RM
+              {Math.max(
+                ...comparedProducts.map((p) => p.normal_price ?? 0)
+              ).toFixed(0)}
             </div>
             <div className="text-gray-600 dark:text-gray-400">Price Range</div>
           </div>
@@ -68,8 +73,10 @@ export function OverviewTabs({
             <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               RM
               {(
-                comparedProducts.reduce((sum, p) => sum + p.price, 0) /
-                comparedProducts.length
+                comparedProducts.reduce(
+                  (sum, p) => sum + (p.normal_price ?? 0),
+                  0
+                ) / comparedProducts.length
               ).toFixed(0)}
             </div>
             <div className="text-gray-600 dark:text-gray-400">Avg Price</div>
