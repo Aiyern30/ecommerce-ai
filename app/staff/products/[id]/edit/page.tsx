@@ -32,6 +32,7 @@ import {
   SelectValue,
   AspectRatio,
   Checkbox,
+  Skeleton,
 } from "@/components/ui/";
 import {
   TypographyH2,
@@ -83,6 +84,135 @@ const productSchema = z.object({
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
+
+function ProductEditSkeleton() {
+  return (
+    <div className="flex flex-col gap-6 w-full max-w-full">
+      <div className="flex flex-col gap-2">
+        <Skeleton className="h-6 w-40 mb-2" />
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-48" />
+          <div className="flex gap-2">
+            <Skeleton className="h-9 w-36" />
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Side - General Information Skeleton */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-40 mb-2" />
+            <Skeleton className="h-4 w-64" />
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Name */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            {/* Description */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-24 w-full" />
+            </div>
+            {/* Product Type & Grade */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            </div>
+            {/* Mortar Ratio */}
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            {/* Category & Unit */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            </div>
+            {/* Stock Quantity & Status */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            </div>
+            {/* Featured */}
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-5 w-5" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+            {/* Pricing Section */}
+            <div className="space-y-4 pt-6 border-t">
+              <Skeleton className="h-5 w-32" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        {/* Right Side - Upload Images Skeleton */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-32 mb-2" />
+            <Skeleton className="h-4 w-48" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 mb-4">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-3 w-80" />
+            </div>
+            {/* Main Image */}
+            <div className="mb-4">
+              <Skeleton className="w-full aspect-[4/3] rounded-lg" />
+            </div>
+            {/* Additional Images */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-20" />
+              </div>
+              <div className="grid grid-cols-4 gap-3">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="aspect-square rounded-md" />
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      {/* Submit Buttons Skeleton */}
+      <div className="flex justify-between items-center pt-6 border-t">
+        <Skeleton className="h-10 w-20" />
+        <div className="flex gap-3">
+          <Skeleton className="h-10 w-24" />
+          <Skeleton className="h-10 w-36" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function EditProductPage() {
   const router = useRouter();
@@ -448,16 +578,7 @@ export default function EditProductPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Loading product...
-          </p>
-        </div>
-      </div>
-    );
+    return <ProductEditSkeleton />;
   }
 
   return (
