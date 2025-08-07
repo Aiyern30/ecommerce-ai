@@ -7,13 +7,7 @@ import { supabase } from "@/lib/supabase/client";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ProductCard } from "./ProductCards";
 import { TypographyH1 } from "./ui/Typography";
-
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  image_url: string;
-}
+import type { Product } from "@/type/product";
 
 export default function ProductCarousel() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -37,7 +31,18 @@ export default function ProductCarousel() {
     const fetchProducts = async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, price, image_url")
+        .select(
+          `
+          *,
+          product_images(
+            id,
+            image_url,
+            alt_text,
+            is_primary,
+            sort_order
+          )
+        `
+        )
         .order("created_at", { ascending: false })
         .limit(8);
       if (error) console.error("Error fetching products:", error.message);
@@ -75,23 +80,30 @@ export default function ProductCarousel() {
 
           <div className="overflow-hidden">
             <div ref={sliderRef} className="keen-slider px-1">
-              {products.map((product) => (
-                <div key={product.id} className="keen-slider__slide">
-                  <div className="px-1">
-                    {" "}
-                    {/* extra gap inside each slide */}
-                    <ProductCard
-                      id={product.id}
-                      name={product.name}
-                      price={product.price}
-                      rating={4.5}
-                      reviews={20}
-                      image={product.image_url}
-                      href={`/products/${product.id}`}
-                    />
+              {products.map((product) => {
+                // Get main image (first or is_primary)
+                const mainImage =
+                  product.product_images?.find((img) => img.is_primary) ||
+                  product.product_images?.[0];
+                return (
+                  <div key={product.id} className="keen-slider__slide">
+                    <div className="px-1">
+                      <ProductCard
+                        id={product.id}
+                        name={product.name}
+                        price={product.normal_price ?? 0}
+                        grade={product.grade}
+                        productType={product.product_type}
+                        unit={product.unit}
+                        stock={product.stock_quantity}
+                        image={mainImage?.image_url || "/placeholder.svg"}
+                        href={`/products/${product.id}`}
+                        // Optionally, you can add more details here
+                      />
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
