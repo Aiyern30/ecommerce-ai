@@ -14,9 +14,7 @@ export default function Home() {
         <HeroCarousel />
         <WhyChooseUs />
         <UseCases />
-        <section className="py-16">
-          <LatestBlog />
-        </section>
+        <LatestBlog />
         <ProductCarousel />
 
         {/* Testimonials */}
