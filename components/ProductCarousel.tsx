@@ -6,6 +6,7 @@ import "keen-slider/keen-slider.min.css";
 import { supabase } from "@/lib/supabase/client";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ProductCard } from "./ProductCards";
+import { TypographyH1 } from "./ui/Typography";
 
 interface Product {
   id: string;
@@ -18,7 +19,7 @@ export default function ProductCarousel() {
   const [products, setProducts] = useState<Product[]>([]);
   const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>({
     loop: true,
-    slides: { perView: 4, spacing: 32 }, // increase spacing here
+    slides: { perView: 4, spacing: 32 },
     breakpoints: {
       "(max-width: 1024px)": {
         slides: { perView: 3, spacing: 24 },
@@ -38,7 +39,7 @@ export default function ProductCarousel() {
         .from("products")
         .select("id, name, price, image_url")
         .order("created_at", { ascending: false })
-        .limit(8); // maybe fetch more for a longer scroll
+        .limit(8);
       if (error) console.error("Error fetching products:", error.message);
       else setProducts(data || []);
     };
@@ -51,12 +52,10 @@ export default function ProductCarousel() {
   }, [instanceRef, products]);
 
   return (
-    <section className="relative py-16 bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold mb-8 text-center">Our Products</h2>
-
+    <section className="relative h-[calc(100vh-120px)] bg-gray-50 dark:bg-gray-900 flex flex-col justify-center">
+      <div className="container mx-auto px-4 flex flex-col flex-1 justify-center">
+        <TypographyH1 className="text-center mb-8">Our Products</TypographyH1>
         <div className="relative">
-          {/* Navigation */}
           {products.length > 1 && (
             <>
               <button
