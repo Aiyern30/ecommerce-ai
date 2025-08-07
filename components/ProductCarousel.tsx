@@ -41,8 +41,10 @@ export default function ProductCarousel() {
             is_primary,
             sort_order
           )
+            
         `
         )
+        .eq("status", "published")
         .order("created_at", { ascending: false })
         .limit(8);
       if (error) console.error("Error fetching products:", error.message);
