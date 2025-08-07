@@ -12,7 +12,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/";
 import { addToCart } from "@/lib/cart/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@supabase/auth-helpers-react";
 import { toast } from "sonner";
@@ -47,6 +47,8 @@ export function ProductCard({
 }: ProductCardProps) {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
+  const [zoomImages, setZoomImages] = useState<string[]>([]);
+  const [zoomIndex, setZoomIndex] = useState(0);
   const router = useRouter();
   const user = useUser();
 
@@ -101,19 +103,77 @@ export function ProductCard({
     console.log("Add to wishlist:", id);
   };
 
+  // If you have multiple images, replace this with your images array logic.
+  // For now, just support single image.
+  useEffect(() => {
+    if (zoomImage) {
+      setZoomImages([zoomImage]);
+      setZoomIndex(0);
+    }
+  }, [zoomImage]);
+
+  const handlePrev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setZoomIndex((prev) => (prev - 1 + zoomImages.length) % zoomImages.length);
+  };
+
+  const handleNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setZoomIndex((prev) => (prev + 1) % zoomImages.length);
+  };
+
   return (
     <>
-      {/* 🔍 Zoom Dialog */}
       <Dialog open={!!zoomImage} onOpenChange={() => setZoomImage(null)}>
-        <DialogContent className="max-w-4xl p-0">
-          {zoomImage && (
-            <Image
-              src={zoomImage}
-              alt="Zoomed Product"
-              width={1200}
-              height={800}
-              className="w-full h-auto object-contain rounded-md"
-            />
+        <DialogContent className="p-0 bg-transparent border-none shadow-none flex items-center justify-center">
+          {zoomImages.length > 0 && (
+            <div className="relative w-full flex items-center justify-center">
+              <Image
+                src={zoomImages[zoomIndex]}
+                alt="Zoomed Product"
+                width={1200}
+                height={800}
+                className="w-full h-auto object-contain"
+              />
+
+              {zoomImages.length > 1 && (
+                <>
+                  <button
+                    onClick={handlePrev}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
+                    aria-label="Previous Image"
+                    type="button"
+                  >
+                    <svg
+                      width="28"
+                      height="28"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path d="M18 6L10 14L18 22" />
+                    </svg>
+                  </button>
+
+                  <button
+                    onClick={handleNext}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
+                    aria-label="Next Image"
+                    type="button"
+                  >
+                    <svg
+                      width="28"
+                      height="28"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path d="M10 6L18 14L10 22" />
+                    </svg>
+                  </button>
+                </>
+              )}
+            </div>
           )}
         </DialogContent>
       </Dialog>
