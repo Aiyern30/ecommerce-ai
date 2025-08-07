@@ -400,7 +400,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                           <div className="relative w-10 h-10 rounded overflow-hidden bg-gray-200 flex-shrink-0">
                             <Image
                               src={
-                                product.image_url ||
                                 product.product_images?.[0]?.image_url ||
                                 "/placeholder.png"
                               }
@@ -415,7 +414,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                               {product.name}
                             </span>
                             <span className="text-xs text-gray-500 dark:text-gray-400">
-                              RM {product.price.toFixed(2)} /{" "}
+                              RM {(product.normal_price ?? 0).toFixed(2)} /{" "}
                               {product.unit || "unit"}
                             </span>
                           </div>
