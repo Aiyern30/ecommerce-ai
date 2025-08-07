@@ -42,9 +42,10 @@ export function SpecificationsTable({ products }: SpecificationsTableProps) {
                       <div className="w-12 h-12 rounded-lg overflow-hidden bg-white dark:bg-gray-700 flex-shrink-0 border border-gray-200 dark:border-gray-600">
                         <Image
                           src={
+                            product.product_images?.find(
+                              (img) => img.is_primary
+                            )?.image_url ||
                             product.product_images?.[0]?.image_url ||
-                            product.image_url ||
-                            "/placeholder.svg" ||
                             "/placeholder.svg"
                           }
                           alt={product.name}
@@ -79,7 +80,7 @@ export function SpecificationsTable({ products }: SpecificationsTableProps) {
                 {products.map((product) => (
                   <TableCell key={product.id} className="text-center p-4">
                     <div className="font-semibold text-lg text-gray-900 dark:text-gray-100">
-                      RM {product.price.toFixed(2)}
+                      RM {(product.normal_price ?? 0).toFixed(2)}
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">
                       {product.unit}
@@ -156,49 +157,6 @@ export function SpecificationsTable({ products }: SpecificationsTableProps) {
                         Out of Stock
                       </span>
                     )}
-                  </TableCell>
-                ))}
-              </TableRow>
-              {/* Tags Row */}
-              <TableRow className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                <TableCell className="font-medium bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-100 sticky left-0 z-10 border-r border-gray-200 dark:border-gray-700 p-4">
-                  Tags
-                </TableCell>
-                {products.map((product) => (
-                  <TableCell key={product.id} className="text-center p-4">
-                    <div className="text-sm text-gray-700 dark:text-gray-300">
-                      {product.product_tags && product.product_tags.length > 0
-                        ? product.product_tags
-                            .slice(0, 3)
-                            .map((tag) => tag.tags.name)
-                            .join(", ")
-                        : "No tags"}
-                      {product.product_tags &&
-                        product.product_tags.length > 3 &&
-                        ` (+${product.product_tags.length - 3} more)`}
-                    </div>
-                  </TableCell>
-                ))}
-              </TableRow>
-              {/* Certificates Row */}
-              <TableRow className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                <TableCell className="font-medium bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-100 sticky left-0 z-10 border-r border-gray-200 dark:border-gray-700 p-4">
-                  Certificates
-                </TableCell>
-                {products.map((product) => (
-                  <TableCell key={product.id} className="text-center p-4">
-                    <div className="text-sm text-gray-700 dark:text-gray-300">
-                      {product.product_certificates &&
-                      product.product_certificates.length > 0
-                        ? product.product_certificates
-                            .slice(0, 2)
-                            .map((cert) => cert.certificate)
-                            .join(", ")
-                        : "No certificates"}
-                      {product.product_certificates &&
-                        product.product_certificates.length > 2 &&
-                        ` (+${product.product_certificates.length - 2} more)`}
-                    </div>
                   </TableCell>
                 ))}
               </TableRow>
