@@ -48,6 +48,7 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerClose,
+  Skeleton,
 } from "@/components/ui/";
 import {
   TypographyH2,
@@ -61,69 +62,108 @@ import { useDeviceType } from "@/utils/useDeviceTypes";
 
 function ProductTableSkeleton() {
   return (
-    <div className="w-full overflow-x-auto rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[50px]">
-              <div className="h-4 w-4 rounded-sm bg-gray-200 animate-pulse" />
-            </TableHead>
-            <TableHead className="w-[80px]">Image</TableHead>
-            <TableHead>Product Name</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Price</TableHead>
-            <TableHead>Unit</TableHead>
-            <TableHead>Stock</TableHead>
-            <TableHead>Grade</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Tags</TableHead>
-            <TableHead>Certificates</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {Array.from({ length: 5 }).map((_, i) => (
-            <TableRow key={i}>
-              <TableCell>
-                <div className="h-4 w-4 rounded-sm bg-gray-200 animate-pulse" />
-              </TableCell>
-              <TableCell>
-                <div className="h-12 w-12 rounded-md bg-gray-200 animate-pulse" />
-              </TableCell>
-              <TableCell>
-                <div className="h-4 w-3/4 rounded bg-gray-200 animate-pulse" />
-              </TableCell>
-              <TableCell>
-                <div className="h-4 w-1/2 rounded bg-gray-200 animate-pulse" />
-              </TableCell>
-              <TableCell>
-                <div className="h-4 w-1/3 rounded bg-gray-200 animate-pulse" />
-              </TableCell>
-              <TableCell>
-                <div className="h-4 w-1/4 rounded bg-gray-200 animate-pulse" />
-              </TableCell>
-              <TableCell>
-                <div className="h-4 w-1/4 rounded bg-gray-200 animate-pulse" />
-              </TableCell>
-              <TableCell>
-                <div className="h-4 w-1/3 rounded bg-gray-200 animate-pulse" />
-              </TableCell>
-              <TableCell>
-                <div className="h-4 w-1/4 rounded bg-gray-200 animate-pulse" />
-              </TableCell>
-              <TableCell>
-                <div className="h-4 w-1/2 rounded bg-gray-200 animate-pulse" />
-              </TableCell>
-              <TableCell>
-                <div className="h-4 w-1/2 rounded bg-gray-200 animate-pulse" />
-              </TableCell>
-              <TableCell className="text-right">
-                <div className="h-8 w-12 ml-auto rounded bg-gray-200 animate-pulse" />
-              </TableCell>
+    <div className="flex flex-col gap-6 w-full max-w-full">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-8 w-48" />
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-9 w-36" />
+        </div>
+      </div>
+      <div className="flex flex-col sm:flex-row flex-wrap gap-2">
+        <Skeleton className="h-9 w-full sm:w-[200px]" />
+        <div className="flex flex-wrap gap-2">
+          <Skeleton className="h-9 w-full sm:w-[180px]" />
+          <Skeleton className="h-9 w-full sm:w-[180px]" />
+          <Skeleton className="h-9 w-full sm:w-[180px]" />
+          <Skeleton className="h-9 w-full sm:w-[180px]" />
+        </div>
+      </div>
+      <div className="w-full overflow-x-auto rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[50px]">
+                <Skeleton className="h-4 w-4 rounded-sm" />
+              </TableHead>
+              <TableHead className="w-[80px]">Image</TableHead>
+              <TableHead>Product Name</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Grade</TableHead>
+              <TableHead>Product Type</TableHead>
+              <TableHead>Mortar Ratio</TableHead>
+              <TableHead>Normal Price</TableHead>
+              <TableHead>Pump Price</TableHead>
+              <TableHead>Tremie 1 Price</TableHead>
+              <TableHead>Tremie 2 Price</TableHead>
+              <TableHead>Tremie 3 Price</TableHead>
+              <TableHead>Unit</TableHead>
+              <TableHead>Stock</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: 10 }).map((_, i) => (
+              <TableRow key={i}>
+                <TableCell>
+                  <Skeleton className="h-4 w-4 rounded-sm" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-12 w-12 rounded-md" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-24 rounded" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-32 rounded" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-20 rounded" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-16 rounded" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-20 rounded" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-20 rounded" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-20 rounded" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-20 rounded" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-20 rounded" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-20 rounded" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-12 rounded" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-12 rounded" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-16 rounded" />
+                </TableCell>
+                <TableCell className="text-right">
+                  <Skeleton className="h-8 w-12 ml-auto rounded" />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      <div className="flex items-center justify-end space-x-2 py-4">
+        <Skeleton className="h-8 w-20" />
+        <Skeleton className="h-8 w-24" />
+        <Skeleton className="h-8 w-20" />
+      </div>
     </div>
   );
 }
@@ -208,14 +248,17 @@ export default function ProductsPage() {
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
+    // Remove the trailing comma in the select string!
     const { data, error } = await supabase.from("products").select(`
-  *,
-  product_images(image_url),
-  product_certificates(certificate),
-  product_tags(
-    tags(id, name)
-  )
-`);
+      *,
+      product_images(
+        id,
+        image_url,
+        alt_text,
+        is_primary,
+        sort_order
+      )
+    `);
     console.log("Fetched products:", data);
 
     if (error) {
@@ -355,14 +398,14 @@ export default function ProductsPage() {
       return false;
     }
 
-    // Filter by price range
+    // Filter by price range (use normal_price)
     const minPrice = Number.parseFloat(filters.minPrice);
     const maxPrice = Number.parseFloat(filters.maxPrice);
 
-    if (!Number.isNaN(minPrice) && product.price < minPrice) {
+    if (!Number.isNaN(minPrice) && (product.normal_price ?? 0) < minPrice) {
       return false;
     }
-    if (!Number.isNaN(maxPrice) && product.price > maxPrice) {
+    if (!Number.isNaN(maxPrice) && (product.normal_price ?? 0) > maxPrice) {
       return false;
     }
 
@@ -388,7 +431,7 @@ export default function ProductsPage() {
     return true;
   });
 
-  // Sort products
+  // Sort products (use normal_price for price sorting)
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     switch (filters.sortBy) {
       case "name-asc":
@@ -396,13 +439,13 @@ export default function ProductsPage() {
       case "name-desc":
         return b.name.localeCompare(a.name);
       case "price-low":
-        return a.price - b.price;
+        return (a.normal_price ?? 0) - (b.normal_price ?? 0);
       case "price-high":
-        return b.price - a.price;
+        return (b.normal_price ?? 0) - (a.normal_price ?? 0);
       case "stock-low":
-        return (a.stock_quantity || 0) - (b.stock_quantity || 0);
+        return (a.stock_quantity ?? 0) - (b.stock_quantity ?? 0);
       case "stock-high":
-        return (b.stock_quantity || 0) - (a.stock_quantity || 0);
+        return (b.stock_quantity ?? 0) - (a.stock_quantity ?? 0);
       default:
         return 0;
     }
@@ -743,8 +786,10 @@ export default function ProductsPage() {
                       >
                         <Image
                           src={
-                            product.image_url ||
-                            "/placeholder.svg?height=48&width=48"
+                            Array.isArray(product.product_images) &&
+                            product.product_images.length > 0
+                              ? product.product_images[0].image_url
+                              : "/placeholder.svg?height=48&width=48"
                           }
                           alt={product.name}
                           width={48}
@@ -810,13 +855,19 @@ export default function ProductsPage() {
                 </TableHead>
                 <TableHead className="w-[80px]">Image</TableHead>
                 <TableHead>Product Name</TableHead>
+                <TableHead>Description</TableHead>
                 <TableHead>Category</TableHead>
-                <TableHead>Price</TableHead> <TableHead>Unit</TableHead>
-                <TableHead>Stock</TableHead>
                 <TableHead>Grade</TableHead>
+                <TableHead>Product Type</TableHead>
+                <TableHead>Mortar Ratio</TableHead>
+                <TableHead>Normal Price</TableHead>
+                <TableHead>Pump Price</TableHead>
+                <TableHead>Tremie 1 Price</TableHead>
+                <TableHead>Tremie 2 Price</TableHead>
+                <TableHead>Tremie 3 Price</TableHead>
+                <TableHead>Unit</TableHead>
+                <TableHead>Stock</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Tags</TableHead>
-                <TableHead>Certificates</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -836,37 +887,64 @@ export default function ProductsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="relative w-16 h-12">
-                      {[
-                        ...(product.image_url ? [product.image_url] : []),
-                        ...(product.product_images?.map(
-                          (img) => img.image_url
-                        ) || []),
-                      ]
-                        .filter((src, i, arr) => arr.indexOf(src) === i)
-                        .slice(0, 4)
-                        .map((src, index) => (
-                          <Image
-                            key={index}
-                            src={src || "/placeholder.svg?height=48&width=48"}
-                            alt={`${product.name} ${index + 1}`}
-                            className={`absolute top-0 left-0 w-10 h-10 rounded-md object-cover border border-white shadow-sm transition-all`}
-                            style={{
-                              zIndex: 10 - index,
-                              transform: `translateX(${index * 12}px)`,
-                            }}
-                            width={40}
-                            height={40}
-                          />
-                        ))}
+                      {product.product_images &&
+                      product.product_images.length > 0 ? (
+                        <Image
+                          src={product.product_images[0].image_url}
+                          alt={product.name}
+                          className="w-10 h-10 rounded-md object-cover border border-white shadow-sm"
+                          width={40}
+                          height={40}
+                        />
+                      ) : (
+                        <Image
+                          src="/placeholder.svg?height=48&width=48"
+                          alt="No image"
+                          className="w-10 h-10 rounded-md object-cover border border-white shadow-sm"
+                          width={40}
+                          height={40}
+                        />
+                      )}
                     </div>
                   </TableCell>
-
                   <TableCell className="font-medium">{product.name}</TableCell>
+                  <TableCell>{product.description || "N/A"}</TableCell>
                   <TableCell>{product.category || "N/A"}</TableCell>
-                  <TableCell>RM {product.price.toFixed(2)}</TableCell>
+                  <TableCell>{product.grade || "N/A"}</TableCell>
+                  <TableCell>{product.product_type || "N/A"}</TableCell>
+                  <TableCell>{product.mortar_ratio || "N/A"}</TableCell>
+                  <TableCell>
+                    {product.normal_price !== null &&
+                    product.normal_price !== undefined
+                      ? `RM ${Number(product.normal_price).toFixed(2)}`
+                      : "N/A"}
+                  </TableCell>
+                  <TableCell>
+                    {product.pump_price !== null &&
+                    product.pump_price !== undefined
+                      ? `RM ${Number(product.pump_price).toFixed(2)}`
+                      : "N/A"}
+                  </TableCell>
+                  <TableCell>
+                    {product.tremie_1_price !== null &&
+                    product.tremie_1_price !== undefined
+                      ? `RM ${Number(product.tremie_1_price).toFixed(2)}`
+                      : "N/A"}
+                  </TableCell>
+                  <TableCell>
+                    {product.tremie_2_price !== null &&
+                    product.tremie_2_price !== undefined
+                      ? `RM ${Number(product.tremie_2_price).toFixed(2)}`
+                      : "N/A"}
+                  </TableCell>
+                  <TableCell>
+                    {product.tremie_3_price !== null &&
+                    product.tremie_3_price !== undefined
+                      ? `RM ${Number(product.tremie_3_price).toFixed(2)}`
+                      : "N/A"}
+                  </TableCell>
                   <TableCell>{product.unit || "N/A"}</TableCell>
                   <TableCell>{product.stock_quantity ?? "N/A"}</TableCell>
-                  <TableCell>{product.grade || "N/A"}</TableCell>
                   <TableCell>
                     <Badge
                       variant={
@@ -878,26 +956,11 @@ export default function ProductsPage() {
                           : "bg-yellow-100 text-yellow-800 border-yellow-200"
                       }
                     >
-                      {product.status === "published" ? "Published" : "Draft"}
+                      {product.status === "published"
+                        ? "Published"
+                        : product.status.charAt(0).toUpperCase() +
+                          product.status.slice(1)}
                     </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {product.product_tags?.map((pt) => (
-                        <Badge key={pt.tags.id} variant="secondary">
-                          {pt.tags.name}
-                        </Badge>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {product.product_certificates?.map((c) => (
-                        <Badge key={c.certificate} variant="secondary">
-                          {c.certificate}
-                        </Badge>
-                      ))}
-                    </div>
                   </TableCell>
                   <TableCell
                     className="text-right"
