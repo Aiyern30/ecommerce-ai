@@ -28,13 +28,4 @@ export interface Product {
         sort_order: number;
       }[]
     | null;
-
-  blog_tags:
-    | {
-        tags: {
-          id: string;
-          name: string;
-        };
-      }[]
-    | null;
 }
