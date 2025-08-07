@@ -13,8 +13,19 @@ import { TypographyH1 } from "@/components/ui/Typography";
 type SimpleProduct = {
   id: string;
   name: string;
-  price: number;
-  image_url: string | null;
+  grade: string;
+  product_type: string;
+  unit: string | null;
+  stock_quantity: number | null;
+  normal_price: number | null;
+  product_images:
+    | {
+        id: string;
+        image_url: string;
+        is_primary: boolean;
+        sort_order: number;
+      }[]
+    | null;
 };
 
 export default function ProductListPage() {
@@ -28,7 +39,23 @@ export default function ProductListPage() {
       setIsLoading(true);
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, price, image_url")
+        .select(
+          `
+          id,
+          name,
+          grade,
+          product_type,
+          unit,
+          stock_quantity,
+          normal_price,
+          product_images(
+            id,
+            image_url,
+            is_primary,
+            sort_order
+          )
+        `
+        )
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -108,22 +135,29 @@ export default function ProductListPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {products.map((product) => (
-            <ProductCard
-              key={product.id}
-              id={product.id}
-              name={product.name}
-              price={product.price}
-              rating={4.5}
-              reviews={20}
-              image={product.image_url ?? "/placeholder.svg"}
-              href={`/products/${product.id}`}
-              showCompare
-              isCompared={selectedIds.includes(product.id)}
-              onCompareToggle={handleCompareToggle}
-              compareCount={selectedIds.length}
-            />
-          ))}
+          {products.map((product) => {
+            const mainImage =
+              product.product_images?.find((img) => img.is_primary) ||
+              product.product_images?.[0];
+            return (
+              <ProductCard
+                key={product.id}
+                id={product.id}
+                name={product.name}
+                price={product.normal_price ?? 0}
+                grade={product.grade}
+                productType={product.product_type}
+                unit={product.unit}
+                stock={product.stock_quantity}
+                image={mainImage?.image_url ?? "/placeholder.svg"}
+                href={`/products/${product.id}`}
+                showCompare
+                isCompared={selectedIds.includes(product.id)}
+                onCompareToggle={handleCompareToggle}
+                compareCount={selectedIds.length}
+              />
+            );
+          })}
         </div>
       )}
     </section>
