@@ -123,46 +123,88 @@ export function ProductCard({
             </div>
           )}
 
-          {/* Hover Icons */}
-          <div className="absolute left-4 bottom-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <button
-              onClick={handleAddToCart}
-              disabled={isAddingToCart}
-              className="p-2 bg-white rounded-full shadow-md hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Add to Cart"
-            >
-              <ShoppingCart
-                className={`h-5 w-5 ${
-                  isAddingToCart ? "text-blue-400" : "text-blue-600"
-                }`}
-              />
-            </button>
-            <button
-              onClick={handleQuickView}
-              className="p-2 bg-white rounded-full shadow-md hover:bg-gray-200"
-              title="Quick View"
-            >
-              <ZoomIn className="h-5 w-5 text-blue-600" />
-            </button>
-            <button
-              onClick={handleWishlist}
-              className="p-2 bg-white rounded-full shadow-md hover:bg-red-50"
-              title="Add to Wishlist"
-            >
-              <Heart className="h-5 w-5 text-blue-600" />
-            </button>
-            {showCompare && (
+          <div>
+            <div className="absolute left-4 bottom-4 flex flex-col gap-2 sm:hidden opacity-100 pointer-events-auto">
               <button
-                onClick={handleCompareClick}
-                disabled={!isCompared && compareCount >= 4}
-                className={`p-2 bg-white rounded-full shadow-md hover:bg-gray-200 ${
-                  isCompared ? "text-blue-600" : "text-gray-400"
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
-                title={isCompared ? "Remove from Compare" : "Add to Compare"}
+                onClick={handleAddToCart}
+                disabled={isAddingToCart}
+                className="p-2 bg-white rounded-full shadow-md hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Add to Cart"
               >
-                <SlidersHorizontal className="h-5 w-5" />
+                <ShoppingCart
+                  className={`h-5 w-5 ${
+                    isAddingToCart ? "text-blue-400" : "text-blue-600"
+                  }`}
+                />
               </button>
-            )}
+              <button
+                onClick={handleQuickView}
+                className="p-2 bg-white rounded-full shadow-md hover:bg-gray-200"
+                title="Quick View"
+              >
+                <ZoomIn className="h-5 w-5 text-blue-600" />
+              </button>
+              <button
+                onClick={handleWishlist}
+                className="p-2 bg-white rounded-full shadow-md hover:bg-red-50"
+                title="Add to Wishlist"
+              >
+                <Heart className="h-5 w-5 text-blue-600" />
+              </button>
+              {showCompare && (
+                <button
+                  onClick={handleCompareClick}
+                  disabled={!isCompared && compareCount >= 4}
+                  className={`p-2 bg-white rounded-full shadow-md hover:bg-gray-200 ${
+                    isCompared ? "text-blue-600" : "text-gray-400"
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  title={isCompared ? "Remove from Compare" : "Add to Compare"}
+                >
+                  <SlidersHorizontal className="h-5 w-5" />
+                </button>
+              )}
+            </div>
+            {/* Desktop (sm and up): visible on hover */}
+            <div className="absolute left-4 bottom-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto hidden sm:flex">
+              <button
+                onClick={handleAddToCart}
+                disabled={isAddingToCart}
+                className="p-2 bg-white rounded-full shadow-md hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Add to Cart"
+              >
+                <ShoppingCart
+                  className={`h-5 w-5 ${
+                    isAddingToCart ? "text-blue-400" : "text-blue-600"
+                  }`}
+                />
+              </button>
+              <button
+                onClick={handleQuickView}
+                className="p-2 bg-white rounded-full shadow-md hover:bg-gray-200"
+                title="Quick View"
+              >
+                <ZoomIn className="h-5 w-5 text-blue-600" />
+              </button>
+              <button
+                onClick={handleWishlist}
+                className="p-2 bg-white rounded-full shadow-md hover:bg-red-50"
+                title="Add to Wishlist"
+              >
+                <Heart className="h-5 w-5 text-blue-600" />
+              </button>
+              {showCompare && (
+                <button
+                  onClick={handleCompareClick}
+                  disabled={!isCompared && compareCount >= 4}
+                  className={`p-2 bg-white rounded-full shadow-md hover:bg-gray-200 ${
+                    isCompared ? "text-blue-600" : "text-gray-400"
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  title={isCompared ? "Remove from Compare" : "Add to Compare"}
+                >
+                  <SlidersHorizontal className="h-5 w-5" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
