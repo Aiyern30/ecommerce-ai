@@ -105,13 +105,26 @@ export default function LatestBlog() {
                       />
                     )}
                     {/* Buttons always on top */}
-                    <div className="absolute left-3 bottom-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
-                      <button className="p-2 bg-white rounded-full shadow hover:bg-gray-200">
-                        <ZoomIn className="h-4 w-4 text-blue-600" />
-                      </button>
-                      <button className="p-2 bg-white rounded-full shadow hover:bg-gray-200">
-                        <Heart className="h-4 w-4 text-blue-600" />
-                      </button>
+                    {/* Mobile: always visible; Desktop: visible on hover */}
+                    <div>
+                      {/* Mobile (smaller than 'sm'): always visible */}
+                      <div className="absolute left-3 bottom-3 flex flex-col gap-2 sm:hidden opacity-100 pointer-events-auto z-10">
+                        <button className="p-2 bg-white rounded-full shadow hover:bg-gray-200">
+                          <ZoomIn className="h-4 w-4 text-blue-600" />
+                        </button>
+                        <button className="p-2 bg-white rounded-full shadow hover:bg-gray-200">
+                          <Heart className="h-4 w-4 text-blue-600" />
+                        </button>
+                      </div>
+                      {/* Desktop (sm and up): visible on hover */}
+                      <div className="absolute left-3 bottom-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 hidden sm:flex pointer-events-none group-hover:pointer-events-auto">
+                        <button className="p-2 bg-white rounded-full shadow hover:bg-gray-200">
+                          <ZoomIn className="h-4 w-4 text-blue-600" />
+                        </button>
+                        <button className="p-2 bg-white rounded-full shadow hover:bg-gray-200">
+                          <Heart className="h-4 w-4 text-blue-600" />
+                        </button>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent className="p-4 space-y-2">
