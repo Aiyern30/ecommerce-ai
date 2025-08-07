@@ -88,7 +88,7 @@ export default function BlogPost() {
 
   if (loading || !blog) {
     return (
-      <div className="container mx-auto py-8">
+      <div className="container mx-auto px-4 py-8">
         <div className="lg:w-3/4 mx-auto">
           <Card>
             <Skeleton className="w-full h-[300px] md:h-[400px] rounded-md mb-6" />
@@ -106,7 +106,7 @@ export default function BlogPost() {
   }
 
   return (
-    <article className="container mx-auto py-8">
+    <article className="container mx-auto px-4">
       <div className="py-4">
         <BreadcrumbNav
           customItems={[
@@ -117,7 +117,7 @@ export default function BlogPost() {
         />
       </div>
 
-      <Card>
+      <Card className="pt-0">
         {/* Top Images Section */}
         {blog.blog_images && blog.blog_images.length === 1 && (
           <div className="relative w-full h-[300px] md:h-[400px] mb-6">
