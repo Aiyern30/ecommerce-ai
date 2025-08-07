@@ -1,11 +1,10 @@
-/* eslint-disable react/no-unescaped-entities */
 "use client";
 import Link from "next/link";
 import type React from "react";
 
 import { ArrowLeft, Plus, X } from "lucide-react";
 import { useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
@@ -31,8 +30,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Badge,
   AspectRatio,
+  Checkbox,
 } from "@/components/ui/";
 import {
   TypographyH2,
@@ -47,40 +46,39 @@ import { toast } from "sonner";
 
 const productSchema = z.object({
   name: z.string().min(1, "Product name is required"),
-  description: z.string().nullish(),
-  price: z.coerce.number().min(0.01, "Price must be positive"),
-  unit: z.enum(["per bag", "per tonne", "per m³"], {
-    required_error: "Unit is required",
+  description: z.string().optional(),
+  grade: z.string().min(1, "Grade is required"),
+  product_type: z.enum(["concrete", "mortar"], {
+    required_error: "Product type is required",
   }),
+  mortar_ratio: z.string().optional(),
+  category: z.string().default("building_materials"),
+  // Pricing fields
+  normal_price: z.coerce
+    .number()
+    .min(0, "Price must be non-negative")
+    .optional(),
+  pump_price: z.coerce.number().min(0, "Price must be non-negative").optional(),
+  tremie_1_price: z.coerce
+    .number()
+    .min(0, "Price must be non-negative")
+    .optional(),
+  tremie_2_price: z.coerce
+    .number()
+    .min(0, "Price must be non-negative")
+    .optional(),
+  tremie_3_price: z.coerce
+    .number()
+    .min(0, "Price must be non-negative")
+    .optional(),
+  unit: z.string().default("per m³"),
   stock_quantity: z.coerce
     .number()
     .int()
-    .min(0, "Stock quantity must be non-negative"),
-  category: z.enum(["bagged", "bulk", "ready-mix", "Concrete", "Mortar"], {
-    required_error: "Category is required",
-  }),
-  // NEW FIELDS
-  grade: z.string().optional(),
-  status: z.enum(["draft", "published"]).optional(),
-  tags: z
-    .array(z.object({ tag: z.string().min(1, "Tag cannot be empty") }))
-    .optional(),
-  certificates: z
-    .array(
-      z.object({
-        certificate: z.string().min(1, "Certificate cannot be empty"),
-      })
-    )
-    .optional(),
-  // NEW: Product variants for different pricing tiers
-  variants: z
-    .array(
-      z.object({
-        variant_type: z.string().min(1, "Variant type is required"),
-        price: z.coerce.number().min(0.01, "Variant price must be positive"),
-      })
-    )
-    .optional(),
+    .min(0, "Stock quantity must be non-negative")
+    .default(0),
+  status: z.enum(["draft", "published"]).default("draft"),
+  is_featured: z.boolean().default(false),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -91,9 +89,6 @@ export default function NewProductPage() {
   const [isDraftSaving, setIsDraftSaving] = useState(false);
   const [selectedImageFiles, setSelectedImageFiles] = useState<File[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
-  const [certificateInput, setCertificateInput] = useState("");
-  const [variantTypeInput, setVariantTypeInput] = useState("");
-  const [variantPriceInput, setVariantPriceInput] = useState("");
   const [selectedTags, setSelectedTags] = useState<
     { id: string; name: string }[]
   >([]);
@@ -102,36 +97,24 @@ export default function NewProductPage() {
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: "",
-      description: null,
-      price: 0,
-      unit: "per bag",
-      stock_quantity: 0,
-      category: "bagged",
+      description: "",
       grade: "",
+      product_type: "concrete",
+      mortar_ratio: "",
+      category: "building_materials",
+      normal_price: undefined,
+      pump_price: undefined,
+      tremie_1_price: undefined,
+      tremie_2_price: undefined,
+      tremie_3_price: undefined,
+      unit: "per m³",
+      stock_quantity: 0,
       status: "draft",
-      tags: [],
-      certificates: [],
-      variants: [],
+      is_featured: false,
     },
   });
 
-  const {
-    fields: certificateFields,
-    append: appendCertificate,
-    remove: removeCertificate,
-  } = useFieldArray({
-    control: form.control,
-    name: "certificates",
-  });
-
-  const {
-    fields: variantFields,
-    append: appendVariant,
-    remove: removeVariant,
-  } = useFieldArray({
-    control: form.control,
-    name: "variants",
-  });
+  const watchProductType = form.watch("product_type");
 
   const MAX_IMAGES = 5; // 1 main image + 4 additional images
 
@@ -183,36 +166,6 @@ export default function NewProductPage() {
     setSelectedImageFiles((prevFiles) =>
       prevFiles.filter((_, i) => i !== index)
     );
-    if (selectedImageFiles.length === 1) {
-      setImageError("At least one product image is required.");
-    } else if (selectedImageFiles.length === 0) {
-      setImageError("At least one product image is required.");
-    }
-  };
-
-  const handleAddCertificate = () => {
-    if (
-      certificateInput.trim() &&
-      !certificateFields.some((c) => c.certificate === certificateInput.trim())
-    ) {
-      appendCertificate({ certificate: certificateInput.trim() });
-      setCertificateInput("");
-    }
-  };
-
-  const handleAddVariant = () => {
-    if (
-      variantTypeInput.trim() &&
-      variantPriceInput.trim() &&
-      !variantFields.some((v) => v.variant_type === variantTypeInput.trim())
-    ) {
-      appendVariant({
-        variant_type: variantTypeInput.trim(),
-        price: parseFloat(variantPriceInput),
-      });
-      setVariantTypeInput("");
-      setVariantPriceInput("");
-    }
   };
 
   const handleSubmit = async (data: ProductFormData, isDraft = false) => {
@@ -241,153 +194,113 @@ export default function NewProductPage() {
           .from("products")
           .insert({
             name: data.name,
-            description: data.description,
-            price: data.price || 0, // Default to 0 for drafts
-            unit: data.unit,
-            stock_quantity: data.stock_quantity || 0, // Default to 0 for drafts
+            description: data.description || null,
+            grade: data.grade,
+            product_type: data.product_type,
+            mortar_ratio:
+              data.product_type === "mortar" ? data.mortar_ratio || null : null,
             category: data.category,
-            grade: data.grade || null,
-            image_url: selectedImageFiles.length > 0 ? "" : null,
+            normal_price: data.normal_price || null,
+            pump_price: data.pump_price || null,
+            tremie_1_price: data.tremie_1_price || null,
+            tremie_2_price: data.tremie_2_price || null,
+            tremie_3_price: data.tremie_3_price || null,
+            unit: data.unit,
+            stock_quantity: data.stock_quantity,
             status: isDraft ? "draft" : "published",
+            is_featured: data.is_featured,
           })
           .select("id")
           .single();
 
       if (productInsertError) {
         toast.error("Product creation failed: " + productInsertError.message);
-        setIsSubmitting(false);
+        if (isDraft) {
+          setIsDraftSaving(false);
+        } else {
+          setIsSubmitting(false);
+        }
         return;
       }
 
       const productId = productInsertData.id;
 
-      // 2. Upload multiple images and insert into product_images table
-      const imageUrls: { image_url: string }[] = [];
-      for (const file of selectedImageFiles) {
-        const fileExt = file.name.split(".").pop();
-        const filePath = `${productId}/${Date.now()}-${Math.random()
-          .toString(36)
-          .substring(2, 15)}.${fileExt}`;
+      if (selectedImageFiles.length > 0) {
+        const imageInserts: {
+          product_id: string;
+          image_url: string;
+          is_primary: boolean;
+          sort_order: number;
+        }[] = [];
 
-        const { error: uploadError } = await supabase.storage
-          .from("products")
-          .upload(filePath, file, {
-            cacheControl: "3600",
-            upsert: false,
-          });
+        for (let i = 0; i < selectedImageFiles.length; i++) {
+          const file = selectedImageFiles[i];
+          const fileExt = file.name.split(".").pop();
+          const filePath = `${productId}/${Date.now()}-${Math.random()
+            .toString(36)
+            .substring(2, 15)}.${fileExt}`;
 
-        if (uploadError) {
-          console.error(
-            `Image upload failed for ${file.name}:`,
-            uploadError.message
-          );
-          toast.error(
-            `Failed to upload image ${file.name}: ${uploadError.message}`
-          );
-          continue;
-        }
-
-        const { data: publicData } = supabase.storage
-          .from("products")
-          .getPublicUrl(filePath);
-        imageUrls.push({ image_url: publicData.publicUrl });
-      }
-
-      if (imageUrls.length > 0) {
-        const { error: imagesInsertError } = await supabase
-          .from("product_images")
-          .insert(
-            imageUrls.map((url) => ({
-              product_id: productId,
-              image_url: url.image_url,
-            }))
-          );
-
-        if (imagesInsertError) {
-          console.error(
-            "Product images insert failed:",
-            imagesInsertError.message
-          );
-          toast.error(
-            "Failed to link product images: " + imagesInsertError.message
-          );
-        } else {
-          const { error: updateMainImageError } = await supabase
+          const { error: uploadError } = await supabase.storage
             .from("products")
-            .update({ image_url: imageUrls[0].image_url })
-            .eq("id", productId);
+            .upload(filePath, file, {
+              cacheControl: "3600",
+              upsert: false,
+            });
 
-          if (updateMainImageError) {
+          if (uploadError) {
             console.error(
-              "Failed to update main product image_url:",
-              updateMainImageError.message
+              `Image upload failed for ${file.name}:`,
+              uploadError.message
             );
             toast.error(
-              "Failed to set main product image: " +
-                updateMainImageError.message
+              `Failed to upload image ${file.name}: ${uploadError.message}`
+            );
+            continue;
+          }
+
+          const { data: publicData } = supabase.storage
+            .from("products")
+            .getPublicUrl(filePath);
+
+          imageInserts.push({
+            product_id: productId,
+            image_url: publicData.publicUrl,
+            is_primary: i === 0, // First image is primary
+            sort_order: i,
+          });
+        }
+
+        if (imageInserts.length > 0) {
+          const { error: imagesInsertError } = await supabase
+            .from("product_images")
+            .insert(imageInserts);
+
+          if (imagesInsertError) {
+            console.error(
+              "Product images insert failed:",
+              imagesInsertError.message
+            );
+            toast.error(
+              "Failed to link product images: " + imagesInsertError.message
             );
           }
         }
       }
 
-      // 3. Insert product tags
+      // 3. Insert blog_tags if selectedTags exist (assuming you have a blog_tags or product_tags table)
       if (selectedTags && selectedTags.length > 0) {
         const tagsToInsert = selectedTags.map((tag) => ({
-          product_id: productId,
+          blog_id: productId, // or product_id if you have a product_tags table
           tag_id: tag.id,
         }));
 
         const { error: tagsInsertError } = await supabase
-          .from("product_tags")
+          .from("blog_tags") // Change to "product_tags" if that's your table name
           .insert(tagsToInsert);
 
         if (tagsInsertError) {
           console.error("Product tags insert failed:", tagsInsertError.message);
           toast.error("Failed to add product tags: " + tagsInsertError.message);
-        }
-      }
-
-      // 4. Insert product certificates
-      if (data.certificates && data.certificates.length > 0) {
-        const certificatesToInsert = data.certificates.map((item) => ({
-          product_id: productId,
-          certificate: item.certificate,
-        }));
-        const { error: certificatesInsertError } = await supabase
-          .from("product_certificates")
-          .insert(certificatesToInsert);
-
-        if (certificatesInsertError) {
-          console.error(
-            "Product certificates insert failed:",
-            certificatesInsertError.message
-          );
-          toast.error(
-            "Failed to add product certificates: " +
-              certificatesInsertError.message
-          );
-        }
-      }
-
-      // 5. Insert product variants
-      if (data.variants && data.variants.length > 0) {
-        const variantsToInsert = data.variants.map((item) => ({
-          product_id: productId,
-          variant_type: item.variant_type,
-          price: item.price,
-        }));
-        const { error: variantsInsertError } = await supabase
-          .from("product_variants")
-          .insert(variantsToInsert);
-
-        if (variantsInsertError) {
-          console.error(
-            "Product variants insert failed:",
-            variantsInsertError.message
-          );
-          toast.error(
-            "Failed to add product variants: " + variantsInsertError.message
-          );
         }
       }
 
@@ -463,7 +376,7 @@ export default function NewProductPage() {
                 </CardTitle>
                 <CardDescription>
                   <TypographyP className="!mt-0">
-                    Enter the basic details of the cement product.
+                    Enter the basic details of the product.
                   </TypographyP>
                 </CardDescription>
               </CardHeader>
@@ -473,10 +386,10 @@ export default function NewProductPage() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Name Product</FormLabel>
+                      <FormLabel>Product Name</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="e.g., YTL Bagged Cement 50kg"
+                          placeholder="e.g., Ready Mix Concrete Grade 30"
                           {...field}
                         />
                       </FormControl>
@@ -492,13 +405,12 @@ export default function NewProductPage() {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description Product</FormLabel>
+                      <FormLabel>Description</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="High-strength bagged cement suitable for general construction."
+                          placeholder="High-quality concrete suitable for structural applications..."
                           className="resize-none min-h-[100px]"
                           {...field}
-                          value={field.value || ""}
                         />
                       </FormControl>
                       <div className="min-h-[10px]">
@@ -511,25 +423,22 @@ export default function NewProductPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="category"
+                    name="product_type"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Category</FormLabel>
+                        <FormLabel>Product Type</FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value}
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select a category" />
+                              <SelectValue placeholder="Select type" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="bagged">Bagged</SelectItem>
-                            <SelectItem value="bulk">Bulk</SelectItem>
-                            <SelectItem value="ready-mix">Ready-Mix</SelectItem>
-                            <SelectItem value="Concrete">Concrete</SelectItem>
-                            <SelectItem value="Mortar">Mortar</SelectItem>
+                            <SelectItem value="concrete">Concrete</SelectItem>
+                            <SelectItem value="mortar">Mortar</SelectItem>
                           </SelectContent>
                         </Select>
                         <div className="min-h-[10px]">
@@ -546,10 +455,7 @@ export default function NewProductPage() {
                       <FormItem>
                         <FormLabel>Grade</FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="e.g., N20, M044, S35"
-                            {...field}
-                          />
+                          <Input placeholder="e.g., 30, 25, 20" {...field} />
                         </FormControl>
                         <div className="min-h-[10px]">
                           <FormMessage />
@@ -559,50 +465,43 @@ export default function NewProductPage() {
                   />
                 </div>
 
-                <div className="space-y-4">
-                  <h3 className="text-sm font-medium">Pricing And Stock</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="price"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Base Pricing</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              placeholder="e.g., 18.50"
-                              {...field}
-                            />
-                          </FormControl>
-                          <div className="min-h-[10px]">
-                            <FormMessage />
-                          </div>
-                        </FormItem>
-                      )}
-                    />
+                {watchProductType === "mortar" && (
+                  <FormField
+                    control={form.control}
+                    name="mortar_ratio"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Mortar Ratio</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., 1:3, 1:4, 1:6" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          Mix ratio for mortar (cement:sand)
+                        </FormDescription>
+                        <div className="min-h-[10px]">
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                )}
 
-                    <FormField
-                      control={form.control}
-                      name="stock_quantity"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Stock</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              placeholder="e.g., 120"
-                              {...field}
-                            />
-                          </FormControl>
-                          <div className="min-h-[10px]">
-                            <FormMessage />
-                          </div>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category</FormLabel>
+                        <FormControl>
+                          <Input placeholder="building_materials" {...field} />
+                        </FormControl>
+                        <div className="min-h-[10px]">
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
 
                   <FormField
                     control={form.control}
@@ -620,9 +519,9 @@ export default function NewProductPage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
+                            <SelectItem value="per m³">Per m³</SelectItem>
                             <SelectItem value="per bag">Per Bag</SelectItem>
                             <SelectItem value="per tonne">Per Tonne</SelectItem>
-                            <SelectItem value="per m³">Per m³</SelectItem>
                           </SelectContent>
                         </Select>
                         <div className="min-h-[10px]">
@@ -633,155 +532,177 @@ export default function NewProductPage() {
                   />
                 </div>
 
-                {/* Additional Information Section */}
-                <div className="space-y-6 pt-6 border-t">
+                <FormField
+                  control={form.control}
+                  name="stock_quantity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Stock Quantity</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="e.g., 100"
+                          {...field}
+                        />
+                      </FormControl>
+                      <div className="min-h-[10px]">
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="is_featured"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>Featured Product</FormLabel>
+                        <FormDescription>
+                          Mark this product as featured to highlight it on the
+                          homepage.
+                        </FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                {/* Pricing Section */}
+                <div className="space-y-4 pt-6 border-t">
                   <div>
-                    <TypographyH3>Additional Information</TypographyH3>
+                    <TypographyH3>Pricing Tiers</TypographyH3>
                     <TypographyP className="!mt-0">
-                      Add tags, certificates, and product variants for this
-                      product.
+                      Set different prices for various delivery methods.
                     </TypographyP>
                   </div>
 
-                  {/* Product Tags Section */}
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">Product Tags</h4>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        Select or create relevant tags for this product.
-                      </p>
-                    </div>
-                    <TagMultiSelect
-                      selectedTags={selectedTags}
-                      setSelectedTags={setSelectedTags}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="normal_price"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Normal Price (RM)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="e.g., 150.00"
+                              {...field}
+                            />
+                          </FormControl>
+                          <div className="min-h-[10px]">
+                            <FormMessage />
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="pump_price"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Pump Price (RM)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="e.g., 170.00"
+                              {...field}
+                            />
+                          </FormControl>
+                          <div className="min-h-[10px]">
+                            <FormMessage />
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="tremie_1_price"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Tremie 1 Price (RM)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="e.g., 180.00"
+                              {...field}
+                            />
+                          </FormControl>
+                          <div className="min-h-[10px]">
+                            <FormMessage />
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="tremie_2_price"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Tremie 2 Price (RM)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="e.g., 190.00"
+                              {...field}
+                            />
+                          </FormControl>
+                          <div className="min-h-[10px]">
+                            <FormMessage />
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="tremie_3_price"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Tremie 3 Price (RM)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="e.g., 200.00"
+                              {...field}
+                            />
+                          </FormControl>
+                          <div className="min-h-[10px]">
+                            <FormMessage />
+                          </div>
+                        </FormItem>
+                      )}
                     />
                   </div>
+                </div>
 
-                  {/* Product Certificates Section */}
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">
-                        Product Certificates
-                      </h4>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        Add any certifications the product holds (e.g., "ISO
-                        9001", "Green Mark").
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Add a certificate"
-                        value={certificateInput}
-                        onChange={(e) => setCertificateInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            handleAddCertificate();
-                          }
-                        }}
-                        className="flex-1"
-                      />
-                      <Button
-                        type="button"
-                        onClick={handleAddCertificate}
-                        variant="outline"
-                      >
-                        <Plus className="mr-2 h-4 w-4" /> Add
-                      </Button>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {certificateFields.map((item, index) => (
-                        <Badge
-                          key={item.id}
-                          variant="secondary"
-                          className="flex items-center gap-1"
-                        >
-                          {item.certificate}
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="h-4 w-4 p-0"
-                            onClick={() => removeCertificate(index)}
-                          >
-                            <X className="h-3 w-3" />
-                            <span className="sr-only">Remove certificate</span>
-                          </Button>
-                        </Badge>
-                      ))}
-                    </div>
-                    <div className="min-h-[10px]">
-                      {form.formState.errors.certificates && (
-                        <FormMessage>
-                          {form.formState.errors.certificates.message}
-                        </FormMessage>
-                      )}
-                    </div>
+                {/* Tags Section */}
+                <div className="space-y-4 pt-6 border-t">
+                  <div>
+                    <TypographyH3>Product Tags</TypographyH3>
+                    <TypographyP className="!mt-0">
+                      Add relevant tags to help customers find this product.
+                    </TypographyP>
                   </div>
-
-                  {/* Product Variants Section */}
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">
-                        Product Variants
-                      </h4>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        Add different pricing variants for delivery methods
-                        (e.g., "Pump", "Tremie 1", "Tremie 2").
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Variant type (e.g., Pump)"
-                        value={variantTypeInput}
-                        onChange={(e) => setVariantTypeInput(e.target.value)}
-                        className="flex-1"
-                      />
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="Price (RM)"
-                        value={variantPriceInput}
-                        onChange={(e) => setVariantPriceInput(e.target.value)}
-                        className="flex-1"
-                      />
-                      <Button
-                        type="button"
-                        onClick={handleAddVariant}
-                        variant="outline"
-                      >
-                        <Plus className="mr-2 h-4 w-4" /> Add
-                      </Button>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {variantFields.map((item, index) => (
-                        <Badge
-                          key={item.id}
-                          variant="secondary"
-                          className="flex items-center gap-1"
-                        >
-                          {item.variant_type} - RM {item.price}
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="h-4 w-4 p-0"
-                            onClick={() => removeVariant(index)}
-                          >
-                            <X className="h-3 w-3" />
-                            <span className="sr-only">Remove variant</span>
-                          </Button>
-                        </Badge>
-                      ))}
-                    </div>
-                    <div className="min-h-[10px]">
-                      {form.formState.errors.variants && (
-                        <FormMessage>
-                          {form.formState.errors.variants.message}
-                        </FormMessage>
-                      )}
-                    </div>
-                  </div>
+                  <TagMultiSelect
+                    selectedTags={selectedTags}
+                    setSelectedTags={setSelectedTags}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -948,17 +869,11 @@ export default function NewProductPage() {
                         }
                       )}
                     </div>
-
-                    <p className="text-xs text-muted-foreground">
-                      Upload up to 4 additional images. Accepted formats: JPG,
-                      PNG, GIF. Max size: 5MB per file.
-                    </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
           </div>
-
           <div className="flex justify-between items-center pt-6 border-t">
             <Link href="/staff/products">
               <Button variant="outline" type="button">
@@ -975,9 +890,10 @@ export default function NewProductPage() {
               >
                 {isDraftSaving ? "Saving Draft..." : "Save Draft"}
               </Button>
-              <Button type="submit" disabled={isSubmitting || isDraftSaving}>
-                {isSubmitting ? "Publishing Product..." : "Publish Product"}
-              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting || isDraftSaving}
+              ></Button>
             </div>
           </div>
         </form>
