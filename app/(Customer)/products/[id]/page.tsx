@@ -346,7 +346,9 @@ export default function ProductDetailClient() {
                   {product.status.charAt(0).toUpperCase() +
                     product.status.slice(1)}
                 </Badge>
-                {product.is_featured && <Badge variant="default">Featured</Badge>}
+                {product.is_featured && (
+                  <Badge variant="default">Featured</Badge>
+                )}
               </div>
               <div className="text-xs text-gray-500">
                 Created: {new Date(product.created_at).toLocaleString()}
@@ -392,7 +394,8 @@ export default function ProductDetailClient() {
                 </div>
                 <div>
                   <span className="font-semibold">Pump Price:</span>{" "}
-                  {product.pump_price !== null && product.pump_price !== undefined
+                  {product.pump_price !== null &&
+                  product.pump_price !== undefined
                     ? `RM ${Number(product.pump_price).toFixed(2)}`
                     : "N/A"}
                 </div>

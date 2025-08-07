@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Star,
   ShoppingCart,
   Heart,
   ZoomIn,
@@ -22,8 +21,10 @@ interface ProductCardProps {
   id: string;
   name: string;
   price: number;
-  rating: number;
-  reviews: number;
+  grade?: string;
+  productType?: string;
+  unit?: string | null;
+  stock?: number | null;
   image: string;
   href?: string;
   showCompare?: boolean;
@@ -36,8 +37,10 @@ export function ProductCard({
   id,
   name,
   price,
-  rating,
-  reviews,
+  grade,
+  productType,
+  unit,
+  stock,
   image,
   href = "#",
   showCompare,
@@ -296,23 +299,29 @@ export function ProductCard({
 
           <CardContent className="flex-1 p-4 space-y-2">
             <h3 className="font-medium text-sm line-clamp-2">{name}</h3>
-            <div className="flex items-center gap-2">
-              <div className="flex">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-4 w-4 ${
-                      i < Math.floor(rating)
-                        ? "fill-yellow-400 text-yellow-400"
-                        : "fill-gray-200 text-gray-200"
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="text-sm text-muted-foreground">({reviews})</span>
+            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+              {grade && <span>Grade: {grade}</span>}
+              {productType && <span>Type: {productType}</span>}
+              {unit && <span>Unit: {unit}</span>}
+              {typeof stock === "number" && (
+                <span>
+                  Stock:{" "}
+                  <span
+                    className={
+                      stock > 20
+                        ? "text-green-600"
+                        : stock > 5
+                        ? "text-yellow-600"
+                        : "text-red-600"
+                    }
+                  >
+                    {stock}
+                  </span>
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-2">
-              <span className="font-medium">RM{price}</span>
+              <span className="font-medium">RM{price.toFixed(2)}</span>
             </div>
           </CardContent>
         </Card>
