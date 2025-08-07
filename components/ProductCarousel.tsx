@@ -95,18 +95,6 @@ export default function ProductCarousel() {
               ))}
             </div>
           </div>
-
-          {/* Mobile indicator */}
-          <div className="flex justify-center mt-4 sm:hidden">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <div className="flex gap-1">
-                <div className="w-2 h-2 rounded-full bg-blue-600"></div>
-                <div className="w-2 h-2 rounded-full bg-gray-300"></div>
-                <div className="w-2 h-2 rounded-full bg-gray-300"></div>
-              </div>
-              <span>Swipe to explore more</span>
-            </div>
-          </div>
         </div>
       </div>
     </section>
