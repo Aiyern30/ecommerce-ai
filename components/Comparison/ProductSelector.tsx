@@ -58,11 +58,9 @@ export function ProductSelector({
                   <div className="w-6 h-6 rounded overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
                     <Image
                       src={
+                        product.product_images?.find((img) => img.is_primary)
+                          ?.image_url ||
                         product.product_images?.[0]?.image_url ||
-                        product.image_url ||
-                        "/placeholder.svg" ||
-                        "/placeholder.svg" ||
-                        "/placeholder.svg" ||
                         "/placeholder.svg"
                       }
                       alt={product.name}
@@ -90,11 +88,10 @@ export function ProductSelector({
                       <div className="w-8 h-8 rounded overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
                         <Image
                           src={
+                            availableProduct.product_images?.find(
+                              (img) => img.is_primary
+                            )?.image_url ||
                             availableProduct.product_images?.[0]?.image_url ||
-                            availableProduct.image_url ||
-                            "/placeholder.svg" ||
-                            "/placeholder.svg" ||
-                            "/placeholder.svg" ||
                             "/placeholder.svg"
                           }
                           alt={availableProduct.name}
@@ -108,8 +105,10 @@ export function ProductSelector({
                           {availableProduct.name}
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
-                          RM{availableProduct.price.toFixed(0)} /{" "}
-                          {availableProduct.unit}
+                          RM
+                          {(availableProduct.normal_price ?? 0).toFixed(
+                            0
+                          )} / {availableProduct.unit}
                         </div>
                       </div>
                     </div>
