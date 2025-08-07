@@ -15,10 +15,12 @@ import {
   CardDescription,
 } from "@/components/ui/";
 import { Button } from "@/components/ui/";
+import { Dialog, DialogContent } from "@/components/ui/";
 
 export default function LatestBlog() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [zoomImage, setZoomImage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -38,7 +40,6 @@ export default function LatestBlog() {
       if (error) {
         console.error("Failed to fetch blogs:", error.message);
       } else {
-        // Remove the external_link patching, just use the data as-is
         setBlogs((data ?? []).filter((blog) => blog.title));
       }
       setLoading(false);
@@ -61,6 +62,20 @@ export default function LatestBlog() {
       <div className="container mx-auto px-4">
         <h2 className="mb-8 text-center text-3xl font-bold">LATEST BLOG</h2>
 
+        <Dialog open={!!zoomImage} onOpenChange={() => setZoomImage(null)}>
+          <DialogContent className="max-w-4xl p-0">
+            {zoomImage && (
+              <Image
+                src={zoomImage}
+                alt="Zoomed Blog"
+                width={1200}
+                height={800}
+                className="w-full h-auto object-contain rounded-md"
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+
         {loading ? (
           <p className="text-center text-muted-foreground">Loading...</p>
         ) : blogs.length === 0 ? (
@@ -81,7 +96,6 @@ export default function LatestBlog() {
                   className="overflow-hidden group relative py-0"
                 >
                   <CardHeader className="p-0 relative h-52">
-                    {/* Main image (shows on default, hides on hover if hoverImage exists) */}
                     <Image
                       src={mainImage}
                       alt={post.title}
@@ -91,7 +105,6 @@ export default function LatestBlog() {
                       `}
                       style={{ transition: "opacity 0.3s, transform 0.3s" }}
                     />
-                    {/* Hover image (if exists, only on hover, always behind buttons) */}
                     {hoverImage && (
                       <Image
                         src={hoverImage}
@@ -104,21 +117,26 @@ export default function LatestBlog() {
                         }}
                       />
                     )}
-                    {/* Buttons always on top */}
-                    {/* Mobile: always visible; Desktop: visible on hover */}
+
                     <div>
-                      {/* Mobile (smaller than 'sm'): always visible */}
                       <div className="absolute left-3 bottom-3 flex flex-col gap-2 sm:hidden opacity-100 pointer-events-auto z-10">
-                        <button className="p-2 bg-white rounded-full shadow hover:bg-gray-200">
+                        <button
+                          className="p-2 bg-white rounded-full shadow hover:bg-gray-200"
+                          onClick={() => setZoomImage(mainImage)}
+                          title="Zoom In"
+                        >
                           <ZoomIn className="h-4 w-4 text-blue-600" />
                         </button>
                         <button className="p-2 bg-white rounded-full shadow hover:bg-gray-200">
                           <Heart className="h-4 w-4 text-blue-600" />
                         </button>
                       </div>
-                      {/* Desktop (sm and up): visible on hover */}
                       <div className="absolute left-3 bottom-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 hidden sm:flex pointer-events-none group-hover:pointer-events-auto">
-                        <button className="p-2 bg-white rounded-full shadow hover:bg-gray-200">
+                        <button
+                          className="p-2 bg-white rounded-full shadow hover:bg-gray-200"
+                          onClick={() => setZoomImage(mainImage)}
+                          title="Zoom In"
+                        >
                           <ZoomIn className="h-4 w-4 text-blue-600" />
                         </button>
                         <button className="p-2 bg-white rounded-full shadow hover:bg-gray-200">
@@ -151,7 +169,6 @@ export default function LatestBlog() {
           </div>
         )}
 
-        {/* View More Button */}
         {blogs.length > 0 && (
           <div className="flex justify-center mt-8">
             <Button asChild variant="outline" size="lg">
