@@ -15,12 +15,13 @@ interface ComparisonSummaryProps {
 }
 
 export function ComparisonSummary({ products }: ComparisonSummaryProps) {
+  // Use normal_price for comparison (fallback to 0 if null)
   const bestValue = products.reduce((prev, curr) =>
-    prev.price < curr.price ? prev : curr
+    (prev.normal_price ?? 0) < (curr.normal_price ?? 0) ? prev : curr
   );
 
   const mostExpensive = products.reduce((prev, curr) =>
-    prev.price > curr.price ? prev : curr
+    (prev.normal_price ?? 0) > (curr.normal_price ?? 0) ? prev : curr
   );
 
   return (
@@ -40,7 +41,7 @@ export function ComparisonSummary({ products }: ComparisonSummaryProps) {
                 {bestValue.name}
               </Badge>
               <span className="text-muted-foreground">
-                RM {bestValue.price}
+                RM {(bestValue.normal_price ?? 0).toFixed(2)}
               </span>
             </div>
           </div>
@@ -52,7 +53,7 @@ export function ComparisonSummary({ products }: ComparisonSummaryProps) {
                 {mostExpensive.name}
               </Badge>
               <span className="text-muted-foreground">
-                RM {mostExpensive.price}
+                RM {(mostExpensive.normal_price ?? 0).toFixed(2)}
               </span>
             </div>
           </div>
@@ -73,14 +74,14 @@ export function ComparisonSummary({ products }: ComparisonSummaryProps) {
                   <div className="flex flex-col sm:flex-row justify-between">
                     <CardTitle className="text-lg">{product.name}</CardTitle>
                     <span className="font-bold text-lg sm:hidden">
-                      RM {product.price}
+                      RM {(product.normal_price ?? 0).toFixed(2)}
                     </span>
                   </div>
                   {index === 0 && <Badge className="w-fit">Best Value</Badge>}
                 </CardHeader>
                 <CardContent className="flex flex-col gap-4 sm:gap-2 sm:flex-row items-start sm:items-center justify-between">
                   <span className="font-bold text-lg hidden sm:block">
-                    RM {product.price}
+                    RM {(product.normal_price ?? 0).toFixed(2)}
                   </span>
                   <Button size="sm" className="w-full sm:w-auto">
                     View Details
