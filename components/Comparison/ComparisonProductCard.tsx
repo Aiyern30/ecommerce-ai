@@ -16,6 +16,11 @@ export function ComparisonProductCard({
   onRemove,
   showRemove = false,
 }: ComparisonProductCardProps) {
+  // Get main image from product_images (first or is_primary)
+  const mainImage =
+    product.product_images?.find((img) => img.is_primary) ||
+    product.product_images?.[0];
+
   return (
     <Card className="relative flex flex-col h-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 p-0">
       {/* Remove button */}
@@ -33,12 +38,7 @@ export function ComparisonProductCard({
       {/* Full-width Image - completely flush to card edges */}
       <div className="relative w-full h-96 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 overflow-hidden">
         <Image
-          src={
-            product.product_images?.[0]?.image_url ||
-            product.image_url ||
-            "/placeholder.svg" ||
-            "/placeholder.svg"
-          }
+          src={mainImage?.image_url || "/placeholder.svg"}
           alt={product.name}
           fill
           className="object-cover hover:scale-105 transition-transform duration-300"
@@ -92,7 +92,11 @@ export function ComparisonProductCard({
           <div className="text-center w-full">
             <div className="flex items-baseline justify-center gap-1 mb-1">
               <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                RM{product.price.toFixed(0)}
+                RM
+                {product.normal_price !== null &&
+                product.normal_price !== undefined
+                  ? Number(product.normal_price).toFixed(2)
+                  : "0.00"}
               </span>
               {product.unit && (
                 <span className="text-sm text-gray-500 dark:text-gray-400">
@@ -120,70 +124,37 @@ export function ComparisonProductCard({
 
             <div className="flex items-center justify-center gap-1 text-xs text-green-600 dark:text-green-400">
               <CheckCircle className="w-3 h-3" />
-              <span>In Stock</span>
+              <span>
+                {product.stock_quantity && product.stock_quantity > 0
+                  ? "In Stock"
+                  : "Out of Stock"}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Tags & Certificates - Fixed height */}
-        <div className="h-32 mb-6 flex flex-col">
-          {/* Tags */}
-          <div className="h-16 mb-3">
-            <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
-              Features
-            </h4>
-            <div className="flex flex-wrap gap-1">
-              {product.product_tags && product.product_tags.length > 0 ? (
-                <>
-                  {product.product_tags.slice(0, 3).map((tag, index) => (
-                    <Badge
-                      key={index}
-                      variant="outline"
-                      className="text-xs bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      {tag.tags.name}
-                    </Badge>
-                  ))}
-                  {product.product_tags.length > 3 && (
-                    <Badge
-                      variant="outline"
-                      className="text-xs bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400"
-                    >
-                      +{product.product_tags.length - 3}
-                    </Badge>
-                  )}
-                </>
-              ) : (
-                <span className="text-xs text-gray-400 dark:text-gray-500 italic">
-                  No features listed
+        {/* Features - Grade, Product Type, Unit, Stock */}
+        <div className="h-20 mb-6 flex flex-col">
+          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+            {product.grade && <span>Grade: {product.grade}</span>}
+            {product.product_type && <span>Type: {product.product_type}</span>}
+            {product.unit && <span>Unit: {product.unit}</span>}
+            {typeof product.stock_quantity === "number" && (
+              <span>
+                Stock:{" "}
+                <span
+                  className={
+                    product.stock_quantity > 20
+                      ? "text-green-600"
+                      : product.stock_quantity > 5
+                      ? "text-yellow-600"
+                      : "text-red-600"
+                  }
+                >
+                  {product.stock_quantity}
                 </span>
-              )}
-            </div>
-          </div>
-
-          {/* Certificates */}
-          <div className="h-16">
-            <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
-              Certifications
-            </h4>
-            <div className="flex flex-wrap gap-1">
-              {product.product_certificates &&
-              product.product_certificates.length > 0 ? (
-                product.product_certificates.slice(0, 2).map((cert, index) => (
-                  <Badge
-                    key={`cert-${index}`}
-                    className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-0 font-medium"
-                  >
-                    <CheckCircle className="w-3 h-3 mr-1" />
-                    {cert.certificate}
-                  </Badge>
-                ))
-              ) : (
-                <span className="text-xs text-gray-400 dark:text-gray-500 italic">
-                  No certifications
-                </span>
-              )}
-            </div>
+              </span>
+            )}
           </div>
         </div>
 
@@ -195,8 +166,6 @@ export function ComparisonProductCard({
           <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02]">
             VIEW DETAILS
           </Button>
-
-          {/* Quick info */}
           <div className="text-center mt-1">
             <p className="text-xs text-gray-500 dark:text-gray-400">
               Free consultation available
