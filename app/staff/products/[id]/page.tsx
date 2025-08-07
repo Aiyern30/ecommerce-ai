@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import { Edit, Trash2, Package, ArrowLeft, Search } from "lucide-react";
+import Image from "next/image";
 
 import {
   Button,
@@ -14,9 +15,9 @@ import {
   DialogTitle,
   DialogTrigger,
   Skeleton,
+  Badge,
 } from "@/components/ui";
 import { TypographyH1, TypographyP } from "@/components/ui/Typography";
-import ProductDetailDisplay from "@/components/ProductDetailDisplay";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "sonner";
@@ -292,20 +293,16 @@ export default function ProductDetailClient() {
         .from("products")
         .select(
           `
-  *,
-  product_images(image_url),
-  product_tags(
-    tags(name)
-  ),
-  product_certificates(certificate),
-  product_variants(
-    id,
-    variant_type,
-    price
-  )
-`
+            *,
+            product_images(
+              id,
+              image_url,
+              alt_text,
+              is_primary,
+              sort_order
+            )
+          `
         )
-
         .eq("id", productId)
         .single();
 
@@ -384,8 +381,6 @@ export default function ProductDetailClient() {
             ]}
           />
         </div>
-
-        {/* Action Buttons - Only show for staff */}
         {isStaffView && (
           <div className="flex items-center gap-2">
             <Button
@@ -397,8 +392,6 @@ export default function ProductDetailClient() {
               <Edit className="h-4 w-4" />
               Edit
             </Button>
-
-            {/* Delete Dialog */}
             <Dialog
               open={isDeleteDialogOpen}
               onOpenChange={setIsDeleteDialogOpen}
@@ -421,7 +414,6 @@ export default function ProductDetailClient() {
                     cannot be undone.
                   </DialogDescription>
                 </DialogHeader>
-
                 <DialogFooter>
                   <Button
                     variant="outline"
@@ -444,7 +436,147 @@ export default function ProductDetailClient() {
         )}
       </div>
 
-      <ProductDetailDisplay product={product} isCustomerView={!isStaffView} />
+      {/* Product Details */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Side - Product Info */}
+        <div className="border rounded-lg p-6 h-fit space-y-6">
+          <div>
+            <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
+            <p className="text-muted-foreground mb-2">
+              {product.description || "No description"}
+            </p>
+            <div className="flex flex-wrap gap-2 mb-2">
+              <Badge variant="secondary">
+                {product.category || "No Category"}
+              </Badge>
+              <Badge
+                variant={
+                  product.status === "published" ? "default" : "secondary"
+                }
+              >
+                {product.status.charAt(0).toUpperCase() +
+                  product.status.slice(1)}
+              </Badge>
+              {product.is_featured && <Badge variant="default">Featured</Badge>}
+            </div>
+            <div className="text-xs text-gray-500">
+              Created: {new Date(product.created_at).toLocaleString()}
+              <br />
+              Updated: {new Date(product.updated_at).toLocaleString()}
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <div className="font-medium mb-1">Grade</div>
+              <div>{product.grade}</div>
+            </div>
+            <div>
+              <div className="font-medium mb-1">Product Type</div>
+              <div>{product.product_type}</div>
+            </div>
+            <div>
+              <div className="font-medium mb-1">Mortar Ratio</div>
+              <div>{product.mortar_ratio || "N/A"}</div>
+            </div>
+            <div>
+              <div className="font-medium mb-1">Unit</div>
+              <div>{product.unit || "N/A"}</div>
+            </div>
+            <div>
+              <div className="font-medium mb-1">Stock Quantity</div>
+              <div>{product.stock_quantity ?? "N/A"}</div>
+            </div>
+            <div>
+              <div className="font-medium mb-1">Is Featured</div>
+              <div>{product.is_featured ? "Yes" : "No"}</div>
+            </div>
+          </div>
+          <div>
+            <div className="font-medium mb-2">Pricing</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div>
+                <span className="font-semibold">Normal Price:</span>{" "}
+                {product.normal_price !== null &&
+                product.normal_price !== undefined
+                  ? `RM ${Number(product.normal_price).toFixed(2)}`
+                  : "N/A"}
+              </div>
+              <div>
+                <span className="font-semibold">Pump Price:</span>{" "}
+                {product.pump_price !== null && product.pump_price !== undefined
+                  ? `RM ${Number(product.pump_price).toFixed(2)}`
+                  : "N/A"}
+              </div>
+              <div>
+                <span className="font-semibold">Tremie 1 Price:</span>{" "}
+                {product.tremie_1_price !== null &&
+                product.tremie_1_price !== undefined
+                  ? `RM ${Number(product.tremie_1_price).toFixed(2)}`
+                  : "N/A"}
+              </div>
+              <div>
+                <span className="font-semibold">Tremie 2 Price:</span>{" "}
+                {product.tremie_2_price !== null &&
+                product.tremie_2_price !== undefined
+                  ? `RM ${Number(product.tremie_2_price).toFixed(2)}`
+                  : "N/A"}
+              </div>
+              <div>
+                <span className="font-semibold">Tremie 3 Price:</span>{" "}
+                {product.tremie_3_price !== null &&
+                product.tremie_3_price !== undefined
+                  ? `RM ${Number(product.tremie_3_price).toFixed(2)}`
+                  : "N/A"}
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Right Side - Images */}
+        <div className="space-y-4">
+          <div>
+            <div className="font-medium mb-2">Main Image</div>
+            {product.product_images && product.product_images.length > 0 ? (
+              <div className="relative w-full aspect-[4/3] rounded-lg border overflow-hidden">
+                <Image
+                  src={product.product_images[0].image_url}
+                  alt={product.name}
+                  fill
+                  className="object-cover"
+                  sizes="(min-width: 1024px) 512px, 100vw"
+                  priority
+                />
+              </div>
+            ) : (
+              <div className="w-full aspect-[4/3] bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
+                No Image
+              </div>
+            )}
+          </div>
+          <div>
+            <div className="font-medium mb-2">Additional Images</div>
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {product.product_images && product.product_images.length > 1 ? (
+                product.product_images.slice(1).map((img) => (
+                  <div
+                    key={img.id}
+                    className="relative w-24 h-24 rounded-md border overflow-hidden flex-shrink-0"
+                  >
+                    <Image
+                      src={img.image_url}
+                      alt={product.name}
+                      fill
+                      className="object-cover rounded-md"
+                      sizes="96px"
+                    />
+                  </div>
+                ))
+              ) : (
+                <div className="text-gray-400">No additional images</div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
