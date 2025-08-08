@@ -140,16 +140,14 @@ export default function NewPostPage() {
     setIsSubmitting(true);
     setImageError(null);
 
-    // Set status based on button clicked - this overrides the form field
     const statusToSave = isDraft ? "draft" : "published";
 
-    // Validate link based on type
     if (data.link && !validateLink(data.link, data.linkType)) {
-      if (data.linkType === "external") {
-        toast.error("External links must start with http:// or https://");
-      } else {
-        toast.error("Internal links must start with / (e.g., /staff/products)");
-      }
+      toast.error(
+        data.linkType === "external"
+          ? "External links must start with http:// or https://"
+          : "Internal links must start with / (e.g., /staff/products)"
+      );
       setIsSubmitting(false);
       return;
     }
@@ -157,7 +155,7 @@ export default function NewPostPage() {
     try {
       let imageUrl: string | null = null;
 
-      // Upload image if selected
+      // Upload image to Supabase Storage first (still done client-side)
       if (selectedImageFile) {
         const fileExt = selectedImageFile.name.split(".").pop();
         const filePath = `posts/${Date.now()}-${Math.random()
@@ -172,7 +170,6 @@ export default function NewPostPage() {
           });
 
         if (uploadError) {
-          console.error("Image upload failed:", uploadError.message);
           toast.error(`Failed to upload image: ${uploadError.message}`);
           setIsSubmitting(false);
           return;
@@ -184,25 +181,26 @@ export default function NewPostPage() {
         imageUrl = publicData.publicUrl;
       }
 
-      // Insert post data
-      const { error: postInsertError } = await supabase.from("posts").insert({
-        title: data.title,
-        description: data.description,
-        mobile_description: data.mobile_description || null,
-        link_name: data.link_name || null,
-        link: data.link || null,
-        image_url: imageUrl,
-        status: statusToSave,
+      // Call API route
+      const res = await fetch("/api/admin/posts/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...data,
+          status: statusToSave,
+          image_url: imageUrl,
+        }),
       });
 
-      if (postInsertError) {
-        toast.error("Post creation failed: " + postInsertError.message);
-        setIsSubmitting(false);
+      if (!res.ok) {
+        const { error } = await res.json();
+        toast.error("Post creation failed: " + error);
         return;
       }
 
-      const actionText = isDraft ? "saved as draft" : "published";
-      toast.success(`Post ${actionText} successfully!`);
+      toast.success(
+        `Post ${isDraft ? "saved as draft" : "published"} successfully!`
+      );
       router.push("/staff/posts");
     } catch (error) {
       console.error("Unexpected error during post creation:", error);
