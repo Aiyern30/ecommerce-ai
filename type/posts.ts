@@ -1,7 +1,6 @@
 export interface Post {
   id: string;
   title: string;
-  body: string;
   description: string | null;
   mobile_description?: string | null;
   link_name: string | null;
