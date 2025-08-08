@@ -129,13 +129,17 @@ function OrderTableSkeletonEnhanced() {
               <TableHead className="w-[50px]">
                 <Skeleton className="h-4 w-4 rounded-sm" />
               </TableHead>
-              <TableHead className="min-w-[120px]">Order #</TableHead>
+              {/* Removed Order # column */}
               <TableHead className="min-w-[150px]">Customer</TableHead>
               <TableHead className="min-w-[100px]">Items</TableHead>
+              <TableHead className="min-w-[120px]">Subtotal</TableHead>
+              <TableHead className="min-w-[120px]">Shipping</TableHead>
+              <TableHead className="min-w-[120px]">Tax</TableHead>
               <TableHead className="min-w-[120px]">Total Amount</TableHead>
+              <TableHead className="min-w-[120px]">Payment Intent</TableHead>
               <TableHead className="min-w-[100px]">Status</TableHead>
               <TableHead className="min-w-[120px]">Payment</TableHead>
-              <TableHead className="min-w-[120px]">Shipping</TableHead>
+              <TableHead className="min-w-[200px]">Address</TableHead>
               <TableHead className="min-w-[150px]">Created</TableHead>
               <TableHead className="text-right min-w-[80px]">Actions</TableHead>
             </TableRow>
@@ -146,9 +150,7 @@ function OrderTableSkeletonEnhanced() {
                 <TableCell>
                   <Skeleton className="h-4 w-4 rounded-sm" />
                 </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-24" />
-                </TableCell>
+                {/* Removed Order # cell */}
                 <TableCell>
                   <div className="space-y-1">
                     <Skeleton className="h-4 w-32" />
@@ -162,16 +164,25 @@ function OrderTableSkeletonEnhanced() {
                   <Skeleton className="h-4 w-20" />
                 </TableCell>
                 <TableCell>
-                  <Skeleton className="h-6 w-20" />
+                  <Skeleton className="h-4 w-20" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-20" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-20" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-24" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-6 w-16" />
                 </TableCell>
                 <TableCell>
                   <Skeleton className="h-6 w-16" />
                 </TableCell>
                 <TableCell>
                   <Skeleton className="h-4 w-24" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-28" />
                 </TableCell>
                 <TableCell className="text-right">
                   <Skeleton className="h-8 w-16 ml-auto" />
@@ -818,13 +829,17 @@ export default function OrdersPage() {
                     aria-label="Select all"
                   />
                 </TableHead>
-                <TableHead className="min-w-[120px]">Order ID</TableHead>
+                {/* Removed Order # column */}
                 <TableHead className="min-w-[150px]">Customer</TableHead>
                 <TableHead className="min-w-[100px]">Items</TableHead>
+                <TableHead className="min-w-[120px]">Subtotal</TableHead>
+                <TableHead className="min-w-[120px]">Shipping</TableHead>
+                <TableHead className="min-w-[120px]">Tax</TableHead>
                 <TableHead className="min-w-[120px]">Total Amount</TableHead>
+                <TableHead className="min-w-[120px]">Payment Intent</TableHead>
                 <TableHead className="min-w-[100px]">Status</TableHead>
                 <TableHead className="min-w-[120px]">Payment</TableHead>
-                <TableHead className="min-w-[120px]">Shipping</TableHead>
+                <TableHead className="min-w-[200px]">Address</TableHead>
                 <TableHead className="min-w-[150px]">Created</TableHead>
                 <TableHead className="text-right min-w-[80px]">
                   Actions
@@ -835,7 +850,7 @@ export default function OrdersPage() {
             <TableBody>
               {currentPageData.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={10} className="h-24 text-center">
+                  <TableCell colSpan={12} className="h-24 text-center">
                     No orders found.
                   </TableCell>
                 </TableRow>
@@ -853,11 +868,7 @@ export default function OrdersPage() {
                         aria-label={`Select order ${order.id}`}
                       />
                     </TableCell>
-                    <TableCell className="font-medium">
-                      <div className="truncate max-w-[120px]" title={order.id}>
-                        #{order.id.slice(-8)}
-                      </div>
-                    </TableCell>
+                    {/* Removed Order # cell */}
                     <TableCell className="max-w-xs">
                       <div className="space-y-1">
                         <div
@@ -882,18 +893,39 @@ export default function OrdersPage() {
                         </span>
                       </div>
                     </TableCell>
+                    <TableCell>{formatCurrency(order.subtotal)}</TableCell>
+                    <TableCell>{formatCurrency(order.shipping_cost)}</TableCell>
+                    <TableCell>{formatCurrency(order.tax)}</TableCell>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-1">
                         <DollarSign className="h-4 w-4 text-green-600" />
                         {formatCurrency(order.total)}
                       </div>
                     </TableCell>
+                    <TableCell>
+                      <span className="text-xs font-mono break-all">
+                        {order.payment_intent_id || "-"}
+                      </span>
+                    </TableCell>
                     <TableCell>{getStatusBadge(order.status)}</TableCell>
                     <TableCell>
                       {getPaymentStatusBadge(order.payment_status)}
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm">Standard Shipping</div>
+                      <div className="text-xs text-gray-700 dark:text-gray-300 max-w-[180px] truncate">
+                        {order.addresses
+                          ? [
+                              order.addresses.address_line1,
+                              order.addresses.address_line2,
+                              order.addresses.city,
+                              order.addresses.state,
+                              order.addresses.postal_code,
+                              order.addresses.country,
+                            ]
+                              .filter(Boolean)
+                              .join(", ")
+                          : "N/A"}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
