@@ -224,81 +224,71 @@ export default function EditBlogPage() {
   // Save logic: remove all blog_images, insert new ones (existing - removed + new uploads)
   const handleSubmit = async (data: BlogFormData, isDraft: boolean = false) => {
     if (!blog) return;
+
     const setLoadingState = isDraft ? setIsDraftSaving : setIsSubmitting;
     setLoadingState(true);
     setImageError(null);
 
     try {
-      // 1. Update blog main fields
-      const { error: blogUpdateError } = await supabase
-        .from("blogs")
-        .update({
-          title: data.title,
-          description: data.description || null,
-          link_name: data.link_name || null,
-          link: data.link || null,
-          content: data.content,
-          status: isDraft ? "draft" : "published",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", blog.id);
-
-      if (blogUpdateError) {
-        toast.error("Blog update failed: " + blogUpdateError.message);
-        setLoadingState(false);
-        return;
-      }
-
-      // 2. Update images
-      // Remove all blog_images for this blog
-      await supabase.from("blog_images").delete().eq("blog_id", blog.id);
-
-      // Upload new images and insert all (existing - removed + new uploads)
+      // 1. Upload new images
       const finalImages: string[] = [];
+
       // Keep existing images not marked for removal
       for (const url of existingImages) {
         if (!imagesToRemove.includes(url)) {
           finalImages.push(url);
         }
       }
-      // Upload new images
+
+      // Upload new images to Supabase Storage
       for (const file of selectedImageFiles) {
         const fileExt = file.name.split(".").pop();
         const filePath = `blogs/${blog.id}/${Date.now()}-${Math.random()
           .toString(36)
           .substring(2, 15)}.${fileExt}`;
+
         const { error: uploadError } = await supabase.storage
           .from("blogs")
           .upload(filePath, file, {
             cacheControl: "3600",
             upsert: false,
           });
+
         if (uploadError) {
           toast.error("Failed to upload image: " + uploadError.message);
           continue;
         }
+
         const { data: publicData } = supabase.storage
           .from("blogs")
           .getPublicUrl(filePath);
         finalImages.push(publicData.publicUrl);
       }
-      // Insert all images
-      if (finalImages.length > 0) {
-        await supabase
-          .from("blog_images")
-          .insert(
-            finalImages.map((url) => ({ blog_id: blog.id, image_url: url }))
-          );
-      }
 
-      // 3. Update tags
-      await supabase.from("blog_tags").delete().eq("blog_id", blog.id);
-      if (selectedTags && selectedTags.length > 0) {
-        await supabase
-          .from("blog_tags")
-          .insert(
-            selectedTags.map((tag) => ({ blog_id: blog.id, tag_id: tag.id }))
-          );
+      // 2. Call custom API route to update blog data
+      const res = await fetch("/api/admin/blogs/update", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: blog.id,
+          title: data.title,
+          description: data.description || null,
+          link_name: data.link_name || null,
+          link: data.link || null,
+          content: data.content,
+          status: isDraft ? "draft" : "published",
+          tags: selectedTags.map((tag) => tag.id),
+          images: finalImages,
+          removedImages: imagesToRemove,
+        }),
+      });
+
+      if (!res.ok) {
+        const { error } = await res.json();
+        toast.error("Failed to update blog: " + error);
+        return;
       }
 
       toast.success(
