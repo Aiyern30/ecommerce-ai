@@ -2,6 +2,7 @@
 "use client";
 import Link from "next/link";
 import type React from "react";
+import rehypeSanitize from "rehype-sanitize";
 
 import { ArrowLeft, X, Plus, ExternalLink, LinkIcon } from "lucide-react";
 import { useState } from "react";
@@ -43,6 +44,7 @@ import Image from "next/image";
 import { toast } from "sonner";
 import TagMultiSelect from "@/components/TagMultiSelect";
 import dynamic from "next/dynamic";
+import { useDeviceType } from "@/utils/useDeviceTypes";
 
 // Dynamically import MDEditor (SSR false)
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
@@ -70,6 +72,7 @@ type BlogFormData = z.infer<typeof blogSchema>;
 
 export default function Page() {
   const router = useRouter();
+  const { isMobile } = useDeviceType();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDraftSaving, setIsDraftSaving] = useState(false);
   const [selectedImageFiles, setSelectedImageFiles] = useState<File[]>([]);
@@ -736,6 +739,12 @@ export default function Page() {
                           value={field.value}
                           onChange={field.onChange}
                           height={300}
+                          preview="edit"
+                          previewOptions={{
+                            rehypePlugins: isMobile
+                              ? [rehypeSanitize]
+                              : undefined,
+                          }}
                         />
                       </div>
                     </FormControl>
