@@ -141,111 +141,26 @@ export default function EditFaqPage() {
   }, [id, form]);
 
   const onSubmit = async (data: FaqFormData) => {
-    console.log("Submitting form with data:", data); // Debug log
-
     setIsSubmitting(true);
+
     try {
-      // First, verify the FAQ still exists
-      const { data: existingFaq, error: verifyError } = await supabase
-        .from("faq")
-        .select("id")
-        .eq("id", id)
-        .single();
+      const res = await fetch("/api/admin/faqs/update", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id,
+          question: data.question,
+          answer: data.answer,
+          section: data.section,
+          status: data.status,
+        }),
+      });
 
-      if (verifyError || !existingFaq) {
-        console.error("FAQ verification failed:", verifyError);
-        toast.error("FAQ not found. It may have been deleted.");
-        router.push("/staff/faqs");
-        return;
-      }
+      const result = await res.json();
 
-      console.log("FAQ exists, proceeding with update for ID:", id);
-      let sectionId: string | null = null;
-
-      // Find or create section
-      const existing = sections.find(
-        (s) => s.toLowerCase() === data.section.toLowerCase()
-      );
-
-      if (existing) {
-        console.log("Using existing section:", existing); // Debug log
-        const { data: sectionData, error } = await supabase
-          .from("faq_sections")
-          .select("id")
-          .eq("name", existing)
-          .single();
-
-        if (error) {
-          console.error("Section lookup error:", error);
-          toast.error("Failed to find selected section: " + error.message);
-          return;
-        }
-
-        if (!sectionData) {
-          toast.error("Selected section not found.");
-          return;
-        }
-
-        sectionId = sectionData.id;
-      } else {
-        console.log("Creating new section:", data.section); // Debug log
-        const { data: newSection, error } = await supabase
-          .from("faq_sections")
-          .insert({ name: data.section })
-          .select()
-          .single();
-
-        if (error) {
-          console.error("Section creation error:", error);
-          toast.error("Failed to create new section: " + error.message);
-          return;
-        }
-
-        if (!newSection) {
-          toast.error("Failed to create new section.");
-          return;
-        }
-
-        sectionId = newSection.id;
-        setSections((prev) => [newSection.name, ...prev]);
-      }
-
-      console.log("Using section ID:", sectionId); // Debug log
-
-      // Update FAQ
-      const updateData = {
-        question: data.question,
-        answer: data.answer,
-        section_id: sectionId,
-        status: data.status,
-        updated_at: new Date().toISOString(), // Explicitly set updated_at
-      };
-
-      console.log("Updating FAQ with:", updateData); // Debug log
-      console.log("Updating FAQ with ID:", id); // Debug the ID being used
-
-      const { data: updatedFaq, error: updateError } = await supabase
-        .from("faq")
-        .update(updateData)
-        .eq("id", id)
-        .select(); // Add select to get updated data
-
-      if (updateError) {
-        console.error("FAQ update error:", updateError);
-        toast.error("Failed to update FAQ: " + updateError.message);
-        return;
-      }
-
-      console.log("FAQ updated successfully:", updatedFaq); // Debug log
-
-      // Check if any rows were actually updated
-      if (!updatedFaq || updatedFaq.length === 0) {
-        console.error(
-          "No FAQ rows were updated. This usually means the ID doesn't exist."
-        );
-        toast.error(
-          "FAQ not found or could not be updated. Please check if the FAQ still exists."
-        );
+      if (!res.ok) {
+        console.error("Update failed:", result.error);
+        toast.error("Failed to update FAQ: " + result.error);
         return;
       }
 
@@ -256,8 +171,8 @@ export default function EditFaqPage() {
       );
 
       router.push("/staff/faqs");
-    } catch (e) {
-      console.error("Unexpected error during submission:", e);
+    } catch (error) {
+      console.error("Unexpected error during submission:", error);
       toast.error("Unexpected error occurred.");
     } finally {
       setIsSubmitting(false);
