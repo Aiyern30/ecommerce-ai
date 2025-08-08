@@ -398,11 +398,10 @@ export default function EditProductPage() {
     } else {
       setIsSubmitting(true);
     }
-    setImageError(null);
 
+    setImageError(null);
     const allImages = getAllImages();
 
-    // For published products, require at least one image
     if (allImages.length === 0 && !isDraft) {
       setImageError("At least one product image is required.");
       if (isDraft) {
@@ -414,143 +413,30 @@ export default function EditProductPage() {
     }
 
     try {
-      // 1. Update main product data
-      const { error: productUpdateError } = await supabase
-        .from("products")
-        .update({
-          name: data.name,
-          description: data.description || null,
-          grade: data.grade,
-          product_type: data.product_type,
-          mortar_ratio:
-            data.product_type === "mortar" ? data.mortar_ratio || null : null,
-          category: data.category,
-          normal_price: data.normal_price || null,
-          pump_price: data.pump_price || null,
-          tremie_1_price: data.tremie_1_price || null,
-          tremie_2_price: data.tremie_2_price || null,
-          tremie_3_price: data.tremie_3_price || null,
-          unit: data.unit,
-          stock_quantity: data.stock_quantity,
-          status: isDraft ? "draft" : data.status,
-          is_featured: data.is_featured,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", productId);
+      const res = await fetch("/api/admin/products/update", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          data,
+          productId,
+          isDraft,
+          imagesToDelete,
+          existingImages,
+        }),
+      });
 
-      if (productUpdateError) {
-        toast.error("Product update failed: " + productUpdateError.message);
-        if (isDraft) {
-          setIsDraftSaving(false);
-        } else {
-          setIsSubmitting(false);
-        }
+      const result = await res.json();
+
+      if (!res.ok) {
+        toast.error("Update failed: " + result.error);
         return;
       }
 
-      // 2. Delete marked images
-      if (imagesToDelete.length > 0) {
-        // Delete from storage first
-        const imagesToDeleteData = await supabase
-          .from("product_images")
-          .select("image_url")
-          .in("id", imagesToDelete);
-
-        if (imagesToDeleteData.data) {
-          for (const img of imagesToDeleteData.data) {
-            // Extract file path from URL
-            const url = new URL(img.image_url);
-            const filePath = url.pathname.split("/products/")[1];
-            if (filePath) {
-              await supabase.storage.from("products").remove([filePath]);
-            }
-          }
-        }
-
-        // Delete from database
-        const { error: deleteError } = await supabase
-          .from("product_images")
-          .delete()
-          .in("id", imagesToDelete);
-
-        if (deleteError) {
-          console.error("Error deleting images:", deleteError.message);
-        }
-      }
-
-      // 3. Upload new images
-      if (selectedImageFiles.length > 0) {
-        const imageInserts: {
-          product_id: string;
-          image_url: string;
-          is_primary: boolean;
-          sort_order: number;
-        }[] = [];
-
-        const currentMaxSortOrder = Math.max(
-          0,
-          ...existingImages.map((img) => img.sort_order)
-        );
-
-        for (let i = 0; i < selectedImageFiles.length; i++) {
-          const file = selectedImageFiles[i];
-          const fileExt = file.name.split(".").pop();
-          const filePath = `${productId}/${Date.now()}-${Math.random()
-            .toString(36)
-            .substring(2, 15)}.${fileExt}`;
-
-          const { error: uploadError } = await supabase.storage
-            .from("products")
-            .upload(filePath, file, {
-              cacheControl: "3600",
-              upsert: false,
-            });
-
-          if (uploadError) {
-            console.error(
-              `Image upload failed for ${file.name}:`,
-              uploadError.message
-            );
-            toast.error(
-              `Failed to upload image ${file.name}: ${uploadError.message}`
-            );
-            continue;
-          }
-
-          const { data: publicData } = supabase.storage
-            .from("products")
-            .getPublicUrl(filePath);
-
-          imageInserts.push({
-            product_id: productId,
-            image_url: publicData.publicUrl,
-            is_primary: existingImages.length === 0 && i === 0, // First new image is primary if no existing images
-            sort_order: currentMaxSortOrder + i + 1,
-          });
-        }
-
-        if (imageInserts.length > 0) {
-          const { error: imagesInsertError } = await supabase
-            .from("product_images")
-            .insert(imageInserts);
-
-          if (imagesInsertError) {
-            console.error(
-              "Product images insert failed:",
-              imagesInsertError.message
-            );
-            toast.error(
-              "Failed to link product images: " + imagesInsertError.message
-            );
-          }
-        }
-      }
-
-      if (isDraft) {
-        toast.success("Product saved as draft successfully!");
-      } else {
-        toast.success("Product updated successfully!");
-      }
+      toast.success(
+        isDraft
+          ? "Product saved as draft successfully!"
+          : "Product updated successfully!"
+      );
       router.push("/staff/products");
     } catch (error) {
       console.error("Unexpected error during product update:", error);
