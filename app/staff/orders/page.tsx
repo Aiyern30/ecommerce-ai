@@ -868,23 +868,46 @@ export default function OrdersPage() {
                         aria-label={`Select order ${order.id}`}
                       />
                     </TableCell>
-                    {/* Removed Order # cell */}
                     <TableCell className="max-w-xs">
                       <div className="space-y-1">
                         <div
-                          className="font-medium truncate"
+                          className="font-medium truncate text-blue-700 hover:underline cursor-pointer"
                           title={order.addresses?.full_name}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (order.user_id) {
+                              router.push(`/staff/customers/${order.user_id}`);
+                            }
+                          }}
+                          tabIndex={0}
+                          role="button"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && order.user_id) {
+                              router.push(`/staff/customers/${order.user_id}`);
+                            }
+                          }}
+                          style={{ outline: "none" }}
                         >
                           {order.addresses?.full_name || "N/A"}
                         </div>
-                        <div
-                          className="text-sm text-gray-500 truncate"
-                          title={order.addresses?.phone || ""}
-                        >
-                          {order.addresses?.phone || "No phone"}
-                        </div>
+
+                        {order.addresses?.phone ? (
+                          <a
+                            href={`tel:${order.addresses.phone}`}
+                            className="text-sm text-gray-500 underline hover:text-gray-700 truncate"
+                            title={order.addresses.phone}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {order.addresses.phone}
+                          </a>
+                        ) : (
+                          <div className="text-sm text-gray-500 truncate">
+                            No phone
+                          </div>
+                        )}
                       </div>
                     </TableCell>
+
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <Package className="h-4 w-4 text-gray-400" />
