@@ -903,9 +903,20 @@ export default function OrdersPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className="text-xs font-mono break-all">
-                        {order.payment_intent_id || "-"}
-                      </span>
+                      {order.payment_intent_id ? (
+                        <a
+                          href={`https://dashboard.stripe.com/payments/${order.payment_intent_id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline hover:text-blue-800 text-xs font-mono break-all"
+                          onClick={(e) => e.stopPropagation()}
+                          title="View in Stripe"
+                        >
+                          {order.payment_intent_id}
+                        </a>
+                      ) : (
+                        <span className="text-xs font-mono break-all">-</span>
+                      )}
                     </TableCell>
                     <TableCell>{getStatusBadge(order.status)}</TableCell>
                     <TableCell>
