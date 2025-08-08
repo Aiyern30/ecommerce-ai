@@ -74,56 +74,31 @@ export default function NewFaqPage() {
     setIsSubmitting(true);
 
     try {
-      let sectionId: string | null = null;
-
-      const existing = sections.find(
-        (s) => s.toLowerCase() === data.section.toLowerCase()
-      );
-
-      if (existing) {
-        const { data: sectionData, error } = await supabase
-          .from("faq_sections")
-          .select("id")
-          .eq("name", existing)
-          .single();
-        if (error || !sectionData) {
-          toast.error("Failed to find selected section.");
-          setIsSubmitting(false);
-          return;
-        }
-        sectionId = sectionData.id;
-      } else {
-        const { data: newSection, error } = await supabase
-          .from("faq_sections")
-          .insert({ name: data.section })
-          .select()
-          .single();
-        if (error || !newSection) {
-          toast.error("Failed to create new section: " + error?.message);
-          setIsSubmitting(false);
-          return;
-        }
-        sectionId = newSection.id;
-        setSections((prev) => [newSection.name, ...prev]);
-      }
-
-      const { error: insertError } = await supabase.from("faq").insert({
-        question: data.question,
-        answer: data.answer,
-        section_id: sectionId,
-        status: data.status,
+      const res = await fetch("/api/admin/faqs/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
       });
 
-      if (insertError) {
-        toast.error("Failed to save FAQ: " + insertError.message);
-      } else {
-        toast.success(
-          data.status === "draft"
-            ? "Draft saved successfully."
-            : "FAQ published successfully."
-        );
-        router.push("/staff/faqs");
+      const result = await res.json();
+
+      if (!res.ok) {
+        toast.error(result.error || "Failed to create FAQ.");
+        return;
       }
+
+      toast.success(
+        data.status === "draft"
+          ? "Draft saved successfully."
+          : "FAQ published successfully."
+      );
+
+      // Optionally update sections with new one if it was added
+      if (!sections.includes(data.section)) {
+        setSections((prev) => [data.section, ...prev]);
+      }
+
+      router.push("/staff/faqs");
     } catch (e) {
       console.error(e);
       toast.error("Unexpected error occurred.");
