@@ -296,122 +296,70 @@ export default function NewProductPage() {
     }
     setImageError(null);
 
-    // For published products, require at least one image
     if (selectedImageFiles.length === 0 && !isDraft) {
       setImageError("At least one product image is required.");
+
       if (isDraft) {
         setIsDraftSaving(false);
       } else {
         setIsSubmitting(false);
       }
+
       return;
     }
 
     try {
-      // 1. Insert main product data
-      const { data: productInsertData, error: productInsertError } =
-        await supabase
-          .from("products")
-          .insert({
-            name: data.name,
-            description: data.description || null,
-            grade: data.grade,
-            product_type: data.product_type,
-            mortar_ratio:
-              data.product_type === "mortar" ? data.mortar_ratio || null : null,
-            category: data.category,
-            normal_price: data.normal_price || null,
-            pump_price: data.pump_price || null,
-            tremie_1_price: data.tremie_1_price || null,
-            tremie_2_price: data.tremie_2_price || null,
-            tremie_3_price: data.tremie_3_price || null,
-            unit: data.unit,
-            stock_quantity: data.stock_quantity,
-            status: isDraft ? "draft" : "published",
-            is_featured: data.is_featured,
-          })
-          .select("id")
-          .single();
+      const imageUploads: string[] = [];
 
-      if (productInsertError) {
-        toast.error("Product creation failed: " + productInsertError.message);
-        if (isDraft) {
-          setIsDraftSaving(false);
-        } else {
-          setIsSubmitting(false);
+      // Upload all product images to Supabase Storage
+      for (let i = 0; i < selectedImageFiles.length; i++) {
+        const file = selectedImageFiles[i];
+        const fileExt = file.name.split(".").pop();
+        const filePath = `temp/${Date.now()}-${Math.random()
+          .toString(36)
+          .substring(2, 15)}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("products")
+          .upload(filePath, file, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (uploadError) {
+          toast.error(
+            `Failed to upload image ${file.name}: ${uploadError.message}`
+          );
+          continue;
         }
+
+        const { data: publicData } = supabase.storage
+          .from("products")
+          .getPublicUrl(filePath);
+
+        imageUploads.push(publicData.publicUrl);
+      }
+
+      const res = await fetch("/api/admin/products/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...data,
+          status: isDraft ? "draft" : "published",
+          images: imageUploads,
+        }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        toast.error("Product creation failed: " + json.error);
         return;
       }
 
-      const productId = productInsertData.id;
-
-      if (selectedImageFiles.length > 0) {
-        const imageInserts: {
-          product_id: string;
-          image_url: string;
-          is_primary: boolean;
-          sort_order: number;
-        }[] = [];
-
-        for (let i = 0; i < selectedImageFiles.length; i++) {
-          const file = selectedImageFiles[i];
-          const fileExt = file.name.split(".").pop();
-          const filePath = `${productId}/${Date.now()}-${Math.random()
-            .toString(36)
-            .substring(2, 15)}.${fileExt}`;
-
-          const { error: uploadError } = await supabase.storage
-            .from("products")
-            .upload(filePath, file, {
-              cacheControl: "3600",
-              upsert: false,
-            });
-
-          if (uploadError) {
-            console.error(
-              `Image upload failed for ${file.name}:`,
-              uploadError.message
-            );
-            toast.error(
-              `Failed to upload image ${file.name}: ${uploadError.message}`
-            );
-            continue;
-          }
-
-          const { data: publicData } = supabase.storage
-            .from("products")
-            .getPublicUrl(filePath);
-
-          imageInserts.push({
-            product_id: productId,
-            image_url: publicData.publicUrl,
-            is_primary: i === 0, // First image is primary
-            sort_order: i,
-          });
-        }
-
-        if (imageInserts.length > 0) {
-          const { error: imagesInsertError } = await supabase
-            .from("product_images")
-            .insert(imageInserts);
-
-          if (imagesInsertError) {
-            console.error(
-              "Product images insert failed:",
-              imagesInsertError.message
-            );
-            toast.error(
-              "Failed to link product images: " + imagesInsertError.message
-            );
-          }
-        }
-      }
-
-      if (isDraft) {
-        toast.success("Product saved as draft successfully!");
-      } else {
-        toast.success("Product added successfully!");
-      }
+      toast.success(
+        isDraft ? "Product saved as draft!" : "Product added successfully!"
+      );
       router.push("/staff/products");
     } catch (error) {
       console.error("Unexpected error during product creation:", error);
