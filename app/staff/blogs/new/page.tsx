@@ -738,8 +738,8 @@ export default function Page() {
                         <MDEditor
                           value={field.value}
                           onChange={field.onChange}
-                          height={300}
-                          preview="edit"
+                          height={isMobile ? 400 : 500}
+                          preview={isMobile ? "edit" : "live"}
                           previewOptions={{
                             rehypePlugins: isMobile
                               ? [rehypeSanitize]
