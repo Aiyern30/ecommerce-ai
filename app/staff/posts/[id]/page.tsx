@@ -245,7 +245,7 @@ export default function PostDetailPage() {
 
     setIsDeleting(true);
     try {
-      const response = await fetch("/api/posts/delete", {
+      const response = await fetch("/api/admin/posts/delete", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
