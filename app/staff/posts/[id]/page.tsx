@@ -245,16 +245,23 @@ export default function PostDetailPage() {
 
     setIsDeleting(true);
     try {
-      const { error } = await supabase.from("posts").delete().eq("id", post.id);
+      const response = await fetch("/api/posts/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ postId: post.id }),
+      });
 
-      if (error) {
-        console.error("Error deleting post:", error.message);
-        toast.error(`Error deleting post: ${error.message}`);
-      } else {
-        toast.success("Post deleted successfully!");
-        // Navigate back to posts list after successful deletion
-        router.push("/staff/posts");
+      const result = await response.json();
+
+      if (!response.ok || result.error) {
+        toast.error("Delete failed: " + (result.error || "Unknown error"));
+        return;
       }
+
+      toast.success("Post deleted successfully!");
+      router.push("/staff/posts");
     } catch (error) {
       console.error("Unexpected error during deletion:", error);
       toast.error("An unexpected error occurred. Please try again.");
