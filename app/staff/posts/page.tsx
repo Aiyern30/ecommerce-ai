@@ -127,7 +127,7 @@ function PostTableSkeletonEnhanced() {
               <TableHead className="min-w-[120px]">Mobile Desc</TableHead>
               <TableHead className="min-w-[100px]">Status</TableHead>
               <TableHead className="min-w-[100px]">Link</TableHead>
-              <TableHead className="min-w-[100px]">Created</TableHead>
+              <TableHead className="min-w-[150px]">Created</TableHead>
               <TableHead className="text-right min-w-[80px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -714,15 +714,18 @@ export default function PostsPage() {
                   />
                 </TableHead>
                 <TableHead className="w-[80px]">Image</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Mobile Desc</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Link</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="min-w-[150px]">Title</TableHead>
+                <TableHead className="min-w-[120px]">Description</TableHead>
+                <TableHead className="min-w-[120px]">Mobile Desc</TableHead>
+                <TableHead className="min-w-[100px]">Status</TableHead>
+                <TableHead className="min-w-[100px]">Link</TableHead>
+                <TableHead className="min-w-[150px]">Created</TableHead>
+                <TableHead className="text-right min-w-[80px]">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
+
             <TableBody>
               {currentPageData.length === 0 ? (
                 <TableRow>
