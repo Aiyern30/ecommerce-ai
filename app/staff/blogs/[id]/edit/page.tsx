@@ -47,6 +47,8 @@ import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import TagMultiSelect from "@/components/TagMultiSelect";
 import { ExternalLink, Link as LinkIcon } from "lucide-react";
 import dynamic from "next/dynamic";
+import { useDeviceType } from "@/utils/useDeviceTypes";
+import rehypeSanitize from "rehype-sanitize";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
@@ -71,206 +73,10 @@ const blogSchema = z.object({
 
 type BlogFormData = z.infer<typeof blogSchema>;
 
-// Blog Edit Skeleton Component
-function BlogEditSkeleton() {
-  return (
-    <div className="flex flex-col gap-6 w-full max-w-full">
-      {/* Header Skeleton */}
-      <div className="flex flex-col gap-2">
-        {/* Breadcrumb Skeleton */}
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-4 w-20" />
-          <span className="text-gray-400">/</span>
-          <Skeleton className="h-4 w-16" />
-          <span className="text-gray-400">/</span>
-          <Skeleton className="h-4 w-32" />
-          <span className="text-gray-400">/</span>
-          <Skeleton className="h-4 w-12" />
-        </div>
-
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-32" />
-          <Skeleton className="h-9 w-36" />
-        </div>
-      </div>
-
-      {/* Main Blog Information - Two Column Layout Skeleton */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Side - Blog Information Skeleton */}
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-36" /> {/* Blog Information */}
-            <Skeleton className="h-4 w-56" />
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Title Field */}
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-3 w-64" />
-              <Skeleton className="h-3 w-10" /> {/* min-h container */}
-            </div>
-
-            {/* Description Field */}
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-20 w-full" />
-              <Skeleton className="h-3 w-56" />
-              <Skeleton className="h-3 w-10" />
-            </div>
-
-            {/* External Link Field */}
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-28" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-3 w-52" />
-              <Skeleton className="h-3 w-10" />
-            </div>
-
-            {/* Tags Section */}
-            <div className="space-y-4 pt-6 border-t">
-              <div className="space-y-2">
-                <Skeleton className="h-6 w-16" /> {/* Tags */}
-                <Skeleton className="h-4 w-44" />
-              </div>
-
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                <Skeleton className="h-6 w-16 rounded-full" />
-                <Skeleton className="h-6 w-20 rounded-full" />
-                <Skeleton className="h-6 w-18 rounded-full" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Right Side - Blog Image Skeleton */}
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-24" /> {/* Blog Image */}
-            <Skeleton className="h-4 w-52" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2 mb-4">
-              <Skeleton className="h-4 w-24" /> {/* Image File label */}
-              <Skeleton className="h-3 w-76" /> {/* Description */}
-              <Skeleton className="h-3 w-10" /> {/* Error container */}
-            </div>
-
-            <div className="space-y-4">
-              {/* Main Image Skeleton */}
-              <div className="mb-4">
-                <Skeleton className="w-full aspect-[4/3] rounded-lg" />
-              </div>
-              <Skeleton className="h-3 w-72" /> {/* Bottom description */}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Submit Buttons Skeleton */}
-      <div className="flex justify-end gap-4">
-        <Skeleton className="h-10 w-20" />
-        <Skeleton className="h-10 w-28" />
-      </div>
-    </div>
-  );
-}
-
-// Blog Not Found Component
-function BlogNotFound() {
-  const router = useRouter();
-
-  return (
-    <div className="flex flex-col gap-6 w-full max-w-full">
-      {/* Header with Breadcrumb */}
-      <div className="flex flex-col gap-2">
-        <BreadcrumbNav
-          customItems={[
-            { label: "Dashboard", href: "/staff/dashboard" },
-            { label: "Blogs", href: "/staff/blogs" },
-            { label: "Not Found" },
-            { label: "Edit" },
-          ]}
-        />
-
-        <div className="flex items-center justify-between">
-          <TypographyH2 className="border-none pb-0">
-            Blog Not Found
-          </TypographyH2>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push("/staff/blogs")}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Blogs
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Not Found Content */}
-      <div className="flex flex-col items-center justify-center py-16 px-4 min-h-[500px]">
-        <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
-          <BookOpen className="w-12 h-12 text-gray-400" />
-        </div>
-
-        <TypographyH3 className="mb-2">Blog Not Found</TypographyH3>
-
-        <TypographyP className="text-muted-foreground text-center mb-2 max-w-md">
-          The blog you&apos;re trying to edit doesn&apos;t exist or may have
-          been removed.
-        </TypographyP>
-
-        <TypographyP className="text-sm text-muted-foreground text-center mb-8 max-w-md">
-          Please check the URL or try searching for the blog again.
-        </TypographyP>
-
-        <div className="flex flex-col sm:flex-row items-center gap-3">
-          <Button
-            variant="outline"
-            onClick={() => router.back()}
-            className="flex items-center gap-2 w-full sm:w-auto"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Go Back
-          </Button>
-
-          <Button
-            onClick={() => router.push("/staff/blogs")}
-            className="flex items-center gap-2 w-full sm:w-auto"
-          >
-            <Search className="w-4 h-4" />
-            Browse Blogs
-          </Button>
-        </div>
-
-        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 w-full max-w-md">
-          <TypographyP className="text-center text-sm text-muted-foreground mb-4">
-            Need to create a new blog?
-          </TypographyP>
-          <Button
-            variant="default"
-            onClick={() => router.push("/staff/blogs/new")}
-            className="w-full flex items-center gap-2"
-          >
-            <BookOpen className="w-4 h-4" />
-            Create New Blog
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function EditBlogPage() {
   const router = useRouter();
+  const { isMobile } = useDeviceType();
+
   const pathname = usePathname();
   const blogId = useMemo(() => {
     const parts = pathname.split("/");
@@ -511,6 +317,201 @@ export default function EditBlogPage() {
     const data = form.getValues();
     handleSubmit(data, true);
   };
+  // Blog Edit Skeleton Component
+  function BlogEditSkeleton() {
+    return (
+      <div className="flex flex-col gap-6 w-full max-w-full">
+        {/* Header Skeleton */}
+        <div className="flex flex-col gap-2">
+          {/* Breadcrumb Skeleton */}
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-4 w-20" />
+            <span className="text-gray-400">/</span>
+            <Skeleton className="h-4 w-16" />
+            <span className="text-gray-400">/</span>
+            <Skeleton className="h-4 w-32" />
+            <span className="text-gray-400">/</span>
+            <Skeleton className="h-4 w-12" />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-9 w-36" />
+          </div>
+        </div>
+
+        {/* Main Blog Information - Two Column Layout Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left Side - Blog Information Skeleton */}
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-36" /> {/* Blog Information */}
+              <Skeleton className="h-4 w-56" />
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Title Field */}
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-3 w-64" />
+                <Skeleton className="h-3 w-10" /> {/* min-h container */}
+              </div>
+
+              {/* Description Field */}
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-3 w-56" />
+                <Skeleton className="h-3 w-10" />
+              </div>
+
+              {/* External Link Field */}
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-3 w-52" />
+                <Skeleton className="h-3 w-10" />
+              </div>
+
+              {/* Tags Section */}
+              <div className="space-y-4 pt-6 border-t">
+                <div className="space-y-2">
+                  <Skeleton className="h-6 w-16" /> {/* Tags */}
+                  <Skeleton className="h-4 w-44" />
+                </div>
+
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                  <Skeleton className="h-6 w-18 rounded-full" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Right Side - Blog Image Skeleton */}
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-24" /> {/* Blog Image */}
+              <Skeleton className="h-4 w-52" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2 mb-4">
+                <Skeleton className="h-4 w-24" /> {/* Image File label */}
+                <Skeleton className="h-3 w-76" /> {/* Description */}
+                <Skeleton className="h-3 w-10" /> {/* Error container */}
+              </div>
+
+              <div className="space-y-4">
+                {/* Main Image Skeleton */}
+                <div className="mb-4">
+                  <Skeleton className="w-full aspect-[4/3] rounded-lg" />
+                </div>
+                <Skeleton className="h-3 w-72" /> {/* Bottom description */}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Submit Buttons Skeleton */}
+        <div className="flex justify-end gap-4">
+          <Skeleton className="h-10 w-20" />
+          <Skeleton className="h-10 w-28" />
+        </div>
+      </div>
+    );
+  }
+
+  // Blog Not Found Component
+  function BlogNotFound() {
+    return (
+      <div className="flex flex-col gap-6 w-full max-w-full">
+        {/* Header with Breadcrumb */}
+        <div className="flex flex-col gap-2">
+          <BreadcrumbNav
+            customItems={[
+              { label: "Dashboard", href: "/staff/dashboard" },
+              { label: "Blogs", href: "/staff/blogs" },
+              { label: "Not Found" },
+              { label: "Edit" },
+            ]}
+          />
+
+          <div className="flex items-center justify-between">
+            <TypographyH2 className="border-none pb-0">
+              Blog Not Found
+            </TypographyH2>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push("/staff/blogs")}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Blogs
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Not Found Content */}
+        <div className="flex flex-col items-center justify-center py-16 px-4 min-h-[500px]">
+          <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
+            <BookOpen className="w-12 h-12 text-gray-400" />
+          </div>
+
+          <TypographyH3 className="mb-2">Blog Not Found</TypographyH3>
+
+          <TypographyP className="text-muted-foreground text-center mb-2 max-w-md">
+            The blog you&apos;re trying to edit doesn&apos;t exist or may have
+            been removed.
+          </TypographyP>
+
+          <TypographyP className="text-sm text-muted-foreground text-center mb-8 max-w-md">
+            Please check the URL or try searching for the blog again.
+          </TypographyP>
+
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <Button
+              variant="outline"
+              onClick={() => router.back()}
+              className="flex items-center gap-2 w-full sm:w-auto"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Go Back
+            </Button>
+
+            <Button
+              onClick={() => router.push("/staff/blogs")}
+              className="flex items-center gap-2 w-full sm:w-auto"
+            >
+              <Search className="w-4 h-4" />
+              Browse Blogs
+            </Button>
+          </div>
+
+          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 w-full max-w-md">
+            <TypographyP className="text-center text-sm text-muted-foreground mb-4">
+              Need to create a new blog?
+            </TypographyP>
+            <Button
+              variant="default"
+              onClick={() => router.push("/staff/blogs/new")}
+              className="w-full flex items-center gap-2"
+            >
+              <BookOpen className="w-4 h-4" />
+              Create New Blog
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) return <BlogEditSkeleton />;
   if (!blog) return <BlogNotFound />;
@@ -972,7 +973,13 @@ export default function EditBlogPage() {
                         <MDEditor
                           value={field.value}
                           onChange={field.onChange}
-                          height={300}
+                          height={isMobile ? 400 : 500}
+                          preview={isMobile ? "edit" : "live"}
+                          previewOptions={{
+                            rehypePlugins: isMobile
+                              ? [rehypeSanitize]
+                              : undefined,
+                          }}
                         />
                       </div>
                     </FormControl>
