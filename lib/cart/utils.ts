@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from "../supabase/browserClient";
 import { toast } from "sonner";
 import type { CartItem } from "@/type/cart";
@@ -9,6 +10,25 @@ import type { CartItem } from "@/type/cart";
  * 3. Order page only fetches selected: true items
  * 4. Users must select at least one item to proceed to order
  */
+
+// Helper function to get the appropriate price based on variant type
+export function getProductPrice(product: any, variantType?: string): number {
+  if (!product) return 0;
+
+  switch (variantType) {
+    case "pump":
+      return product.pump_price || product.normal_price || 0;
+    case "tremie_1":
+      return product.tremie_1_price || product.normal_price || 0;
+    case "tremie_2":
+      return product.tremie_2_price || product.normal_price || 0;
+    case "tremie_3":
+      return product.tremie_3_price || product.normal_price || 0;
+    case "normal":
+    default:
+      return product.normal_price || 0;
+  }
+}
 
 export async function getOrCreateCart(userId: string): Promise<string | null> {
   try {
@@ -48,7 +68,8 @@ export async function getOrCreateCart(userId: string): Promise<string | null> {
 export async function addToCart(
   userId: string,
   productId: string,
-  quantity: number = 1
+  quantity: number = 1,
+  variantType?: string
 ): Promise<{ success: boolean; isUpdate: boolean; newQuantity?: number }> {
   try {
     const cartId = await getOrCreateCart(userId);
@@ -57,11 +78,13 @@ export async function addToCart(
       return { success: false, isUpdate: false };
     }
 
+    // Check for existing item with same product and variant
     const { data: existingItem } = await supabase
       .from("cart_items")
       .select("id, quantity")
       .eq("cart_id", cartId)
       .eq("product_id", productId)
+      .eq("variant_type", variantType || null)
       .single();
 
     if (existingItem) {
@@ -86,6 +109,7 @@ export async function addToCart(
         cart_id: cartId,
         product_id: productId,
         quantity: quantity,
+        variant_type: variantType || null,
         // selected will be false by default from database schema
       });
 
@@ -116,21 +140,52 @@ export async function getCartItems(userId: string): Promise<CartItem[]> {
         `
         *,
         product:products (
+          id,
           name,
-          price,
-          image_url,
-          unit
+          grade,
+          product_type,
+          normal_price,
+          pump_price,
+          tremie_1_price,
+          tremie_2_price,
+          tremie_3_price,
+          unit,
+          product_images (
+            id,
+            image_url,
+            alt_text,
+            is_primary,
+            sort_order
+          )
         )
       `
       )
-      .eq("cart_id", cartId);
+      .eq("cart_id", cartId)
+      .order("created_at", { ascending: false });
 
     if (error) {
       console.error("Error fetching cart items:", error);
       return [];
     }
 
-    return data || [];
+    // Process the data to handle image_url properly
+    const processedData =
+      data?.map((item) => ({
+        ...item,
+        product: item.product
+          ? {
+              ...item.product,
+              // Get the primary image or first image
+              image_url:
+                item.product.product_images?.find((img: any) => img.is_primary)
+                  ?.image_url ||
+                item.product.product_images?.[0]?.image_url ||
+                "/placeholder.svg",
+            }
+          : null,
+      })) || [];
+
+    return processedData;
   } catch (error) {
     console.error("Error in getCartItems:", error);
     return [];
@@ -151,22 +206,53 @@ export async function getSelectedCartItems(
         `
         *,
         product:products (
+          id,
           name,
-          price,
-          image_url,
-          unit
+          grade,
+          product_type,
+          normal_price,
+          pump_price,
+          tremie_1_price,
+          tremie_2_price,
+          tremie_3_price,
+          unit,
+          product_images (
+            id,
+            image_url,
+            alt_text,
+            is_primary,
+            sort_order
+          )
         )
       `
       )
       .eq("cart_id", cartId)
-      .eq("selected", true);
+      .eq("selected", true)
+      .order("created_at", { ascending: false });
 
     if (error) {
       console.error("Error fetching selected cart items:", error);
       return [];
     }
 
-    return data || [];
+    // Process the data to handle image_url properly
+    const processedData =
+      data?.map((item) => ({
+        ...item,
+        product: item.product
+          ? {
+              ...item.product,
+              // Get the primary image or first image
+              image_url:
+                item.product.product_images?.find((img: any) => img.is_primary)
+                  ?.image_url ||
+                item.product.product_images?.[0]?.image_url ||
+                "/placeholder.svg",
+            }
+          : null,
+      })) || [];
+
+    return processedData;
   } catch (error) {
     console.error("Error in getSelectedCartItems:", error);
     return [];

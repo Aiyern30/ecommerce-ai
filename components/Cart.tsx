@@ -62,7 +62,7 @@ export default function Cart() {
   };
 
   const subtotal = cartItems.reduce((sum, item) => {
-    const price = item.product?.price || 0;
+    const price = item.product?.normal_price || 0;
     return sum + price * item.quantity;
   }, 0);
 
@@ -162,7 +162,7 @@ export default function Cart() {
                           Unit: {item.product?.unit || "per bag"}
                         </TypographyP>
                         <TypographyP className="text-xs text-gray-500 mb-3 !mt-0">
-                          Price: RM{item.product?.price?.toFixed(2)}
+                          Price: RM{item.product?.normal_price?.toFixed(2)}
                         </TypographyP>
                         <div className="flex items-center gap-3">
                           <div className="flex items-center border rounded-lg">
@@ -203,9 +203,9 @@ export default function Cart() {
                       <div className="text-right">
                         <TypographyP className="font-semibold text-sm !mt-0">
                           RM
-                          {((item.product?.price || 0) * item.quantity).toFixed(
-                            2
-                          )}
+                          {(
+                            (item.product?.normal_price || 0) * item.quantity
+                          ).toFixed(2)}
                         </TypographyP>
                       </div>
                     </div>
@@ -273,7 +273,8 @@ export default function Cart() {
                 <TypographyP className="text-sm font-semibold !mt-0">
                   RM
                   {(
-                    (itemToDelete.product?.price || 0) * itemToDelete.quantity
+                    (itemToDelete.product?.normal_price || 0) *
+                    itemToDelete.quantity
                   ).toFixed(2)}
                 </TypographyP>
               </div>
