@@ -518,9 +518,13 @@ export default function EditPostPage() {
       }
 
       // Update post data
-      const { error: postUpdateError } = await supabase
-        .from("posts")
-        .update({
+      const response = await fetch("/api/admin/posts/update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          postId: post.id,
           title: data.title,
           description: data.description,
           mobile_description: data.mobile_description || null,
@@ -528,12 +532,13 @@ export default function EditPostPage() {
           link: data.link || null,
           image_url: imageUrl,
           status: statusToSave,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", post.id);
+        }),
+      });
 
-      if (postUpdateError) {
-        toast.error("Post update failed: " + postUpdateError.message);
+      const result = await response.json();
+
+      if (!response.ok || result.error) {
+        toast.error("Post update failed: " + (result.error || "Unknown error"));
         setIsSubmitting(false);
         return;
       }
