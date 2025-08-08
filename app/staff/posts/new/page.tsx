@@ -53,7 +53,7 @@ const postSchema = z.object({
     .max(500, "Description must be less than 500 characters"),
   mobile_description: z
     .string()
-    .max(250, "Mobile description must be less than 120 characters")
+    .max(250, "Mobile description must be less than 250 characters")
     .nullish(),
   link_name: z
     .string()
@@ -320,16 +320,16 @@ export default function NewPostPage() {
                       <FormLabel>Mobile Description</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Short summary for mobile (max 120 characters)..."
+                          placeholder="Short summary for mobile (max 250 characters)..."
                           className="resize-none"
                           rows={2}
-                          maxLength={120}
+                          maxLength={250}
                           {...field}
                           value={field.value || ""}
                         />
                       </FormControl>
                       <FormDescription>
-                        A concise description for mobile display (max 120
+                        A concise description for mobile display (max 250
                         characters).
                       </FormDescription>
                       <div className="min-h-[10px]">

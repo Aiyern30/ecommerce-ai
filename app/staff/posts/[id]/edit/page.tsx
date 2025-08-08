@@ -59,10 +59,13 @@ const postSchema = z.object({
     .string()
     .min(1, "Post title is required")
     .max(200, "Title must be less than 200 characters"),
-  body: z.string().min(1, "Post body is required"),
   description: z
     .string()
     .max(500, "Description must be less than 500 characters")
+    .nullish(),
+  mobile_description: z
+    .string()
+    .max(250, "Mobile description must be less than 250 characters")
     .nullish(),
   link_name: z
     .string()
@@ -321,8 +324,8 @@ export default function EditPostPage() {
     resolver: zodResolver(postSchema),
     defaultValues: {
       title: "",
-      body: "",
       description: "",
+      mobile_description: "",
       link_name: "",
       link: "",
       linkType: "internal",
@@ -371,8 +374,8 @@ export default function EditPostPage() {
       // Set form values
       form.reset({
         title: data.title,
-        body: data.body,
-        description: data.description || "",
+        description: data.description,
+        mobile_description: data.mobile_description || "",
         link_name: data.link_name || "",
         link: data.link || "",
         linkType: isExternal ? "external" : "internal",
@@ -519,8 +522,8 @@ export default function EditPostPage() {
         .from("posts")
         .update({
           title: data.title,
-          body: data.body,
-          description: data.description || null,
+          description: data.description,
+          mobile_description: data.mobile_description || null,
           link_name: data.link_name || null,
           link: data.link || null,
           image_url: imageUrl,
@@ -669,19 +672,23 @@ export default function EditPostPage() {
 
                 <FormField
                   control={form.control}
-                  name="body"
+                  name="mobile_description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Post Content *</FormLabel>
+                      <FormLabel>Mobile Description</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Write your post content here..."
-                          className="resize-none min-h-[200px]"
+                          placeholder="Short summary for mobile (max 250 characters)..."
+                          className="resize-none"
+                          rows={2}
+                          maxLength={250}
                           {...field}
+                          value={field.value || ""}
                         />
                       </FormControl>
                       <FormDescription>
-                        The main content of your post.
+                        A concise description for mobile display (max 250
+                        characters).
                       </FormDescription>
                       <div className="min-h-[10px]">
                         <FormMessage />
