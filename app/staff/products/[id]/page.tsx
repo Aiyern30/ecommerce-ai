@@ -127,26 +127,6 @@ function ProductDetailSkeleton({ isStaffView }: { isStaffView: boolean }) {
               </div>
             </div>
 
-            {/* Certifications Skeleton */}
-            <div>
-              <Skeleton className="h-4 w-28 mb-3" />
-              <div className="flex flex-wrap gap-2">
-                {Array.from({ length: 3 }).map((_, index) => (
-                  <Skeleton key={index} className="h-6 w-20" />
-                ))}
-              </div>
-            </div>
-
-            {/* Tags Skeleton */}
-            <div>
-              <Skeleton className="h-4 w-16 mb-3" />
-              <div className="flex flex-wrap gap-2">
-                {Array.from({ length: 4 }).map((_, index) => (
-                  <Skeleton key={index} className="h-5 w-16" />
-                ))}
-              </div>
-            </div>
-
             {/* Meta Information Skeleton */}
             {!isStaffView && (
               <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
@@ -322,31 +302,23 @@ export default function ProductDetailClient() {
     if (!product) return;
 
     setIsDeleting(true);
+
     try {
-      // Delete related data first
-      await Promise.all([
-        supabase.from("product_tags").delete().eq("product_id", product.id),
-        supabase
-          .from("product_certificates")
-          .delete()
-          .eq("product_id", product.id),
-        supabase.from("product_variants").delete().eq("product_id", product.id),
-        supabase.from("product_images").delete().eq("product_id", product.id),
-      ]);
+      const res = await fetch("/api/admin/products/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: product.id }),
+      });
 
-      // Delete the product
-      const { error } = await supabase
-        .from("products")
-        .delete()
-        .eq("id", product.id);
+      const result = await res.json();
 
-      if (error) {
-        console.error("Error deleting product:", error.message);
-        toast.error(`Error deleting product: ${error.message}`);
-      } else {
-        toast.success("Product deleted successfully!");
-        router.push("/staff/products");
+      if (!res.ok) {
+        toast.error("Failed to delete product: " + result.error);
+        return;
       }
+
+      toast.success("Product deleted successfully!");
+      router.push("/staff/products");
     } catch (error) {
       console.error("Unexpected error during deletion:", error);
       toast.error("An unexpected error occurred. Please try again.");
