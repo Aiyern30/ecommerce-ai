@@ -9,7 +9,6 @@ import {
   Search,
   Trash2,
   Package,
-  Calendar,
   DollarSign,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
@@ -961,12 +960,7 @@ export default function OrdersPage() {
                           : "N/A"}
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4 text-gray-400" />
-                        {formatDate(order.created_at)}
-                      </div>
-                    </TableCell>
+                    <TableCell>{formatDate(order.created_at)}</TableCell>
                     <TableCell
                       className="text-right"
                       onClick={(e) => e.stopPropagation()}
