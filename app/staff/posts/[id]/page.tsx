@@ -414,25 +414,13 @@ export default function PostDetailPage() {
               )}
 
               {post.mobile_description && (
-                <p className="text-sm text-blue-700 dark:text-blue-300 leading-relaxed mt-2">
+                <p className="text-sm text-blue-700 dark:text-blue-300 leading-relaxed mt-2 flex flex-col">
                   <span className="font-semibold">Mobile Description: </span>
                   {post.mobile_description}
                 </p>
               )}
             </CardHeader>
             <CardContent className="pt-0 space-y-6">
-              {/* Post Content */}
-              <div>
-                <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">
-                  Content
-                </h3>
-                <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
-                    {post.body}
-                  </div>
-                </div>
-              </div>
-
               {/* Post Link (if exists) */}
               {post.link && (
                 <div>
