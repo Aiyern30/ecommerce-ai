@@ -54,44 +54,7 @@ import {
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import { formatDate } from "@/lib/utils/format";
 import { useDeviceType } from "@/utils/useDeviceTypes";
-
-// Define types
-interface Product {
-  name: string;
-  grade: string;
-  product_type: string;
-}
-
-interface OrderItem {
-  id: string;
-  quantity: number;
-  price: number;
-  product: Product;
-}
-
-interface Address {
-  full_name: string;
-  phone: string;
-  address_line1: string;
-  address_line2?: string;
-  city: string;
-  state: string;
-  postal_code: string;
-  country: string;
-}
-
-interface Order {
-  id: string;
-  order_number: string;
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
-  total_amount: number;
-  payment_status: "pending" | "paid" | "failed" | "refunded";
-  shipping_method: string;
-  created_at: string;
-  updated_at: string;
-  order_items: OrderItem[];
-  address: Address;
-}
+import { Order } from "@/type/order";
 
 interface OrderFilters {
   search: string;
@@ -250,24 +213,8 @@ export default function OrdersPage() {
       .select(
         `
         *,
-        order_items (
-          *,
-          product:products (
-            name,
-            grade,
-            product_type
-          )
-        ),
-        address:addresses (
-          full_name,
-          phone,
-          address_line1,
-          address_line2,
-          city,
-          state,
-          postal_code,
-          country
-        )
+        order_items (*),
+        addresses (*)
       `
       )
       .order("created_at", { ascending: false });
@@ -386,18 +333,16 @@ export default function OrdersPage() {
   };
 
   const filteredOrders = orders.filter((order) => {
-    // Filter by search term (order number, customer name, or address)
+    // Filter by search term (order ID, customer name, or phone)
     if (filters.search) {
       const searchTerm = filters.search.toLowerCase();
-      const matchesOrderNumber = order.order_number
+      const matchesOrderId = order.id.toLowerCase().includes(searchTerm);
+      const matchesCustomer = order.addresses?.full_name
         ?.toLowerCase()
         .includes(searchTerm);
-      const matchesCustomer = order.address?.full_name
-        ?.toLowerCase()
-        .includes(searchTerm);
-      const matchesPhone = order.address?.phone?.includes(searchTerm);
+      const matchesPhone = order.addresses?.phone?.includes(searchTerm);
 
-      if (!matchesOrderNumber && !matchesCustomer && !matchesPhone) {
+      if (!matchesOrderId && !matchesCustomer && !matchesPhone) {
         return false;
       }
     }
@@ -430,11 +375,11 @@ export default function OrdersPage() {
   const sortedOrders = [...filteredOrders].sort((a, b) => {
     switch (filters.sortBy) {
       case "order-number":
-        return a.order_number.localeCompare(b.order_number);
+        return a.id.localeCompare(b.id);
       case "amount-high":
-        return b.total_amount - a.total_amount;
+        return b.total - a.total;
       case "amount-low":
-        return a.total_amount - b.total_amount;
+        return a.total - b.total;
       case "date-new":
         return (
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -559,7 +504,7 @@ export default function OrdersPage() {
               <div className="flex flex-col gap-3 p-4">
                 <Input
                   type="search"
-                  placeholder="Search by order #, customer name, or phone..."
+                  placeholder="Search by order ID, customer name, or phone..."
                   value={filters.search}
                   onChange={(e) => updateFilter("search", e.target.value)}
                 />
@@ -666,7 +611,7 @@ export default function OrdersPage() {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
             <Input
               type="search"
-              placeholder="Search by order #, customer name, or phone..."
+              placeholder="Search by order ID, customer name, or phone..."
               className="pl-8"
               value={filters.search}
               onChange={(e) => updateFilter("search", e.target.value)}
@@ -818,11 +763,11 @@ export default function OrdersPage() {
                         <Package className="w-8 h-8 text-gray-400" />
                         <div>
                           <span className="font-medium">
-                            {order.order_number}
+                            #{order.id.slice(-8)}
                           </span>
                           <div className="text-sm text-gray-500">
-                            {order.address?.full_name} -{" "}
-                            {formatCurrency(order.total_amount)}
+                            {order.addresses?.full_name} -{" "}
+                            {formatCurrency(order.total)}
                           </div>
                         </div>
                       </div>
@@ -873,7 +818,7 @@ export default function OrdersPage() {
                     aria-label="Select all"
                   />
                 </TableHead>
-                <TableHead className="min-w-[120px]">Order #</TableHead>
+                <TableHead className="min-w-[120px]">Order ID</TableHead>
                 <TableHead className="min-w-[150px]">Customer</TableHead>
                 <TableHead className="min-w-[100px]">Items</TableHead>
                 <TableHead className="min-w-[120px]">Total Amount</TableHead>
@@ -905,27 +850,27 @@ export default function OrdersPage() {
                       <Checkbox
                         checked={selectedOrders.includes(order.id)}
                         onCheckedChange={() => toggleOrderSelection(order.id)}
-                        aria-label={`Select order ${order.order_number}`}
+                        aria-label={`Select order ${order.id}`}
                       />
                     </TableCell>
                     <TableCell className="font-medium">
-                      <div className="truncate" title={order.order_number}>
-                        {order.order_number}
+                      <div className="truncate max-w-[120px]" title={order.id}>
+                        #{order.id.slice(-8)}
                       </div>
                     </TableCell>
                     <TableCell className="max-w-xs">
                       <div className="space-y-1">
                         <div
                           className="font-medium truncate"
-                          title={order.address?.full_name}
+                          title={order.addresses?.full_name}
                         >
-                          {order.address?.full_name || "N/A"}
+                          {order.addresses?.full_name || "N/A"}
                         </div>
                         <div
                           className="text-sm text-gray-500 truncate"
-                          title={order.address?.phone}
+                          title={order.addresses?.phone || ""}
                         >
-                          {order.address?.phone || "No phone"}
+                          {order.addresses?.phone || "No phone"}
                         </div>
                       </div>
                     </TableCell>
@@ -940,7 +885,7 @@ export default function OrdersPage() {
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-1">
                         <DollarSign className="h-4 w-4 text-green-600" />
-                        {formatCurrency(order.total_amount)}
+                        {formatCurrency(order.total)}
                       </div>
                     </TableCell>
                     <TableCell>{getStatusBadge(order.status)}</TableCell>
@@ -948,9 +893,7 @@ export default function OrdersPage() {
                       {getPaymentStatusBadge(order.payment_status)}
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm">
-                        {order.shipping_method || "Standard"}
-                      </div>
+                      <div className="text-sm">Standard Shipping</div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
