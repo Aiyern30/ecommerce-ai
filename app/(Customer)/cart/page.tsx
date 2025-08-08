@@ -384,7 +384,9 @@ export default function CartPage() {
                                   isMobile ? "text-lg" : "text-2xl"
                                 } font-bold text-gray-900 dark:text-gray-100`}
                               >
-                                RM{item.product?.price}
+                                RM
+                                {item.product?.normal_price?.toFixed(2) ||
+                                  "0.00"}
                               </div>
                               {/* Quantity Controls */}
                               <div
@@ -531,7 +533,8 @@ export default function CartPage() {
                 >
                   RM
                   {(
-                    (itemToDelete.product?.price || 0) * itemToDelete.quantity
+                    (itemToDelete.product?.normal_price || 0) *
+                    itemToDelete.quantity
                   ).toFixed(2)}
                 </p>
               </div>
