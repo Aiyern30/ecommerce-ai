@@ -1,24 +1,29 @@
 export interface OrderItem {
   id: string;
+  order_id: string;
   product_id: string;
   name: string;
+  grade: string;
   price: number;
   quantity: number;
-  variant_type?: string;
-  image_url?: string;
+  variant_type?: string | null;
+  image_url?: string | null;
+  created_at: string;
 }
-
 export interface ShippingAddress {
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  address_line_1: string;
-  address_line_2?: string;
+  id: string; // <-- Add if you plan to ref the address
+  user_id: string;
+  full_name: string;
+  phone?: string | null;
+  address_line1: string;
+  address_line2?: string | null;
   city: string;
   state: string;
   postal_code: string;
   country: string;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Order {
