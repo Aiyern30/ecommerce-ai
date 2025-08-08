@@ -5,7 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSwipeable } from "react-swipeable";
 import { Button } from "@/components/ui/";
-import { TypographyH1, TypographyP } from "@/components/ui/Typography";
+import {
+  TypographyH1,
+  TypographyH3,
+  TypographyP,
+} from "@/components/ui/Typography";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase/client";
 import { Post } from "@/type/posts";
@@ -61,7 +65,6 @@ export default function HeroCarousel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { isMobile } = useDeviceType();
-  console.log("HeroCarousel rendered", carouselItems);
 
   const fetchPosts = useCallback(async () => {
     try {
@@ -84,7 +87,7 @@ export default function HeroCarousel() {
 
       const transformedItems: CarouselItem[] = posts.map((post: Post) => ({
         title: post.title,
-        description: post.description || post.body.substring(0, 150) + "...",
+        description: post.description || post.mobile_description || "",
         buttonText: post.link_name || "Read More",
         buttonLink: post.link || `/staff/posts/${post.id}`,
         imageSrc: post.image_url || "/placeholder.svg",
@@ -165,35 +168,47 @@ export default function HeroCarousel() {
         {carouselItems.map((item, index) => (
           <div key={index} className="w-full flex-shrink-0 h-full">
             <div className="relative flex flex-col md:flex-row items-center h-full">
+              {/* Left side: Text content */}
               <div className="w-full md:w-1/2 h-1/2 md:h-full p-6 md:p-12 lg:p-16 bg-white/90 dark:bg-transparent order-2 md:order-1 flex items-center">
-                <div className="max-w-2xl mx-auto">
-                  <TypographyH1 className="text-gray-800 dark:text-white mb-4 md:mb-6 leading-tight">
-                    {item.title}
-                  </TypographyH1>
+                <div className="max-w-2xl mx-auto w-full">
+                  {isMobile ? (
+                    <TypographyH3 className="text-gray-800 dark:text-white mb-4 md:mb-6 leading-tight">
+                      {item.title}
+                    </TypographyH3>
+                  ) : (
+                    <TypographyH1 className="text-gray-800 dark:text-white mb-4 md:mb-6 leading-tight">
+                      {item.title}
+                    </TypographyH1>
+                  )}
+
                   <TypographyP className="text-gray-600 dark:text-white mb-6 md:mb-8 text-base md:text-lg lg:text-xl leading-relaxed">
                     {isMobile && item.mobile_description
                       ? item.mobile_description
                       : item.description}
                   </TypographyP>
-                  <Button
-                    asChild
-                    className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-8 py-6 text-base md:text-lg rounded-lg transition-all duration-300 hover:scale-105"
-                  >
-                    {item.buttonLink.includes("http") ? (
-                      <a
-                        href={item.buttonLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {item.buttonText}
-                      </a>
-                    ) : (
-                      <Link href={item.buttonLink}>{item.buttonText}</Link>
-                    )}
-                  </Button>
+
+                  <div className={isMobile ? "flex justify-center" : "block"}>
+                    <Button
+                      asChild
+                      className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-4 py-3 sm:px-8 sm:py-6"
+                    >
+                      {item.buttonLink.includes("http") ? (
+                        <a
+                          href={item.buttonLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {item.buttonText}
+                        </a>
+                      ) : (
+                        <Link href={item.buttonLink}>{item.buttonText}</Link>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
 
+              {/* Right side: Image */}
               <div className="w-full md:w-1/2 h-1/2 md:h-full relative order-1 md:order-2">
                 <Image
                   src={item.imageSrc || "/placeholder.svg"}
