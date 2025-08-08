@@ -48,14 +48,12 @@ const postSchema = z.object({
     .string()
     .min(1, "Post title is required")
     .max(200, "Title must be less than 200 characters"),
-  body: z.string().min(1, "Post body is required"),
   description: z
     .string()
-    .max(500, "Description must be less than 500 characters")
-    .nullish(),
+    .max(500, "Description must be less than 500 characters"),
   mobile_description: z
     .string()
-    .max(120, "Mobile description must be less than 120 characters")
+    .max(250, "Mobile description must be less than 120 characters")
     .nullish(),
   link_name: z
     .string()
@@ -78,7 +76,6 @@ export default function NewPostPage() {
     resolver: zodResolver(postSchema),
     defaultValues: {
       title: "",
-      body: "",
       description: "",
       mobile_description: "",
       link_name: "",
@@ -190,8 +187,8 @@ export default function NewPostPage() {
       // Insert post data
       const { error: postInsertError } = await supabase.from("posts").insert({
         title: data.title,
-        body: data.body,
-        description: data.description || null,
+        description: data.description,
+        mobile_description: data.mobile_description || null,
         link_name: data.link_name || null,
         link: data.link || null,
         image_url: imageUrl,
@@ -294,7 +291,7 @@ export default function NewPostPage() {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <FormLabel>Description *</FormLabel>
                       <FormControl>
                         <Textarea
                           placeholder="A brief description of the post content..."
@@ -334,29 +331,6 @@ export default function NewPostPage() {
                       <FormDescription>
                         A concise description for mobile display (max 120
                         characters).
-                      </FormDescription>
-                      <div className="min-h-[10px]">
-                        <FormMessage />
-                      </div>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="body"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Post Content *</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Write your post content here..."
-                          className="resize-none min-h-[200px]"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        The main content of your post.
                       </FormDescription>
                       <div className="min-h-[10px]">
                         <FormMessage />
