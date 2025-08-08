@@ -1,11 +1,9 @@
 // /app/api/admin/posts/create/route.ts
 
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  const supabase = createRouteHandlerClient({ cookies });
   const body = await req.json();
 
   const {
@@ -25,7 +23,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const { error } = await supabase.from("posts").insert({
+  const { error } = await supabaseAdmin.from("posts").insert({
     title,
     description,
     mobile_description: mobile_description || null,
