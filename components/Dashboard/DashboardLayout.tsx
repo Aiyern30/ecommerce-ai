@@ -295,15 +295,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     asChild
                     tooltip="Customer Dashboard"
                     className={`group flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 hover:shadow-lg hover:scale-[1.02] border-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:py-3 ${
-                      pathname === "/dashboard"
+                      pathname === "/"
                         ? "bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white shadow-md"
                         : "text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-900/20 dark:hover:to-blue-800/20 hover:text-blue-700 dark:hover:text-blue-300 hover:shadow-sm hover:scale-[1.01]"
                     }`}
                   >
-                    <Link href="/dashboard">
+                    <Link href="/">
                       <div
                         className={`p-1.5 rounded-lg transition-colors group-data-[collapsible=icon]:p-2 ${
-                          pathname === "/dashboard"
+                          pathname === "/"
                             ? "bg-white/20 group-hover:bg-white/30"
                             : "bg-slate-100 dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
                         }`}
@@ -313,7 +313,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       <span className="font-medium group-data-[collapsible=icon]:hidden">
                         Customer Dashboard
                       </span>
-                      {pathname === "/dashboard" && (
+                      {pathname === "/" && (
                         <div className="ml-auto w-2 h-2 bg-white/40 rounded-full group-data-[collapsible=icon]:hidden" />
                       )}
                     </Link>
