@@ -279,14 +279,17 @@ export default function Page() {
 
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from("blogs")
-        .delete()
-        .in("id", selectedBlogs);
+      const res = await fetch("/api/admin/blogs/delete", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ids: selectedBlogs }),
+      });
 
-      if (error) {
-        console.error("Error deleting blogs:", error.message);
-        toast.error(`Error deleting blogs: ${error.message}`);
+      if (!res.ok) {
+        const { error } = await res.json();
+        toast.error(`Error deleting blogs: ${error}`);
       } else {
         toast.success(`Successfully deleted ${selectedBlogs.length} blog(s)!`);
         clearBlogSelection();
