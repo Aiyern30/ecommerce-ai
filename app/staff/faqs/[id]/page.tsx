@@ -35,6 +35,30 @@ export default function FaqViewPage() {
   const [loading, setLoading] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const handleDeleteFaq = async (id: string) => {
+    setIsDeleting(true);
+    try {
+      const res = await fetch("/api/admin/faqs/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        alert("Failed to delete FAQ: " + result.error);
+      } else {
+        router.push("/staff/faqs");
+      }
+    } catch (error) {
+      console.error("Unexpected delete error:", error);
+      alert("An unexpected error occurred while deleting the FAQ.");
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -105,20 +129,7 @@ export default function FaqViewPage() {
                 </Button>
                 <Button
                   variant="destructive"
-                  onClick={async () => {
-                    setIsDeleting(true);
-                    const { error } = await supabase
-                      .from("faq")
-                      .delete()
-                      .eq("id", id);
-                    setIsDeleting(false);
-                    setIsDeleteDialogOpen(false);
-                    if (!error) {
-                      router.push("/staff/faqs");
-                    } else {
-                      alert("Failed to delete FAQ: " + error.message);
-                    }
-                  }}
+                  onClick={() => handleDeleteFaq(id)}
                   disabled={isDeleting}
                 >
                   {isDeleting ? "Deleting..." : "Delete FAQ"}
