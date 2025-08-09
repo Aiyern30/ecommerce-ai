@@ -510,8 +510,20 @@ export default function NewProductPage() {
                       <FormItem>
                         <FormLabel>Grade</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., 30, 25, 20" {...field} />
+                          <Input
+                            placeholder={
+                              watchProductType === "concrete"
+                                ? "e.g., N10, N15, N20, N25, N30"
+                                : "e.g., M064, M054, M044, M034"
+                            }
+                            {...field}
+                          />
                         </FormControl>
+                        <FormDescription>
+                          {watchProductType === "concrete"
+                            ? "Concrete strength grade (N10, N15, etc.)"
+                            : "Mortar mix designation (M064, M054, etc.)"}
+                        </FormDescription>
                         <div className="min-h-[10px]">
                           <FormMessage />
                         </div>
@@ -596,10 +608,14 @@ export default function NewProductPage() {
                       <FormControl>
                         <Input
                           type="number"
-                          placeholder="e.g., 100"
+                          placeholder="e.g., 150"
                           {...field}
                         />
                       </FormControl>
+                      <FormDescription>
+                        Total cubic meters (m³) of this grade available in
+                        inventory
+                      </FormDescription>
                       <div className="min-h-[10px]">
                         <FormMessage />
                       </div>
@@ -629,12 +645,13 @@ export default function NewProductPage() {
                   )}
                 />
 
-                {/* Pricing Section */}
+                {/* Pricing Section - Replace your existing pricing section with this */}
                 <div className="space-y-4 pt-6 border-t">
                   <div>
-                    <TypographyH3>Pricing Tiers</TypographyH3>
+                    <TypographyH3>Delivery Method Pricing</TypographyH3>
                     <TypographyP className="!mt-0">
-                      Set different prices for various delivery methods.
+                      Set different prices based on concrete delivery and
+                      placement methods. Leave blank for unavailable methods.
                     </TypographyP>
                   </div>
 
@@ -644,15 +661,18 @@ export default function NewProductPage() {
                       name="normal_price"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Normal Price (RM)</FormLabel>
+                          <FormLabel>Normal Delivery (RM)</FormLabel>
                           <FormControl>
                             <Input
                               type="number"
                               step="0.01"
-                              placeholder="e.g., 150.00"
+                              placeholder="e.g., 265.00"
                               {...field}
                             />
                           </FormControl>
+                          <FormDescription>
+                            Standard truck mixer delivery
+                          </FormDescription>
                           <div className="min-h-[10px]">
                             <FormMessage />
                           </div>
@@ -665,15 +685,18 @@ export default function NewProductPage() {
                       name="pump_price"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Pump Price (RM)</FormLabel>
+                          <FormLabel>Pump Delivery (RM)</FormLabel>
                           <FormControl>
                             <Input
                               type="number"
                               step="0.01"
-                              placeholder="e.g., 170.00"
+                              placeholder="e.g., 285.00"
                               {...field}
                             />
                           </FormControl>
+                          <FormDescription>
+                            Concrete pump truck delivery
+                          </FormDescription>
                           <div className="min-h-[10px]">
                             <FormMessage />
                           </div>
@@ -686,15 +709,18 @@ export default function NewProductPage() {
                       name="tremie_1_price"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Tremie 1 Price (RM)</FormLabel>
+                          <FormLabel>Tremie Method 1 (RM)</FormLabel>
                           <FormControl>
                             <Input
                               type="number"
                               step="0.01"
-                              placeholder="e.g., 180.00"
+                              placeholder="e.g., 290.00"
                               {...field}
                             />
                           </FormControl>
+                          <FormDescription>
+                            Underwater placement - shallow depth
+                          </FormDescription>
                           <div className="min-h-[10px]">
                             <FormMessage />
                           </div>
@@ -707,15 +733,18 @@ export default function NewProductPage() {
                       name="tremie_2_price"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Tremie 2 Price (RM)</FormLabel>
+                          <FormLabel>Tremie Method 2 (RM)</FormLabel>
                           <FormControl>
                             <Input
                               type="number"
                               step="0.01"
-                              placeholder="e.g., 190.00"
+                              placeholder="e.g., 310.00"
                               {...field}
                             />
                           </FormControl>
+                          <FormDescription>
+                            Underwater placement - medium depth
+                          </FormDescription>
                           <div className="min-h-[10px]">
                             <FormMessage />
                           </div>
@@ -728,21 +757,54 @@ export default function NewProductPage() {
                       name="tremie_3_price"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Tremie 3 Price (RM)</FormLabel>
+                          <FormLabel>Tremie Method 3 (RM)</FormLabel>
                           <FormControl>
                             <Input
                               type="number"
                               step="0.01"
-                              placeholder="e.g., 200.00"
+                              placeholder="e.g., 330.00"
                               {...field}
                             />
                           </FormControl>
+                          <FormDescription>
+                            Underwater placement - deep/complex
+                          </FormDescription>
                           <div className="min-h-[10px]">
                             <FormMessage />
                           </div>
                         </FormItem>
                       )}
                     />
+                  </div>
+
+                  {/* Add a helpful note */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-5 h-5 rounded-full bg-blue-100 flex-shrink-0 flex items-center justify-center mt-0.5">
+                        <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                      </div>
+                      <div className="text-sm text-blue-800">
+                        <p className="font-medium mb-1">Pricing Guidelines:</p>
+                        <ul className="space-y-1 text-xs">
+                          <li>
+                            • Normal delivery: Base price for standard truck
+                            delivery
+                          </li>
+                          <li>
+                            • Pump delivery: Higher cost due to pump equipment
+                            required
+                          </li>
+                          <li>
+                            • Tremie methods: Specialized underwater placement,
+                            increasing cost with complexity
+                          </li>
+                          <li>
+                            • Leave fields blank if delivery method is not
+                            available for this grade
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
