@@ -100,7 +100,12 @@ export default function ProductCarousel() {
                         stock={product.stock_quantity}
                         image={mainImage?.image_url || "/placeholder.svg"}
                         href={`/products/${product.id}`}
-                        // Optionally, you can add more details here
+                        // Add all price fields below
+                        normal_price={product.normal_price}
+                        pump_price={product.pump_price}
+                        tremie_1_price={product.tremie_1_price}
+                        tremie_2_price={product.tremie_2_price}
+                        tremie_3_price={product.tremie_3_price}
                       />
                     </div>
                   </div>

@@ -9,7 +9,15 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/";
+import {
+  Card,
+  CardContent,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/";
 import { addToCart } from "@/lib/cart/utils";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -31,6 +39,12 @@ interface ProductCardProps {
   isCompared?: boolean;
   onCompareToggle?: (id: string, add: boolean) => void;
   compareCount?: number;
+  // Add price fields
+  normal_price?: number | null;
+  pump_price?: number | null;
+  tremie_1_price?: number | null;
+  tremie_2_price?: number | null;
+  tremie_3_price?: number | null;
 }
 
 export function ProductCard({
@@ -47,13 +61,38 @@ export function ProductCard({
   isCompared = false,
   onCompareToggle,
   compareCount = 0,
+  // Add price fields
+  normal_price,
+  pump_price,
+  tremie_1_price,
+  tremie_2_price,
+  tremie_3_price,
 }: ProductCardProps) {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
   const [zoomImages, setZoomImages] = useState<string[]>([]);
   const [zoomIndex, setZoomIndex] = useState(0);
+  const [selectedDelivery, setSelectedDelivery] = useState("normal");
   const router = useRouter();
   const user = useUser();
+
+  const deliveryOptions = [
+    normal_price != null
+      ? { key: "normal", label: "Normal Delivery", price: normal_price }
+      : null,
+    pump_price != null
+      ? { key: "pump", label: "Pump Delivery", price: pump_price }
+      : null,
+    tremie_1_price != null
+      ? { key: "tremie_1", label: "Tremie 1", price: tremie_1_price }
+      : null,
+    tremie_2_price != null
+      ? { key: "tremie_2", label: "Tremie 2", price: tremie_2_price }
+      : null,
+    tremie_3_price != null
+      ? { key: "tremie_3", label: "Tremie 3", price: tremie_3_price }
+      : null,
+  ].filter(Boolean) as { key: string; label: string; price: number }[];
 
   const handleCompareClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -78,7 +117,8 @@ export function ProductCard({
 
     setIsAddingToCart(true);
 
-    const result = await addToCart(user.id, id, 1);
+    // Pass delivery method if needed
+    const result = await addToCart(user.id, id, 1, selectedDelivery);
 
     if (result.success) {
       if (result.isUpdate) {
@@ -124,6 +164,11 @@ export function ProductCard({
     e.stopPropagation();
     setZoomIndex((prev) => (prev + 1) % zoomImages.length);
   };
+
+  const selectedOption = deliveryOptions.find(
+    (opt) => opt.key === selectedDelivery
+  );
+  const selectedPrice = selectedOption ? selectedOption.price : price;
 
   return (
     <>
@@ -320,8 +365,31 @@ export function ProductCard({
                 </span>
               )}
             </div>
+            {/* Delivery method selector */}
+            {deliveryOptions.length > 1 && (
+              <div className="flex items-center gap-2">
+                <label htmlFor={`delivery-method-${id}`} className="text-xs">
+                  Delivery:
+                </label>
+                <Select
+                  value={selectedDelivery}
+                  onValueChange={setSelectedDelivery}
+                >
+                  <SelectTrigger className="w-36 h-8 px-2 py-1 text-xs">
+                    <SelectValue placeholder="Select delivery" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {deliveryOptions.map((opt) => (
+                      <SelectItem key={opt.key} value={opt.key}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="flex items-center gap-2">
-              <span className="font-medium">RM{price.toFixed(2)}</span>
+              <span className="font-medium">RM{selectedPrice.toFixed(2)}</span>
             </div>
           </CardContent>
         </Card>
