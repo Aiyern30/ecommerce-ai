@@ -475,12 +475,12 @@ export default function NewProductPage() {
                   )}
                 />
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4 items-start">
                   <FormField
                     control={form.control}
                     name="product_type"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="flex flex-col h-full">
                         <FormLabel>Product Type</FormLabel>
                         <Select
                           onValueChange={field.onChange}
@@ -496,6 +496,10 @@ export default function NewProductPage() {
                             <SelectItem value="mortar">Mortar</SelectItem>
                           </SelectContent>
                         </Select>
+                        {/* Fixed height container for description */}
+                        <div className="min-h-[32px]">
+                          {/* Empty space to match the height of grade field description */}
+                        </div>
                         <div className="min-h-[10px]">
                           <FormMessage />
                         </div>
@@ -507,7 +511,7 @@ export default function NewProductPage() {
                     control={form.control}
                     name="grade"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="flex flex-col h-full">
                         <FormLabel>Grade</FormLabel>
                         <FormControl>
                           <Input
@@ -519,11 +523,14 @@ export default function NewProductPage() {
                             {...field}
                           />
                         </FormControl>
-                        <FormDescription>
-                          {watchProductType === "concrete"
-                            ? "Concrete strength grade (N10, N15, etc.)"
-                            : "Mortar mix designation (M064, M054, etc.)"}
-                        </FormDescription>
+                        {/* Fixed height container for description */}
+                        <div className="min-h-[32px]">
+                          <FormDescription>
+                            {watchProductType === "concrete"
+                              ? "Concrete strength grade (N10, N15, etc.)"
+                              : "Mortar mix designation (M064, M054, etc.)"}
+                          </FormDescription>
+                        </div>
                         <div className="min-h-[10px]">
                           <FormMessage />
                         </div>
@@ -553,16 +560,18 @@ export default function NewProductPage() {
                   />
                 )}
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4 items-start">
                   <FormField
                     control={form.control}
                     name="category"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="flex flex-col h-full">
                         <FormLabel>Category</FormLabel>
                         <FormControl>
                           <Input placeholder="building_materials" {...field} />
                         </FormControl>
+                        {/* Fixed height container for description - empty to match unit field */}
+                        <div className="min-h-[32px]">{/* Empty space */}</div>
                         <div className="min-h-[10px]">
                           <FormMessage />
                         </div>
@@ -574,7 +583,7 @@ export default function NewProductPage() {
                     control={form.control}
                     name="unit"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="flex flex-col h-full">
                         <FormLabel>Unit</FormLabel>
                         <Select
                           onValueChange={field.onChange}
@@ -591,6 +600,8 @@ export default function NewProductPage() {
                             <SelectItem value="per tonne">Per Tonne</SelectItem>
                           </SelectContent>
                         </Select>
+                        {/* Fixed height container for description - empty to match category field */}
+                        <div className="min-h-[32px]">{/* Empty space */}</div>
                         <div className="min-h-[10px]">
                           <FormMessage />
                         </div>
@@ -599,29 +610,66 @@ export default function NewProductPage() {
                   />
                 </div>
 
-                <FormField
-                  control={form.control}
-                  name="stock_quantity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Stock Quantity</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="e.g., 150"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Total cubic meters (m³) of this grade available in
-                        inventory
-                      </FormDescription>
-                      <div className="min-h-[10px]">
-                        <FormMessage />
-                      </div>
-                    </FormItem>
-                  )}
-                />
+                <div className="grid grid-cols-2 gap-4 items-start">
+                  <FormField
+                    control={form.control}
+                    name="stock_quantity"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col h-full">
+                        <FormLabel>Stock Quantity</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="e.g., 150"
+                            {...field}
+                          />
+                        </FormControl>
+                        {/* Fixed height container for description */}
+                        <div className="min-h-[32px]">
+                          <FormDescription>
+                            Total cubic meters (m³) of this grade available in
+                            inventory
+                          </FormDescription>
+                        </div>
+                        <div className="min-h-[10px]">
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col h-full">
+                        <FormLabel>Status</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="draft">Draft</SelectItem>
+                            <SelectItem value="published">Published</SelectItem>
+                            <SelectItem value="archived">Archived</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {/* Fixed height container for description - empty to match stock_quantity field */}
+                        <div className="min-h-[32px]">
+                          {/* Empty space to match stock_quantity description height */}
+                        </div>
+                        <div className="min-h-[10px]">
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 <FormField
                   control={form.control}
@@ -645,7 +693,7 @@ export default function NewProductPage() {
                   )}
                 />
 
-                {/* Pricing Section - Replace your existing pricing section with this */}
+                {/* Pricing Section */}
                 <div className="space-y-4 pt-6 border-t">
                   <div>
                     <TypographyH3>Delivery Method Pricing</TypographyH3>
@@ -655,12 +703,12 @@ export default function NewProductPage() {
                     </TypographyP>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
                     <FormField
                       control={form.control}
                       name="normal_price"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="flex flex-col h-full">
                           <FormLabel>Normal Delivery (RM)</FormLabel>
                           <FormControl>
                             <Input
@@ -670,9 +718,12 @@ export default function NewProductPage() {
                               {...field}
                             />
                           </FormControl>
-                          <FormDescription>
-                            Standard truck mixer delivery
-                          </FormDescription>
+                          {/* Fixed height container for description */}
+                          <div className="min-h-[32px]">
+                            <FormDescription>
+                              Standard truck mixer delivery
+                            </FormDescription>
+                          </div>
                           <div className="min-h-[10px]">
                             <FormMessage />
                           </div>
@@ -684,7 +735,7 @@ export default function NewProductPage() {
                       control={form.control}
                       name="pump_price"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="flex flex-col h-full">
                           <FormLabel>Pump Delivery (RM)</FormLabel>
                           <FormControl>
                             <Input
@@ -694,9 +745,12 @@ export default function NewProductPage() {
                               {...field}
                             />
                           </FormControl>
-                          <FormDescription>
-                            Concrete pump truck delivery
-                          </FormDescription>
+                          {/* Fixed height container for description */}
+                          <div className="min-h-[32px]">
+                            <FormDescription>
+                              Concrete pump truck delivery
+                            </FormDescription>
+                          </div>
                           <div className="min-h-[10px]">
                             <FormMessage />
                           </div>
@@ -708,7 +762,7 @@ export default function NewProductPage() {
                       control={form.control}
                       name="tremie_1_price"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="flex flex-col h-full">
                           <FormLabel>Tremie Method 1 (RM)</FormLabel>
                           <FormControl>
                             <Input
@@ -718,9 +772,12 @@ export default function NewProductPage() {
                               {...field}
                             />
                           </FormControl>
-                          <FormDescription>
-                            Underwater placement - shallow depth
-                          </FormDescription>
+                          {/* Fixed height container for description */}
+                          <div className="min-h-[32px]">
+                            <FormDescription>
+                              Underwater placement - shallow depth
+                            </FormDescription>
+                          </div>
                           <div className="min-h-[10px]">
                             <FormMessage />
                           </div>
@@ -732,7 +789,7 @@ export default function NewProductPage() {
                       control={form.control}
                       name="tremie_2_price"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="flex flex-col h-full">
                           <FormLabel>Tremie Method 2 (RM)</FormLabel>
                           <FormControl>
                             <Input
@@ -742,9 +799,12 @@ export default function NewProductPage() {
                               {...field}
                             />
                           </FormControl>
-                          <FormDescription>
-                            Underwater placement - medium depth
-                          </FormDescription>
+                          {/* Fixed height container for description */}
+                          <div className="min-h-[32px]">
+                            <FormDescription>
+                              Underwater placement - medium depth
+                            </FormDescription>
+                          </div>
                           <div className="min-h-[10px]">
                             <FormMessage />
                           </div>
@@ -756,7 +816,7 @@ export default function NewProductPage() {
                       control={form.control}
                       name="tremie_3_price"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="flex flex-col h-full">
                           <FormLabel>Tremie Method 3 (RM)</FormLabel>
                           <FormControl>
                             <Input
@@ -766,9 +826,12 @@ export default function NewProductPage() {
                               {...field}
                             />
                           </FormControl>
-                          <FormDescription>
-                            Underwater placement - deep/complex
-                          </FormDescription>
+                          {/* Fixed height container for description */}
+                          <div className="min-h-[32px]">
+                            <FormDescription>
+                              Underwater placement - deep/complex
+                            </FormDescription>
+                          </div>
                           <div className="min-h-[10px]">
                             <FormMessage />
                           </div>
