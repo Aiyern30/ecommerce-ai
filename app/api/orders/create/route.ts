@@ -12,6 +12,16 @@ export async function POST(request: NextRequest) {
       user_id: string;
       payment_intent_id?: string;
       address_id: string;
+      subtotal: number;
+      shipping_cost: number;
+      tax: number;
+      total: number;
+      items: {
+        product_id: string;
+        quantity: number;
+        variant_type?: string;
+        price: number; // Add price field
+      }[];
     };
     console.log("Request body:", body);
 
@@ -19,6 +29,20 @@ export async function POST(request: NextRequest) {
     if (!body.items || body.items.length === 0) {
       console.log("No items in order");
       return NextResponse.json({ error: "No items in order" }, { status: 400 });
+    }
+
+    // Validate totals are provided
+    if (
+      body.subtotal === undefined ||
+      body.shipping_cost === undefined ||
+      body.tax === undefined ||
+      body.total === undefined
+    ) {
+      console.log("Missing totals in request");
+      return NextResponse.json(
+        { error: "Order totals are required" },
+        { status: 400 }
+      );
     }
 
     // If payment_intent_id is provided, verify it's completed
@@ -47,7 +71,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Fetch product details from database
+    // Fetch product details from database for order items
     const productIds = body.items.map((item) => item.product_id);
     console.log("Fetching products:", productIds);
     const { data: products, error: productError } = await supabase
@@ -68,8 +92,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No products found" }, { status: 400 });
     }
 
-    // Calculate totals
-    let subtotal = 0;
+    // Create order items for database storage (but use frontend totals)
     const orderItems = [];
 
     for (const item of body.items) {
@@ -81,26 +104,29 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      let price = product.price;
-      // Check for variant pricing
-      if (item.variant_type) {
-        const { data: variant } = await supabase
-          .from("product_variants")
-          .select("price")
-          .eq("product_id", item.product_id)
-          .eq("variant_type", item.variant_type)
-          .single();
-        if (variant) {
-          price = variant.price;
-        }
-      }
+      console.log(`Processing product ${item.product_id}:`, {
+        productName: product.name,
+        frontendPrice: item.price,
+        quantity: item.quantity,
+        variantType: item.variant_type,
+      });
 
-      const itemTotal = price * item.quantity;
-      subtotal += itemTotal;
+      // Use the price calculated on the frontend
+      const price = item.price;
+
+      // Validate price
+      if (price === null || price === undefined || price <= 0) {
+        console.error(`Invalid price for product ${item.product_id}: ${price}`);
+        return NextResponse.json(
+          { error: `Invalid price for product ${item.product_id}` },
+          { status: 400 }
+        );
+      }
 
       orderItems.push({
         product_id: item.product_id,
         name: product.name,
+        grade: product.grade || "", // Add grade field
         price: price,
         quantity: item.quantity,
         variant_type: item.variant_type,
@@ -108,11 +134,18 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Calculate shipping and tax
-    const shipping_cost = subtotal >= 100 ? 0 : 10; // Free shipping over RM100
-    const tax_rate = 0.06; // 6% SST
-    const tax = subtotal * tax_rate;
-    const total = subtotal + shipping_cost + tax;
+    // Use totals from frontend instead of recalculating
+    const subtotal = body.subtotal;
+    const shipping_cost = body.shipping_cost;
+    const tax = body.tax;
+    const total = body.total;
+
+    console.log("Using frontend calculated totals:", {
+      subtotal,
+      shipping_cost,
+      tax,
+      total,
+    });
 
     // Create order in database using admin client to bypass RLS
     console.log("Creating order with data:", {
@@ -171,15 +204,22 @@ export async function POST(request: NextRequest) {
       order_id: order.id,
     }));
 
+    console.log("Creating order items:", orderItemsWithOrderId);
+
     const { error: itemsError } = await supabaseAdmin
       .from("order_items")
       .insert(orderItemsWithOrderId);
 
     if (itemsError) {
+      console.error("Order items creation error:", itemsError);
       // Rollback order creation
       await supabaseAdmin.from("orders").delete().eq("id", order.id);
       return NextResponse.json(
-        { error: "Failed to create order items" },
+        {
+          error: `Failed to create order items: ${
+            itemsError.message || JSON.stringify(itemsError)
+          }`,
+        },
         { status: 500 }
       );
     }

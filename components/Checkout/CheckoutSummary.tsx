@@ -6,6 +6,7 @@ import { ShoppingCart, ArrowRight } from "lucide-react";
 import { useCart } from "@/components/CartProvider";
 import { formatCurrency } from "@/lib/cart/calculations";
 import { getProductPrice } from "@/lib/cart/utils";
+import { calculateOrderTotals } from "@/lib/order/api"; // Import the shared function
 import Image from "next/image";
 
 interface CheckoutSummaryProps {
@@ -24,36 +25,8 @@ export function CheckoutSummary({
   const { cartItems, isLoading } = useCart();
   const selectedItems = cartItems.filter((item) => item.selected);
 
-  // Calculate totals using variant-specific pricing
-  const calculateTotals = () => {
-    const subtotal = selectedItems.reduce((sum, item) => {
-      const price = getProductPrice(item.product, item.variant_type);
-      return sum + price * item.quantity;
-    }, 0);
-
-    const selectedItemsCount = selectedItems.reduce(
-      (count, item) => count + item.quantity,
-      0
-    );
-
-    // Free shipping if subtotal >= 100
-    const shippingCost = subtotal >= 100 ? 0 : 10; // Adjust shipping cost as needed
-
-    // Tax calculation (SST 6%)
-    const tax = subtotal * 0.06;
-
-    const total = subtotal + shippingCost + tax;
-
-    return {
-      subtotal,
-      shippingCost,
-      tax,
-      total,
-      selectedItemsCount,
-    };
-  };
-
-  const totals = calculateTotals();
+  // Use the shared calculation function for consistency
+  const totals = calculateOrderTotals(cartItems);
 
   if (isLoading) {
     return (
