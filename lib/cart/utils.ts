@@ -546,3 +546,164 @@ export async function getCartStats(userId: string): Promise<{
     return { total: 0, selected: 0, unselected: 0 };
   }
 }
+
+export interface AdditionalService {
+  id: string;
+  service_name: string;
+  service_code: string;
+  rate_per_m3: number;
+  description: string;
+  is_active: boolean;
+}
+
+export interface FreightCharge {
+  id: string;
+  min_volume: number;
+  max_volume: number | null;
+  delivery_fee: number;
+  description: string;
+  is_active: boolean;
+}
+
+/**
+ * Fetch all active additional services
+ */
+export async function getAdditionalServices(): Promise<AdditionalService[]> {
+  try {
+    const { data, error } = await supabase
+      .from("additional_services")
+      .select("*")
+      .eq("is_active", true)
+      .order("service_name");
+
+    if (error) {
+      console.error("Error fetching additional services:", error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error("Error in getAdditionalServices:", error);
+    return [];
+  }
+}
+
+/**
+ * Fetch all active freight charges
+ */
+export async function getFreightCharges(): Promise<FreightCharge[]> {
+  try {
+    const { data, error } = await supabase
+      .from("freight_charges")
+      .select("*")
+      .eq("is_active", true)
+      .order("min_volume");
+
+    if (error) {
+      console.error("Error fetching freight charges:", error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error("Error in getFreightCharges:", error);
+    return [];
+  }
+}
+
+/**
+ * Calculate additional services total
+ */
+export function calculateServicesTotal(
+  selectedServices: { [key: string]: boolean },
+  additionalServices: AdditionalService[],
+  totalVolume: number
+): number {
+  return additionalServices.reduce((sum, service) => {
+    if (selectedServices[service.service_code]) {
+      return sum + service.rate_per_m3 * totalVolume;
+    }
+    return sum;
+  }, 0);
+}
+
+/**
+ * Get applicable freight charge based on total volume
+ */
+export function getApplicableFreightCharge(
+  totalVolume: number,
+  freightCharges: FreightCharge[]
+): FreightCharge | null {
+  if (totalVolume === 0) return null;
+
+  return (
+    freightCharges.find((charge) => {
+      const minVol = charge.min_volume;
+      const maxVol = charge.max_volume;
+
+      if (maxVol === null) {
+        return totalVolume >= minVol;
+      } else {
+        return totalVolume >= minVol && totalVolume <= maxVol;
+      }
+    }) || null
+  );
+}
+
+/**
+ * Calculate order totals including services and freight
+ */
+export function calculateOrderTotalsWithServices(
+  cartItems: any[],
+  selectedServices: { [key: string]: boolean } = {},
+  additionalServices: AdditionalService[] = [],
+  freightCharges: FreightCharge[] = []
+) {
+  const selectedItems = cartItems.filter((item) => item.selected);
+
+  // Calculate subtotal from selected items
+  const subtotal = selectedItems.reduce((sum, item) => {
+    const itemPrice = getProductPrice(item.product, item.variant_type);
+    return sum + itemPrice * item.quantity;
+  }, 0);
+
+  // Calculate total volume
+  const totalVolume = selectedItems.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
+
+  // Calculate additional services total
+  const servicesTotal = calculateServicesTotal(
+    selectedServices,
+    additionalServices,
+    totalVolume
+  );
+
+  // Get applicable freight charge
+  const applicableFreightCharge = getApplicableFreightCharge(
+    totalVolume,
+    freightCharges
+  );
+  const freightCost = applicableFreightCharge
+    ? applicableFreightCharge.delivery_fee
+    : 0;
+
+  // Calculate tax (SST 6%) on subtotal + services + freight
+  const taxableAmount = subtotal + servicesTotal + freightCost;
+  const tax = taxableAmount * 0.06;
+
+  // Calculate total
+  const total = taxableAmount + tax;
+
+  return {
+    selectedItemsCount: selectedItems.length,
+    totalVolume,
+    subtotal,
+    servicesTotal,
+    freightCost,
+    tax,
+    total,
+    applicableFreightCharge,
+  };
+}

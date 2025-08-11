@@ -40,20 +40,96 @@ import {
 import { useUser } from "@supabase/auth-helpers-react";
 import type { CartItem } from "@/type/cart";
 import { useDeviceType } from "@/utils/useDeviceTypes";
+import { supabase } from "@/lib/supabase/browserClient";
+
+interface AdditionalService {
+  id: string;
+  service_name: string;
+  service_code: string;
+  rate_per_m3: number;
+  description: string;
+  is_active: boolean;
+}
+
+interface FreightCharge {
+  id: string;
+  min_volume: number;
+  max_volume: number | null;
+  delivery_fee: number;
+  description: string;
+  is_active: boolean;
+}
 
 export default function CartPage() {
   const { cartItems, refreshCart, isLoading } = useCart();
   console.log("cartItems", cartItems);
-  const { isMobile } = useDeviceType(); // Use the hook
+  const { isMobile } = useDeviceType();
   const user = useUser();
   const router = useRouter();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<CartItem | null>(null);
 
+  // Additional services and freight charges state
+  const [additionalServices, setAdditionalServices] = useState<
+    AdditionalService[]
+  >([]);
+  const [freightCharges, setFreightCharges] = useState<FreightCharge[]>([]);
+  const [selectedServices, setSelectedServices] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [servicesLoading, setServicesLoading] = useState(true);
+
   // Calculate select all state from database
   const selectAll =
     cartItems.length > 0 && cartItems.every((item) => item.selected);
   const selectedItems = cartItems.filter((item) => item.selected);
+
+  // Calculate total volume of selected items
+  const totalVolume = selectedItems.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
+
+  // Fetch additional services and freight charges
+  useEffect(() => {
+    const fetchServicesAndCharges = async () => {
+      try {
+        setServicesLoading(true);
+
+        // Fetch additional services
+        const { data: services, error: servicesError } = await supabase
+          .from("additional_services")
+          .select("*")
+          .eq("is_active", true)
+          .order("service_name");
+
+        // Fetch freight charges
+        const { data: charges, error: chargesError } = await supabase
+          .from("freight_charges")
+          .select("*")
+          .eq("is_active", true)
+          .order("min_volume");
+
+        if (servicesError) {
+          console.error("Error fetching additional services:", servicesError);
+        } else {
+          setAdditionalServices(services || []);
+        }
+
+        if (chargesError) {
+          console.error("Error fetching freight charges:", chargesError);
+        } else {
+          setFreightCharges(charges || []);
+        }
+      } catch (error) {
+        console.error("Error fetching services and charges:", error);
+      } finally {
+        setServicesLoading(false);
+      }
+    };
+
+    fetchServicesAndCharges();
+  }, []);
 
   // Helper function to get variant display name
   const getVariantDisplayName = (variantType: string | null | undefined) => {
@@ -95,6 +171,32 @@ export default function CartPage() {
       toast.error("Failed to update selection");
     }
   };
+
+  // Handle service selection
+  const handleServiceSelect = (serviceCode: string, checked: boolean) => {
+    setSelectedServices((prev) => ({
+      ...prev,
+      [serviceCode]: checked,
+    }));
+  };
+
+  // Get applicable freight charge based on total volume
+  // const getApplicableFreightCharge = (): FreightCharge | null => {
+  //   if (totalVolume === 0) return null;
+
+  //   return (
+  //     freightCharges.find((charge) => {
+  //       const minVol = charge.min_volume;
+  //       const maxVol = charge.max_volume;
+
+  //       if (maxVol === null) {
+  //         return totalVolume >= minVol;
+  //       } else {
+  //         return totalVolume >= minVol && totalVolume <= maxVol;
+  //       }
+  //     }) || null
+  //   );
+  // };
 
   // Handle delete click
   const handleDeleteClick = (item: CartItem) => {
@@ -198,7 +300,11 @@ export default function CartPage() {
             {/* Order Summary Skeleton */}
             {!isMobile && (
               <div className="lg:col-span-1 self-start sticky top-28">
-                <CheckoutSummary showCheckoutButton={true} />
+                <CheckoutSummary
+                  showCheckoutButton={true}
+                  selectedServices={selectedServices}
+                  totalVolume={totalVolume}
+                />
               </div>
             )}
           </div>
@@ -243,7 +349,8 @@ export default function CartPage() {
             }`}
           >
             {/* Cart Items */}
-            <div className={isMobile ? "" : "lg:col-span-2"}>
+            <div className={isMobile ? "" : "lg:col-span-2 space-y-6"}>
+              {/* Products Section */}
               <Card className="overflow-hidden shadow-sm py-0 gap-0">
                 {/* Choose All Product Header */}
                 <CardHeader
@@ -552,6 +659,105 @@ export default function CartPage() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Additional Services Section */}
+              {selectedItems.length > 0 && (
+                <Card className="overflow-hidden shadow-sm">
+                  <CardHeader
+                    className={`${
+                      isMobile ? "p-4" : "p-6"
+                    } bg-gray-50 dark:bg-gray-900 border-b`}
+                  >
+                    <CardTitle
+                      className={`${
+                        isMobile ? "text-lg" : "text-xl"
+                      } font-bold`}
+                    >
+                      Additional Services
+                    </CardTitle>
+                    <TypographyP className="text-sm text-gray-600 dark:text-gray-400 !mt-2">
+                      Optional services calculated per m³ (Total:{" "}
+                      {totalVolume.toFixed(2)} m³)
+                    </TypographyP>
+                  </CardHeader>
+                  <CardContent className={`${isMobile ? "p-4" : "p-6"}`}>
+                    {servicesLoading ? (
+                      <div className="space-y-4">
+                        {[...Array(3)].map((_, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between"
+                          >
+                            <div className="flex items-center gap-3">
+                              <Skeleton className="h-5 w-5 rounded" />
+                              <div className="space-y-1">
+                                <Skeleton className="h-4 w-32" />
+                                <Skeleton className="h-3 w-48" />
+                              </div>
+                            </div>
+                            <Skeleton className="h-4 w-16" />
+                          </div>
+                        ))}
+                      </div>
+                    ) : additionalServices.length === 0 ? (
+                      <TypographyP className="text-gray-500 dark:text-gray-400 text-center py-4">
+                        No additional services available
+                      </TypographyP>
+                    ) : (
+                      <div className="space-y-4">
+                        {additionalServices.map((service) => {
+                          const serviceTotal =
+                            service.rate_per_m3 * totalVolume;
+                          return (
+                            <div
+                              key={service.id}
+                              className="flex items-start justify-between gap-4"
+                            >
+                              <div className="flex items-start gap-3">
+                                <Checkbox
+                                  id={`service-${service.service_code}`}
+                                  checked={
+                                    selectedServices[service.service_code] ||
+                                    false
+                                  }
+                                  onCheckedChange={(checked) =>
+                                    handleServiceSelect(
+                                      service.service_code,
+                                      checked as boolean
+                                    )
+                                  }
+                                  className="h-5 w-5 mt-0.5"
+                                />
+                                <div className="flex-1">
+                                  <label
+                                    htmlFor={`service-${service.service_code}`}
+                                    className="font-medium text-gray-900 dark:text-gray-100 cursor-pointer block"
+                                  >
+                                    {service.service_name}
+                                  </label>
+                                  {service.description && (
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                      {service.description}
+                                    </p>
+                                  )}
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    RM{service.rate_per_m3.toFixed(2)} per m³
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <span className="font-bold text-gray-900 dark:text-gray-100">
+                                  RM{serviceTotal.toFixed(2)}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
             {/* Order Summary with Checkout Button */}
@@ -562,6 +768,10 @@ export default function CartPage() {
                   onCheckout={handleProceedToCheckout}
                   checkoutButtonText="Proceed to Checkout"
                   checkoutButtonDisabled={selectedItems.length === 0}
+                  selectedServices={selectedServices}
+                  totalVolume={totalVolume}
+                  additionalServices={additionalServices}
+                  freightCharges={freightCharges}
                 />
               </div>
             </div>
