@@ -35,6 +35,7 @@ import {
   removeFromCart,
   updateCartItemSelection,
   selectAllCartItems,
+  getProductPrice,
 } from "@/lib/cart/utils";
 import { useUser } from "@supabase/auth-helpers-react";
 import type { CartItem } from "@/type/cart";
@@ -52,6 +53,25 @@ export default function CartPage() {
   const selectAll =
     cartItems.length > 0 && cartItems.every((item) => item.selected);
   const selectedItems = cartItems.filter((item) => item.selected);
+
+  // Helper function to get variant display name
+  const getVariantDisplayName = (variantType: string | null | undefined) => {
+    switch (variantType) {
+      case "pump":
+        return "Pump Delivery";
+      case "tremie_1":
+        return "Tremie 1";
+      case "tremie_2":
+        return "Tremie 2";
+      case "tremie_3":
+        return "Tremie 3";
+      case "normal":
+      case null:
+      case undefined:
+      default:
+        return "Normal Delivery";
+    }
+  };
 
   // Handle individual item selection
   const handleItemSelect = async (itemId: string, checked: boolean) => {
@@ -256,202 +276,221 @@ export default function CartPage() {
                 {/* Product Items */}
                 <CardContent className="p-0">
                   <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {cartItems.map((item) => (
-                      <div
-                        key={item.id}
-                        className={`${
-                          isMobile ? "p-4" : "p-6"
-                        } hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-all duration-200 cursor-pointer group`}
-                        onClick={(e) => {
-                          // Only navigate if not clicking on interactive elements
-                          const target = e.target as HTMLElement;
-                          if (
-                            !target.closest("button") &&
-                            !target.closest("input") &&
-                            !target.closest("a")
-                          ) {
-                            router.push(`/products/${item.product_id}`);
-                          }
-                        }}
-                      >
-                        <div className={`flex ${isMobile ? "gap-3" : "gap-4"}`}>
-                          {/* Checkbox for individual item */}
+                    {cartItems.map((item) => {
+                      // Get the correct price based on variant_type
+                      const itemPrice = getProductPrice(
+                        item.product,
+                        item.variant_type
+                      );
+
+                      return (
+                        <div
+                          key={item.id}
+                          className={`${
+                            isMobile ? "p-4" : "p-6"
+                          } hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-all duration-200 cursor-pointer group`}
+                          onClick={(e) => {
+                            // Only navigate if not clicking on interactive elements
+                            const target = e.target as HTMLElement;
+                            if (
+                              !target.closest("button") &&
+                              !target.closest("input") &&
+                              !target.closest("a")
+                            ) {
+                              router.push(`/products/${item.product_id}`);
+                            }
+                          }}
+                        >
                           <div
-                            className={`flex items-start ${
-                              isMobile ? "pt-2" : "pt-3"
-                            }`}
+                            className={`flex ${isMobile ? "gap-3" : "gap-4"}`}
                           >
-                            <Checkbox
-                              id={`item-${item.id}`}
-                              checked={item.selected}
-                              onCheckedChange={(checked) =>
-                                handleItemSelect(item.id, checked as boolean)
-                              }
-                              onClick={(e) => e.stopPropagation()}
-                              className="h-5 w-5"
-                            />
-                          </div>
-                          {/* Product Image */}
-                          <div
-                            className={`relative ${
-                              isMobile
-                                ? "h-20 w-20"
-                                : "h-24 w-24 md:h-28 md:w-28"
-                            } flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-700`}
-                          >
-                            <Image
-                              src={
-                                item.product?.image_url || "/placeholder.svg"
-                              }
-                              alt={item.product?.name || "Product"}
-                              fill
-                              className="object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                          </div>
-                          {/* Product Details */}
-                          <div
-                            className={`flex flex-1 flex-col justify-between ${
-                              isMobile
-                                ? "min-h-[80px]"
-                                : "min-h-[96px] md:min-h-[112px]"
-                            }`}
-                          >
+                            {/* Checkbox for individual item */}
                             <div
-                              className={`flex ${
-                                isMobile
-                                  ? "flex-col"
-                                  : "flex-col md:flex-row md:justify-between md:items-start"
+                              className={`flex items-start ${
+                                isMobile ? "pt-2" : "pt-3"
                               }`}
                             >
-                              <div className="flex-1 pr-2">
-                                <TypographyH3
-                                  className={`font-bold ${
-                                    isMobile
-                                      ? "text-base leading-tight"
-                                      : "text-xl"
-                                  } mb-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors`}
-                                >
-                                  {item.product?.name}
-                                </TypographyH3>
-                                {!isMobile && (
-                                  <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4 text-sm text-gray-500 dark:text-gray-400">
-                                    <span>
-                                      Size: {item.product?.unit || "per bag"}
-                                    </span>
-                                    <span className="hidden md:inline">•</span>
-                                    <span>Color: White</span>
-                                  </div>
-                                )}
-                              </div>
-                              {/* Delete Button - Positioned differently on mobile */}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteClick(item);
-                                }}
-                                className={`text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition-all duration-200 ${
-                                  isMobile
-                                    ? "absolute top-2 right-2 opacity-70"
-                                    : "ml-auto md:ml-0 opacity-0 group-hover:opacity-100"
-                                }`}
-                                aria-label="Remove item"
-                              >
-                                <Trash2
-                                  className={`${
-                                    isMobile ? "h-4 w-4" : "h-5 w-5"
-                                  }`}
-                                />
-                              </button>
+                              <Checkbox
+                                id={`item-${item.id}`}
+                                checked={item.selected}
+                                onCheckedChange={(checked) =>
+                                  handleItemSelect(item.id, checked as boolean)
+                                }
+                                onClick={(e) => e.stopPropagation()}
+                                className="h-5 w-5"
+                              />
                             </div>
-                            {/* Mobile: Product details */}
-                            {isMobile && (
-                              <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mb-2">
-                                <span>
-                                  Size: {item.product?.unit || "per bag"}
-                                </span>
-                                <span>•</span>
-                                <span>Color: White</span>
-                              </div>
-                            )}
-                            {/* Price and Quantity Controls */}
+                            {/* Product Image */}
                             <div
-                              className={`flex items-center justify-between ${
-                                isMobile ? "mt-2" : "mt-4"
+                              className={`relative ${
+                                isMobile
+                                  ? "h-20 w-20"
+                                  : "h-24 w-24 md:h-28 md:w-28"
+                              } flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-700`}
+                            >
+                              <Image
+                                src={
+                                  item.product?.image_url || "/placeholder.svg"
+                                }
+                                alt={item.product?.name || "Product"}
+                                fill
+                                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                            </div>
+                            {/* Product Details */}
+                            <div
+                              className={`flex flex-1 flex-col justify-between ${
+                                isMobile
+                                  ? "min-h-[80px]"
+                                  : "min-h-[96px] md:min-h-[112px]"
                               }`}
                             >
                               <div
-                                className={`${
-                                  isMobile ? "text-lg" : "text-2xl"
-                                } font-bold text-gray-900 dark:text-gray-100`}
-                              >
-                                RM
-                                {item.product?.normal_price?.toFixed(2) ||
-                                  "0.00"}
-                              </div>
-                              {/* Quantity Controls */}
-                              <div
-                                className={`flex items-center bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-600 shadow-sm ${
-                                  isMobile ? "scale-90" : ""
+                                className={`flex ${
+                                  isMobile
+                                    ? "flex-col"
+                                    : "flex-col md:flex-row md:justify-between md:items-start"
                                 }`}
                               >
+                                <div className="flex-1 pr-2">
+                                  <TypographyH3
+                                    className={`font-bold ${
+                                      isMobile
+                                        ? "text-base leading-tight"
+                                        : "text-xl"
+                                    } mb-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors`}
+                                  >
+                                    {item.product?.name}
+                                  </TypographyH3>
+                                  {!isMobile && (
+                                    <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4 text-sm text-gray-500 dark:text-gray-400">
+                                      <span>
+                                        Size: {item.product?.unit || "per bag"}
+                                      </span>
+                                      <span className="hidden md:inline">
+                                        •
+                                      </span>
+                                      <span>
+                                        {getVariantDisplayName(
+                                          item.variant_type
+                                        )}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                                {/* Delete Button - Positioned differently on mobile */}
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    if (item.quantity === 1) {
-                                      handleDeleteClick(item);
-                                    } else {
+                                    handleDeleteClick(item);
+                                  }}
+                                  className={`text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition-all duration-200 ${
+                                    isMobile
+                                      ? "absolute top-2 right-2 opacity-70"
+                                      : "ml-auto md:ml-0 opacity-0 group-hover:opacity-100"
+                                  }`}
+                                  aria-label="Remove item"
+                                >
+                                  <Trash2
+                                    className={`${
+                                      isMobile ? "h-4 w-4" : "h-5 w-5"
+                                    }`}
+                                  />
+                                </button>
+                              </div>
+                              {/* Mobile: Product details */}
+                              {isMobile && (
+                                <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mb-2">
+                                  <span>
+                                    Size: {item.product?.unit || "per bag"}
+                                  </span>
+                                  <span>•</span>
+                                  <span>
+                                    {getVariantDisplayName(item.variant_type)}
+                                  </span>
+                                </div>
+                              )}
+                              {/* Price and Quantity Controls */}
+                              <div
+                                className={`flex items-center justify-between ${
+                                  isMobile ? "mt-2" : "mt-4"
+                                }`}
+                              >
+                                <div
+                                  className={`${
+                                    isMobile ? "text-lg" : "text-2xl"
+                                  } font-bold text-gray-900 dark:text-gray-100`}
+                                >
+                                  RM{itemPrice.toFixed(2)}
+                                </div>
+                                {/* Quantity Controls */}
+                                <div
+                                  className={`flex items-center bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-600 shadow-sm ${
+                                    isMobile ? "scale-90" : ""
+                                  }`}
+                                >
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (item.quantity === 1) {
+                                        handleDeleteClick(item);
+                                      } else {
+                                        updateQuantity(
+                                          item.id,
+                                          item.quantity - 1
+                                        );
+                                      }
+                                    }}
+                                    className={`p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-l-lg group${
+                                      item.quantity === 1
+                                        ? " text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                        : ""
+                                    }`}
+                                    aria-label={
+                                      item.quantity === 1
+                                        ? "Remove item"
+                                        : "Decrease quantity"
+                                    }
+                                  >
+                                    <Minus
+                                      className={`${
+                                        isMobile ? "h-3 w-3" : "h-3.5 w-3.5"
+                                      } group-hover:scale-110 transition-transform duration-200`}
+                                    />
+                                  </button>
+                                  <span
+                                    className={`${
+                                      isMobile
+                                        ? "px-2 py-1.5 min-w-[2rem] text-xs"
+                                        : "px-3 py-2 min-w-[2.5rem] text-sm"
+                                    } font-bold text-center text-gray-900 dark:text-gray-100 border-x border-gray-200 dark:border-gray-600`}
+                                  >
+                                    {item.quantity}
+                                  </span>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
                                       updateQuantity(
                                         item.id,
-                                        item.quantity - 1
+                                        item.quantity + 1
                                       );
-                                    }
-                                  }}
-                                  className={`p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-l-lg group${
-                                    item.quantity === 1
-                                      ? " text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                      : ""
-                                  }`}
-                                  aria-label={
-                                    item.quantity === 1
-                                      ? "Remove item"
-                                      : "Decrease quantity"
-                                  }
-                                >
-                                  <Minus
-                                    className={`${
-                                      isMobile ? "h-3 w-3" : "h-3.5 w-3.5"
-                                    } group-hover:scale-110 transition-transform duration-200`}
-                                  />
-                                </button>
-                                <span
-                                  className={`${
-                                    isMobile
-                                      ? "px-2 py-1.5 min-w-[2rem] text-xs"
-                                      : "px-3 py-2 min-w-[2.5rem] text-sm"
-                                  } font-bold text-center text-gray-900 dark:text-gray-100 border-x border-gray-200 dark:border-gray-600`}
-                                >
-                                  {item.quantity}
-                                </span>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    updateQuantity(item.id, item.quantity + 1);
-                                  }}
-                                  className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-r-lg group"
-                                  aria-label="Increase quantity"
-                                >
-                                  <Plus
-                                    className={`${
-                                      isMobile ? "h-3 w-3" : "h-3.5 w-3.5"
-                                    } group-hover:scale-110 transition-transform duration-200`}
-                                  />
-                                </button>
+                                    }}
+                                    className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-r-lg group"
+                                    aria-label="Increase quantity"
+                                  >
+                                    <Plus
+                                      className={`${
+                                        isMobile ? "h-3 w-3" : "h-3.5 w-3.5"
+                                      } group-hover:scale-110 transition-transform duration-200`}
+                                    />
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>
@@ -522,6 +561,13 @@ export default function CartPage() {
                 <p
                   className={`${
                     isMobile ? "text-xs" : "text-sm"
+                  } text-blue-600 dark:text-blue-400 mb-1`}
+                >
+                  {getVariantDisplayName(itemToDelete.variant_type)}
+                </p>
+                <p
+                  className={`${
+                    isMobile ? "text-xs" : "text-sm"
                   } text-gray-600 dark:text-gray-400 mb-1`}
                 >
                   Quantity: {itemToDelete.quantity}
@@ -533,8 +579,10 @@ export default function CartPage() {
                 >
                   RM
                   {(
-                    (itemToDelete.product?.normal_price || 0) *
-                    itemToDelete.quantity
+                    getProductPrice(
+                      itemToDelete.product,
+                      itemToDelete.variant_type
+                    ) * itemToDelete.quantity
                   ).toFixed(2)}
                 </p>
               </div>
