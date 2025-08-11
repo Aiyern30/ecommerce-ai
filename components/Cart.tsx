@@ -115,137 +115,142 @@ export default function Cart() {
             )}
           </SheetHeader>
 
-          <div className="flex flex-col flex-1 min-h-0">
-            <ScrollArea className="flex-1">
-              {isLoading ? (
-                <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-                  <div className="text-center space-y-2">
-                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-                    <TypographyP className="text-sm text-muted-foreground">
-                      Loading cart...
-                    </TypographyP>
+          {/* Make this div scrollable */}
+          <div className="flex-1 min-h-0 flex flex-col">
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              <ScrollArea className="flex-1">
+                {isLoading ? (
+                  <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+                    <div className="text-center space-y-2">
+                      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+                      <TypographyP className="text-sm text-muted-foreground">
+                        Loading cart...
+                      </TypographyP>
+                    </div>
                   </div>
-                </div>
-              ) : !user ? (
-                <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-6 text-center space-y-6">
-                  <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-                    <ShoppingCart className="h-12 w-12 text-gray-400" />
+                ) : !user ? (
+                  <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-6 text-center space-y-6">
+                    <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                      <ShoppingCart className="h-12 w-12 text-gray-400" />
+                    </div>
+                    <div className="space-y-3">
+                      <TypographyH4 className="text-gray-900 dark:text-gray-100">
+                        Login Required
+                      </TypographyH4>
+                      <TypographyP className="text-sm text-muted-foreground max-w-sm">
+                        Please login to view your cart and start shopping for
+                        amazing products.
+                      </TypographyP>
+                    </div>
+                    <Link href="/login" onClick={() => setIsOpen(false)}>
+                      <Button>Login to Continue</Button>
+                    </Link>
                   </div>
-                  <div className="space-y-3">
-                    <TypographyH4 className="text-gray-900 dark:text-gray-100">
-                      Login Required
-                    </TypographyH4>
-                    <TypographyP className="text-sm text-muted-foreground max-w-sm">
-                      Please login to view your cart and start shopping for
-                      amazing products.
-                    </TypographyP>
+                ) : cartItems.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-6 text-center space-y-6">
+                    <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                      <ShoppingCart className="h-12 w-12 text-gray-500" />
+                    </div>
+                    <div className="space-y-3">
+                      <TypographyH4 className="text-gray-900 dark:text-gray-100">
+                        Your cart is empty
+                      </TypographyH4>
+                      <TypographyP className="text-sm text-muted-foreground max-w-sm">
+                        Discover our amazing products and add them to your cart
+                        to get started.
+                      </TypographyP>
+                    </div>
+                    <Link href="/products" onClick={() => setIsOpen(false)}>
+                      <Button>Browse Products</Button>
+                    </Link>
                   </div>
-                  <Link href="/login" onClick={() => setIsOpen(false)}>
-                    <Button>Login to Continue</Button>
-                  </Link>
-                </div>
-              ) : cartItems.length === 0 ? (
-                <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-6 text-center space-y-6">
-                  <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-                    <ShoppingCart className="h-12 w-12 text-gray-500" />
-                  </div>
-                  <div className="space-y-3">
-                    <TypographyH4 className="text-gray-900 dark:text-gray-100">
-                      Your cart is empty
-                    </TypographyH4>
-                    <TypographyP className="text-sm text-muted-foreground max-w-sm">
-                      Discover our amazing products and add them to your cart to
-                      get started.
-                    </TypographyP>
-                  </div>
-                  <Link href="/products" onClick={() => setIsOpen(false)}>
-                    <Button>Browse Products</Button>
-                  </Link>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {cartItems.map((item) => {
-                    // Get the correct price based on variant_type
-                    const itemPrice = getProductPrice(
-                      item.product,
-                      item.variant_type
-                    );
+                ) : (
+                  <div className="space-y-4">
+                    {cartItems.map((item) => {
+                      // Get the correct price based on variant_type
+                      const itemPrice = getProductPrice(
+                        item.product,
+                        item.variant_type
+                      );
 
-                    return (
-                      <div
-                        key={item.id}
-                        className="flex gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-900/30 rounded-lg transition-colors"
-                      >
-                        <div className="h-16 w-16 bg-gray-100 rounded-lg overflow-hidden shrink-0">
-                          <Image
-                            src={item.product?.image_url || "/placeholder.svg"}
-                            alt={item.product?.name || "Product"}
-                            width={64}
-                            height={64}
-                            className="h-full w-full object-cover"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <TypographyH4 className="text-sm mb-1 line-clamp-2">
-                            {item.product?.name}
-                          </TypographyH4>
-                          <TypographyP className="text-xs text-gray-500 mb-1 !mt-0">
-                            Unit: {item.product?.unit || "per bag"}
-                          </TypographyP>
-                          {/* Show variant type */}
-                          <TypographyP className="text-xs text-blue-600 mb-1 !mt-0">
-                            {getVariantDisplayName(item.variant_type)}
-                          </TypographyP>
-                          <TypographyP className="text-xs text-gray-500 mb-3 !mt-0">
-                            Price: RM{itemPrice.toFixed(2)}
-                          </TypographyP>
-                          <div className="flex items-center gap-3">
-                            <div className="flex items-center border rounded-lg">
+                      return (
+                        <div
+                          key={item.id}
+                          className="flex gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-900/30 rounded-lg transition-colors"
+                        >
+                          <div className="h-16 w-16 bg-gray-100 rounded-lg overflow-hidden shrink-0">
+                            <Image
+                              src={
+                                item.product?.image_url || "/placeholder.svg"
+                              }
+                              alt={item.product?.name || "Product"}
+                              width={64}
+                              height={64}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <TypographyH4 className="text-sm mb-1 line-clamp-2">
+                              {item.product?.name}
+                            </TypographyH4>
+                            <TypographyP className="text-xs text-gray-500 mb-1 !mt-0">
+                              Unit: {item.product?.unit || "per bag"}
+                            </TypographyP>
+                            {/* Show variant type */}
+                            <TypographyP className="text-xs text-blue-600 mb-1 !mt-0">
+                              {getVariantDisplayName(item.variant_type)}
+                            </TypographyP>
+                            <TypographyP className="text-xs text-gray-500 mb-3 !mt-0">
+                              Price: RM{itemPrice.toFixed(2)}
+                            </TypographyP>
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center border rounded-lg">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 w-7 p-0 hover:bg-gray-100"
+                                  onClick={() =>
+                                    updateQuantity(item.id, item.quantity - 1)
+                                  }
+                                >
+                                  <Minus className="h-3 w-3" />
+                                </Button>
+                                <span className="w-8 text-center text-sm font-medium">
+                                  {item.quantity}
+                                </span>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 w-7 p-0 hover:bg-gray-100"
+                                  onClick={() =>
+                                    updateQuantity(item.id, item.quantity + 1)
+                                  }
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </Button>
+                              </div>
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-7 w-7 p-0 hover:bg-gray-100"
-                                onClick={() =>
-                                  updateQuantity(item.id, item.quantity - 1)
-                                }
+                                className="h-7 w-7 p-0 border rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                                onClick={() => handleDeleteClick(item)}
                               >
-                                <Minus className="h-3 w-3" />
-                              </Button>
-                              <span className="w-8 text-center text-sm font-medium">
-                                {item.quantity}
-                              </span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 w-7 p-0 hover:bg-gray-100"
-                                onClick={() =>
-                                  updateQuantity(item.id, item.quantity + 1)
-                                }
-                              >
-                                <Plus className="h-3 w-3" />
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0 border rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-                              onClick={() => handleDeleteClick(item)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                          </div>
+                          <div className="text-right">
+                            <TypographyP className="font-semibold text-sm !mt-0">
+                              RM{(itemPrice * item.quantity).toFixed(2)}
+                            </TypographyP>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <TypographyP className="font-semibold text-sm !mt-0">
-                            RM{(itemPrice * item.quantity).toFixed(2)}
-                          </TypographyP>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </ScrollArea>
+                      );
+                    })}
+                  </div>
+                )}
+              </ScrollArea>
+            </div>
 
             {/* Cart Footer */}
             {user && cartItems.length > 0 && (
