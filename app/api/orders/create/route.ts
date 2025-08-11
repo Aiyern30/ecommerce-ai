@@ -92,6 +92,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No products found" }, { status: 400 });
     }
 
+    // Log the first product to see available fields
+    console.log("Sample product data:", products[0]);
+
     // Create order items for database storage (but use frontend totals)
     const orderItems = [];
 
@@ -109,6 +112,8 @@ export async function POST(request: NextRequest) {
         frontendPrice: item.price,
         quantity: item.quantity,
         variantType: item.variant_type,
+        imageUrl: product.image_url,
+        availableFields: Object.keys(product),
       });
 
       // Use the price calculated on the frontend
@@ -130,7 +135,7 @@ export async function POST(request: NextRequest) {
         price: price,
         quantity: item.quantity,
         variant_type: item.variant_type,
-        image_url: product.image_url,
+        // Remove image_url since we'll fetch it when displaying
       });
     }
 
