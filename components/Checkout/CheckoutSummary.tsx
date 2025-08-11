@@ -6,14 +6,35 @@ import { ShoppingCart, ArrowRight } from "lucide-react";
 import { useCart } from "@/components/CartProvider";
 import { formatCurrency } from "@/lib/cart/calculations";
 import { getProductPrice } from "@/lib/cart/utils";
-import { calculateOrderTotals } from "@/lib/order/api"; // Import the shared function
 import Image from "next/image";
+
+interface AdditionalService {
+  id: string;
+  service_name: string;
+  service_code: string;
+  rate_per_m3: number;
+  description: string;
+  is_active: boolean;
+}
+
+interface FreightCharge {
+  id: string;
+  min_volume: number;
+  max_volume: number | null;
+  delivery_fee: number;
+  description: string;
+  is_active: boolean;
+}
 
 interface CheckoutSummaryProps {
   showCheckoutButton?: boolean;
   onCheckout?: () => void;
   checkoutButtonText?: string;
   checkoutButtonDisabled?: boolean;
+  selectedServices?: { [key: string]: boolean };
+  totalVolume?: number;
+  additionalServices?: AdditionalService[];
+  freightCharges?: FreightCharge[];
 }
 
 export function CheckoutSummary({
@@ -21,12 +42,57 @@ export function CheckoutSummary({
   onCheckout,
   checkoutButtonText = "Proceed to Checkout",
   checkoutButtonDisabled = false,
+  selectedServices = {},
+  totalVolume = 0,
+  additionalServices = [],
+  freightCharges = [],
 }: CheckoutSummaryProps) {
   const { cartItems, isLoading } = useCart();
   const selectedItems = cartItems.filter((item) => item.selected);
 
-  // Use the shared calculation function for consistency
-  const totals = calculateOrderTotals(cartItems);
+  // Calculate subtotal from selected items
+  const subtotal = selectedItems.reduce((sum, item) => {
+    const itemPrice = getProductPrice(item.product, item.variant_type);
+    return sum + itemPrice * item.quantity;
+  }, 0);
+
+  // Calculate additional services total
+  const servicesTotal = additionalServices.reduce((sum, service) => {
+    if (selectedServices[service.service_code]) {
+      return sum + service.rate_per_m3 * totalVolume;
+    }
+    return sum;
+  }, 0);
+
+  // Get applicable freight charge
+  const getApplicableFreightCharge = (): FreightCharge | null => {
+    if (totalVolume === 0) return null;
+
+    return (
+      freightCharges.find((charge) => {
+        const minVol = charge.min_volume;
+        const maxVol = charge.max_volume;
+
+        if (maxVol === null) {
+          return totalVolume >= minVol;
+        } else {
+          return totalVolume >= minVol && totalVolume <= maxVol;
+        }
+      }) || null
+    );
+  };
+
+  const applicableFreightCharge = getApplicableFreightCharge();
+  const freightCost = applicableFreightCharge
+    ? applicableFreightCharge.delivery_fee
+    : 0;
+
+  // Calculate tax (SST 6%) on subtotal + services + freight
+  const taxableAmount = subtotal + servicesTotal + freightCost;
+  const tax = taxableAmount * 0.06;
+
+  // Calculate total
+  const total = taxableAmount + tax;
 
   if (isLoading) {
     return (
@@ -131,25 +197,60 @@ export function CheckoutSummary({
           <div className="space-y-3">
             <div className="flex justify-between items-center text-sm">
               <span className="text-gray-600 dark:text-gray-400">
-                Subtotal ({totals.selectedItemsCount} items)
+                Subtotal ({selectedItems.length} items, {totalVolume.toFixed(2)}{" "}
+                m³)
               </span>
               <span className="font-medium text-gray-900 dark:text-gray-100">
-                {formatCurrency(totals.subtotal)}
+                {formatCurrency(subtotal)}
               </span>
             </div>
 
+            {/* Additional Services */}
+            {servicesTotal > 0 && (
+              <div className="space-y-2">
+                <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Additional Services:
+                </div>
+                {additionalServices.map((service) => {
+                  if (!selectedServices[service.service_code]) return null;
+                  const serviceTotal = service.rate_per_m3 * totalVolume;
+                  return (
+                    <div
+                      key={service.id}
+                      className="flex justify-between items-center text-sm pl-4"
+                    >
+                      <span className="text-gray-600 dark:text-gray-400">
+                        {service.service_name}
+                      </span>
+                      <span className="font-medium text-gray-900 dark:text-gray-100">
+                        {formatCurrency(serviceTotal)}
+                      </span>
+                    </div>
+                  );
+                })}
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Services Total
+                  </span>
+                  <span className="font-medium text-gray-900 dark:text-gray-100">
+                    {formatCurrency(servicesTotal)}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Freight Charges */}
             <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Shipping</span>
-              <span
-                className={`font-medium ${
-                  totals.shippingCost === 0
-                    ? "text-green-600 dark:text-green-400"
-                    : "text-gray-900 dark:text-gray-100"
-                }`}
-              >
-                {totals.shippingCost === 0
-                  ? "FREE"
-                  : formatCurrency(totals.shippingCost)}
+              <span className="text-gray-600 dark:text-gray-400">
+                Delivery Fee
+                {applicableFreightCharge && (
+                  <span className="text-xs block text-gray-500">
+                    ({applicableFreightCharge.description})
+                  </span>
+                )}
+              </span>
+              <span className="font-medium text-gray-900 dark:text-gray-100">
+                {formatCurrency(freightCost)}
               </span>
             </div>
 
@@ -158,13 +259,14 @@ export function CheckoutSummary({
                 Tax (SST 6%)
               </span>
               <span className="font-medium text-gray-900 dark:text-gray-100">
-                {formatCurrency(totals.tax)}
+                {formatCurrency(tax)}
               </span>
             </div>
 
-            {totals.subtotal >= 100 && (
+            {/* Free shipping message */}
+            {freightCost === 0 && totalVolume >= 4.5 && (
               <div className="text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 p-2 rounded">
-                🎉 You qualify for free shipping!
+                🎉 Free delivery for orders 4.5m³ and above!
               </div>
             )}
 
@@ -174,7 +276,7 @@ export function CheckoutSummary({
                   Total
                 </span>
                 <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {formatCurrency(totals.total)}
+                  {formatCurrency(total)}
                 </span>
               </div>
             </div>
