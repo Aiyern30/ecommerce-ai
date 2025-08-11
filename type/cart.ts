@@ -2,7 +2,7 @@ export interface CartItem {
   id: string;
   cart_id: string;
   product_id: string;
-  variant_type?: string | null; // Add this line
+  variant_type?: string | null;
   quantity: number;
   selected: boolean;
   created_at: string;

@@ -20,7 +20,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui";
 import { useCart } from "./CartProvider";
-import { updateCartItemQuantity, removeFromCart } from "@/lib/cart/utils";
+import {
+  updateCartItemQuantity,
+  removeFromCart,
+  getProductPrice,
+} from "@/lib/cart/utils";
 import { useUser } from "@supabase/auth-helpers-react";
 import { TypographyH4, TypographyP } from "@/components/ui/Typography";
 import Image from "next/image";
@@ -61,8 +65,28 @@ export default function Cart() {
     }
   };
 
+  // Helper function to get variant display name
+  const getVariantDisplayName = (variantType: string | null | undefined) => {
+    switch (variantType) {
+      case "pump":
+        return "Pump Delivery";
+      case "tremie_1":
+        return "Tremie 1";
+      case "tremie_2":
+        return "Tremie 2";
+      case "tremie_3":
+        return "Tremie 3";
+      case "normal":
+      case null:
+      case undefined:
+      default:
+        return "Normal Delivery";
+    }
+  };
+
+  // Calculate subtotal using the correct prices based on variant_type
   const subtotal = cartItems.reduce((sum, item) => {
-    const price = item.product?.normal_price || 0;
+    const price = getProductPrice(item.product, item.variant_type);
     return sum + price * item.quantity;
   }, 0);
 
@@ -140,76 +164,85 @@ export default function Cart() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {cartItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-900/30 rounded-lg transition-colors"
-                    >
-                      <div className="h-16 w-16 bg-gray-100 rounded-lg overflow-hidden shrink-0">
-                        <Image
-                          src={item.product?.image_url || "/placeholder.svg"}
-                          alt={item.product?.name || "Product"}
-                          width={64}
-                          height={64}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <TypographyH4 className="text-sm mb-1 line-clamp-2">
-                          {item.product?.name}
-                        </TypographyH4>
-                        <TypographyP className="text-xs text-gray-500 mb-1 !mt-0">
-                          Unit: {item.product?.unit || "per bag"}
-                        </TypographyP>
-                        <TypographyP className="text-xs text-gray-500 mb-3 !mt-0">
-                          Price: RM{item.product?.normal_price?.toFixed(2)}
-                        </TypographyP>
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center border rounded-lg">
+                  {cartItems.map((item) => {
+                    // Get the correct price based on variant_type
+                    const itemPrice = getProductPrice(
+                      item.product,
+                      item.variant_type
+                    );
+
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-900/30 rounded-lg transition-colors"
+                      >
+                        <div className="h-16 w-16 bg-gray-100 rounded-lg overflow-hidden shrink-0">
+                          <Image
+                            src={item.product?.image_url || "/placeholder.svg"}
+                            alt={item.product?.name || "Product"}
+                            width={64}
+                            height={64}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <TypographyH4 className="text-sm mb-1 line-clamp-2">
+                            {item.product?.name}
+                          </TypographyH4>
+                          <TypographyP className="text-xs text-gray-500 mb-1 !mt-0">
+                            Unit: {item.product?.unit || "per bag"}
+                          </TypographyP>
+                          {/* Show variant type */}
+                          <TypographyP className="text-xs text-blue-600 mb-1 !mt-0">
+                            {getVariantDisplayName(item.variant_type)}
+                          </TypographyP>
+                          <TypographyP className="text-xs text-gray-500 mb-3 !mt-0">
+                            Price: RM{itemPrice.toFixed(2)}
+                          </TypographyP>
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center border rounded-lg">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 hover:bg-gray-100"
+                                onClick={() =>
+                                  updateQuantity(item.id, item.quantity - 1)
+                                }
+                              >
+                                <Minus className="h-3 w-3" />
+                              </Button>
+                              <span className="w-8 text-center text-sm font-medium">
+                                {item.quantity}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 hover:bg-gray-100"
+                                onClick={() =>
+                                  updateQuantity(item.id, item.quantity + 1)
+                                }
+                              >
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                            </div>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-7 w-7 p-0 hover:bg-gray-100"
-                              onClick={() =>
-                                updateQuantity(item.id, item.quantity - 1)
-                              }
+                              className="h-7 w-7 p-0 border rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                              onClick={() => handleDeleteClick(item)}
                             >
-                              <Minus className="h-3 w-3" />
-                            </Button>
-                            <span className="w-8 text-center text-sm font-medium">
-                              {item.quantity}
-                            </span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0 hover:bg-gray-100"
-                              onClick={() =>
-                                updateQuantity(item.id, item.quantity + 1)
-                              }
-                            >
-                              <Plus className="h-3 w-3" />
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0 border rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-                            onClick={() => handleDeleteClick(item)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                        </div>
+                        <div className="text-right">
+                          <TypographyP className="font-semibold text-sm !mt-0">
+                            RM{(itemPrice * item.quantity).toFixed(2)}
+                          </TypographyP>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <TypographyP className="font-semibold text-sm !mt-0">
-                          RM
-                          {(
-                            (item.product?.normal_price || 0) * item.quantity
-                          ).toFixed(2)}
-                        </TypographyP>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </ScrollArea>
@@ -267,14 +300,19 @@ export default function Cart() {
                 <TypographyH4 className="text-sm mb-1">
                   {itemToDelete.product?.name}
                 </TypographyH4>
+                <TypographyP className="text-sm text-blue-600 mb-1 !mt-0">
+                  {getVariantDisplayName(itemToDelete.variant_type)}
+                </TypographyP>
                 <TypographyP className="text-sm text-gray-500 mb-1 !mt-0">
                   Quantity: {itemToDelete.quantity}
                 </TypographyP>
                 <TypographyP className="text-sm font-semibold !mt-0">
                   RM
                   {(
-                    (itemToDelete.product?.normal_price || 0) *
-                    itemToDelete.quantity
+                    getProductPrice(
+                      itemToDelete.product,
+                      itemToDelete.variant_type
+                    ) * itemToDelete.quantity
                   ).toFixed(2)}
                 </TypographyP>
               </div>
