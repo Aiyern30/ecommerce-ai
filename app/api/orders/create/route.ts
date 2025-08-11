@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type NextRequest, NextResponse } from "next/server";
 import stripe from "@/lib/stripe/server";
 import { supabase } from "@/lib/supabase/client";
@@ -73,10 +74,10 @@ export async function POST(request: NextRequest) {
 
     // Fetch product details from database for order items
     const productIds = body.items.map((item) => item.product_id);
-    console.log("Fetching products:", productIds);
+    // Fetch products with images
     const { data: products, error: productError } = await supabase
       .from("products")
-      .select("*")
+      .select("*, product_images(id, image_url, is_primary, sort_order)")
       .in("id", productIds);
 
     if (productError) {
@@ -107,35 +108,25 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      console.log(`Processing product ${item.product_id}:`, {
-        productName: product.name,
-        frontendPrice: item.price,
-        quantity: item.quantity,
-        variantType: item.variant_type,
-        imageUrl: product.image_url,
-        availableFields: Object.keys(product),
-      });
-
-      // Use the price calculated on the frontend
-      const price = item.price;
-
-      // Validate price
-      if (price === null || price === undefined || price <= 0) {
-        console.error(`Invalid price for product ${item.product_id}: ${price}`);
-        return NextResponse.json(
-          { error: `Invalid price for product ${item.product_id}` },
-          { status: 400 }
+      // Find main image (is_primary or first)
+      let image_url = null;
+      if (product.product_images && product.product_images.length > 0) {
+        const primary = product.product_images.find(
+          (img: any) => img.is_primary
         );
+        image_url = primary
+          ? primary.image_url
+          : product.product_images[0].image_url;
       }
 
       orderItems.push({
         product_id: item.product_id,
         name: product.name,
-        grade: product.grade || "", // Add grade field
-        price: price,
+        grade: product.grade || "",
+        price: item.price,
         quantity: item.quantity,
         variant_type: item.variant_type,
-        // Remove image_url since we'll fetch it when displaying
+        image_url, // <-- Store image_url directly in order item
       });
     }
 
