@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { CartItem } from "@/type/cart";
 import { getProductPrice } from "@/lib/cart/utils";
 
@@ -146,7 +147,45 @@ export async function getUserOrders(userId: string) {
     }
 
     const result = await response.json();
-    return result.orders;
+
+    // Enhance order items with product images
+    const ordersWithImages = await Promise.all(
+      result.orders.map(async (order: any) => {
+        if (order.order_items && order.order_items.length > 0) {
+          const enhancedItems = await Promise.all(
+            order.order_items.map(async (item: any) => {
+              try {
+                // Fetch product image
+                const productResponse = await fetch(
+                  `/api/products/${item.product_id}`
+                );
+                if (productResponse.ok) {
+                  const productData = await productResponse.json();
+                  return {
+                    ...item,
+                    image_url: productData.image_url || null,
+                  };
+                }
+              } catch (error) {
+                console.warn(
+                  `Failed to fetch image for product ${item.product_id}:`,
+                  error
+                );
+              }
+              return item; // Return original item if fetch fails
+            })
+          );
+
+          return {
+            ...order,
+            order_items: enhancedItems,
+          };
+        }
+        return order;
+      })
+    );
+
+    return ordersWithImages;
   } catch (error) {
     console.error("Error fetching orders:", error);
     return [];

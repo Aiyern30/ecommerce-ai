@@ -25,47 +25,7 @@ import {
   TypographyP,
 } from "@/components/ui/Typography";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
-
-// Define the order structure based on your updated API
-interface OrderItem {
-  id: string;
-  product_id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  variant_type?: string;
-  image_url?: string;
-}
-
-interface Address {
-  id: string;
-  full_name: string;
-  phone?: string;
-  address_line1: string;
-  address_line2?: string;
-  city: string;
-  state: string;
-  postal_code: string;
-  country: string;
-}
-
-interface Order {
-  id: string;
-  user_id: string;
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
-  payment_status: "pending" | "paid" | "failed" | "refunded";
-  payment_intent_id?: string;
-  subtotal: number;
-  shipping_cost: number;
-  tax: number;
-  total: number;
-  address_id: string;
-  addresses?: Address; // This comes from the JOIN
-  order_items?: OrderItem[];
-  created_at: string;
-  updated_at: string;
-  notes?: string;
-}
+import { Order } from "@/type/order";
 
 export default function OrderSuccessPage() {
   const searchParams = useSearchParams();
