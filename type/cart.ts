@@ -19,6 +19,7 @@ export interface CartItem {
     tremie_3_price: number | null;
     unit: string | null;
     image_url: string;
+    stock_quantity: number | null;
     product_images?:
       | {
           id: string;
