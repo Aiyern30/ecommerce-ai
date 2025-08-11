@@ -83,17 +83,50 @@ export async function addToCart(
       return { success: false, isUpdate: false };
     }
 
-    // Check for existing item with same product and variant
-    const { data: existingItem } = await supabase
+    // Fetch product stock
+    const { data: product, error: productError } = await supabase
+      .from("products")
+      .select("stock_quantity")
+      .eq("id", productId)
+      .single();
+    if (productError || !product) {
+      toast.error("Failed to fetch product stock");
+      return { success: false, isUpdate: false };
+    }
+
+    // Build query for existing cart item
+    let query = supabase
       .from("cart_items")
       .select("id, quantity")
       .eq("cart_id", cartId)
-      .eq("product_id", productId)
-      .eq("variant_type", variantType || null)
-      .single();
+      .eq("product_id", productId);
+
+    if (variantType) {
+      query = query.eq("variant_type", variantType);
+    } else {
+      query = query.is("variant_type", null);
+    }
+
+    const { data: existingItem, error: existingError } = await query.single();
+
+    if (existingError && existingError.code !== "PGRST116") {
+      console.error("Error fetching existing cart item:", existingError);
+      toast.error("Failed to check cart");
+      return { success: false, isUpdate: false };
+    }
+
+    const newQuantity = existingItem
+      ? existingItem.quantity + quantity
+      : quantity;
+
+    if (newQuantity > product.stock_quantity) {
+      toast.error(
+        `Cannot add more than available stock (${product.stock_quantity})`
+      );
+      return { success: false, isUpdate: !!existingItem };
+    }
 
     if (existingItem) {
-      const newQuantity = existingItem.quantity + quantity;
       const { error: updateError } = await supabase
         .from("cart_items")
         .update({
@@ -113,9 +146,8 @@ export async function addToCart(
       const { error: insertError } = await supabase.from("cart_items").insert({
         cart_id: cartId,
         product_id: productId,
-        quantity: quantity,
+        quantity,
         variant_type: variantType || null,
-        // selected will be false by default from database schema
       });
 
       if (insertError) {
@@ -124,8 +156,7 @@ export async function addToCart(
         return { success: false, isUpdate: false };
       }
 
-      console.log("New item added to cart with selected: false (default)"); // Debug log
-      return { success: true, isUpdate: false };
+      return { success: true, isUpdate: false, newQuantity: quantity };
     }
   } catch (error) {
     console.error("Error in addToCart:", error);
@@ -336,7 +367,44 @@ export async function updateCartItemQuantity(
     if (quantity <= 0) {
       return await removeFromCart(itemId);
     }
+    const { data: cartItem, error: cartItemError } = await supabase
+      .from("cart_items")
+      .select(
+        `
+    product_id,
+    variant_type
+  `
+      )
+      .eq("id", itemId)
+      .single();
 
+    if (cartItemError || !cartItem) {
+      console.error("Error fetching cart item:", cartItemError);
+      toast.error("Failed to fetch cart item for stock check");
+      return false;
+    }
+
+    // Separate query for product stock
+    const { data: product, error: productError } = await supabase
+      .from("products")
+      .select("stock_quantity")
+      .eq("id", cartItem.product_id)
+      .single();
+
+    if (productError || !product) {
+      console.error("Error fetching product:", productError);
+      toast.error("Failed to fetch product stock");
+      return false;
+    }
+
+    const stock = product.stock_quantity;
+    // Check if stock exists and validate quantity
+    if (typeof stock === "number" && quantity > stock) {
+      toast.error(`Cannot set quantity above available stock (${stock})`);
+      return false;
+    }
+
+    // Update the quantity
     const { error } = await supabase
       .from("cart_items")
       .update({

@@ -43,6 +43,7 @@ import { useDeviceType } from "@/utils/useDeviceTypes";
 
 export default function CartPage() {
   const { cartItems, refreshCart, isLoading } = useCart();
+  console.log("cartItems", cartItems);
   const { isMobile } = useDeviceType(); // Use the hook
   const user = useUser();
   const router = useRouter();
@@ -506,10 +507,12 @@ export default function CartPage() {
                                       }
                                     }}
                                     className={`appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none
-              ${
-                isMobile ? "w-10 px-1 py-1.5 text-xs" : "w-12 px-2 py-2 text-sm"
-              }
-              font-bold text-center text-gray-900 dark:text-gray-100 border-x border-gray-200 dark:border-gray-600 outline-none bg-transparent`}
+                  ${
+                    isMobile
+                      ? "w-10 px-1 py-1.5 text-xs"
+                      : "w-12 px-2 py-2 text-sm"
+                  }
+                  font-bold text-center text-gray-900 dark:text-gray-100 border-x border-gray-200 dark:border-gray-600 outline-none bg-transparent`}
                                     aria-label="Quantity"
                                     style={{
                                       MozAppearance: "textfield",
@@ -523,7 +526,14 @@ export default function CartPage() {
                                         item.quantity + 1
                                       );
                                     }}
-                                    className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-r-lg group"
+                                    // Optionally disable if at stock limit
+                                    disabled={
+                                      typeof item.product?.stock_quantity ===
+                                        "number" &&
+                                      item.quantity >=
+                                        item.product.stock_quantity
+                                    }
+                                    className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-r-lg group disabled:opacity-50"
                                     aria-label="Increase quantity"
                                   >
                                     <Plus
