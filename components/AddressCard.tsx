@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import type React from "react";
@@ -57,23 +58,37 @@ export function AddressCard({
   };
 
   const handleDeleteConfirm = async () => {
-    if (!user || !address.id) return;
+    if (!user || !address.id) {
+      console.error("Missing user or address ID");
+      toast.error("Unable to delete address. Please try again.");
+      return;
+    }
 
     setIsDeleting(true);
     try {
-      const { error } = await supabase
+      console.log("Soft deleting address:", address.id, "for user:", user.id);
+
+      const { error: updateError } = await supabase
         .from("addresses")
-        .delete()
+        .update({
+          deleted_at: new Date().toISOString(),
+          is_default: false,
+        })
         .eq("id", address.id)
         .eq("user_id", user.id);
 
-      if (error) throw error;
+      if (updateError) {
+        console.error("Soft delete error:", updateError);
+        throw updateError;
+      }
 
+      console.log("Address soft deleted successfully");
       toast.success("Address deleted successfully!");
+
       if (onDelete) {
         onDelete(address.id);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting address:", error);
       toast.error("Failed to delete address. Please try again.");
     } finally {
