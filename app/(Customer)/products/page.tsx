@@ -9,27 +9,10 @@ import { Button } from "@/components/ui/";
 import { SlidersHorizontal, X } from "lucide-react";
 import { Skeleton } from "@/components/ui/";
 import { TypographyH1 } from "@/components/ui/Typography";
-
-type SimpleProduct = {
-  id: string;
-  name: string;
-  grade: string;
-  product_type: string;
-  unit: string | null;
-  stock_quantity: number | null;
-  normal_price: number | null;
-  product_images:
-    | {
-        id: string;
-        image_url: string;
-        is_primary: boolean;
-        sort_order: number;
-      }[]
-    | null;
-};
+import { Product } from "@/type/product";
 
 export default function ProductListPage() {
-  const [products, setProducts] = useState<SimpleProduct[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -41,13 +24,7 @@ export default function ProductListPage() {
         .from("products")
         .select(
           `
-          id,
-          name,
-          grade,
-          product_type,
-          unit,
-          stock_quantity,
-          normal_price,
+          *,
           product_images(
             id,
             image_url,
@@ -152,6 +129,11 @@ export default function ProductListPage() {
                 stock={product.stock_quantity}
                 image={mainImage?.image_url ?? "/placeholder.svg"}
                 href={`/products/${product.id}`}
+                normal_price={product.normal_price}
+                pump_price={product.pump_price}
+                tremie_1_price={product.tremie_1_price}
+                tremie_2_price={product.tremie_2_price}
+                tremie_3_price={product.tremie_3_price}
                 showCompare
                 isCompared={selectedIds.includes(product.id)}
                 onCompareToggle={handleCompareToggle}
