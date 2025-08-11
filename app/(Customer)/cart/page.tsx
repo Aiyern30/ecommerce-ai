@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -132,6 +132,18 @@ export default function CartPage() {
     // Go directly to the address step
     router.push("/checkout/address");
   };
+
+  // Local state for quantity input per item
+  const [inputQty, setInputQty] = useState<{ [id: string]: string }>({});
+
+  // Sync inputQty state with cartItems when cartItems change
+  useEffect(() => {
+    const qtyState: { [id: string]: string } = {};
+    cartItems.forEach((item) => {
+      qtyState[item.id] = String(item.quantity);
+    });
+    setInputQty(qtyState);
+  }, [cartItems]);
 
   return (
     <div className="min-h-screen mb-4">
@@ -282,6 +294,9 @@ export default function CartPage() {
                         item.product,
                         item.variant_type
                       );
+
+                      const itemInputQty =
+                        inputQty[item.id] ?? String(item.quantity);
 
                       return (
                         <div
@@ -458,15 +473,48 @@ export default function CartPage() {
                                       } group-hover:scale-110 transition-transform duration-200`}
                                     />
                                   </button>
-                                  <span
-                                    className={`${
-                                      isMobile
-                                        ? "px-2 py-1.5 min-w-[2rem] text-xs"
-                                        : "px-3 py-2 min-w-[2.5rem] text-sm"
-                                    } font-bold text-center text-gray-900 dark:text-gray-100 border-x border-gray-200 dark:border-gray-600`}
-                                  >
-                                    {item.quantity}
-                                  </span>
+                                  {/* Number input for quantity */}
+                                  <input
+                                    type="number"
+                                    min={1}
+                                    value={itemInputQty}
+                                    onClick={(e) => e.stopPropagation()}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      // Allow empty string for typing, but only positive numbers
+                                      if (/^\d*$/.test(val)) {
+                                        setInputQty((prev) => ({
+                                          ...prev,
+                                          [item.id]: val,
+                                        }));
+                                      }
+                                    }}
+                                    onBlur={() => {
+                                      let val = parseInt(itemInputQty, 10);
+                                      if (isNaN(val) || val < 1) val = 1;
+                                      if (val !== item.quantity) {
+                                        updateQuantity(item.id, val);
+                                      }
+                                      setInputQty((prev) => ({
+                                        ...prev,
+                                        [item.id]: String(val),
+                                      }));
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") {
+                                        (e.target as HTMLInputElement).blur();
+                                      }
+                                    }}
+                                    className={`appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none
+              ${
+                isMobile ? "w-10 px-1 py-1.5 text-xs" : "w-12 px-2 py-2 text-sm"
+              }
+              font-bold text-center text-gray-900 dark:text-gray-100 border-x border-gray-200 dark:border-gray-600 outline-none bg-transparent`}
+                                    aria-label="Quantity"
+                                    style={{
+                                      MozAppearance: "textfield",
+                                    }}
+                                  />
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
