@@ -12,7 +12,10 @@ import type { CartItem } from "@/type/cart";
  */
 
 // Helper function to get the appropriate price based on variant type
-export function getProductPrice(product: any, variantType?: string): number {
+export function getProductPrice(
+  product: any,
+  variantType?: string | null
+): number {
   if (!product) return 0;
 
   switch (variantType) {
@@ -25,6 +28,8 @@ export function getProductPrice(product: any, variantType?: string): number {
     case "tremie_3":
       return product.tremie_3_price || product.normal_price || 0;
     case "normal":
+    case null:
+    case undefined:
     default:
       return product.normal_price || 0;
   }
