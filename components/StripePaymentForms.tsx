@@ -11,12 +11,12 @@ import type { StripePaymentElementOptions } from "@stripe/stripe-js";
 import { useState } from "react";
 import { Button } from "@/components/ui";
 import { Loader2, CreditCard, Shield } from "lucide-react";
-import { createOrderAPI } from "@/lib/order/api";
+import { createOrderAPI, calculateOrderTotals } from "@/lib/order/api";
 import { useUser } from "@supabase/auth-helpers-react";
 import { useCart } from "@/components/CartProvider";
 import type { Address } from "@/lib/user/address";
 import { clearPaymentSession } from "./StripeProvider";
-import { calculateCartTotals } from "@/lib/cart/calculations";
+import { formatCurrency } from "@/lib/cart/calculations";
 import { getCountryCode } from "@/utils/country-codes";
 
 interface BillingDetails {
@@ -50,8 +50,8 @@ export function StripePaymentForm({
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Calculate total amount
-  const totals = calculateCartTotals(cartItems);
+  // Use the shared calculation function
+  const totals = calculateOrderTotals(cartItems);
 
   // PaymentElement options
   const paymentElementOptions: StripePaymentElementOptions = {
@@ -267,11 +267,43 @@ export function StripePaymentForm({
 
         {/* Order Total Display */}
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-          <div className="flex justify-between items-center">
-            <span className="text-lg font-semibold">Total Amount:</span>
-            <span className="text-2xl font-bold text-blue-600">
-              RM{totals.total.toFixed(2)}
-            </span>
+          <div className="space-y-2">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-gray-600 dark:text-gray-400">
+                Subtotal ({totals.selectedItemsCount} items)
+              </span>
+              <span className="font-medium">
+                {formatCurrency(totals.subtotal)}
+              </span>
+            </div>
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-gray-600 dark:text-gray-400">Shipping</span>
+              <span
+                className={`font-medium ${
+                  totals.shippingCost === 0
+                    ? "text-green-600 dark:text-green-400"
+                    : ""
+                }`}
+              >
+                {totals.shippingCost === 0
+                  ? "FREE"
+                  : formatCurrency(totals.shippingCost)}
+              </span>
+            </div>
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-gray-600 dark:text-gray-400">
+                Tax (SST 6%)
+              </span>
+              <span className="font-medium">{formatCurrency(totals.tax)}</span>
+            </div>
+            <div className="border-t pt-2">
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-semibold">Total Amount:</span>
+                <span className="text-2xl font-bold text-blue-600">
+                  {formatCurrency(totals.total)}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -290,7 +322,7 @@ export function StripePaymentForm({
           ) : (
             <div className="flex items-center justify-center space-x-2">
               <Shield className="h-4 w-4" />
-              <span>Pay RM{totals.total.toFixed(2)} & Place Order</span>
+              <span>Pay {formatCurrency(totals.total)} & Place Order</span>
             </div>
           )}
         </Button>
