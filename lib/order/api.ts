@@ -155,12 +155,16 @@ export async function getUserOrders(userId: string) {
           const enhancedItems = await Promise.all(
             order.order_items.map(async (item: any) => {
               try {
-                // Fetch product image
+                // Fetch product image using product_id
                 const productResponse = await fetch(
                   `/api/products/${item.product_id}`
                 );
                 if (productResponse.ok) {
                   const productData = await productResponse.json();
+                  console.log(
+                    "Fetched productData for order item:",
+                    productData
+                  ); // <-- Add this line
                   return {
                     ...item,
                     image_url: productData.image_url || null,

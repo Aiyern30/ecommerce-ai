@@ -1,4 +1,5 @@
 import type { CartItem } from "@/type/cart";
+import { getProductPrice } from "./utils";
 
 export interface CartTotals {
   subtotal: number;
@@ -24,7 +25,8 @@ export function calculateCartTotals(cartItems: CartItem[]): CartTotals {
 
   // Calculate subtotal
   const subtotal = selectedItems.reduce(
-    (sum, item) => sum + (item.product?.price || 0) * item.quantity,
+    (sum, item) =>
+      sum + getProductPrice(item.product, item.variant_type) * item.quantity,
     0
   );
 
