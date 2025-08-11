@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { Button } from "@/components/ui";
 import { ShoppingCart, ArrowRight } from "lucide-react";
 import { useCart } from "@/components/CartProvider";
-import { calculateCartTotals, formatCurrency } from "@/lib/cart/calculations";
+import { formatCurrency } from "@/lib/cart/calculations";
+import { getProductPrice } from "@/lib/cart/utils";
 import Image from "next/image";
 
 interface CheckoutSummaryProps {
@@ -21,8 +22,38 @@ export function CheckoutSummary({
   checkoutButtonDisabled = false,
 }: CheckoutSummaryProps) {
   const { cartItems, isLoading } = useCart();
-  const totals = calculateCartTotals(cartItems);
   const selectedItems = cartItems.filter((item) => item.selected);
+
+  // Calculate totals using variant-specific pricing
+  const calculateTotals = () => {
+    const subtotal = selectedItems.reduce((sum, item) => {
+      const price = getProductPrice(item.product, item.variant_type);
+      return sum + price * item.quantity;
+    }, 0);
+
+    const selectedItemsCount = selectedItems.reduce(
+      (count, item) => count + item.quantity,
+      0
+    );
+
+    // Free shipping if subtotal >= 100
+    const shippingCost = subtotal >= 100 ? 0 : 10; // Adjust shipping cost as needed
+
+    // Tax calculation (SST 6%)
+    const tax = subtotal * 0.06;
+
+    const total = subtotal + shippingCost + tax;
+
+    return {
+      subtotal,
+      shippingCost,
+      tax,
+      total,
+      selectedItemsCount,
+    };
+  };
+
+  const totals = calculateTotals();
 
   if (isLoading) {
     return (
@@ -101,13 +132,19 @@ export function CheckoutSummary({
                       Qty: {item.quantity}
                     </span>
                     <span className="text-xs text-gray-500 dark:text-gray-400">
-                      @ {formatCurrency(item.product?.price || 0)}
+                      @{" "}
+                      {formatCurrency(
+                        getProductPrice(item.product, item.variant_type)
+                      )}
                     </span>
                   </div>
                 </div>
                 <div className="text-right">
                   <span className="font-bold text-gray-900 dark:text-gray-100 text-sm">
-                    {formatCurrency((item.product?.price || 0) * item.quantity)}
+                    {formatCurrency(
+                      getProductPrice(item.product, item.variant_type) *
+                        item.quantity
+                    )}
                   </span>
                 </div>
               </div>
