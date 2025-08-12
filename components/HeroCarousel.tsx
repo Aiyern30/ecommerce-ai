@@ -233,9 +233,10 @@ export default function HeroCarousel() {
               onClick={() => goToSlide(index)}
               className={cn(
                 "w-3 h-3 md:w-4 md:h-4 rounded-full transition-all duration-300 hover:scale-110",
+                // Light: bg-black, Dark: bg-gray-400, Active: wider and orange
                 currentSlide === index
                   ? "bg-orange-500 w-8 md:w-10 shadow-lg"
-                  : "bg-white/60 hover:bg-white/80 backdrop-blur-sm"
+                  : "bg-black/30 dark:bg-gray-400"
               )}
               aria-label={`Go to slide ${index + 1}`}
             />
