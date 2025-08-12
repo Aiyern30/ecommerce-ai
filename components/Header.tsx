@@ -38,6 +38,7 @@ const Header = () => {
   const primaryNavItems = [
     { name: "Products", path: "/products" },
     { name: "Blog", path: "/blogs" },
+    { name: "Cart", path: "/cart" },
     { name: "Orders", path: "/profile/orders" },
   ];
 
