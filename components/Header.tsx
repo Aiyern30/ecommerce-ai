@@ -33,12 +33,12 @@ const Header = () => {
   const user = useUser();
   const [isStaff, setIsStaff] = useState(false);
 
-  const isActive = (path: string) => pathname.startsWith(path);
+  const isActive = (path: string) => pathname?.startsWith(path);
 
   const primaryNavItems = [
     { name: "Products", path: "/products" },
     { name: "Blog", path: "/blogs" },
-    { name: "Compare", path: "/compare" },
+    { name: "Orders", path: "/profile/orders" },
   ];
 
   // Add staff dashboard nav if user is staff
