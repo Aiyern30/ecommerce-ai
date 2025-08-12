@@ -28,7 +28,7 @@ export default function CheckoutPaymentPage() {
   const user = useUser();
   const [addressData, setAddressData] = useState<Address | null>(null);
   const [totalAmount, setTotalAmount] = useState<number>(0);
-  const addressId = searchParams.get("addressId");
+  const addressId = searchParams?.get("addressId");
   const { cartItems, isLoading } = useCart();
 
   const selectedItems = cartItems.filter((item) => item.selected);
