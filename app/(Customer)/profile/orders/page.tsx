@@ -126,9 +126,6 @@ export default function OrdersPage() {
         return;
       }
 
-      console.log("=== SUCCESS - ORDERS LOADED ===");
-      console.log("Final orders with addresses and items:", ordersData);
-
       setOrders(ordersData);
     } catch (error) {
       console.error("Error in loadOrders:", error);
@@ -259,7 +256,7 @@ export default function OrdersPage() {
   if (user === undefined || isLoading) {
     return (
       <div className="min-h-screen py-8">
-        <div className="container mx-auto px-4 max-w-6xl flex flex-col gap-8">
+        <div className="container mx-auto px-4 flex flex-col gap-8">
           <div className="space-y-6">
             {/* Header skeleton */}
             <div className="flex items-center gap-4">
@@ -298,7 +295,7 @@ export default function OrdersPage() {
 
   return (
     <div className="min-h-screen py-8">
-      <div className="container mx-auto px-4 max-w-6xl flex flex-col gap-8">
+      <div className="container mx-auto px-4 flex flex-col gap-8">
         {/* Header */}
         <TypographyH1 className="my-8">YOUR ORDERS</TypographyH1>
 
