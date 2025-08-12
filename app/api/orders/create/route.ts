@@ -243,6 +243,39 @@ export async function POST(request: NextRequest) {
 
     console.log("Order notification created");
 
+    // --- Update product stock_quantity for each ordered item ---
+    for (const item of body.items) {
+      // Fetch current stock
+      const { data: product, error: fetchError } = await supabaseAdmin
+        .from("products")
+        .select("stock_quantity")
+        .eq("id", item.product_id)
+        .single();
+
+      if (fetchError) {
+        console.warn(
+          `Failed to fetch stock for product ${item.product_id}:`,
+          fetchError
+        );
+        continue;
+      }
+
+      const newStock = (product?.stock_quantity || 0) - item.quantity;
+
+      const { error: stockError } = await supabaseAdmin
+        .from("products")
+        .update({ stock_quantity: newStock })
+        .eq("id", item.product_id);
+
+      if (stockError) {
+        console.warn(
+          `Failed to update stock for product ${item.product_id}:`,
+          stockError
+        );
+      }
+    }
+    // --- End update stock ---
+
     // Clear selected cart items after successful order creation using your existing logic
     try {
       // Use the same logic as your clearCart function but with admin client
