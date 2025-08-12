@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -18,6 +20,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Skeleton,
 } from "@/components/ui";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -30,47 +33,78 @@ import {
   Eye,
   Calendar,
   DollarSign,
-  Clock,
+  MapPin,
+  Phone,
+  User,
+  ShoppingBag,
+  TrendingUp,
+  Filter,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/currency";
-import { formatDistanceToNow } from "date-fns";
+import { Order } from "@/type/order";
 
-interface ShippingAddress {
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  address_line_1: string;
-  address_line_2?: string;
-  city: string;
-  state: string;
-  postal_code: string;
-  country: string;
+// Loading skeleton component
+function OrderSkeleton() {
+  return (
+    <Card className="animate-pulse">
+      <CardHeader>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-6 w-20" />
+            <Skeleton className="h-6 w-16" />
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-9 w-24" />
+            <Skeleton className="h-9 w-24" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
-interface OrderItem {
-  id: string;
-  product_id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  variant_type?: string;
-  image_url?: string;
-}
-
-interface Order {
-  id: string;
-  status: string;
-  payment_status: string;
-  subtotal: number;
-  shipping_cost: number;
-  tax: number;
-  total: number;
-  created_at: string;
-  updated_at: string;
-  shipping_address: ShippingAddress;
-  payment_intent_id?: string;
-  order_items: OrderItem[];
+// Stats card component
+function StatsCard({
+  icon: Icon,
+  title,
+  value,
+  subtitle,
+}: {
+  icon: any;
+  title: string;
+  value: string;
+  subtitle?: string;
+}) {
+  return (
+    <Card className="hover:shadow-md transition-all duration-200 border-l-4 border-l-blue-500">
+      <CardContent className="p-6">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-blue-50 rounded-full">
+            <Icon className="h-6 w-6 text-blue-600" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-gray-600">{title}</p>
+            <p className="text-2xl font-bold text-gray-900">{value}</p>
+            {subtitle && (
+              <p className="text-xs text-gray-500 mt-1">{subtitle}</p>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function OrdersPage() {
@@ -84,6 +118,7 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [paymentFilter, setPaymentFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
+  const [showFilters, setShowFilters] = useState(false);
 
   const loadOrders = useCallback(async () => {
     if (!user?.id) {
@@ -95,11 +130,18 @@ export default function OrdersPage() {
     console.log("User ID:", user.id);
 
     try {
-      // Use a simpler approach - fetch orders and order_items separately
-      console.log("Fetching orders only (no JOIN)...");
+      setIsLoading(true);
+
+      // Enhanced query similar to staff page - fetch orders with addresses and order_items
       const { data: ordersData, error: ordersError } = await supabase
         .from("orders")
-        .select("*")
+        .select(
+          `
+          *,
+          addresses (*),
+          order_items (*)
+        `
+        )
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
@@ -117,35 +159,10 @@ export default function OrdersPage() {
         return;
       }
 
-      console.log(
-        `Found ${ordersData.length} orders, now fetching order items...`
-      );
-
-      // Fetch order items for each order
-      const ordersWithItems = await Promise.all(
-        ordersData.map(async (order) => {
-          const { data: orderItems, error: itemsError } = await supabase
-            .from("order_items")
-            .select("*")
-            .eq("order_id", order.id);
-
-          if (itemsError) {
-            console.error(
-              `Error fetching items for order ${order.id}:`,
-              itemsError
-            );
-            return { ...order, order_items: [] };
-          }
-
-          console.log(`Order ${order.id} has ${orderItems?.length || 0} items`);
-          return { ...order, order_items: orderItems || [] };
-        })
-      );
-
       console.log("=== SUCCESS - ORDERS LOADED ===");
-      console.log("Final orders with items:", ordersWithItems);
+      console.log("Final orders with addresses and items:", ordersData);
 
-      setOrders(ordersWithItems);
+      setOrders(ordersData);
     } catch (error) {
       console.error("Error in loadOrders:", error);
       toast.error("Failed to load orders");
@@ -168,7 +185,7 @@ export default function OrdersPage() {
       filtered = filtered.filter(
         (order) =>
           order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          order.order_items.some((item) =>
+          (order.order_items || []).some((item) =>
             item.name.toLowerCase().includes(searchQuery.toLowerCase())
           )
       );
@@ -219,30 +236,32 @@ export default function OrdersPage() {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case "pending":
-        return "bg-yellow-100 text-yellow-800 border-yellow-300";
+        return "bg-yellow-100 text-yellow-800 border-yellow-300 hover:bg-yellow-200";
       case "processing":
-        return "bg-blue-100 text-blue-800 border-blue-300";
+        return "bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200";
       case "shipped":
-        return "bg-purple-100 text-purple-800 border-purple-300";
+        return "bg-purple-100 text-purple-800 border-purple-300 hover:bg-purple-200";
       case "delivered":
-        return "bg-green-100 text-green-800 border-green-300";
+        return "bg-green-100 text-green-800 border-green-300 hover:bg-green-200";
       case "cancelled":
-        return "bg-red-100 text-red-800 border-red-300";
+        return "bg-red-100 text-red-800 border-red-300 hover:bg-red-200";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-300";
+        return "bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200";
     }
   };
 
   const getPaymentStatusColor = (paymentStatus: string) => {
     switch (paymentStatus.toLowerCase()) {
       case "paid":
-        return "bg-green-100 text-green-800 border-green-300";
+        return "bg-green-100 text-green-800 border-green-300 hover:bg-green-200";
       case "pending":
-        return "bg-yellow-100 text-yellow-800 border-yellow-300";
+        return "bg-yellow-100 text-yellow-800 border-yellow-300 hover:bg-yellow-200";
       case "failed":
-        return "bg-red-100 text-red-800 border-red-300";
+        return "bg-red-100 text-red-800 border-red-300 hover:bg-red-200";
+      case "refunded":
+        return "bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-300";
+        return "bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200";
     }
   };
 
@@ -260,14 +279,49 @@ export default function OrdersPage() {
     setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
   };
 
+  // Calculate stats
+  const totalOrders = orders.length;
+  const totalSpent = orders.reduce((sum, order) => sum + order.total, 0);
+  const recentOrders = orders.filter((order) => {
+    const orderDate = new Date(order.created_at);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    return orderDate >= thirtyDaysAgo;
+  }).length;
+
   if (user === undefined || isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center space-y-4">
-              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-              <p className="text-muted-foreground">Loading your orders...</p>
+      <div className="min-h-screen py-8">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="space-y-6">
+            {/* Header skeleton */}
+            <div className="flex items-center gap-4">
+              <Skeleton className="h-10 w-20" />
+              <Skeleton className="h-8 w-48" />
+            </div>
+
+            {/* Stats skeleton */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Card key={i} className="animate-pulse">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <Skeleton className="h-12 w-12 rounded-full" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-6 w-16" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Orders skeleton */}
+            <div className="space-y-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <OrderSkeleton key={i} />
+              ))}
             </div>
           </div>
         </div>
@@ -276,203 +330,206 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-4xl">
-        {/* Header with Search and Filters */}
-        <div className="flex flex-col gap-4 mb-8">
+    <div className="min-h-screen py-8">
+      <div className="container mx-auto px-4 max-w-6xl">
+        {/* Header */}
+        <div className="flex flex-col gap-6 mb-8">
           <div className="flex items-center gap-4">
             <Button
               variant="outline"
               size="sm"
               onClick={() => router.back()}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
               Back
             </Button>
-            <h1 className="text-3xl font-bold">Your Orders</h1>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Your Orders</h1>
+              <p className="text-gray-600 mt-1">
+                Track and manage your order history
+              </p>
+            </div>
           </div>
 
-          {/* Search and Filters */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            {/* Search */}
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Search by order ID or product name..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+          {/* Stats Cards */}
+          {orders.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <StatsCard
+                icon={ShoppingBag}
+                title="Total Orders"
+                value={totalOrders.toString()}
+                subtitle="All time"
+              />
+              <StatsCard
+                icon={DollarSign}
+                title="Total Spent"
+                value={formatCurrency(totalSpent)}
+                subtitle="Lifetime value"
+              />
+              <StatsCard
+                icon={TrendingUp}
+                title="Recent Orders"
+                value={recentOrders.toString()}
+                subtitle="Last 30 days"
               />
             </div>
-
-            {/* Status Filter */}
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Order Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="processing">Processing</SelectItem>
-                <SelectItem value="shipped">Shipped</SelectItem>
-                <SelectItem value="delivered">Delivered</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Payment Filter */}
-            <Select value={paymentFilter} onValueChange={setPaymentFilter}>
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Payment Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Payments</SelectItem>
-                <SelectItem value="paid">Paid</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="failed">Failed</SelectItem>
-                <SelectItem value="refunded">Refunded</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Sort */}
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">Newest First</SelectItem>
-                <SelectItem value="oldest">Oldest First</SelectItem>
-                <SelectItem value="highest">Highest Amount</SelectItem>
-                <SelectItem value="lowest">Lowest Amount</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Results Summary */}
-          {orders.length > 0 && (
-            <div className="flex items-center gap-4 text-sm text-gray-600">
-              <span>
-                Showing {filteredOrders.length} of {orders.length} orders
-              </span>
-              {searchQuery && (
-                <span>• Filtered by &quot;{searchQuery}&quot;</span>
-              )}
-              {statusFilter !== "all" && <span>• Status: {statusFilter}</span>}
-              {paymentFilter !== "all" && (
-                <span>• Payment: {paymentFilter}</span>
-              )}
-            </div>
           )}
-        </div>
 
-        {/* Recent Orders Section */}
-        {orders.length > 0 &&
-          searchQuery === "" &&
-          statusFilter === "all" &&
-          paymentFilter === "all" && (
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
-                  Recent Orders
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4">
-                  {filteredOrders.slice(0, 3).map((order) => (
-                    <div
-                      key={order.id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div>
-                          <p className="font-medium">
-                            Order #{order.id.slice(-8)}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {formatDistanceToNow(new Date(order.created_at), {
-                              addSuffix: true,
-                            })}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
-                              order.status
-                            )}`}
-                          >
-                            {order.status}
-                          </span>
-                          <span
-                            className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              order.payment_status === "paid"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-gray-100 text-gray-800"
-                            }`}
-                          >
-                            {order.payment_status}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <span className="font-semibold">
-                          {formatCurrency(order.total)}
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            router.push(`/profile/orders/${order.id}`)
-                          }
-                        >
-                          View Details
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+          {/* Search and Filters */}
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex flex-col gap-4">
+                {/* Search Bar */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    type="text"
+                    placeholder="Search by order ID or product name..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 border-gray-200 focus:border-blue-500 transition-colors"
+                  />
                 </div>
-                {filteredOrders.length > 3 && (
-                  <div className="mt-4 text-center">
-                    <p className="text-sm text-muted-foreground">
-                      Showing 3 of {filteredOrders.length} orders
-                    </p>
+
+                {/* Filter Toggle */}
+                <div className="flex items-center justify-between">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="flex items-center gap-2"
+                  >
+                    <Filter className="h-4 w-4" />
+                    {showFilters ? "Hide Filters" : "Show Filters"}
+                  </Button>
+
+                  {(searchQuery ||
+                    statusFilter !== "all" ||
+                    paymentFilter !== "all") && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSearchQuery("");
+                        setStatusFilter("all");
+                        setPaymentFilter("all");
+                      }}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      Clear All
+                    </Button>
+                  )}
+                </div>
+
+                {/* Filters */}
+                {showFilters && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t">
+                    <Select
+                      value={statusFilter}
+                      onValueChange={setStatusFilter}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Order Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Status</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="processing">Processing</SelectItem>
+                        <SelectItem value="shipped">Shipped</SelectItem>
+                        <SelectItem value="delivered">Delivered</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Select
+                      value={paymentFilter}
+                      onValueChange={setPaymentFilter}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Payment Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Payments</SelectItem>
+                        <SelectItem value="paid">Paid</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="failed">Failed</SelectItem>
+                        <SelectItem value="refunded">Refunded</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Select value={sortBy} onValueChange={setSortBy}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sort by" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="newest">Newest First</SelectItem>
+                        <SelectItem value="oldest">Oldest First</SelectItem>
+                        <SelectItem value="highest">Highest Amount</SelectItem>
+                        <SelectItem value="lowest">Lowest Amount</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          )}
 
-        {orders.length === 0 ? (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Package className="w-8 h-8 text-gray-400" />
+                {/* Results Summary */}
+                {orders.length > 0 && (
+                  <div className="flex items-center gap-4 text-sm text-gray-600 pt-2 border-t">
+                    <span className="font-medium">
+                      Showing {filteredOrders.length} of {orders.length} orders
+                    </span>
+                    {searchQuery && <span>• Filtered by "{searchQuery}"</span>}
+                    {statusFilter !== "all" && (
+                      <span>• Status: {statusFilter}</span>
+                    )}
+                    {paymentFilter !== "all" && (
+                      <span>• Payment: {paymentFilter}</span>
+                    )}
+                  </div>
+                )}
               </div>
-              <h2 className="text-xl font-semibold mb-2">No orders yet</h2>
-              <p className="text-gray-600 mb-6">
-                You haven&apos;t placed any orders yet. Start shopping to see
-                your orders here.
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Orders Content */}
+        {orders.length === 0 ? (
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-16 text-center">
+              <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Package className="w-10 h-10 text-blue-500" />
+              </div>
+              <h2 className="text-2xl font-semibold mb-3 text-gray-900">
+                No orders yet
+              </h2>
+              <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                You haven't placed any orders yet. Start shopping to see your
+                orders here and track their progress.
               </p>
               <Link href="/products">
-                <Button>Start Shopping</Button>
+                <Button size="lg" className="px-8">
+                  <ShoppingBag className="mr-2 h-5 w-5" />
+                  Start Shopping
+                </Button>
               </Link>
             </CardContent>
           </Card>
         ) : filteredOrders.length === 0 ? (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Search className="w-8 h-8 text-gray-400" />
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-16 text-center">
+              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Search className="w-10 h-10 text-gray-400" />
               </div>
-              <h2 className="text-xl font-semibold mb-2">No orders found</h2>
-              <p className="text-gray-600 mb-6">
+              <h2 className="text-2xl font-semibold mb-3 text-gray-900">
+                No orders found
+              </h2>
+              <p className="text-gray-600 mb-8 max-w-md mx-auto">
                 No orders match your current filters. Try adjusting your search
-                criteria.
+                criteria or clear all filters.
               </p>
               <Button
                 variant="outline"
+                size="lg"
                 onClick={() => {
                   setSearchQuery("");
                   setStatusFilter("all");
@@ -488,31 +545,41 @@ export default function OrdersPage() {
             {filteredOrders.map((order) => (
               <Card
                 key={order.id}
-                className="hover:shadow-md transition-shadow"
+                className="hover:shadow-lg transition-all duration-200 border-0 shadow-sm overflow-hidden"
               >
                 <CardHeader>
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Package className="h-5 w-5 text-gray-500" />
-                        Order #{order.id.slice(-8).toUpperCase()}
+                    <div className="space-y-2">
+                      <CardTitle className="text-xl flex items-center gap-3">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                          <Package className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <span className="text-gray-900">
+                            Order #{order.id.slice(-8).toUpperCase()}
+                          </span>
+                          <p className="text-sm font-normal text-gray-600 mt-1 flex items-center gap-2">
+                            <Calendar className="h-4 w-4" />
+                            Placed on {formatDate(order.created_at)}
+                          </p>
+                        </div>
                       </CardTitle>
-                      <p className="text-sm text-gray-600 mt-1 flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        Placed on {formatDate(order.created_at)}
-                      </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <Badge
                         variant="outline"
-                        className={getStatusColor(order.status)}
+                        className={`${getStatusColor(
+                          order.status
+                        )} transition-colors`}
                       >
                         {order.status.charAt(0).toUpperCase() +
                           order.status.slice(1)}
                       </Badge>
                       <Badge
                         variant="outline"
-                        className={getPaymentStatusColor(order.payment_status)}
+                        className={`${getPaymentStatusColor(
+                          order.payment_status
+                        )} transition-colors`}
                       >
                         {order.payment_status.charAt(0).toUpperCase() +
                           order.payment_status.slice(1)}
@@ -520,90 +587,158 @@ export default function OrdersPage() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                    <div className="space-y-1">
-                      <p className="text-sm text-gray-600 flex items-center gap-2">
-                        <DollarSign className="h-4 w-4" />
-                        <span className="font-medium">Total:</span>{" "}
-                        {formatCurrency(order.total)}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        <span className="font-medium">Items:</span>{" "}
-                        {order.order_items.length}
-                      </p>
+
+                <CardContent className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    {/* Total Amount */}
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-green-100 rounded-lg">
+                        <DollarSign className="h-5 w-5 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Total Amount</p>
+                        <p className="text-lg font-semibold text-gray-900">
+                          {formatCurrency(order.total)}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Link href={`/profile/orders/${order.id}`}>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex items-center gap-2"
-                        >
-                          <Eye className="h-4 w-4" />
-                          View Details
-                        </Button>
-                      </Link>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => toggleOrderDetails(order.id)}
-                        className="flex items-center gap-2"
-                      >
-                        {expandedOrderId === order.id
-                          ? "Hide Items"
-                          : "Show Items"}
-                        {expandedOrderId === order.id ? (
-                          <ChevronUp className="h-4 w-4" />
-                        ) : (
-                          <ChevronDown className="h-4 w-4" />
-                        )}
-                      </Button>
+
+                    {/* Items Count */}
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-purple-100 rounded-lg">
+                        <Package className="h-5 w-5 text-purple-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Items</p>
+                        <p className="text-lg font-semibold text-gray-900">
+                          {order.order_items?.length || 0}
+                        </p>
+                      </div>
                     </div>
+
+                    {/* Shipping Address */}
+                    {order.addresses && (
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                          <MapPin className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Shipping To</p>
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {order.addresses.city}, {order.addresses.state}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Contact */}
+                    {order.addresses?.phone && (
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-orange-100 rounded-lg">
+                          <Phone className="h-5 w-5 text-orange-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Contact</p>
+                          <p className="text-sm font-medium text-gray-900">
+                            {order.addresses.phone}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
+                  {/* Action Buttons */}
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Link
+                      href={`/profile/orders/${order.id}`}
+                      className="flex-1"
+                    >
+                      <Button
+                        variant="default"
+                        className="w-full flex items-center gap-2"
+                      >
+                        <Eye className="h-4 w-4" />
+                        View Full Details
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="outline"
+                      onClick={() => toggleOrderDetails(order.id)}
+                      className="flex items-center gap-2 sm:w-auto"
+                    >
+                      {expandedOrderId === order.id
+                        ? "Hide Items"
+                        : "Show Items"}
+                      {expandedOrderId === order.id ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+
+                  {/* Expanded Order Items */}
                   {expandedOrderId === order.id && (
-                    <div className="border-t pt-4 space-y-4">
-                      {/* Order Items Preview */}
-                      <div>
-                        <h4 className="font-medium mb-3">Order Items</h4>
-                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                          {order.order_items.slice(0, 6).map((item) => (
+                    <div className="mt-6 pt-6 border-t bg-gray-50 -mx-6 px-6 pb-6">
+                      <h4 className="font-semibold mb-4 flex items-center gap-2">
+                        <Package className="h-5 w-5" />
+                        Order Items ({order.order_items?.length || 0})
+                      </h4>
+
+                      {order.order_items && order.order_items.length > 0 ? (
+                        <div className="grid gap-4">
+                          {order.order_items.map((item) => (
                             <div
                               key={item.id}
-                              className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                              className="flex items-center gap-4 p-4 bg-white rounded-lg border hover:shadow-sm transition-shadow"
                             >
-                              <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                              <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
                                 {item.image_url ? (
                                   <Image
                                     src={item.image_url}
                                     alt={item.name}
-                                    width={48}
-                                    height={48}
-                                    className="w-full h-full object-cover rounded-lg"
+                                    width={64}
+                                    height={64}
+                                    className="w-full h-full object-cover"
                                   />
                                 ) : (
-                                  <Package className="h-5 w-5 text-gray-400" />
+                                  <Package className="h-6 w-6 text-gray-400" />
                                 )}
                               </div>
+
                               <div className="flex-1 min-w-0">
-                                <h5 className="font-medium text-sm truncate">
+                                <h5 className="font-medium text-gray-900 truncate">
                                   {item.name}
                                 </h5>
-                                <p className="text-xs text-gray-600">
-                                  Qty: {item.quantity} •{" "}
+                                {item.grade && (
+                                  <p className="text-sm text-gray-600 mt-1">
+                                    Grade: {item.grade}
+                                  </p>
+                                )}
+                                {item.variant_type && (
+                                  <p className="text-sm text-gray-600">
+                                    Variant: {item.variant_type}
+                                  </p>
+                                )}
+                              </div>
+
+                              <div className="text-right">
+                                <p className="font-medium text-gray-900">
                                   {formatCurrency(item.price)}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  Qty: {item.quantity}
                                 </p>
                               </div>
                             </div>
                           ))}
-                          {order.order_items.length > 6 && (
-                            <div className="flex items-center justify-center p-3 bg-gray-50 rounded-lg text-sm text-gray-600">
-                              +{order.order_items.length - 6} more items
-                            </div>
-                          )}
                         </div>
-                      </div>
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p>No items found for this order</p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </CardContent>
@@ -613,14 +748,22 @@ export default function OrdersPage() {
         )}
 
         {/* Action Buttons */}
-        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
           <Link href="/products">
-            <Button variant="outline" className="w-full sm:w-auto">
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full sm:w-auto px-8"
+            >
+              <ShoppingBag className="mr-2 h-5 w-5" />
               Continue Shopping
             </Button>
           </Link>
           <Link href="/profile">
-            <Button className="w-full sm:w-auto">Back to Profile</Button>
+            <Button size="lg" className="w-full sm:w-auto px-8">
+              <User className="mr-2 h-5 w-5" />
+              Back to Profile
+            </Button>
           </Link>
         </div>
       </div>
