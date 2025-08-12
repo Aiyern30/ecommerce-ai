@@ -1,16 +1,9 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/";
-import {
-  ShoppingBag,
-  Package,
-  Users,
-  DollarSign,
-  Activity,
-  ArrowUpRight,
-  ArrowDownRight,
-} from "lucide-react";
+import { ShoppingBag, Package, Users, DollarSign } from "lucide-react";
 import { useState, useEffect } from "react";
+import { StatsCards } from "../StatsCards";
 
 interface KpiData {
   totalRevenue: number;
@@ -53,51 +46,6 @@ export function KpiCards() {
     }).format(amount);
 
   const formatNumber = (num: number) => new Intl.NumberFormat().format(num);
-
-  const renderGrowthIndicator = (growth: number, showBackground = true) => {
-    const isPositive = growth >= 0;
-    const isNeutral = growth === 0;
-
-    if (isNeutral) {
-      return (
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800">
-            <Activity className="h-3 w-3 text-gray-500" />
-            <span className="text-xs font-medium text-gray-500">0.00%</span>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="flex items-center gap-2">
-        <div
-          className={`flex items-center gap-1 px-2 py-1 rounded-full ${
-            showBackground
-              ? isPositive
-                ? "bg-emerald-100 dark:bg-emerald-900/30"
-                : "bg-red-100 dark:bg-red-900/30"
-              : ""
-          }`}
-        >
-          {isPositive ? (
-            <ArrowUpRight className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-          ) : (
-            <ArrowDownRight className="h-3 w-3 text-red-600 dark:text-red-400" />
-          )}
-          <span
-            className={`text-xs font-medium ${
-              isPositive
-                ? "text-emerald-600 dark:text-emerald-400"
-                : "text-red-600 dark:text-red-400"
-            }`}
-          >
-            {Math.abs(growth).toFixed(1)}%
-          </span>
-        </div>
-      </div>
-    );
-  };
 
   const LoadingSkeleton = () => (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -173,60 +121,9 @@ export function KpiCards() {
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-      {kpiCards.map((card, index) => {
-        const IconComponent = card.icon;
-        return (
-          <Card
-            key={index}
-            className={`bg-gradient-to-br ${card.bgGradient} border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]`}
-          >
-            <CardContent className="p-6">
-              <div className="flex flex-col gap-4">
-                {/* Header */}
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                      {card.title}
-                    </p>
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white leading-tight">
-                      {card.value}
-                    </h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                      {card.description}
-                    </p>
-                  </div>
-                  <div
-                    className={`p-3 bg-gradient-to-br ${card.gradient} rounded-2xl shadow-lg flex items-center justify-center`}
-                  >
-                    <IconComponent className="h-6 w-6 text-white" />
-                  </div>
-                </div>
-
-                {/* Growth Indicator */}
-                {!card.hideGrowth && (
-                  <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
-                    {renderGrowthIndicator(card.growth)}
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      vs last period
-                    </span>
-                  </div>
-                )}
-
-                {card.hideGrowth && (
-                  <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        Real-time data
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
+      {kpiCards.map((card, index) => (
+        <StatsCards key={index} {...card} />
+      ))}
     </div>
   );
 }
