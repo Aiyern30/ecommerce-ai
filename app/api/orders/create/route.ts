@@ -6,6 +6,16 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import type { CreateOrderRequest } from "@/type/order";
 import { createNotification } from "@/lib/notification/server";
 
+// Add interface for selected services
+interface SelectedServiceDetails {
+  id: string;
+  service_code: string;
+  service_name: string;
+  rate_per_m3: number;
+  total_price: number;
+  description?: string;
+}
+
 export async function POST(request: NextRequest) {
   try {
     console.log("Create order API called");
@@ -17,8 +27,11 @@ export async function POST(request: NextRequest) {
       shipping_cost: number;
       tax: number;
       total: number;
-      total_volume: number; // ✅ new
-      selected_services?: { [serviceId: string]: boolean }; // ✅ new
+      total_volume: number;
+      // Updated to match the actual data structure being sent
+      selected_services?: {
+        [serviceCode: string]: SelectedServiceDetails | null;
+      };
       items: {
         product_id: string;
         quantity: number;
@@ -28,6 +41,8 @@ export async function POST(request: NextRequest) {
     };
 
     console.log("Request body:", body);
+    console.log("Selected services received:", body.selected_services);
+    console.log("Total volume received:", body.total_volume);
 
     // Validate request
     if (!body.items || body.items.length === 0) {
@@ -307,59 +322,53 @@ export async function POST(request: NextRequest) {
       // Don't fail the order creation if cart clearing fails
     }
 
-    // --- Insert selected additional services into order_additional_services ---
-    if (
-      body.selected_services &&
-      body.total_volume &&
-      Object.keys(body.selected_services ?? {}).length > 0
-    ) {
-      // Fetch all additional_services for mapping
-      const { data: allServices, error: allServicesError } = await supabaseAdmin
-        .from("additional_services")
-        .select("*")
-        .in("id", Object.keys(body.selected_services ?? {}));
+    // --- FIXED: Insert selected additional services into order_additional_services ---
+    if (body.selected_services && body.total_volume) {
+      console.log("Processing additional services...");
 
-      if (allServicesError) {
-        console.warn(
-          "Failed to fetch additional_services for order:",
-          allServicesError
-        );
-      } else {
-        const orderAdditionalServices = allServices
-          .filter(
-            (service) =>
-              body.selected_services && body.selected_services[service.id]
-          )
-          .map((service) => ({
-            order_id: order.id,
-            additional_service_id: service.id,
-            service_name: service.service_name,
-            rate_per_m3: service.rate_per_m3,
-            quantity: body.total_volume,
-            total_price:
-              Number(service.rate_per_m3) * Number(body.total_volume),
-          }));
+      // Filter out null values and get the actual selected services
+      const selectedServicesList = Object.values(body.selected_services).filter(
+        (service): service is SelectedServiceDetails => service !== null
+      );
+
+      console.log("Selected services list:", selectedServicesList);
+
+      if (selectedServicesList.length > 0) {
+        // Create the order additional services data
+        const orderAdditionalServices = selectedServicesList.map((service) => ({
+          order_id: order.id,
+          additional_service_id: service.id, // Use the ID from the service details
+          service_name: service.service_name,
+          rate_per_m3: service.rate_per_m3,
+          quantity: body.total_volume,
+          total_price: service.rate_per_m3 * body.total_volume,
+        }));
 
         console.log(
-          "orderAdditionalServices to insert:",
+          "Order additional services to insert:",
           orderAdditionalServices
         );
 
-        if (orderAdditionalServices.length > 0) {
-          const { error: addServicesError } = await supabaseAdmin
-            .from("order_additional_services")
-            .insert(orderAdditionalServices);
+        const { error: addServicesError } = await supabaseAdmin
+          .from("order_additional_services")
+          .insert(orderAdditionalServices);
 
-          if (addServicesError) {
-            console.warn(
-              "Failed to insert order_additional_services:",
-              addServicesError
-            );
-          }
+        if (addServicesError) {
+          console.error(
+            "Failed to insert order_additional_services:",
+            addServicesError
+          );
+          // Don't fail the order creation, but log the error
         } else {
-          console.warn("No additional services to insert for this order.");
+          console.log(
+            "Successfully inserted additional services into order_additional_services"
+          );
         }
+      } else {
+        console.log("No additional services selected for this order");
       }
+    } else {
+      console.log("No selected_services or total_volume provided");
     }
     // --- End insert additional services ---
 
