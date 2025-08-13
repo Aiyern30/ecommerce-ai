@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { CartItem } from "@/type/cart";
 import { getProductPrice } from "@/lib/cart/utils";
-import { SelectedServiceDetails } from "@/components/StripePaymentForms";
+import { SelectedServiceDetails } from "@/type/selectedServiceDetails";
 
 export interface CreateOrderData {
   items: {

@@ -5,13 +5,11 @@ import { Button } from "@/components/ui";
 import { ShoppingCart, ArrowRight, CheckCircle, Info } from "lucide-react";
 import { useCart } from "@/components/CartProvider";
 import { formatCurrency } from "@/lib/cart/calculations";
-import {
-  AdditionalService,
-  FreightCharge,
-  getProductPrice,
-} from "@/lib/cart/utils";
+import { getProductPrice } from "@/lib/cart/utils";
 import Image from "next/image";
 import { SelectedServiceDetails } from "@/type/selectedServiceDetails";
+import { AdditionalService } from "@/type/additionalService";
+import { FreightCharge } from "@/type/freightCharges";
 
 // Update your CheckoutSummary component props interface
 interface CheckoutSummaryProps {
