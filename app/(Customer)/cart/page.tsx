@@ -122,6 +122,17 @@ export default function CartPage() {
         } else {
           setFreightCharges(charges || []);
         }
+
+        // Load selected services from localStorage
+        const savedServices = localStorage.getItem("selectedServices");
+        if (savedServices) {
+          try {
+            setSelectedServices(JSON.parse(savedServices));
+          } catch (error) {
+            console.error("Error parsing saved services:", error);
+            localStorage.removeItem("selectedServices");
+          }
+        }
       } catch (error) {
         console.error("Error fetching services and charges:", error);
       } finally {
@@ -131,6 +142,14 @@ export default function CartPage() {
 
     fetchServicesAndCharges();
   }, []);
+
+  // Clear selected services if cart is empty
+  useEffect(() => {
+    if (!isLoading && cartItems.length === 0) {
+      localStorage.removeItem("selectedServices");
+      setSelectedServices({});
+    }
+  }, [cartItems.length, isLoading]);
 
   // Helper function to get variant display name
   const getVariantDisplayName = (variantType: string | null | undefined) => {
@@ -173,12 +192,20 @@ export default function CartPage() {
     }
   };
 
-  // Handle service selection
+  // Handle service selection with localStorage
   const handleServiceSelect = (serviceCode: string, checked: boolean) => {
-    setSelectedServices((prev) => ({
-      ...prev,
+    const newSelectedServices = {
+      ...selectedServices,
       [serviceCode]: checked,
-    }));
+    };
+
+    setSelectedServices(newSelectedServices);
+
+    // Save to localStorage
+    localStorage.setItem(
+      "selectedServices",
+      JSON.stringify(newSelectedServices)
+    );
 
     if (checked) {
       toast.success("Service added to your order", {
@@ -242,7 +269,6 @@ export default function CartPage() {
     });
     setInputQty(qtyState);
   }, [cartItems]);
-
   return (
     <div className="min-h-screen mb-4">
       <div className="container mx-auto px-4 pt-0 pb-4">

@@ -20,6 +20,24 @@ import {
 import type { Address } from "@/lib/user/address";
 import Link from "next/link";
 
+interface AdditionalService {
+  id: string;
+  service_name: string;
+  service_code: string;
+  rate_per_m3: number;
+  description: string;
+  is_active: boolean;
+}
+
+interface FreightCharge {
+  id: string;
+  min_volume: number;
+  max_volume: number | null;
+  delivery_fee: number;
+  description: string;
+  is_active: boolean;
+}
+
 export default function CheckoutAddressPage() {
   const router = useRouter();
   const supabase = createClientComponentClient();
@@ -33,7 +51,70 @@ export default function CheckoutAddressPage() {
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Additional services and localStorage state
+  const [additionalServices, setAdditionalServices] = useState<
+    AdditionalService[]
+  >([]);
+  const [freightCharges, setFreightCharges] = useState<FreightCharge[]>([]);
+  const [selectedServices, setSelectedServices] = useState<{
+    [key: string]: boolean;
+  }>({});
+
   const selectedItems = cartItems.filter((item) => item.selected);
+
+  // Calculate total volume of selected items
+  const totalVolume = selectedItems.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
+
+  // Fetch additional services and freight charges
+  useEffect(() => {
+    const fetchServicesAndCharges = async () => {
+      try {
+        // Fetch additional services
+        const { data: services, error: servicesError } = await supabase
+          .from("additional_services")
+          .select("*")
+          .eq("is_active", true)
+          .order("service_name");
+
+        // Fetch freight charges
+        const { data: charges, error: chargesError } = await supabase
+          .from("freight_charges")
+          .select("*")
+          .eq("is_active", true)
+          .order("min_volume");
+
+        if (servicesError) {
+          console.error("Error fetching additional services:", servicesError);
+        } else {
+          setAdditionalServices(services || []);
+        }
+
+        if (chargesError) {
+          console.error("Error fetching freight charges:", chargesError);
+        } else {
+          setFreightCharges(charges || []);
+        }
+
+        // Load selected services from localStorage
+        const savedServices = localStorage.getItem("selectedServices");
+        if (savedServices) {
+          try {
+            setSelectedServices(JSON.parse(savedServices));
+          } catch (error) {
+            console.error("Error parsing saved services:", error);
+            localStorage.removeItem("selectedServices");
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching services and charges:", error);
+      }
+    };
+
+    fetchServicesAndCharges();
+  }, [supabase]);
 
   const fetchAddresses = useCallback(async () => {
     if (!user) return;
@@ -332,7 +413,12 @@ export default function CheckoutAddressPage() {
         {/* Order Summary */}
         <div className="lg:col-span-1">
           <div className="sticky top-6 z-10">
-            <CheckoutSummary />
+            <CheckoutSummary
+              selectedServices={selectedServices}
+              totalVolume={totalVolume}
+              additionalServices={additionalServices}
+              freightCharges={freightCharges}
+            />
           </div>
         </div>
       </div>

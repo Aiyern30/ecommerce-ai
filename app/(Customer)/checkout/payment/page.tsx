@@ -21,6 +21,24 @@ import { useCart } from "@/components/CartProvider";
 import { getCountryCode } from "@/utils/country-codes";
 import { TypographyH1 } from "@/components/ui/Typography";
 
+interface AdditionalService {
+  id: string;
+  service_name: string;
+  service_code: string;
+  rate_per_m3: number;
+  description: string;
+  is_active: boolean;
+}
+
+interface FreightCharge {
+  id: string;
+  min_volume: number;
+  max_volume: number | null;
+  delivery_fee: number;
+  description: string;
+  is_active: boolean;
+}
+
 export default function CheckoutPaymentPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -31,7 +49,70 @@ export default function CheckoutPaymentPage() {
   const addressId = searchParams?.get("addressId");
   const { cartItems, isLoading } = useCart();
 
+  // Additional services and localStorage state
+  const [additionalServices, setAdditionalServices] = useState<
+    AdditionalService[]
+  >([]);
+  const [freightCharges, setFreightCharges] = useState<FreightCharge[]>([]);
+  const [selectedServices, setSelectedServices] = useState<{
+    [key: string]: boolean;
+  }>({});
+
   const selectedItems = cartItems.filter((item) => item.selected);
+
+  // Calculate total volume of selected items
+  const totalVolume = selectedItems.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
+
+  // Fetch additional services and freight charges
+  useEffect(() => {
+    const fetchServicesAndCharges = async () => {
+      try {
+        // Fetch additional services
+        const { data: services, error: servicesError } = await supabase
+          .from("additional_services")
+          .select("*")
+          .eq("is_active", true)
+          .order("service_name");
+
+        // Fetch freight charges
+        const { data: charges, error: chargesError } = await supabase
+          .from("freight_charges")
+          .select("*")
+          .eq("is_active", true)
+          .order("min_volume");
+
+        if (servicesError) {
+          console.error("Error fetching additional services:", servicesError);
+        } else {
+          setAdditionalServices(services || []);
+        }
+
+        if (chargesError) {
+          console.error("Error fetching freight charges:", chargesError);
+        } else {
+          setFreightCharges(charges || []);
+        }
+
+        // Load selected services from localStorage
+        const savedServices = localStorage.getItem("selectedServices");
+        if (savedServices) {
+          try {
+            setSelectedServices(JSON.parse(savedServices));
+          } catch (error) {
+            console.error("Error parsing saved services:", error);
+            localStorage.removeItem("selectedServices");
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching services and charges:", error);
+      }
+    };
+
+    fetchServicesAndCharges();
+  }, [supabase]);
 
   useEffect(() => {
     const fetchAddress = async () => {
@@ -79,6 +160,8 @@ export default function CheckoutPaymentPage() {
   // Handle successful payment and order creation
   const handlePaymentSuccess = (orderId: string) => {
     console.log("Payment and order completed, redirecting to success page");
+    // Clear localStorage after successful payment
+    localStorage.removeItem("selectedServices");
     router.push(`/order-success?orderId=${orderId}`);
   };
 
@@ -153,6 +236,7 @@ export default function CheckoutPaymentPage() {
               <StripePaymentForm
                 onSuccess={handlePaymentSuccess} // Now expects order ID
                 shippingAddress={addressData} // Pass address for order creation
+                selectedServices={selectedServices} // Pass selected services
                 billingDetails={{
                   name: addressData.full_name,
                   address: {
@@ -170,7 +254,12 @@ export default function CheckoutPaymentPage() {
           </div>
 
           <div className="lg:col-span-1">
-            <CheckoutSummary />
+            <CheckoutSummary
+              selectedServices={selectedServices}
+              totalVolume={totalVolume}
+              additionalServices={additionalServices}
+              freightCharges={freightCharges}
+            />
           </div>
         </div>
       </StripeProvider>
