@@ -2,6 +2,8 @@
 import { supabase } from "../supabase/browserClient";
 import { toast } from "sonner";
 import type { CartItem } from "@/type/cart";
+import { AdditionalService } from "@/type/additionalService";
+import { FreightCharge } from "@/type/freightCharges";
 
 /**
  * Cart Selection Logic:
@@ -545,24 +547,6 @@ export async function getCartStats(userId: string): Promise<{
     console.error("Error getting cart stats:", error);
     return { total: 0, selected: 0, unselected: 0 };
   }
-}
-
-export interface AdditionalService {
-  id: string;
-  service_name: string;
-  service_code: string;
-  rate_per_m3: number;
-  description: string;
-  is_active: boolean;
-}
-
-export interface FreightCharge {
-  id: string;
-  min_volume: number;
-  max_volume: number | null;
-  delivery_fee: number;
-  description: string;
-  is_active: boolean;
 }
 
 /**

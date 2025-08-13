@@ -19,34 +19,9 @@ import { clearPaymentSession } from "./StripeProvider";
 import { formatCurrency } from "@/lib/cart/calculations";
 import { getCountryCode } from "@/utils/country-codes";
 import { getProductPrice } from "@/lib/cart/utils";
-
-// Add SelectedServiceDetails type
-export interface SelectedServiceDetails {
-  id: string;
-  service_code: string;
-  service_name: string;
-  rate_per_m3: number;
-  total_price: number;
-  description?: string;
-}
-
-interface AdditionalService {
-  id: string;
-  service_name: string;
-  service_code: string;
-  rate_per_m3: number;
-  description: string;
-  is_active: boolean;
-}
-
-interface FreightCharge {
-  id: string;
-  min_volume: number;
-  max_volume: number | null;
-  delivery_fee: number;
-  description: string;
-  is_active: boolean;
-}
+import { SelectedServiceDetails } from "@/type/selectedServiceDetails";
+import { AdditionalService } from "@/type/additionalService";
+import { FreightCharge } from "@/type/freightCharges";
 
 interface BillingDetails {
   name: string;

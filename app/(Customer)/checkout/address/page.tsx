@@ -19,33 +19,9 @@ import {
 } from "@/components/ui/Typography";
 import type { Address } from "@/lib/user/address";
 import Link from "next/link";
-
-export interface SelectedServiceDetails {
-  id: string;
-  service_code: string;
-  service_name: string;
-  rate_per_m3: number;
-  total_price: number;
-  description?: string;
-}
-
-interface AdditionalService {
-  id: string;
-  service_name: string;
-  service_code: string;
-  rate_per_m3: number;
-  description: string;
-  is_active: boolean;
-}
-
-interface FreightCharge {
-  id: string;
-  min_volume: number;
-  max_volume: number | null;
-  delivery_fee: number;
-  description: string;
-  is_active: boolean;
-}
+import { AdditionalService } from "@/type/additionalService";
+import { FreightCharge } from "@/type/freightCharges";
+import { SelectedServiceDetails } from "@/type/selectedServiceDetails";
 
 export default function CheckoutAddressPage() {
   const router = useRouter();

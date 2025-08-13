@@ -20,33 +20,9 @@ import {
 import { useCart } from "@/components/CartProvider";
 import { getCountryCode } from "@/utils/country-codes";
 import { TypographyH1 } from "@/components/ui/Typography";
-
-interface AdditionalService {
-  id: string;
-  service_name: string;
-  service_code: string;
-  rate_per_m3: number;
-  description: string;
-  is_active: boolean;
-}
-
-interface FreightCharge {
-  id: string;
-  min_volume: number;
-  max_volume: number | null;
-  delivery_fee: number;
-  description: string;
-  is_active: boolean;
-}
-
-export interface SelectedServiceDetails {
-  id: string;
-  service_code: string;
-  service_name: string;
-  rate_per_m3: number;
-  total_price: number;
-  description?: string;
-}
+import { AdditionalService } from "@/type/additionalService";
+import { FreightCharge } from "@/type/freightCharges";
+import { SelectedServiceDetails } from "@/type/selectedServiceDetails";
 
 export default function CheckoutPaymentPage() {
   const router = useRouter();
