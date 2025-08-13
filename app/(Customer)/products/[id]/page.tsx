@@ -11,13 +11,10 @@ import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { supabase } from "@/lib/supabase/client";
 import type { Product } from "@/type/product";
 
-// Product Detail Skeleton Component
 function ProductDetailSkeleton({ isStaffView }: { isStaffView: boolean }) {
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
-      {/* Header with Breadcrumb and Actions Skeleton */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        {/* Breadcrumb Skeleton */}
         <div className="flex items-center gap-2">
           <Skeleton className="h-4 w-20" />
           <span className="text-gray-400">/</span>
@@ -26,7 +23,6 @@ function ProductDetailSkeleton({ isStaffView }: { isStaffView: boolean }) {
           <Skeleton className="h-4 w-32" />
         </div>
 
-        {/* Action Buttons Skeleton - Only show for staff */}
         {isStaffView && (
           <div className="flex items-center gap-2">
             <Skeleton className="h-9 w-16" />
@@ -35,33 +31,26 @@ function ProductDetailSkeleton({ isStaffView }: { isStaffView: boolean }) {
         )}
       </div>
 
-      {/* Product Detail Skeleton */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Side - Product Information Skeleton */}
         <div className="border rounded-lg p-6 h-fit">
-          {/* Header Skeleton */}
           <div className="pb-6 border-b border-gray-200 dark:border-gray-700">
             <div className="space-y-4">
-              {/* Product Name Skeleton */}
               <div>
                 <Skeleton className="h-4 w-24 mb-1" />
                 <Skeleton className="h-8 w-3/4" />
               </div>
 
-              {/* Description Skeleton */}
               <div>
                 <Skeleton className="h-4 w-20 mb-1" />
                 <Skeleton className="h-4 w-full mb-1" />
                 <Skeleton className="h-4 w-5/6" />
               </div>
 
-              {/* Category Skeleton */}
               <div>
                 <Skeleton className="h-4 w-16 mb-1" />
                 <Skeleton className="h-6 w-20" />
               </div>
 
-              {/* Status Skeleton - Only show for staff */}
               {isStaffView && (
                 <div>
                   <Skeleton className="h-4 w-12 mb-1" />
@@ -71,9 +60,7 @@ function ProductDetailSkeleton({ isStaffView }: { isStaffView: boolean }) {
             </div>
           </div>
 
-          {/* Content Skeleton */}
           <div className="pt-6 space-y-6">
-            {/* Pricing & Stock Skeleton */}
             <div>
               <Skeleton className="h-4 w-32 mb-3" />
               <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
@@ -93,13 +80,11 @@ function ProductDetailSkeleton({ isStaffView }: { isStaffView: boolean }) {
               </div>
             </div>
 
-            {/* Grade Skeleton */}
             <div>
               <Skeleton className="h-4 w-16 mb-3" />
               <Skeleton className="h-6 w-24" />
             </div>
 
-            {/* Variants Skeleton */}
             <div>
               <Skeleton className="h-4 w-32 mb-3" />
               <div className="space-y-2">
@@ -115,7 +100,6 @@ function ProductDetailSkeleton({ isStaffView }: { isStaffView: boolean }) {
               </div>
             </div>
 
-            {/* Certifications Skeleton */}
             <div>
               <Skeleton className="h-4 w-28 mb-3" />
               <div className="flex flex-wrap gap-2">
@@ -125,7 +109,6 @@ function ProductDetailSkeleton({ isStaffView }: { isStaffView: boolean }) {
               </div>
             </div>
 
-            {/* Tags Skeleton */}
             <div>
               <Skeleton className="h-4 w-16 mb-3" />
               <div className="flex flex-wrap gap-2">
@@ -135,7 +118,6 @@ function ProductDetailSkeleton({ isStaffView }: { isStaffView: boolean }) {
               </div>
             </div>
 
-            {/* Meta Information Skeleton */}
             {!isStaffView && (
               <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
                 <Skeleton className="h-3 w-32 mb-2" />
@@ -154,15 +136,12 @@ function ProductDetailSkeleton({ isStaffView }: { isStaffView: boolean }) {
           </div>
         </div>
 
-        {/* Right Side - Images Skeleton */}
         <div className="space-y-4">
-          {/* Main Image Skeleton */}
           <div>
             <Skeleton className="h-4 w-20 mb-2" />
             <Skeleton className="w-full aspect-[4/3] rounded-lg" />
           </div>
 
-          {/* Thumbnails Skeleton */}
           <div>
             <Skeleton className="h-4 w-28 mb-2" />
             <div className="flex gap-2 overflow-x-auto pb-2">
@@ -180,13 +159,11 @@ function ProductDetailSkeleton({ isStaffView }: { isStaffView: boolean }) {
   );
 }
 
-// Product Not Found Component
 function ProductNotFound({ isStaffView }: { isStaffView: boolean }) {
   const router = useRouter();
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
-      {/* Header with Breadcrumb */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <BreadcrumbNav
           customItems={[
@@ -203,7 +180,6 @@ function ProductNotFound({ isStaffView }: { isStaffView: boolean }) {
         />
       </div>
 
-      {/* Not Found Content */}
       <div className="flex flex-col items-center justify-center py-16 px-4 min-h-[500px]">
         <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
           <Package className="w-12 h-12 text-gray-400" />
@@ -265,7 +241,7 @@ export default function ProductDetailClient() {
   const pathname = usePathname();
 
   const productId = useMemo(() => {
-    const parts = pathname.split("/");
+    const parts = (pathname ?? "").split("/");
     return parts[parts.length - 1];
   }, [pathname]);
 
@@ -303,8 +279,7 @@ export default function ProductDetailClient() {
     if (productId) fetchProduct();
   }, [productId]);
 
-  // Check if current path is staff (for action buttons)
-  const isStaffView = pathname.includes("/staff/");
+  const isStaffView = (pathname ?? "").includes("/staff/");
 
   if (loading) return <ProductDetailSkeleton isStaffView={isStaffView} />;
   if (!product) return <ProductNotFound isStaffView={isStaffView} />;
@@ -312,7 +287,6 @@ export default function ProductDetailClient() {
   return (
     <div className="container mx-auto px-4 pt-0 pb-4 lg:px-6 lg:py-8">
       <div className="flex flex-col gap-6 w-full max-w-full">
-        {/* Header with Breadcrumb and Actions */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex flex-col gap-2">
             <BreadcrumbNav
@@ -325,9 +299,7 @@ export default function ProductDetailClient() {
           </div>
         </div>
 
-        {/* Product Details */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left Side - Product Info */}
           <div className="border rounded-lg p-6 h-fit space-y-6">
             <div>
               <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
@@ -423,7 +395,6 @@ export default function ProductDetailClient() {
               </div>
             </div>
           </div>
-          {/* Right Side - Images */}
           <div className="space-y-4">
             <div>
               <div className="font-medium mb-2">Main Image</div>

@@ -25,17 +25,19 @@ export default function CompareProductsContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [comparedProducts, setComparedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("overview"); // Add state for active tab
+  const [activeTab, setActiveTab] = useState("overview");
 
   useEffect(() => {
     async function fetchProducts() {
       setLoading(true);
-      const productIds = [...new Set(searchParams.getAll("products"))];
+      const productIds = searchParams
+        ? [...new Set(searchParams.getAll("products"))]
+        : [];
       if (productIds.length === 0) {
         setLoading(false);
         return;
       }
-      const originalIds = searchParams.getAll("products");
+      const originalIds = searchParams ? searchParams.getAll("products") : [];
       if (originalIds.length !== productIds.length) {
         const params = new URLSearchParams();
         productIds.forEach((id) => params.append("products", id));
@@ -148,14 +150,12 @@ export default function CompareProductsContent() {
           </div>
         ) : (
           <>
-            {/* Product Selector - Now at the top level */}
             <ProductSelector
               products={products}
               comparedProducts={comparedProducts}
               onProductChange={changeProductAtIndex}
             />
 
-            {/* Tabs with controlled state */}
             <Tabs
               value={activeTab}
               onValueChange={setActiveTab}
