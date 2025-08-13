@@ -36,14 +36,14 @@ import {
   updateCartItemSelection,
   selectAllCartItems,
   getProductPrice,
-  AdditionalService,
-  FreightCharge,
 } from "@/lib/cart/utils";
 import { useUser } from "@supabase/auth-helpers-react";
 import type { CartItem } from "@/type/cart";
 import { useDeviceType } from "@/utils/useDeviceTypes";
 import { supabase } from "@/lib/supabase/browserClient";
 import { SelectedServiceDetails } from "@/type/selectedServiceDetails";
+import { AdditionalService } from "@/type/additionalService";
+import { FreightCharge } from "@/type/freightCharges";
 
 export default function CartPage() {
   const { cartItems, refreshCart, isLoading } = useCart();
