@@ -5,27 +5,13 @@ import { Button } from "@/components/ui";
 import { ShoppingCart, ArrowRight, CheckCircle, Info } from "lucide-react";
 import { useCart } from "@/components/CartProvider";
 import { formatCurrency } from "@/lib/cart/calculations";
-import { getProductPrice } from "@/lib/cart/utils";
+import {
+  AdditionalService,
+  FreightCharge,
+  getProductPrice,
+} from "@/lib/cart/utils";
 import Image from "next/image";
-import { SelectedServiceDetails } from "@/app/(customer)/cart/page";
-
-interface AdditionalService {
-  id: string;
-  service_name: string;
-  service_code: string;
-  rate_per_m3: number;
-  description: string;
-  is_active: boolean;
-}
-
-interface FreightCharge {
-  id: string;
-  min_volume: number;
-  max_volume: number | null;
-  delivery_fee: number;
-  description: string;
-  is_active: boolean;
-}
+import { SelectedServiceDetails } from "@/type/selectedServiceDetails";
 
 // Update your CheckoutSummary component props interface
 interface CheckoutSummaryProps {
