@@ -340,6 +340,11 @@ export async function POST(request: NextRequest) {
               Number(service.rate_per_m3) * Number(body.total_volume),
           }));
 
+        console.log(
+          "orderAdditionalServices to insert:",
+          orderAdditionalServices
+        );
+
         if (orderAdditionalServices.length > 0) {
           const { error: addServicesError } = await supabaseAdmin
             .from("order_additional_services")
@@ -351,6 +356,8 @@ export async function POST(request: NextRequest) {
               addServicesError
             );
           }
+        } else {
+          console.warn("No additional services to insert for this order.");
         }
       }
     }
