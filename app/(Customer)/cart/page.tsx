@@ -36,39 +36,14 @@ import {
   updateCartItemSelection,
   selectAllCartItems,
   getProductPrice,
+  AdditionalService,
+  FreightCharge,
 } from "@/lib/cart/utils";
 import { useUser } from "@supabase/auth-helpers-react";
 import type { CartItem } from "@/type/cart";
 import { useDeviceType } from "@/utils/useDeviceTypes";
 import { supabase } from "@/lib/supabase/browserClient";
-
-// Define interfaces
-interface AdditionalService {
-  id: string;
-  service_name: string;
-  service_code: string;
-  rate_per_m3: number;
-  description: string;
-  is_active: boolean;
-}
-
-interface FreightCharge {
-  id: string;
-  min_volume: number;
-  max_volume: number | null;
-  delivery_fee: number;
-  description: string;
-  is_active: boolean;
-}
-
-export interface SelectedServiceDetails {
-  id: string;
-  service_code: string;
-  service_name: string;
-  rate_per_m3: number;
-  total_price: number;
-  description?: string;
-}
+import { SelectedServiceDetails } from "@/type/selectedServiceDetails";
 
 export default function CartPage() {
   const { cartItems, refreshCart, isLoading } = useCart();
