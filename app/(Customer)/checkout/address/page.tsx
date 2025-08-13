@@ -111,7 +111,9 @@ export default function CheckoutAddressPage() {
         const savedServices = localStorage.getItem("selectedServices");
         if (savedServices) {
           try {
-            const parsed: { [serviceCode: string]: SelectedServiceDetails | null } = JSON.parse(savedServices);
+            const parsed: {
+              [serviceCode: string]: SelectedServiceDetails | null;
+            } = JSON.parse(savedServices);
             setSelectedServices(parsed);
           } catch (error) {
             console.error("Error parsing saved services:", error);
