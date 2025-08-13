@@ -36,12 +36,14 @@ interface StripePaymentFormProps {
   onSuccess: (orderId: string) => void;
   billingDetails: BillingDetails;
   shippingAddress: Address;
+  selectedServices: { [key: string]: boolean };
 }
 
 export function StripePaymentForm({
   onSuccess,
   billingDetails,
   shippingAddress,
+  selectedServices,
 }: StripePaymentFormProps) {
   const stripe = useStripe();
   const elements = useElements();
@@ -49,6 +51,7 @@ export function StripePaymentForm({
   const { cartItems, refreshCart } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  console.log("selectedServices", selectedServices);
 
   // Use the shared calculation function
   const totals = calculateOrderTotals(cartItems);

@@ -7,6 +7,7 @@ import { useCart } from "@/components/CartProvider";
 import { formatCurrency } from "@/lib/cart/calculations";
 import { getProductPrice } from "@/lib/cart/utils";
 import Image from "next/image";
+import { SelectedServiceDetails } from "@/app/(customer)/cart/page";
 
 interface AdditionalService {
   id: string;
@@ -26,13 +27,14 @@ interface FreightCharge {
   is_active: boolean;
 }
 
+// Update your CheckoutSummary component props interface
 interface CheckoutSummaryProps {
   showCheckoutButton?: boolean;
   onCheckout?: () => void;
   checkoutButtonText?: string;
   checkoutButtonDisabled?: boolean;
-  selectedServices?: { [key: string]: boolean };
-  totalVolume?: number;
+  selectedServices: { [serviceCode: string]: SelectedServiceDetails | null };
+  totalVolume: number;
   additionalServices?: AdditionalService[];
   freightCharges?: FreightCharge[];
 }
