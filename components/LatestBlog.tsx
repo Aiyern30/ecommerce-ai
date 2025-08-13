@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, ZoomIn } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
-import { Blog } from "@/type/blogs";
+import type { Blog } from "@/type/blogs";
 import {
   Card,
   CardContent,
@@ -59,7 +59,7 @@ export default function LatestBlog() {
       : "grid-cols-4";
 
   return (
-    <section className="h-[calc(100vh-120px)] h-full flex flex-col justify-center">
+    <section className="min-h-screen flex flex-col justify-center">
       <div className="container mx-auto px-4 flex flex-col flex-1 justify-center">
         <div className="flex flex-col items-center justify-center gap-8 py-12">
           <TypographyH1 className="text-center">LATEST BLOG</TypographyH1>
@@ -67,7 +67,7 @@ export default function LatestBlog() {
             <DialogContent className="max-w-4xl p-0">
               {zoomImage && (
                 <Image
-                  src={zoomImage}
+                  src={zoomImage || "/placeholder.svg"}
                   alt="Zoomed Blog"
                   width={1200}
                   height={800}
@@ -91,16 +91,17 @@ export default function LatestBlog() {
                   post.blog_images
                     ?.map((img) => img.image_url)
                     .filter(Boolean) || [];
-                const mainImage = images[0] || "/placeholder.svg";
+                const mainImage =
+                  images[0] || "/placeholder.svg?height=300&width=400";
                 const hoverImage = images[1] || null;
                 return (
                   <Card
                     key={post.id}
-                    className="overflow-hidden group relative py-0"
+                    className="overflow-hidden group relative py-0 flex flex-col h-full"
                   >
-                    <CardHeader className="p-0 relative h-52">
+                    <CardHeader className="p-0 relative h-52 flex-shrink-0">
                       <Image
-                        src={mainImage}
+                        src={mainImage || "/placeholder.svg"}
                         alt={post.title}
                         fill
                         className={`object-cover rounded-t-lg transition-transform duration-300 group-hover:scale-105
@@ -110,7 +111,7 @@ export default function LatestBlog() {
                       />
                       {hoverImage && (
                         <Image
-                          src={hoverImage}
+                          src={hoverImage || "/placeholder.svg"}
                           alt={post.title + " (alt)"}
                           fill
                           className="object-cover rounded-t-lg absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
@@ -148,16 +149,16 @@ export default function LatestBlog() {
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="p-4 space-y-2">
+                    <CardContent className="p-4 space-y-2 flex-1 flex flex-col">
                       <div className="text-xs text-gray-500">
                         {new Date(post.created_at).toLocaleDateString()}
                       </div>
                       <CardTitle className="text-base">{post.title}</CardTitle>
-                      <CardDescription className="line-clamp-2 text-sm">
+                      <CardDescription className="line-clamp-2 text-sm flex-1">
                         {post.description}
                       </CardDescription>
                     </CardContent>
-                    <CardFooter className="px-4 pb-4">
+                    <CardFooter className="px-4 pb-4 mt-auto">
                       <Button
                         asChild
                         variant="link"
