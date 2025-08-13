@@ -42,6 +42,7 @@ import type { CartItem } from "@/type/cart";
 import { useDeviceType } from "@/utils/useDeviceTypes";
 import { supabase } from "@/lib/supabase/browserClient";
 
+// Define interfaces
 interface AdditionalService {
   id: string;
   service_name: string;
@@ -60,6 +61,15 @@ interface FreightCharge {
   is_active: boolean;
 }
 
+export interface SelectedServiceDetails {
+  id: string;
+  service_code: string;
+  service_name: string;
+  rate_per_m3: number;
+  total_price: number;
+  description?: string;
+}
+
 export default function CartPage() {
   const { cartItems, refreshCart, isLoading } = useCart();
   console.log("cartItems", cartItems);
@@ -75,7 +85,7 @@ export default function CartPage() {
   >([]);
   const [freightCharges, setFreightCharges] = useState<FreightCharge[]>([]);
   const [selectedServices, setSelectedServices] = useState<{
-    [key: string]: boolean;
+    [serviceCode: string]: SelectedServiceDetails | null;
   }>({});
   const [servicesLoading, setServicesLoading] = useState(true);
 
@@ -127,7 +137,8 @@ export default function CartPage() {
         const savedServices = localStorage.getItem("selectedServices");
         if (savedServices) {
           try {
-            setSelectedServices(JSON.parse(savedServices));
+            const parsed = JSON.parse(savedServices);
+            setSelectedServices(parsed);
           } catch (error) {
             console.error("Error parsing saved services:", error);
             localStorage.removeItem("selectedServices");
@@ -150,6 +161,36 @@ export default function CartPage() {
       setSelectedServices({});
     }
   }, [cartItems.length, isLoading]);
+
+  // Update service prices when total volume changes
+  useEffect(() => {
+    if (totalVolume > 0) {
+      const updatedServices = { ...selectedServices };
+      let hasChanges = false;
+
+      Object.keys(updatedServices).forEach((serviceCode) => {
+        const service = updatedServices[serviceCode];
+        if (service) {
+          const newTotalPrice = service.rate_per_m3 * totalVolume;
+          if (service.total_price !== newTotalPrice) {
+            updatedServices[serviceCode] = {
+              ...service,
+              total_price: newTotalPrice,
+            };
+            hasChanges = true;
+          }
+        }
+      });
+
+      if (hasChanges) {
+        setSelectedServices(updatedServices);
+        localStorage.setItem(
+          "selectedServices",
+          JSON.stringify(updatedServices)
+        );
+      }
+    }
+  }, [totalVolume, selectedServices]);
 
   // Helper function to get variant display name
   const getVariantDisplayName = (variantType: string | null | undefined) => {
@@ -194,9 +235,26 @@ export default function CartPage() {
 
   // Handle service selection with localStorage
   const handleServiceSelect = (serviceCode: string, checked: boolean) => {
+    const service = additionalServices.find(
+      (s) => s.service_code === serviceCode
+    );
+    if (!service) {
+      console.error("Service not found:", serviceCode);
+      return;
+    }
+
     const newSelectedServices = {
       ...selectedServices,
-      [serviceCode]: checked,
+      [serviceCode]: checked
+        ? {
+            id: service.id,
+            service_code: service.service_code,
+            service_name: service.service_name,
+            rate_per_m3: service.rate_per_m3,
+            total_price: service.rate_per_m3 * totalVolume,
+            description: service.description,
+          }
+        : null,
     };
 
     setSelectedServices(newSelectedServices);
@@ -784,16 +842,12 @@ export default function CartPage() {
                               <div className="flex items-start justify-between gap-4">
                                 <div className="flex items-start gap-3 flex-1">
                                   <Checkbox
-                                    id={`service-${service.service_code}`}
-                                    checked={isSelected}
-                                    onCheckedChange={(checked) =>
-                                      handleServiceSelect(
-                                        service.service_code,
-                                        checked as boolean
-                                      )
-                                    }
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="h-5 w-5 mt-1"
+                                    id="select-all"
+                                    checked={selectAll}
+                                    onCheckedChange={(checked) => {
+                                      handleSelectAll(checked === true);
+                                    }}
+                                    className="h-5 w-5"
                                   />
 
                                   <div className="flex-1">

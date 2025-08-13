@@ -17,13 +17,16 @@ export async function POST(request: NextRequest) {
       shipping_cost: number;
       tax: number;
       total: number;
+      total_volume: number; // ✅ new
+      selected_services?: { [serviceId: string]: boolean }; // ✅ new
       items: {
         product_id: string;
         quantity: number;
         variant_type?: string;
-        price: number; // Add price field
+        price: number;
       }[];
     };
+
     console.log("Request body:", body);
 
     // Validate request
