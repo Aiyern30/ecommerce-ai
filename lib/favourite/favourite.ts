@@ -124,7 +124,7 @@ export async function getFavoritesGrouped() {
   if (productErr) throw productErr;
 
   return {
-    blogs: blogFavs ?? [],
-    products: productFavs ?? [],
+    blogs: (blogFavs ?? []).map((fav) => fav.blogs),
+    products: (productFavs ?? []).map((fav) => fav.products),
   };
 }
