@@ -73,7 +73,7 @@ export default function BlogsPage() {
           `}
         >
           {blogs.map((post) => (
-            <BlogCard key={post.id} post={post} showContent={true} />
+            <BlogCard key={post.id} post={post} />
           ))}
         </div>
 
