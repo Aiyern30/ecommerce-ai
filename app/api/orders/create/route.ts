@@ -307,6 +307,55 @@ export async function POST(request: NextRequest) {
       // Don't fail the order creation if cart clearing fails
     }
 
+    // --- Insert selected additional services into order_additional_services ---
+    if (
+      body.selected_services &&
+      body.total_volume &&
+      Object.keys(body.selected_services ?? {}).length > 0
+    ) {
+      // Fetch all additional_services for mapping
+      const { data: allServices, error: allServicesError } = await supabaseAdmin
+        .from("additional_services")
+        .select("*")
+        .in("id", Object.keys(body.selected_services ?? {}));
+
+      if (allServicesError) {
+        console.warn(
+          "Failed to fetch additional_services for order:",
+          allServicesError
+        );
+      } else {
+        const orderAdditionalServices = allServices
+          .filter(
+            (service) =>
+              body.selected_services && body.selected_services[service.id]
+          )
+          .map((service) => ({
+            order_id: order.id,
+            additional_service_id: service.id,
+            service_name: service.service_name,
+            rate_per_m3: service.rate_per_m3,
+            quantity: body.total_volume,
+            total_price:
+              Number(service.rate_per_m3) * Number(body.total_volume),
+          }));
+
+        if (orderAdditionalServices.length > 0) {
+          const { error: addServicesError } = await supabaseAdmin
+            .from("order_additional_services")
+            .insert(orderAdditionalServices);
+
+          if (addServicesError) {
+            console.warn(
+              "Failed to insert order_additional_services:",
+              addServicesError
+            );
+          }
+        }
+      }
+    }
+    // --- End insert additional services ---
+
     return NextResponse.json({
       order_id: order.id,
       amount: total,
