@@ -258,7 +258,7 @@ export default function ProductDetailClient() {
   const router = useRouter();
 
   const productId = useMemo(() => {
-    const parts = pathname.split("/");
+    const parts = (pathname ?? "").split("/");
     return parts[parts.length - 1];
   }, [pathname]);
 
@@ -329,7 +329,7 @@ export default function ProductDetailClient() {
   };
 
   // Check if current path is staff (for action buttons)
-  const isStaffView = pathname.includes("/staff/");
+  const isStaffView = (pathname ?? "").includes("/staff/");
 
   if (loading) return <ProductDetailSkeleton isStaffView={isStaffView} />;
   if (!product) return <ProductNotFound isStaffView={isStaffView} />;

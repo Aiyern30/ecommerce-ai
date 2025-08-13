@@ -34,7 +34,7 @@ const requiresAuth = (pathname: string): boolean => {
 export function CustomerLayout({ children }: LayoutProps) {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const pathname = usePathname();
-  const needsAuth = requiresAuth(pathname);
+  const needsAuth = requiresAuth(pathname ?? "");
 
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);

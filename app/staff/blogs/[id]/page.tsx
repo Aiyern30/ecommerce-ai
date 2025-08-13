@@ -230,7 +230,7 @@ export default function BlogDetailPage() {
   const pathname = usePathname();
   const router = useRouter();
   const blogId = useMemo(() => {
-    const parts = pathname.split("/");
+    const parts = (pathname ?? "").split("/");
     return parts[parts.length - 1];
   }, [pathname]);
 

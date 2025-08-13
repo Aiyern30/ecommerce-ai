@@ -36,7 +36,7 @@ export function BreadcrumbNav({
   const breadcrumbItems =
     customItems ||
     (() => {
-      const pathSegments = pathname.split("/").filter(Boolean);
+      const pathSegments = (pathname ?? "").split("/").filter(Boolean);
       return [
         { label: "Home", href: "/" },
         ...pathSegments.map((segment, index) => {
