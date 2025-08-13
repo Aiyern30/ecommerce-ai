@@ -39,6 +39,15 @@ interface FreightCharge {
   is_active: boolean;
 }
 
+export interface SelectedServiceDetails {
+  id: string;
+  service_code: string;
+  service_name: string;
+  rate_per_m3: number;
+  total_price: number;
+  description?: string;
+}
+
 export default function CheckoutPaymentPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -55,7 +64,7 @@ export default function CheckoutPaymentPage() {
   >([]);
   const [freightCharges, setFreightCharges] = useState<FreightCharge[]>([]);
   const [selectedServices, setSelectedServices] = useState<{
-    [key: string]: boolean;
+    [serviceCode: string]: SelectedServiceDetails | null;
   }>({});
 
   const selectedItems = cartItems.filter((item) => item.selected);
@@ -96,11 +105,14 @@ export default function CheckoutPaymentPage() {
           setFreightCharges(charges || []);
         }
 
-        // Load selected services from localStorage
+        // Load selected services from localStorage (use SelectedServiceDetails type)
         const savedServices = localStorage.getItem("selectedServices");
         if (savedServices) {
           try {
-            setSelectedServices(JSON.parse(savedServices));
+            const parsed: { [serviceCode: string]: SelectedServiceDetails | null } = JSON.parse(
+              savedServices
+            );
+            setSelectedServices(parsed);
           } catch (error) {
             console.error("Error parsing saved services:", error);
             localStorage.removeItem("selectedServices");
@@ -234,9 +246,9 @@ export default function CheckoutPaymentPage() {
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
               <h2 className="text-xl font-semibold mb-6">Payment Details</h2>
               <StripePaymentForm
-                onSuccess={handlePaymentSuccess} // Now expects order ID
-                shippingAddress={addressData} // Pass address for order creation
-                selectedServices={selectedServices} // Pass selected services
+                onSuccess={handlePaymentSuccess}
+                shippingAddress={addressData}
+                selectedServices={selectedServices}
                 billingDetails={{
                   name: addressData.full_name,
                   address: {

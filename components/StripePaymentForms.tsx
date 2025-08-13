@@ -19,6 +19,16 @@ import { clearPaymentSession } from "./StripeProvider";
 import { formatCurrency } from "@/lib/cart/calculations";
 import { getCountryCode } from "@/utils/country-codes";
 
+// Add SelectedServiceDetails type
+export interface SelectedServiceDetails {
+  id: string;
+  service_code: string;
+  service_name: string;
+  rate_per_m3: number;
+  total_price: number;
+  description?: string;
+}
+
 interface BillingDetails {
   name: string;
   address: {
@@ -36,7 +46,7 @@ interface StripePaymentFormProps {
   onSuccess: (orderId: string) => void;
   billingDetails: BillingDetails;
   shippingAddress: Address;
-  selectedServices: { [key: string]: boolean };
+  selectedServices: { [serviceCode: string]: SelectedServiceDetails | null };
 }
 
 export function StripePaymentForm({
