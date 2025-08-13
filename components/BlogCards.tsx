@@ -2,7 +2,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, ZoomIn } from "lucide-react";
-import dynamic from "next/dynamic";
 import type { Blog } from "@/type/blogs";
 import {
   Card,
@@ -14,21 +13,13 @@ import {
 } from "@/components/ui/";
 import { Button } from "@/components/ui/";
 
-const MarkdownPreview = dynamic(() => import("@uiw/react-markdown-preview"), {
-  ssr: false,
-});
-
 interface BlogCardProps {
   post: Blog;
   showContent?: boolean;
   onZoomImage?: (imageUrl: string) => void;
 }
 
-export function BlogCard({
-  post,
-  showContent = false,
-  onZoomImage,
-}: BlogCardProps) {
+export function BlogCard({ post, onZoomImage }: BlogCardProps) {
   const images =
     post.blog_images?.map((img) => img.image_url).filter(Boolean) || [];
   const mainImage = images[0] || "/placeholder.svg?height=300&width=400";
@@ -112,23 +103,6 @@ export function BlogCard({
         <CardDescription className="line-clamp-2 text-sm text-gray-600 dark:text-gray-300 flex-1">
           {post.description}
         </CardDescription>
-
-        {showContent && post.content && (
-          <div className="mt-1 rounded bg-gray-50 dark:bg-gray-900/60 p-3 overflow-hidden max-h-32 relative">
-            <MarkdownPreview
-              source={post.content}
-              style={{
-                background: "transparent",
-                fontSize: 13,
-                color: "#64748b",
-                maxHeight: 80,
-                overflow: "hidden",
-              }}
-              className="line-clamp-3"
-            />
-            <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-gray-50 dark:from-gray-900/80 to-transparent pointer-events-none" />
-          </div>
-        )}
       </CardContent>
 
       <CardFooter className="px-4 pb-4 mt-auto flex-shrink-0">
