@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// components/BlogCard.tsx
 "use client";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,14 +14,12 @@ import {
   CardDescription,
 } from "@/components/ui/";
 import { Button } from "@/components/ui/";
-import { useState } from "react";
-import { useUser } from "@supabase/auth-helpers-react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { isFavorited, toggleFavorite } from "@/lib/favourite/favourite";
 
 interface BlogCardProps {
   post: Blog;
-  showContent?: boolean;
   onZoomImage?: (imageUrl: string) => void;
 }
 
@@ -28,65 +28,38 @@ export function BlogCard({ post, onZoomImage }: BlogCardProps) {
     post.blog_images?.map((img) => img.image_url).filter(Boolean) || [];
   const mainImage = images[0] || "/placeholder.svg?height=300&width=400";
   const hoverImage = images[1] || null;
-  const [isFavorited, setIsFavorited] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const user = useUser();
-  const supabase = createClientComponentClient();
 
-  async function toggleFavorite() {
-    setLoading(true);
+  const [faved, setFaved] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    isFavorited(post.id, "blog").then((v) => mounted && setFaved(v));
+    return () => {
+      mounted = false;
+    };
+  }, [post.id]);
+
+  async function onToggleFavorite() {
+    if (busy) return;
     try {
-      if (!user?.id) {
-        toast.error("You must be logged in to favorite blogs.");
-        setLoading(false);
-        return;
-      }
-      // Check if already favorited
-      const { data: existing, error: fetchError } = await supabase
-        .from("favorites")
-        .select("id")
-        .eq("item_id", post.id)
-        .eq("item_type", "blog")
-        .eq("user_id", user.id)
-        .single();
-
-      if (fetchError && fetchError.code !== "PGRST116") {
-        console.error(fetchError);
-        return;
-      }
-
-      if (existing) {
-        // Remove favorite
-        const { error: deleteError } = await supabase
-          .from("favorites")
-          .delete()
-          .eq("id", existing.id)
-          .eq("user_id", user.id);
-        if (deleteError) throw deleteError;
-        setIsFavorited(false);
-      } else {
-        // Insert favorite
-        const { error: insertError } = await supabase.from("favorites").insert([
-          {
-            item_id: post.id,
-            item_type: "blog",
-            user_id: user.id,
-          },
-        ]);
-        if (insertError) throw insertError;
-        setIsFavorited(true);
-      }
-    } catch (err) {
-      console.error("Toggle favorite error", err);
-    } finally {
-      setLoading(false);
+      setBusy(true);
+      setFaved((v) => !v); // optimistic
+      const res = await toggleFavorite(post.id, "blog");
+      toast.success(
+        res.status === "added" ? "Added to favorites" : "Removed from favorites"
+      );
+      setBusy(false);
+    } catch (e: any) {
+      setFaved((v) => !v); // revert
+      setBusy(false);
+      toast.error(e?.message || "Failed to update favorite");
     }
   }
 
   return (
     <Card className="overflow-hidden group relative py-0 shadow-lg border border-gray-200 dark:border-gray-800 transition-all hover:shadow-2xl flex flex-col h-full">
       <CardHeader className="p-0 relative h-52 flex-shrink-0">
-        {/* Main image */}
         <Image
           src={mainImage || "/placeholder.svg"}
           alt={post.title}
@@ -99,44 +72,41 @@ export function BlogCard({ post, onZoomImage }: BlogCardProps) {
           style={{ transition: "opacity 0.3s, transform 0.3s" }}
         />
 
-        {/* Hover image */}
         {hoverImage && (
           <Image
             src={hoverImage || "/placeholder.svg"}
-            alt={post.title + " (alt)"}
+            alt={`${post.title} (alt)`}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
             className="object-cover rounded-t-lg absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-            style={{
-              zIndex: 1,
-              transition: "opacity 0.3s",
-            }}
+            style={{ zIndex: 1, transition: "opacity 0.3s" }}
             priority
           />
         )}
 
         {/* Action buttons */}
-        <div className="absolute left-3 bottom-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+        <div className="absolute left-3 bottom-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 sm:opacity-0 sm:group-hover:opacity-100">
           <button
             className="p-2 bg-white rounded-full shadow hover:bg-gray-200"
-            onClick={() =>
-              onZoomImage?.(post.blog_images?.[0]?.image_url || mainImage)
-            }
+            onClick={() => onZoomImage?.(mainImage)}
             title="Zoom In"
           >
             <ZoomIn className="h-4 w-4 text-blue-600" />
           </button>
 
           <button
-            className="p-2 bg-white rounded-full shadow hover:bg-gray-200"
-            onClick={toggleFavorite}
-            disabled={loading}
-            title="Add to Favorites"
+            className={`p-2 rounded-full shadow ${
+              faved
+                ? "bg-rose-500 hover:bg-rose-600"
+                : "bg-white hover:bg-gray-200"
+            }`}
+            onClick={onToggleFavorite}
+            title={faved ? "Unfavorite" : "Favorite"}
+            disabled={busy}
           >
             <Heart
-              className={`h-4 w-4 ${
-                isFavorited ? "text-red-500 fill-red-500" : "text-blue-600"
-              }`}
+              className={`h-4 w-4 ${faved ? "text-white" : "text-blue-600"}`}
+              fill={faved ? "currentColor" : "none"}
             />
           </button>
         </div>
