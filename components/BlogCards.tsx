@@ -12,6 +12,10 @@ import {
   CardDescription,
 } from "@/components/ui/";
 import { Button } from "@/components/ui/";
+import { useState } from "react";
+import { useUser } from "@supabase/auth-helpers-react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { toast } from "sonner";
 
 interface BlogCardProps {
   post: Blog;
@@ -24,6 +28,60 @@ export function BlogCard({ post, onZoomImage }: BlogCardProps) {
     post.blog_images?.map((img) => img.image_url).filter(Boolean) || [];
   const mainImage = images[0] || "/placeholder.svg?height=300&width=400";
   const hoverImage = images[1] || null;
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const user = useUser();
+  const supabase = createClientComponentClient();
+
+  async function toggleFavorite() {
+    setLoading(true);
+    try {
+      if (!user?.id) {
+        toast.error("You must be logged in to favorite blogs.");
+        setLoading(false);
+        return;
+      }
+      // Check if already favorited
+      const { data: existing, error: fetchError } = await supabase
+        .from("favorites")
+        .select("id")
+        .eq("item_id", post.id)
+        .eq("item_type", "blog")
+        .eq("user_id", user.id)
+        .single();
+
+      if (fetchError && fetchError.code !== "PGRST116") {
+        console.error(fetchError);
+        return;
+      }
+
+      if (existing) {
+        // Remove favorite
+        const { error: deleteError } = await supabase
+          .from("favorites")
+          .delete()
+          .eq("id", existing.id)
+          .eq("user_id", user.id);
+        if (deleteError) throw deleteError;
+        setIsFavorited(false);
+      } else {
+        // Insert favorite
+        const { error: insertError } = await supabase.from("favorites").insert([
+          {
+            item_id: post.id,
+            item_type: "blog",
+            user_id: user.id,
+          },
+        ]);
+        if (insertError) throw insertError;
+        setIsFavorited(true);
+      }
+    } catch (err) {
+      console.error("Toggle favorite error", err);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <Card className="overflow-hidden group relative py-0 shadow-lg border border-gray-200 dark:border-gray-800 transition-all hover:shadow-2xl flex flex-col h-full">
@@ -58,16 +116,28 @@ export function BlogCard({ post, onZoomImage }: BlogCardProps) {
         )}
 
         {/* Action buttons */}
-        <div className="absolute left-3 bottom-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 sm:opacity-0 sm:group-hover:opacity-100">
+        <div className="absolute left-3 bottom-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
           <button
             className="p-2 bg-white rounded-full shadow hover:bg-gray-200"
-            onClick={() => onZoomImage?.(mainImage)}
+            onClick={() =>
+              onZoomImage?.(post.blog_images?.[0]?.image_url || mainImage)
+            }
             title="Zoom In"
           >
             <ZoomIn className="h-4 w-4 text-blue-600" />
           </button>
-          <button className="p-2 bg-white rounded-full shadow hover:bg-gray-200">
-            <Heart className="h-4 w-4 text-blue-600" />
+
+          <button
+            className="p-2 bg-white rounded-full shadow hover:bg-gray-200"
+            onClick={toggleFavorite}
+            disabled={loading}
+            title="Add to Favorites"
+          >
+            <Heart
+              className={`h-4 w-4 ${
+                isFavorited ? "text-red-500 fill-red-500" : "text-blue-600"
+              }`}
+            />
           </button>
         </div>
       </CardHeader>
