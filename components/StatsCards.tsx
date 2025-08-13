@@ -88,7 +88,7 @@ export function StatsCards({
             <div
               className={`p-3 bg-gradient-to-br ${gradient} rounded-2xl shadow-lg flex items-center justify-center`}
             >
-              <IconComponent className="h-6 w-6 text-white" />
+              <IconComponent className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 text-white" />
             </div>
           </div>
 
