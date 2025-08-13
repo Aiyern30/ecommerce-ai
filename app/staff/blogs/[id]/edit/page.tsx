@@ -79,7 +79,7 @@ export default function EditBlogPage() {
 
   const pathname = usePathname();
   const blogId = useMemo(() => {
-    const parts = pathname.split("/");
+    const parts = (pathname ?? "").split("/");
     return parts[parts.length - 2];
   }, [pathname]);
 

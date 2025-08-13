@@ -103,7 +103,7 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const orderId = params.orderId as string;
+  const orderId = params?.orderId as string;
 
   useEffect(() => {
     if (user === undefined) return; // Still loading
