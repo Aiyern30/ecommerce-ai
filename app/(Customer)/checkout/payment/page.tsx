@@ -249,6 +249,9 @@ export default function CheckoutPaymentPage() {
                 onSuccess={handlePaymentSuccess}
                 shippingAddress={addressData}
                 selectedServices={selectedServices}
+                additionalServices={additionalServices}
+                freightCharges={freightCharges}
+                totalVolume={totalVolume}
                 billingDetails={{
                   name: addressData.full_name,
                   address: {

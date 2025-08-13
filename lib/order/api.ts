@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { CartItem } from "@/type/cart";
 import { getProductPrice } from "@/lib/cart/utils";
+import { SelectedServiceDetails } from "@/components/StripePaymentForms";
 
 export interface CreateOrderData {
   items: {
@@ -57,12 +58,48 @@ export function calculateOrderTotals(cartItems: CartItem[]) {
   };
 }
 
+// New helper function for full order total
+export function calculateFullOrderTotals(
+  cartItems: CartItem[],
+  selectedServices: { [serviceCode: string]: SelectedServiceDetails | null },
+  additionalServices: any[],
+  freightCharges: any[],
+  totalVolume: number
+) {
+  const baseTotals = calculateOrderTotals(cartItems);
+
+  // Additional services total
+  const additionalServicesTotal = Object.values(selectedServices)
+    .filter(Boolean)
+    .reduce(
+      (sum, service) => sum + (service?.rate_per_m3 ?? 0) * totalVolume,
+      0
+    );
+
+  // Freight charges total (implement your logic if needed)
+  // Example: const freightTotal = ...;
+  const freightTotal = 0; // Replace with your logic if needed
+
+  const total = baseTotals.total + additionalServicesTotal + freightTotal;
+
+  return {
+    ...baseTotals,
+    additionalServicesTotal,
+    freightTotal,
+    total,
+  };
+}
+
 export async function createOrderAPI(
   userId: string,
   cartItems: CartItem[],
   addressId: string,
   paymentIntentId?: string,
-  notes?: string
+  notes?: string,
+  selectedServices?: { [serviceCode: string]: SelectedServiceDetails | null },
+  additionalServices?: any[],
+  freightCharges?: any[],
+  totalVolume?: number
 ): Promise<CreateOrderResponse | null> {
   try {
     const selectedItems = cartItems.filter((item) => item.selected);
@@ -71,8 +108,14 @@ export async function createOrderAPI(
       throw new Error("No items selected");
     }
 
-    // Calculate totals using the shared function
-    const totals = calculateOrderTotals(cartItems);
+    // Calculate totals using the new function
+    const totals = calculateFullOrderTotals(
+      cartItems,
+      selectedServices || {},
+      additionalServices || [],
+      freightCharges || [],
+      totalVolume || 0
+    );
 
     const orderData: CreateOrderData & { user_id: string } = {
       user_id: userId,
@@ -80,12 +123,11 @@ export async function createOrderAPI(
       items: selectedItems.map((item) => ({
         product_id: item.product_id,
         quantity: item.quantity,
-        variant_type: item.variant_type || undefined, // Convert null to undefined
-        price: getProductPrice(item.product, item.variant_type), // Add calculated price
+        variant_type: item.variant_type || undefined,
+        price: getProductPrice(item.product, item.variant_type),
       })),
       notes,
       payment_intent_id: paymentIntentId,
-      // Include calculated totals
       subtotal: totals.subtotal,
       shipping_cost: totals.shippingCost,
       tax: totals.tax,

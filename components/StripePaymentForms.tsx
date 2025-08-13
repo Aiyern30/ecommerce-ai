@@ -11,13 +11,14 @@ import type { StripePaymentElementOptions } from "@stripe/stripe-js";
 import { useState } from "react";
 import { Button } from "@/components/ui";
 import { Loader2, CreditCard, Shield } from "lucide-react";
-import { createOrderAPI, calculateOrderTotals } from "@/lib/order/api";
+import { createOrderAPI } from "@/lib/order/api";
 import { useUser } from "@supabase/auth-helpers-react";
 import { useCart } from "@/components/CartProvider";
 import type { Address } from "@/lib/user/address";
 import { clearPaymentSession } from "./StripeProvider";
 import { formatCurrency } from "@/lib/cart/calculations";
 import { getCountryCode } from "@/utils/country-codes";
+import { getProductPrice } from "@/lib/cart/utils";
 
 // Add SelectedServiceDetails type
 export interface SelectedServiceDetails {
@@ -27,6 +28,24 @@ export interface SelectedServiceDetails {
   rate_per_m3: number;
   total_price: number;
   description?: string;
+}
+
+interface AdditionalService {
+  id: string;
+  service_name: string;
+  service_code: string;
+  rate_per_m3: number;
+  description: string;
+  is_active: boolean;
+}
+
+interface FreightCharge {
+  id: string;
+  min_volume: number;
+  max_volume: number | null;
+  delivery_fee: number;
+  description: string;
+  is_active: boolean;
 }
 
 interface BillingDetails {
@@ -47,6 +66,9 @@ interface StripePaymentFormProps {
   billingDetails: BillingDetails;
   shippingAddress: Address;
   selectedServices: { [serviceCode: string]: SelectedServiceDetails | null };
+  additionalServices: AdditionalService[];
+  freightCharges: FreightCharge[];
+  totalVolume: number;
 }
 
 export function StripePaymentForm({
@@ -54,6 +76,9 @@ export function StripePaymentForm({
   billingDetails,
   shippingAddress,
   selectedServices,
+  additionalServices,
+  freightCharges,
+  totalVolume,
 }: StripePaymentFormProps) {
   const stripe = useStripe();
   const elements = useElements();
@@ -61,10 +86,67 @@ export function StripePaymentForm({
   const { cartItems, refreshCart } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  console.log("selectedServices", selectedServices);
 
-  // Use the shared calculation function
-  const totals = calculateOrderTotals(cartItems);
+  const selectedItems = cartItems.filter((item) => item.selected);
+
+  // Calculate subtotal from selected items (same as CheckoutSummary)
+  const subtotal = selectedItems.reduce((sum, item) => {
+    const itemPrice = getProductPrice(item.product, item.variant_type);
+    return sum + itemPrice * item.quantity;
+  }, 0);
+
+  // Calculate additional services total (same as CheckoutSummary)
+  const servicesTotal = additionalServices.reduce((sum, service) => {
+    if (selectedServices[service.service_code]) {
+      return sum + service.rate_per_m3 * totalVolume;
+    }
+    return sum;
+  }, 0);
+
+  // Get applicable freight charge (same logic as CheckoutSummary)
+  const getApplicableFreightCharge = (): FreightCharge | null => {
+    if (totalVolume === 0) return null;
+
+    return (
+      freightCharges.find((charge) => {
+        const minVol = charge.min_volume;
+        const maxVol = charge.max_volume;
+
+        if (maxVol === null) {
+          return totalVolume >= minVol;
+        } else {
+          return totalVolume >= minVol && totalVolume <= maxVol;
+        }
+      }) || null
+    );
+  };
+
+  const applicableFreightCharge = getApplicableFreightCharge();
+  const freightCost = applicableFreightCharge
+    ? applicableFreightCharge.delivery_fee
+    : 0;
+
+  // Calculate tax (SST 6%) on subtotal + services + freight (same as CheckoutSummary)
+  const taxableAmount = subtotal + servicesTotal + freightCost;
+  const tax = taxableAmount * 0.06;
+
+  // Calculate total (same as CheckoutSummary)
+  const total = taxableAmount + tax;
+
+  const selectedItemsCount = selectedItems.reduce(
+    (count, item) => count + item.quantity,
+    0
+  );
+
+  console.log("Payment form calculations:", {
+    subtotal,
+    servicesTotal,
+    freightCost,
+    tax,
+    total,
+    totalVolume,
+    selectedServices,
+  });
 
   // PaymentElement options
   const paymentElementOptions: StripePaymentElementOptions = {
@@ -112,7 +194,7 @@ export function StripePaymentForm({
         return;
       }
 
-      console.log("Creating PaymentIntent for amount:", totals.total, "RM");
+      console.log("Creating PaymentIntent for amount:", total, "RM");
 
       // Step 2: Create PaymentIntent after form validation
       const paymentIntentResponse = await fetch("/api/create-payment-intent", {
@@ -121,7 +203,7 @@ export function StripePaymentForm({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          amount: totals.total, // Send in RM
+          amount: total, // Use the calculated total with all charges
           currency: "myr",
         }),
       });
@@ -174,13 +256,17 @@ export function StripePaymentForm({
         );
 
         try {
-          // Create order with the completed PaymentIntent ID
+          // Create order with the completed PaymentIntent ID and pass all the calculation data
           const orderResult = await createOrderAPI(
             user.id,
             cartItems,
             shippingAddress.id, // Pass address ID instead of full address object
             paymentIntent.id, // Pass the completed PaymentIntent ID
-            undefined // notes
+            undefined, // notes
+            selectedServices, // Pass selected services
+            additionalServices, // Pass additional services
+            freightCharges, // Pass freight charges
+            totalVolume // Pass total volume
           );
 
           if (!orderResult) {
@@ -283,37 +369,61 @@ export function StripePaymentForm({
           <div className="space-y-2">
             <div className="flex justify-between items-center text-sm">
               <span className="text-gray-600 dark:text-gray-400">
-                Subtotal ({totals.selectedItemsCount} items)
+                Products Subtotal ({selectedItemsCount} items)
               </span>
-              <span className="font-medium">
-                {formatCurrency(totals.subtotal)}
-              </span>
+              <span className="font-medium">{formatCurrency(subtotal)}</span>
             </div>
+
+            {/* Additional Services */}
+            {servicesTotal > 0 && (
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600 dark:text-gray-400">
+                  Services Total
+                </span>
+                <span className="font-medium text-green-600">
+                  {formatCurrency(servicesTotal)}
+                </span>
+              </div>
+            )}
+
+            {/* Delivery Fee */}
             <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Shipping</span>
+              <span className="text-gray-600 dark:text-gray-400">
+                Delivery Fee
+                {applicableFreightCharge && (
+                  <span className="text-xs block text-gray-500">
+                    ({applicableFreightCharge.description})
+                  </span>
+                )}
+              </span>
               <span
                 className={`font-medium ${
-                  totals.shippingCost === 0
-                    ? "text-green-600 dark:text-green-400"
-                    : ""
+                  freightCost === 0 ? "text-green-600 dark:text-green-400" : ""
                 }`}
               >
-                {totals.shippingCost === 0
-                  ? "FREE"
-                  : formatCurrency(totals.shippingCost)}
+                {freightCost === 0 ? "FREE" : formatCurrency(freightCost)}
               </span>
             </div>
+
             <div className="flex justify-between items-center text-sm">
               <span className="text-gray-600 dark:text-gray-400">
                 Tax (SST 6%)
               </span>
-              <span className="font-medium">{formatCurrency(totals.tax)}</span>
+              <span className="font-medium">{formatCurrency(tax)}</span>
             </div>
+
+            {/* Free shipping message */}
+            {freightCost === 0 && totalVolume >= 4.5 && (
+              <div className="text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 p-2 rounded border border-green-200 dark:border-green-700">
+                🎉 Free delivery for orders 4.5m³ and above!
+              </div>
+            )}
+
             <div className="border-t pt-2">
               <div className="flex justify-between items-center">
                 <span className="text-lg font-semibold">Total Amount:</span>
                 <span className="text-2xl font-bold text-blue-600">
-                  {formatCurrency(totals.total)}
+                  {formatCurrency(total)}
                 </span>
               </div>
             </div>
@@ -335,7 +445,7 @@ export function StripePaymentForm({
           ) : (
             <div className="flex items-center justify-center space-x-2">
               <Shield className="h-4 w-4" />
-              <span>Pay {formatCurrency(totals.total)} & Place Order</span>
+              <span>Pay {formatCurrency(total)} & Place Order</span>
             </div>
           )}
         </Button>
