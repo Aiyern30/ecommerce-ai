@@ -17,8 +17,15 @@ const MarkdownPreview = dynamic(() => import("@uiw/react-markdown-preview"), {
 });
 
 export default function BlogPost() {
-  const { id } = useParams();
+  const params = useParams();
   const router = useRouter();
+
+  const id =
+    params && typeof params.id === "string"
+      ? params.id
+      : params && Array.isArray(params.id)
+      ? params.id[0]
+      : "";
 
   const [blog, setBlog] = useState<Blog | null>(null);
   console.log("Blog:", blog);
@@ -58,7 +65,6 @@ export default function BlogPost() {
 
       setBlog(current);
 
-      // Fetch previous blog (older than current)
       const { data: prev } = await supabase
         .from("blogs")
         .select("id, title")
@@ -69,7 +75,6 @@ export default function BlogPost() {
 
       setPrevBlog(prev ?? null);
 
-      // Fetch next blog (newer than current)
       const { data: next } = await supabase
         .from("blogs")
         .select("id, title")
@@ -118,7 +123,6 @@ export default function BlogPost() {
       </div>
 
       <Card className="pt-0">
-        {/* Top Images Section */}
         {blog.blog_images && blog.blog_images.length === 1 && (
           <div className="relative w-full h-[300px] md:h-[400px] mb-6">
             <Image
@@ -162,7 +166,6 @@ export default function BlogPost() {
 
         <div className="space-y-6 text-gray-700 px-6 mb-12">
           <TypographyP>{blog.description}</TypographyP>
-          {/* Blog Content Markdown */}
           {blog.content && (
             <MarkdownPreview
               source={blog.content}
@@ -175,7 +178,6 @@ export default function BlogPost() {
               className="!bg-transparent"
             />
           )}
-          {/* Blog Link Button */}
           {blog.link && (
             <div className="mt-4">
               {blog.link.startsWith("http://") ||
@@ -200,7 +202,6 @@ export default function BlogPost() {
           )}
         </div>
 
-        {/* Third image below content */}
         {blog.blog_images && blog.blog_images.length >= 3 && (
           <div className="w-full mb-6">
             <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
@@ -215,7 +216,6 @@ export default function BlogPost() {
             </div>
           </div>
         )}
-        {/* Fourth image below content, left/right if present */}
         {blog.blog_images && blog.blog_images.length === 4 && (
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
@@ -241,7 +241,6 @@ export default function BlogPost() {
           </div>
         )}
 
-        {/* Previous / Next Navigation */}
         {(prevBlog || nextBlog) && (
           <div className="border-t pt-6 flex justify-between items-center px-6">
             <div className="flex text-sm text-gray-500 w-full justify-between">
