@@ -20,6 +20,15 @@ import {
 import type { Address } from "@/lib/user/address";
 import Link from "next/link";
 
+export interface SelectedServiceDetails {
+  id: string;
+  service_code: string;
+  service_name: string;
+  rate_per_m3: number;
+  total_price: number;
+  description?: string;
+}
+
 interface AdditionalService {
   id: string;
   service_name: string;
@@ -57,7 +66,7 @@ export default function CheckoutAddressPage() {
   >([]);
   const [freightCharges, setFreightCharges] = useState<FreightCharge[]>([]);
   const [selectedServices, setSelectedServices] = useState<{
-    [key: string]: boolean;
+    [serviceCode: string]: SelectedServiceDetails | null;
   }>({});
 
   const selectedItems = cartItems.filter((item) => item.selected);
@@ -98,11 +107,12 @@ export default function CheckoutAddressPage() {
           setFreightCharges(charges || []);
         }
 
-        // Load selected services from localStorage
+        // Load selected services from localStorage (use SelectedServiceDetails type)
         const savedServices = localStorage.getItem("selectedServices");
         if (savedServices) {
           try {
-            setSelectedServices(JSON.parse(savedServices));
+            const parsed: { [serviceCode: string]: SelectedServiceDetails | null } = JSON.parse(savedServices);
+            setSelectedServices(parsed);
           } catch (error) {
             console.error("Error parsing saved services:", error);
             localStorage.removeItem("selectedServices");
