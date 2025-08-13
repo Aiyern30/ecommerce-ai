@@ -207,7 +207,7 @@ export default function PostDetailPage() {
   const pathname = usePathname();
   const router = useRouter();
   const postId = useMemo(() => {
-    const parts = pathname.split("/");
+    const parts = (pathname ?? "").split("/");
     return parts[parts.length - 1];
   }, [pathname]);
 

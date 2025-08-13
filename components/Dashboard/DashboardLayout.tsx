@@ -109,7 +109,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     if (path === "/staff/dashboard") {
       return pathname === "/staff/dashboard" || pathname === "/staff";
     }
-    return pathname.startsWith(path);
+    return pathname ? pathname.startsWith(path) : false;
   };
 
   const triggerFileInput = () => {

@@ -305,7 +305,7 @@ export default function EditPostPage() {
   const router = useRouter();
   const pathname = usePathname();
   const postId = useMemo(() => {
-    const parts = pathname.split("/");
+    const parts = (pathname ?? "").split("/");
     return parts[parts.length - 2];
   }, [pathname]);
 
