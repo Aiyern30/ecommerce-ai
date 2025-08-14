@@ -108,16 +108,52 @@ export async function createOrderAPI(
       throw new Error("No items selected");
     }
 
-    // Calculate totals using the new function
-    const totals = calculateFullOrderTotals(
-      cartItems,
-      selectedServices || {},
-      additionalServices || [],
-      freightCharges || [],
-      totalVolume || 0
-    );
+    // Calculate subtotal from selected items
+    const subtotal = selectedItems.reduce((sum, item) => {
+      const itemPrice = getProductPrice(item.product, item.variant_type);
+      return sum + itemPrice * item.quantity;
+    }, 0);
 
-    const orderData: CreateOrderData & { user_id: string } = {
+    // Calculate additional services total
+    const servicesTotal =
+      additionalServices?.reduce((sum, service) => {
+        if (selectedServices?.[service.service_code]) {
+          return sum + service.rate_per_m3 * (totalVolume || 0);
+        }
+        return sum;
+      }, 0) || 0;
+
+    // Get applicable freight charge
+    const getApplicableFreightCharge = () => {
+      if (!totalVolume || !freightCharges) return null;
+
+      return (
+        freightCharges.find((charge) => {
+          const minVol = charge.min_volume;
+          const maxVol = charge.max_volume;
+
+          if (maxVol === null) {
+            return totalVolume >= minVol;
+          } else {
+            return totalVolume >= minVol && totalVolume <= maxVol;
+          }
+        }) || null
+      );
+    };
+
+    const applicableFreightCharge = getApplicableFreightCharge();
+    const freightCost = applicableFreightCharge
+      ? applicableFreightCharge.delivery_fee
+      : 0;
+
+    // Calculate tax (SST 6%) on subtotal + services + freight
+    const taxableAmount = subtotal + servicesTotal + freightCost;
+    const tax = taxableAmount * 0.06;
+
+    // Calculate total
+    const total = taxableAmount + tax;
+
+    const orderData = {
       user_id: userId,
       address_id: addressId,
       items: selectedItems.map((item) => ({
@@ -128,10 +164,15 @@ export async function createOrderAPI(
       })),
       notes,
       payment_intent_id: paymentIntentId,
-      subtotal: totals.subtotal,
-      shipping_cost: totals.shippingCost,
-      tax: totals.tax,
-      total: totals.total,
+      subtotal,
+      shipping_cost: freightCost,
+      tax,
+      total,
+      total_volume: totalVolume || 0,
+      // Pass the selected services with proper structure
+      selected_services: selectedServices || {},
+      // Pass additional services for reference
+      additional_services_data: additionalServices || [],
     };
 
     console.log("Creating order with data:", orderData);
