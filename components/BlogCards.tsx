@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // components/BlogCard.tsx
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, ZoomIn } from "lucide-react";
+import { ZoomIn } from "lucide-react";
 import type { Blog } from "@/type/blogs";
 import {
   Card,
@@ -14,9 +13,6 @@ import {
   CardDescription,
 } from "@/components/ui/";
 import { Button } from "@/components/ui/";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { isFavorited, toggleFavorite } from "@/lib/favourite/favourite";
 
 interface BlogCardProps {
   post: Blog;
@@ -28,34 +24,6 @@ export function BlogCard({ post, onZoomImage }: BlogCardProps) {
     post.blog_images?.map((img) => img.image_url).filter(Boolean) || [];
   const mainImage = images[0] || "/placeholder.svg?height=300&width=400";
   const hoverImage = images[1] || null;
-
-  const [faved, setFaved] = useState(false);
-  const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    let mounted = true;
-    isFavorited(post.id, "blog").then((v) => mounted && setFaved(v));
-    return () => {
-      mounted = false;
-    };
-  }, [post.id]);
-
-  async function onToggleFavorite() {
-    if (busy) return;
-    try {
-      setBusy(true);
-      setFaved((v) => !v); // optimistic
-      const res = await toggleFavorite(post.id, "blog");
-      toast.success(
-        res.status === "added" ? "Added to favorites" : "Removed from favorites"
-      );
-      setBusy(false);
-    } catch (e: any) {
-      setFaved((v) => !v); // revert
-      setBusy(false);
-      toast.error(e?.message || "Failed to update favorite");
-    }
-  }
 
   return (
     <Card className="overflow-hidden group relative py-0 shadow-lg border border-gray-200 dark:border-gray-800 transition-all hover:shadow-2xl flex flex-col h-full">
@@ -92,22 +60,6 @@ export function BlogCard({ post, onZoomImage }: BlogCardProps) {
             title="Zoom In"
           >
             <ZoomIn className="h-4 w-4 text-blue-600" />
-          </button>
-
-          <button
-            className={`p-2 rounded-full shadow ${
-              faved
-                ? "bg-rose-500 hover:bg-rose-600"
-                : "bg-white hover:bg-gray-200"
-            }`}
-            onClick={onToggleFavorite}
-            title={faved ? "Unfavorite" : "Favorite"}
-            disabled={busy}
-          >
-            <Heart
-              className={`h-4 w-4 ${faved ? "text-white" : "text-blue-600"}`}
-              fill={faved ? "currentColor" : "none"}
-            />
           </button>
         </div>
       </CardHeader>
