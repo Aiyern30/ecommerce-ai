@@ -28,10 +28,10 @@ export async function POST(request: NextRequest) {
       tax: number;
       total: number;
       total_volume: number;
-      // Updated to match the actual data structure being sent
       selected_services?: {
         [serviceCode: string]: SelectedServiceDetails | null;
       };
+      additional_services_data?: any[];
       items: {
         product_id: string;
         quantity: number;
@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
 
     console.log("Request body:", body);
     console.log("Selected services received:", body.selected_services);
+    console.log("Additional services data:", body.additional_services_data);
     console.log("Total volume received:", body.total_volume);
 
     // Validate request
@@ -322,54 +323,75 @@ export async function POST(request: NextRequest) {
       // Don't fail the order creation if cart clearing fails
     }
 
-    // --- FIXED: Insert selected additional services into order_additional_services ---
-    if (body.selected_services && body.total_volume) {
+    if (
+      body.selected_services &&
+      body.additional_services_data &&
+      body.total_volume
+    ) {
       console.log("Processing additional services...");
 
-      // Filter out null values and get the actual selected services
-      const selectedServicesList = Object.values(body.selected_services).filter(
-        (service): service is SelectedServiceDetails => service !== null
+      // Get the selected service codes
+      const selectedServiceCodes = Object.keys(body.selected_services).filter(
+        (code) => body.selected_services![code] !== null
       );
 
-      console.log("Selected services list:", selectedServicesList);
+      console.log("Selected service codes:", selectedServiceCodes);
 
-      if (selectedServicesList.length > 0) {
-        // Create the order additional services data
-        const orderAdditionalServices = selectedServicesList.map((service) => ({
-          order_id: order.id,
-          additional_service_id: service.id, // Use the ID from the service details
-          service_name: service.service_name,
-          rate_per_m3: service.rate_per_m3,
-          quantity: body.total_volume,
-          total_price: service.rate_per_m3 * body.total_volume,
-        }));
-
-        console.log(
-          "Order additional services to insert:",
-          orderAdditionalServices
+      if (selectedServiceCodes.length > 0) {
+        // Find the corresponding services from additional_services_data
+        const selectedServicesData = body.additional_services_data.filter(
+          (service) => selectedServiceCodes.includes(service.service_code)
         );
 
-        const { error: addServicesError } = await supabaseAdmin
-          .from("order_additional_services")
-          .insert(orderAdditionalServices);
+        console.log("Selected services data:", selectedServicesData);
 
-        if (addServicesError) {
-          console.error(
-            "Failed to insert order_additional_services:",
-            addServicesError
+        if (selectedServicesData.length > 0) {
+          // Create the order additional services data
+          const orderAdditionalServices = selectedServicesData.map(
+            (service) => ({
+              order_id: order.id,
+              additional_service_id: service.id,
+              service_name: service.service_name,
+              rate_per_m3: service.rate_per_m3,
+              quantity: body.total_volume,
+              total_price: service.rate_per_m3 * body.total_volume,
+            })
           );
-          // Don't fail the order creation, but log the error
-        } else {
+
           console.log(
-            "Successfully inserted additional services into order_additional_services"
+            "Order additional services to insert:",
+            orderAdditionalServices
           );
+
+          const { error: addServicesError } = await supabaseAdmin
+            .from("order_additional_services")
+            .insert(orderAdditionalServices);
+
+          if (addServicesError) {
+            console.error(
+              "Failed to insert order_additional_services:",
+              addServicesError
+            );
+            // Don't fail the order creation, but log the error
+          } else {
+            console.log(
+              "Successfully inserted additional services into order_additional_services"
+            );
+          }
+        } else {
+          console.log("No matching additional services found in data");
         }
       } else {
         console.log("No additional services selected for this order");
       }
     } else {
-      console.log("No selected_services or total_volume provided");
+      console.log("Missing required data for additional services:", {
+        has_selected_services: !!body.selected_services,
+        has_additional_services_data: !!body.additional_services_data,
+        has_total_volume: !!body.total_volume,
+      });
     }
+
     // --- End insert additional services ---
 
     return NextResponse.json({
