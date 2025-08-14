@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  ShoppingCart,
-  Heart,
-  ZoomIn,
-  SlidersHorizontal,
-  Check,
-} from "lucide-react";
+import { ShoppingCart, ZoomIn, SlidersHorizontal, Check } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -140,12 +134,6 @@ export function ProductCard({
     setIsAddingToCart(false);
   };
 
-  const handleWishlist = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log("Add to wishlist:", id);
-  };
-
   // If you have multiple images, replace this with your images array logic.
   // For now, just support single image.
   useEffect(() => {
@@ -269,13 +257,7 @@ export function ProductCard({
                 >
                   <ZoomIn className="h-5 w-5 text-blue-600" />
                 </button>
-                <button
-                  onClick={handleWishlist}
-                  className="p-2 bg-white rounded-full shadow-md hover:bg-red-50"
-                  title="Add to Wishlist"
-                >
-                  <Heart className="h-5 w-5 text-blue-600" />
-                </button>
+
                 {showCompare && (
                   <button
                     onClick={handleCompareClick}
@@ -317,13 +299,7 @@ export function ProductCard({
                 >
                   <ZoomIn className="h-5 w-5 text-blue-600" />
                 </button>
-                <button
-                  onClick={handleWishlist}
-                  className="p-2 bg-white rounded-full shadow-md hover:bg-red-50"
-                  title="Add to Wishlist"
-                >
-                  <Heart className="h-5 w-5 text-blue-600" />
-                </button>
+
                 {showCompare && (
                   <button
                     onClick={handleCompareClick}
