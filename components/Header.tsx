@@ -9,7 +9,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "./ui/Input";
 import { Button } from "./ui/Button";
 import CartSheet from "./Cart";
-import WishlistSheet from "./Wishlist";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -156,7 +155,6 @@ const Header = () => {
                 <>
                   <NotificationSheet />
                   <CartSheet />
-                  <WishlistSheet />
                 </>
               )}
 
