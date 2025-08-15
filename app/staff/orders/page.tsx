@@ -49,11 +49,15 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerClose,
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
 } from "@/components/ui/";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import { formatDate } from "@/lib/utils/format";
 import { useDeviceType } from "@/utils/useDeviceTypes";
 import { Order } from "@/type/order";
+import Image from "next/image";
 
 interface OrderFilters {
   search: string;
@@ -907,12 +911,60 @@ export default function OrdersPage() {
                     </TableCell>
 
                     <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Package className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm font-medium">
-                          {order.order_items?.length || 0}
-                        </span>
-                      </div>
+                      <HoverCard>
+                        <HoverCardTrigger asChild>
+                          <div className="flex items-center gap-1 cursor-pointer">
+                            <Package className="h-4 w-4 text-gray-400" />
+                            <span className="text-sm font-medium">
+                              {order.order_items?.length || 0}
+                            </span>
+                          </div>
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-96 p-4">
+                          <div className="space-y-2">
+                            {order.order_items &&
+                            order.order_items.length > 0 ? (
+                              order.order_items.map((item) => (
+                                <div
+                                  key={item.id}
+                                  className="flex gap-3 items-center border-b pb-2 last:border-b-0 last:pb-0"
+                                >
+                                  <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center relative">
+                                    <Image
+                                      src={item.image_url || "/placeholder.svg"}
+                                      alt={item.name}
+                                      fill
+                                      className="object-cover"
+                                      priority
+                                    />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="font-medium text-sm truncate">
+                                      {item.name}
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                      Grade: {item.grade}
+                                      {item.variant_type && (
+                                        <span className="ml-2">
+                                          Type: {item.variant_type}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                      Qty: {item.quantity} &nbsp;|&nbsp; RM
+                                      {item.price}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="text-xs text-gray-400">
+                                No items
+                              </div>
+                            )}
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
                     </TableCell>
                     <TableCell>{formatCurrency(order.subtotal)}</TableCell>
                     <TableCell>{formatCurrency(order.shipping_cost)}</TableCell>
