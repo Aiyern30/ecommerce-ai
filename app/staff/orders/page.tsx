@@ -218,23 +218,18 @@ export default function OrdersPage() {
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("orders")
-      .select(
-        `
-        *,
-        order_items (*),
-        addresses (*)
-      `
-      )
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Error fetching orders:", error.message);
+    try {
+      const res = await fetch("/api/admin/orders/select");
+      const json = await res.json();
+      if (!res.ok) {
+        toast.error(json.error || "Failed to fetch orders");
+        setOrders([]);
+      } else {
+        setOrders(json.orders || []);
+      }
+    } catch {
       toast.error("Failed to fetch orders");
       setOrders([]);
-    } else {
-      setOrders(data || []);
     }
     setLoading(false);
   }, []);
