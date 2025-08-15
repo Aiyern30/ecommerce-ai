@@ -256,122 +256,127 @@ export default function NotificationSheet() {
             )
           )}
         </SheetHeader>
+        {/* Make notification content scrollable */}
         <div className="flex flex-col flex-1 min-h-0">
-          <ScrollArea className="flex-1">
-            {isLoading ? (
-              <div className="space-y-4 mx-4">
-                {/* Generate 5 skeleton notification cards */}
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <NotificationSkeleton key={index} />
-                ))}
-              </div>
-            ) : !user ? (
-              <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-6 text-center space-y-6">
-                <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-                  <Bell className="h-12 w-12 text-gray-400" />
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            <ScrollArea className="flex-1">
+              {isLoading ? (
+                <div className="space-y-4 mx-4">
+                  {/* Generate 5 skeleton notification cards */}
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <NotificationSkeleton key={index} />
+                  ))}
                 </div>
-                <div className="space-y-3">
-                  <span className="block text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    Login Required
-                  </span>
-                  <p className="text-sm text-muted-foreground max-w-sm">
-                    Please login to view your notifications.
-                  </p>
+              ) : !user ? (
+                <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-6 text-center space-y-6">
+                  <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                    <Bell className="h-12 w-12 text-gray-400" />
+                  </div>
+                  <div className="space-y-3">
+                    <span className="block text-lg font-semibold text-gray-900 dark:text-gray-100">
+                      Login Required
+                    </span>
+                    <p className="text-sm text-muted-foreground max-w-sm">
+                      Please login to view your notifications.
+                    </p>
+                  </div>
+                  <Link href="/login" onClick={() => setIsOpen(false)}>
+                    <Button>Login to Continue</Button>
+                  </Link>
                 </div>
-                <Link href="/login" onClick={() => setIsOpen(false)}>
-                  <Button>Login to Continue</Button>
-                </Link>
-              </div>
-            ) : notifications.length === 0 ? (
-              <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-6 text-center space-y-6">
-                <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-                  <Bell className="h-12 w-12 text-gray-500" />
+              ) : notifications.length === 0 ? (
+                <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-6 text-center space-y-6">
+                  <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                    <Bell className="h-12 w-12 text-gray-500" />
+                  </div>
+                  <div className="space-y-3">
+                    <span className="block text-lg font-semibold text-gray-900 dark:text-gray-100">
+                      No notifications
+                    </span>
+                    <p className="text-sm text-muted-foreground max-w-sm">
+                      We'll notify you when something arrives.
+                    </p>
+                  </div>
+                  <Link href="/products" onClick={() => setIsOpen(false)}>
+                    <Button>Browse Products</Button>
+                  </Link>
                 </div>
-                <div className="space-y-3">
-                  <span className="block text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    No notifications
-                  </span>
-                  <p className="text-sm text-muted-foreground max-w-sm">
-                    We'll notify you when something arrives.
-                  </p>
-                </div>
-                <Link href="/products" onClick={() => setIsOpen(false)}>
-                  <Button>Browse Products</Button>
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-4 mx-4">
-                {notifications.map((notification) => {
-                  if (
-                    !notification ||
-                    !notification.id ||
-                    !notification.title ||
-                    !notification.message
-                  )
-                    return null;
-                  const type = notification.type || "system";
-                  return (
-                    <Card
-                      key={notification.id}
-                      className={`transition-colors border dark:border-gray-700${
-                        notification.read
-                          ? "bg-gray-100 dark:bg-gray-800"
-                          : "bg-white dark:bg-gray-900"
-                      } hover:bg-gray-100 dark:hover:bg-gray-900/30`}
-                    >
-                      <CardHeader className="pb-2 flex flex-row items-center gap-2">
-                        <span
-                          className={`text-xs px-2 py-1 rounded ${getTypeColor(
-                            type
-                          )}`}
-                        >
-                          {typeof type === "string"
-                            ? type.charAt(0).toUpperCase() + type.slice(1)
-                            : "System"}
-                        </span>
-                        {!notification.read && (
-                          <span className="h-2 w-2 rounded-full bg-blue-500 dark:bg-blue-400"></span>
-                        )}
-                        <span className="ml-auto flex gap-2">
+              ) : (
+                <div className="space-y-4 mx-4">
+                  {notifications.map((notification) => {
+                    if (
+                      !notification ||
+                      !notification.id ||
+                      !notification.title ||
+                      !notification.message
+                    )
+                      return null;
+                    const type = notification.type || "system";
+                    return (
+                      <Card
+                        key={notification.id}
+                        className={`transition-colors border dark:border-gray-700${
+                          notification.read
+                            ? "bg-gray-100 dark:bg-gray-800"
+                            : "bg-white dark:bg-gray-900"
+                        } hover:bg-gray-100 dark:hover:bg-gray-900/30`}
+                      >
+                        <CardHeader className="pb-2 flex flex-row items-center gap-2">
+                          <span
+                            className={`text-xs px-2 py-1 rounded ${getTypeColor(
+                              type
+                            )}`}
+                          >
+                            {typeof type === "string"
+                              ? type.charAt(0).toUpperCase() + type.slice(1)
+                              : "System"}
+                          </span>
                           {!notification.read && (
+                            <span className="h-2 w-2 rounded-full bg-blue-500 dark:bg-blue-400"></span>
+                          )}
+                          <span className="ml-auto flex gap-2">
+                            {!notification.read && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 border rounded-lg text-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950"
+                                onClick={() =>
+                                  handleMarkAsRead(notification.id)
+                                }
+                                title="Mark as read"
+                              >
+                                <Check className="h-4 w-4" />
+                              </Button>
+                            )}
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-7 w-7 p-0 border rounded-lg text-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950"
-                              onClick={() => handleMarkAsRead(notification.id)}
-                              title="Mark as read"
+                              className="h-7 w-7 p-0 border rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                              onClick={() => handleDeleteClick(notification)}
+                              title="Delete notification"
                             >
-                              <Check className="h-4 w-4" />
+                              <Trash2 className="h-4 w-4" />
                             </Button>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0 border rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-                            onClick={() => handleDeleteClick(notification)}
-                            title="Delete notification"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </span>
-                      </CardHeader>
-                      <CardContent className="pt-0">
-                        <CardTitle className="text-base font-medium text-gray-900 dark:text-white mb-1 line-clamp-2">
-                          {notification.title}
-                        </CardTitle>
-                        <CardDescription className="block text-xs text-gray-500 mb-2 !mt-0">
-                          {notification.message}
-                        </CardDescription>
-                        <span className="block text-xs text-gray-400 dark:text-gray-500 mt-2">
-                          {formatTime(notification.created_at)}
-                        </span>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
-          </ScrollArea>
+                          </span>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          <CardTitle className="text-base font-medium text-gray-900 dark:text-white mb-1 line-clamp-2">
+                            {notification.title}
+                          </CardTitle>
+                          <CardDescription className="block text-xs text-gray-500 mb-2 !mt-0">
+                            {notification.message}
+                          </CardDescription>
+                          <span className="block text-xs text-gray-400 dark:text-gray-500 mt-2">
+                            {formatTime(notification.created_at)}
+                          </span>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </ScrollArea>
+          </div>
         </div>
         {isLoading ? (
           <div className="border-t p-4 space-y-4 bg-gray-100 dark:bg-gray-900/30">
