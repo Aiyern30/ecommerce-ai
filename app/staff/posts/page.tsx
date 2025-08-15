@@ -269,22 +269,35 @@ export default function PostsPage() {
 
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from("posts")
-        .delete()
-        .in("id", selectedPosts);
+      const deletePromises = selectedPosts.map(async (postId) => {
+        const response = await fetch("/api/posts/delete", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ postId: postId }),
+        });
 
-      if (error) {
-        console.error("Error deleting posts:", error.message);
-        toast.error(`Error deleting posts: ${error.message}`);
-      } else {
-        toast.success(`Successfully deleted ${selectedPosts.length} post(s)!`);
-        clearPostSelection();
-        fetchPosts();
-      }
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `Failed to delete post ${postId}`);
+        }
+
+        return response.json();
+      });
+
+      await Promise.all(deletePromises);
+
+      toast.success(`Successfully deleted ${selectedPosts.length} post(s)!`);
+      clearPostSelection();
+      fetchPosts();
     } catch (error) {
-      console.error("Unexpected error during deletion:", error);
-      toast.error("An unexpected error occurred. Please try again.");
+      console.error("Error deleting posts:", error);
+      toast.error(
+        error instanceof Error
+          ? `Error deleting posts: ${error.message}`
+          : "An unexpected error occurred. Please try again."
+      );
     } finally {
       setLoading(false);
       setIsDeleteDialogOpen(false);
