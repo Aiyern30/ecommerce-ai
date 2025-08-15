@@ -183,37 +183,18 @@ export default function Page() {
     }
 
     try {
-      // Insert blog data
-      const { data: blogInsertData, error: blogInsertError } = await supabase
-        .from("blogs")
-        .insert({
-          title: data.title,
-          description: data.description || null,
-          link_name: data.link_name || null,
-          link: data.link || null,
-          content: data.content,
-          status: isDraft ? "draft" : "published",
-        })
-        .select("id")
-        .single();
+      // 1. Upload images to Supabase Storage first
+      const uploadedImageUrls: string[] = [];
 
-      if (blogInsertError) {
-        toast.error("Blog creation failed: " + blogInsertError.message);
-        if (isDraft) {
-          setIsDraftSaving(false);
-        } else {
-          setIsSubmitting(false);
-        }
-        return;
-      }
-
-      const blogId = blogInsertData.id;
-
-      // Upload images if selected
       if (selectedImageFiles.length > 0) {
+        // Create a temporary blog ID for organizing images
+        const tempBlogId = `temp-${Date.now()}-${Math.random()
+          .toString(36)
+          .substring(2, 15)}`;
+
         for (const file of selectedImageFiles) {
           const fileExt = file.name.split(".").pop();
-          const filePath = `blogs/${blogId}/${Date.now()}-${Math.random()
+          const filePath = `blogs/${tempBlogId}/${Date.now()}-${Math.random()
             .toString(36)
             .substring(2, 15)}.${fileExt}`;
 
@@ -233,51 +214,47 @@ export default function Page() {
           const { data: publicData } = supabase.storage
             .from("blogs")
             .getPublicUrl(filePath);
-          const imageUrl = publicData.publicUrl;
 
-          // Insert image record into blog_images table
-          const { error: imageInsertError } = await supabase
-            .from("blog_images")
-            .insert({
-              blog_id: blogId,
-              image_url: imageUrl,
-            });
-
-          if (imageInsertError) {
-            console.error(
-              "Failed to insert blog image:",
-              imageInsertError.message
-            );
-            toast.error(
-              "Failed to save blog image: " + imageInsertError.message
-            );
-          }
+          uploadedImageUrls.push(publicData.publicUrl);
         }
       }
 
-      // Insert tags if any (from selectedTags)
-      if (selectedTags && selectedTags.length > 0) {
-        const { error: tagsInsertError } = await supabase
-          .from("blog_tags")
-          .insert(
-            selectedTags.map((tag) => ({ blog_id: blogId, tag_id: tag.id }))
-          );
+      // 2. Create blog using API route
+      const response = await fetch("/api/admin/blogs/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: data.title,
+          description: data.description,
+          link_name: data.link_name,
+          link: data.link,
+          content: data.content,
+          status: isDraft ? "draft" : "published",
+          tags: selectedTags.map((tag) => tag.id),
+          images: uploadedImageUrls,
+        }),
+      });
 
-        if (tagsInsertError) {
-          console.error("Blog tags insert failed:", tagsInsertError.message);
-          toast.error("Failed to add blog tags: " + tagsInsertError.message);
-        }
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to create blog");
       }
 
-      if (isDraft) {
-        toast.success("Blog saved as draft successfully!");
-      } else {
-        toast.success("Blog created successfully!");
-      }
+      toast.success(
+        isDraft
+          ? "Blog saved as draft successfully!"
+          : "Blog created successfully!"
+      );
       router.push("/staff/blogs");
     } catch (error) {
-      console.error("Unexpected error during blog creation:", error);
-      toast.error("An unexpected error occurred. Please try again.");
+      console.error("Error creating blog:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred. Please try again."
+      );
     } finally {
       if (isDraft) {
         setIsDraftSaving(false);
