@@ -26,7 +26,7 @@ import { Order } from "@/type/order";
 
 function OrderDetailsSkeleton() {
   return (
-    <div className="max-w-4xl mx-auto py-8">
+    <div className="container mx-auto py-8">
       <Skeleton className="h-8 w-64 mb-6" />
       <Skeleton className="h-6 w-32 mb-4" />
       <Skeleton className="h-40 w-full mb-6" />
@@ -92,7 +92,7 @@ export default function StaffOrderDetailsPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto py-8">
+    <div className="container mx-auto">
       <div className="flex items-center justify-between mb-6">
         <TypographyH2>Order Details</TypographyH2>
         <Button variant="outline" onClick={() => router.push("/staff/orders")}>

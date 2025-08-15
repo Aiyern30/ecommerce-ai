@@ -297,7 +297,7 @@ export default function OrdersPage() {
     <div className="min-h-screen py-8">
       <div className="container mx-auto px-4 flex flex-col gap-8">
         {/* Header */}
-        <TypographyH1 className="my-8">YOUR ORDERS</TypographyH1>
+        <TypographyH1>YOUR ORDERS</TypographyH1>
 
         {/* Stats Cards */}
         {orders.length > 0 && (
