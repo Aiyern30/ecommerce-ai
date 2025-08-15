@@ -848,7 +848,7 @@ export default function OrdersPage() {
             <TableBody>
               {currentPageData.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={14} className="h-24 text-center">
+                  <TableCell colSpan={15} className="h-24 text-center">
                     No orders found.
                   </TableCell>
                 </TableRow>
@@ -960,20 +960,6 @@ export default function OrdersPage() {
                       </div>
                     </TableCell>
                     <TableCell>{formatDate(order.created_at)}</TableCell>
-                    <TableCell
-                      className="text-right"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() =>
-                          router.push(`/staff/orders/${order.id}/edit`)
-                        }
-                      >
-                        View
-                      </Button>
-                    </TableCell>
                     <TableCell>
                       {order.additional_services &&
                       order.additional_services.length > 0 ? (
@@ -1009,6 +995,20 @@ export default function OrdersPage() {
                             )
                             .toFixed(2)
                         : "RM0.00"}
+                    </TableCell>
+                    <TableCell
+                      className="text-right"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() =>
+                          router.push(`/staff/orders/${order.id}/edit`)
+                        }
+                      >
+                        View
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))
