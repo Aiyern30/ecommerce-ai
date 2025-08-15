@@ -113,13 +113,25 @@ export default function StaffOrderDetailsPage() {
             <div>
               <TypographyP className="font-semibold mb-1">Customer</TypographyP>
               <div className="mb-2">
-                <span className="font-medium">
-                  {order.addresses?.full_name || "N/A"}
-                </span>
+                {order.addresses?.full_name ? (
+                  <a
+                    href={`/staff/customers/${order.user_id}`}
+                    className="font-medium text-blue-700 hover:underline"
+                    title="View customer details"
+                  >
+                    {order.addresses.full_name}
+                  </a>
+                ) : (
+                  <span className="font-medium">N/A</span>
+                )}
                 {order.addresses?.phone && (
-                  <span className="ml-2 text-xs text-gray-500">
+                  <a
+                    href={`tel:${order.addresses.phone}`}
+                    className="ml-2 text-xs text-blue-600 underline"
+                    title={`Call ${order.addresses.phone}`}
+                  >
                     {order.addresses.phone}
-                  </span>
+                  </a>
                 )}
               </div>
               <TypographyP className="font-semibold mb-1">Address</TypographyP>
@@ -229,28 +241,42 @@ export default function StaffOrderDetailsPage() {
             </TableHeader>
             <TableBody>
               {order.order_items && order.order_items.length > 0 ? (
-                order.order_items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>
-                      <div className="w-12 h-12 relative">
-                        <Image
-                          src={item.image_url || "/placeholder.svg"}
-                          alt={item.name}
-                          fill
-                          className="object-cover rounded-md"
-                        />
-                      </div>
-                    </TableCell>
-                    <TableCell>{item.name}</TableCell>
-                    <TableCell>{item.grade}</TableCell>
-                    <TableCell>{item.variant_type || "-"}</TableCell>
-                    <TableCell>{item.quantity}</TableCell>
-                    <TableCell>RM{item.price.toFixed(2)}</TableCell>
-                    <TableCell>
-                      RM{(item.price * item.quantity).toFixed(2)}
+                <>
+                  {order.order_items.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>
+                        <div className="w-12 h-12 relative">
+                          <Image
+                            src={item.image_url || "/placeholder.svg"}
+                            alt={item.name}
+                            fill
+                            className="object-cover rounded-md"
+                          />
+                        </div>
+                      </TableCell>
+                      <TableCell>{item.name}</TableCell>
+                      <TableCell>{item.grade}</TableCell>
+                      <TableCell>{item.variant_type || "-"}</TableCell>
+                      <TableCell>{item.quantity}</TableCell>
+                      <TableCell>RM{item.price.toFixed(2)}</TableCell>
+                      <TableCell>
+                        RM{(item.price * item.quantity).toFixed(2)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  <TableRow>
+                    <TableCell colSpan={6}></TableCell>
+                    <TableCell className="font-bold text-blue-700">
+                      RM
+                      {order.order_items
+                        .reduce(
+                          (sum, item) => sum + item.price * item.quantity,
+                          0
+                        )
+                        .toFixed(2)}
                     </TableCell>
                   </TableRow>
-                ))
+                </>
               ) : (
                 <TableRow>
                   <TableCell
@@ -283,14 +309,25 @@ export default function StaffOrderDetailsPage() {
             <TableBody>
               {order.additional_services &&
               order.additional_services.length > 0 ? (
-                order.additional_services.map((service) => (
-                  <TableRow key={service.id}>
-                    <TableCell>{service.service_name}</TableCell>
-                    <TableCell>RM{service.rate_per_m3}</TableCell>
-                    <TableCell>{service.quantity}</TableCell>
-                    <TableCell>RM{service.total_price}</TableCell>
+                <>
+                  {order.additional_services.map((service) => (
+                    <TableRow key={service.id}>
+                      <TableCell>{service.service_name}</TableCell>
+                      <TableCell>RM{service.rate_per_m3}</TableCell>
+                      <TableCell>{service.quantity}</TableCell>
+                      <TableCell>RM{service.total_price}</TableCell>
+                    </TableRow>
+                  ))}
+                  <TableRow>
+                    <TableCell colSpan={3}></TableCell>
+                    <TableCell className="font-bold text-blue-700">
+                      RM
+                      {order.additional_services
+                        .reduce((sum, s) => sum + Number(s.total_price || 0), 0)
+                        .toFixed(2)}
+                    </TableCell>
                   </TableRow>
-                ))
+                </>
               ) : (
                 <TableRow>
                   <TableCell
