@@ -14,6 +14,7 @@ import {
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import * as XLSX from "xlsx";
 
 import {
   Button,
@@ -480,16 +481,70 @@ export default function OrdersPage() {
     }).format(amount);
   };
 
+  // Export orders to Excel
+  const handleExportOrders = async () => {
+    try {
+      // Fetch all orders (optionally, you can use the already loaded orders)
+      const res = await fetch("/api/admin/orders/select");
+      const json = await res.json();
+      const ordersData = json.orders || [];
+
+      // Format data for Excel
+      const rows = ordersData.map((order: Order) => ({
+        "Order ID": order.id,
+        Customer: order.addresses?.full_name || "",
+        Phone: order.addresses?.phone || "",
+        Status: order.status,
+        "Payment Status": order.payment_status,
+        Subtotal: order.subtotal,
+        "Shipping Cost": order.shipping_cost,
+        Tax: order.tax,
+        Total: order.total,
+        "Created At": order.created_at,
+        "Order Items": order.order_items
+          ? order.order_items
+              .map((item) => `${item.name} x${item.quantity}`)
+              .join("; ")
+          : "",
+        "Additional Services": order.additional_services
+          ? order.additional_services
+              .map((s) => `${s.service_name} x${s.quantity}`)
+              .join("; ")
+          : "",
+        Address: order.addresses
+          ? [
+              order.addresses.address_line1,
+              order.addresses.address_line2,
+              order.addresses.city,
+              order.addresses.state,
+              order.addresses.postal_code,
+              order.addresses.country,
+            ]
+              .filter(Boolean)
+              .join(", ")
+          : "",
+      }));
+
+      // Create worksheet and workbook
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Orders");
+
+      // Generate and download Excel file
+      XLSX.writeFile(workbook, "orders_export.xlsx");
+    } catch {
+      toast.error("Failed to export orders");
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex items-center justify-between">
         <TypographyH2 className="border-none pb-0">Orders</TypographyH2>
         <div className="flex items-center gap-2">
-          <Link href="/staff/orders/export">
-            <Button variant="outline" size="sm">
-              Export Orders
-            </Button>
-          </Link>
+          <Button variant="outline" size="sm" onClick={handleExportOrders}>
+            Export Orders
+          </Button>
         </div>
       </div>
 
