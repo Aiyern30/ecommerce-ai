@@ -12,12 +12,12 @@ import {
 } from "@/components/ui";
 import { Bell, Check, Trash2, Filter, Search } from "lucide-react";
 import { toast } from "sonner";
-import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import {
   TypographyH1,
   TypographyH3,
   TypographyP,
 } from "@/components/ui/Typography";
+import Link from "next/link";
 
 import { Notification } from "@/type/notification";
 import {
@@ -174,7 +174,6 @@ export default function NotificationsPage() {
   if (!user) {
     return (
       <div className="container mx-auto px-4 pt-0 pb-4">
-        <BreadcrumbNav showFilterButton={false} />
         <TypographyH1 className="my-8">NOTIFICATIONS</TypographyH1>
         <div className="flex justify-center items-center min-h-[400px]">
           <div className="text-center">
@@ -187,72 +186,76 @@ export default function NotificationsPage() {
 
   return (
     <div className="container mx-auto px-4 pt-0 pb-4">
-      <BreadcrumbNav showFilterButton={false} />
       <TypographyH1 className="my-8">NOTIFICATIONS</TypographyH1>
 
-      {/* Header Actions */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center mb-6">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Bell className="h-5 w-5 text-gray-600" />
-            <TypographyP className="!mt-0">
-              {notifications.length} total, {unreadCount} unread
-            </TypographyP>
+      {/* Only show filters/search if there are notifications */}
+      {notifications.length > 0 && (
+        <>
+          {/* Header Actions */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center mb-6">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Bell className="h-5 w-5 text-gray-600" />
+                <TypographyP className="!mt-0">
+                  {notifications.length} total, {unreadCount} unread
+                </TypographyP>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleMarkAllAsRead}
+                disabled={unreadCount === 0}
+              >
+                <Check className="h-4 w-4 mr-2" />
+                Mark All Read
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClearAllNotifications}
+                disabled={notifications.length === 0}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Clear All
+              </Button>
+            </div>
           </div>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleMarkAllAsRead}
-            disabled={unreadCount === 0}
-          >
-            <Check className="h-4 w-4 mr-2" />
-            Mark All Read
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleClearAllNotifications}
-            disabled={notifications.length === 0}
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Clear All
-          </Button>
-        </div>
-      </div>
 
-      {/* Filters and Search */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-gray-600" />
-          <Select
-            value={filter}
-            onValueChange={(value) => setFilter(value as typeof filter)}
-          >
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Filter notifications" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Notifications</SelectItem>
-              <SelectItem value="unread">Unread Only</SelectItem>
-              <SelectItem value="order">Orders</SelectItem>
-              <SelectItem value="promotion">Promotions</SelectItem>
-              <SelectItem value="system">System</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex items-center gap-2 flex-1 max-w-md">
-          <Search className="h-4 w-4 text-gray-600" />
-          <input
-            type="text"
-            placeholder="Search notifications..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-sm flex-1"
-          />
-        </div>
-      </div>
+          {/* Filters and Search */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-gray-600" />
+              <Select
+                value={filter}
+                onValueChange={(value) => setFilter(value as typeof filter)}
+              >
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Filter notifications" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Notifications</SelectItem>
+                  <SelectItem value="unread">Unread Only</SelectItem>
+                  <SelectItem value="order">Orders</SelectItem>
+                  <SelectItem value="promotion">Promotions</SelectItem>
+                  <SelectItem value="system">System</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-2 flex-1 max-w-md">
+              <Search className="h-4 w-4 text-gray-600" />
+              <input
+                type="text"
+                placeholder="Search notifications..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-sm flex-1"
+              />
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Notifications List */}
       <div className="space-y-4">
@@ -261,18 +264,26 @@ export default function NotificationsPage() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
           </div>
         ) : filteredNotifications.length === 0 ? (
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center shadow-sm">
-            <Bell className="h-16 w-16 text-gray-300 dark:text-gray-500 mx-auto mb-4" />
-            <TypographyH3 className="text-gray-500 dark:text-gray-400 mb-2">
-              {notifications.length === 0
-                ? "No notifications"
-                : "No notifications match your filters"}
-            </TypographyH3>
-            <TypographyP className="text-gray-400 dark:text-gray-500">
-              {notifications.length === 0
-                ? "We'll notify you when something arrives"
-                : "Try adjusting your search or filter criteria"}
-            </TypographyP>
+          // Enhanced empty state UI, similar to cart page
+          <div className="flex flex-col items-center justify-center text-center min-h-[60vh] space-y-6">
+            <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center">
+              <Bell className="h-12 w-12 text-blue-600" />
+            </div>
+            <div className="space-y-3">
+              <TypographyH3 className="text-gray-500 dark:text-gray-400 mb-2">
+                {notifications.length === 0
+                  ? "No notifications"
+                  : "No notifications match your filters"}
+              </TypographyH3>
+              <TypographyP className="text-gray-400 dark:text-gray-500">
+                {notifications.length === 0
+                  ? "We'll notify you when something arrives"
+                  : "Try adjusting your search or filter criteria"}
+              </TypographyP>
+            </div>
+            <Link href="/products">
+              <Button>Browse Products</Button>
+            </Link>
           </div>
         ) : (
           filteredNotifications.map((notification) => (
