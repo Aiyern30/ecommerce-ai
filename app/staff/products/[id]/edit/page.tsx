@@ -413,6 +413,38 @@ export default function EditProductPage() {
     }
 
     try {
+      // --- FIX: Upload new images to Supabase Storage before PATCH ---
+      const uploadedImageUrls: string[] = [];
+      for (let i = 0; i < selectedImageFiles.length; i++) {
+        const file = selectedImageFiles[i];
+        const fileExt = file.name.split(".").pop();
+        const filePath = `products/${productId}/${Date.now()}-${Math.random()
+          .toString(36)
+          .substring(2, 15)}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("products")
+          .upload(filePath, file, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (uploadError) {
+          toast.error(
+            `Failed to upload image ${file.name}: ${uploadError.message}`
+          );
+          continue;
+        }
+
+        const { data: publicData } = supabase.storage
+          .from("products")
+          .getPublicUrl(filePath);
+
+        uploadedImageUrls.push(publicData.publicUrl);
+      }
+
+      // --- END FIX ---
+
       const res = await fetch("/api/admin/products/update", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -422,6 +454,7 @@ export default function EditProductPage() {
           isDraft,
           imagesToDelete,
           existingImages,
+          newImages: uploadedImageUrls, // Pass new image URLs to API
         }),
       });
 
