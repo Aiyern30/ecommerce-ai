@@ -835,6 +835,10 @@ export default function OrdersPage() {
                 <TableHead className="min-w-[120px]">Payment</TableHead>
                 <TableHead className="min-w-[200px]">Address</TableHead>
                 <TableHead className="min-w-[150px]">Created</TableHead>
+                <TableHead className="min-w-[160px]">
+                  Additional Services
+                </TableHead>
+                <TableHead className="min-w-[120px]">Services Total</TableHead>
                 <TableHead className="text-right min-w-[80px]">
                   Actions
                 </TableHead>
@@ -844,7 +848,7 @@ export default function OrdersPage() {
             <TableBody>
               {currentPageData.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={12} className="h-24 text-center">
+                  <TableCell colSpan={14} className="h-24 text-center">
                     No orders found.
                   </TableCell>
                 </TableRow>
@@ -969,6 +973,42 @@ export default function OrdersPage() {
                       >
                         View
                       </Button>
+                    </TableCell>
+                    <TableCell>
+                      {order.additional_services &&
+                      order.additional_services.length > 0 ? (
+                        <div className="space-y-1">
+                          {order.additional_services.map((service) => (
+                            <div key={service.id} className="text-xs">
+                              <span className="font-medium">
+                                {service.service_name}
+                              </span>
+                              <span>
+                                {" "}
+                                × {service.quantity} @ RM{service.rate_per_m3}
+                              </span>
+                              <span className="ml-2 text-green-600 font-semibold">
+                                RM{service.total_price}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-400">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {order.additional_services &&
+                      order.additional_services.length > 0
+                        ? "RM" +
+                          order.additional_services
+                            .reduce(
+                              (sum: number, s) =>
+                                sum + Number(s.total_price || 0),
+                              0
+                            )
+                            .toFixed(2)
+                        : "RM0.00"}
                     </TableCell>
                   </TableRow>
                 ))
