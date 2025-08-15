@@ -26,6 +26,15 @@ export interface ShippingAddress {
   updated_at: string;
 }
 
+export interface AdditionalService {
+  id: string;
+  additional_service_id: string;
+  service_name: string;
+  rate_per_m3: number;
+  quantity: number;
+  total_price: number;
+}
+
 export interface Order {
   id: string;
   user_id: string;
@@ -39,6 +48,7 @@ export interface Order {
   address_id: string;
   addresses?: ShippingAddress;
   order_items?: OrderItem[];
+  additional_services?: AdditionalService[];
   created_at: string;
   updated_at: string;
   notes?: string;
