@@ -332,51 +332,40 @@ export default function ProductsPage() {
 
     setLoading(true);
     try {
-      const deleteTags = supabase
-        .from("product_tags")
-        .delete()
-        .in("product_id", selectedProducts);
+      // Use your existing API route instead of direct database operations
+      const deletePromises = selectedProducts.map(async (productId) => {
+        const response = await fetch("/api/admin/products/delete", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id: productId }),
+        });
 
-      const deleteCerts = supabase
-        .from("product_certificates")
-        .delete()
-        .in("product_id", selectedProducts);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.error || `Failed to delete product ${productId}`
+          );
+        }
 
-      const deleteImages = supabase
-        .from("product_images")
-        .delete()
-        .in("product_id", selectedProducts);
+        return response.json();
+      });
 
-      const [tagsErr, certsErr, imagesErr] = await Promise.all([
-        deleteTags,
-        deleteCerts,
-        deleteImages,
-      ]).then((results) => results.map((res) => res.error));
+      await Promise.all(deletePromises);
 
-      if (tagsErr || certsErr || imagesErr) {
-        throw new Error(
-          tagsErr?.message || certsErr?.message || imagesErr?.message
-        );
-      }
-
-      const { error: productError } = await supabase
-        .from("products")
-        .delete()
-        .in("id", selectedProducts);
-
-      if (productError) {
-        console.error("Error deleting products:", productError.message);
-        toast.error(`Error deleting products: ${productError.message}`);
-      } else {
-        toast.success(
-          `Successfully deleted ${selectedProducts.length} product(s)!`
-        );
-        clearProductSelection();
-        fetchProducts();
-      }
+      toast.success(
+        `Successfully deleted ${selectedProducts.length} product(s)!`
+      );
+      clearProductSelection();
+      fetchProducts();
     } catch (error) {
-      console.error("Unexpected error during deletion:", error);
-      toast.error("An unexpected error occurred. Please try again.");
+      console.error("Error deleting products:", error);
+      toast.error(
+        error instanceof Error
+          ? `Error deleting products: ${error.message}`
+          : "An unexpected error occurred. Please try again."
+      );
     } finally {
       setLoading(false);
       setIsDeleteDialogOpen(false);
