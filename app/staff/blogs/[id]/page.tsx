@@ -272,14 +272,24 @@ export default function BlogDetailPage() {
 
     setIsDeleting(true);
     try {
-      const { error } = await supabase.from("blogs").delete().eq("id", blog.id);
+      const response = await fetch("/api/admin/blogs/delete", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ids: [blog.id] }),
+      });
 
-      if (error) {
-        console.error("Error deleting blog:", error.message);
-        toast.error(`Error deleting blog: ${error.message}`);
-      } else {
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Error deleting blog:", data.error);
+        toast.error(`Error deleting blog: ${data.error}`);
+      } else if (data.success) {
         toast.success("Blog deleted successfully!");
         router.push("/staff/blogs");
+      } else {
+        toast.error("Failed to delete blog. Please try again.");
       }
     } catch (error) {
       console.error("Unexpected error during deletion:", error);
