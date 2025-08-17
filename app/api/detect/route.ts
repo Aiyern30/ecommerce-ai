@@ -1,15 +1,7 @@
-import { NextApiRequest, NextApiResponse } from "next";
+// app/api/detect/route.ts
+import { NextRequest, NextResponse } from "next/server";
 import { ImageAnnotatorClient } from "@google-cloud/vision";
-import formidable from "formidable";
-import fs from "fs";
 import path from "path";
-
-// Disable body parser for file uploads
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
 
 // Initialize Google Cloud Vision client
 const vision = new ImageAnnotatorClient({
@@ -142,62 +134,57 @@ function matchConcreteProduct(labels: string[]) {
   return CONCRETE_PRODUCTS.find((p) => p.grade === bestMatch.grade) || null;
 }
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
+export async function POST(request: NextRequest) {
   try {
-    const form = formidable({
-      maxFileSize: 10 * 1024 * 1024,
-      filter: (part) =>
-        typeof part.mimetype === "string" && part.mimetype.includes("image"),
-    });
+    // Get form data from request
+    const formData = await request.formData();
+    const file = formData.get("image") as File;
 
-    const { files } = await new Promise<{
-      fields: formidable.Fields;
-      files: formidable.Files;
-    }>((resolve, reject) => {
-      form.parse(req, (err, fields, files) => {
-        if (err) reject(err);
-        else resolve({ fields, files });
-      });
-    });
-
-    const uploadedFile =
-      files.image && Array.isArray(files.image) ? files.image[0] : files.image;
-
-    if (
-      !uploadedFile ||
-      typeof uploadedFile !== "object" ||
-      !("filepath" in uploadedFile)
-    ) {
-      return res.status(400).json({ error: "No image uploaded" });
+    if (!file) {
+      return NextResponse.json(
+        { error: "No image file uploaded" },
+        { status: 400 }
+      );
     }
 
-    const file = uploadedFile as formidable.File;
-    const imageBuffer = fs.readFileSync(file.filepath);
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      return NextResponse.json(
+        { error: "Please upload an image file" },
+        { status: 400 }
+      );
+    }
 
+    // Validate file size (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: "Image size should be less than 10MB" },
+        { status: 400 }
+      );
+    }
+
+    // Convert file to buffer
+    const arrayBuffer = await file.arrayBuffer();
+    const imageBuffer = Buffer.from(arrayBuffer);
+
+    // Call Google Cloud Vision API
     const [result] = await vision.labelDetection({
       image: { content: imageBuffer },
     });
+
     const labels = result.labelAnnotations || [];
     const labelTexts = labels.map((l) => l.description || "").filter(Boolean);
 
-    try {
-      fs.unlinkSync(file.filepath);
-    } catch {}
-
+    // Match to concrete product
     const matchedProduct = matchConcreteProduct(labelTexts);
+
+    // Calculate confidence score
     const confidence =
       labels.length > 0
         ? Math.min(0.95, Math.max(0.3, labels[0].score || 0.5))
         : 0.5;
 
-    return res.status(200).json({
+    return NextResponse.json({
       success: true,
       detectedLabels: labelTexts.slice(0, 10),
       matchedProduct,
@@ -206,8 +193,39 @@ export default async function handler(
         ? `We recommend ${matchedProduct.name}`
         : "No suitable concrete type detected",
     });
-  } catch (err) {
-    console.error("Vision API Error:", err);
-    return res.status(500).json({ error: "Image processing failed" });
+  } catch (error) {
+    console.error("Vision API Error:", error);
+
+    // Return specific error messages
+    if (error instanceof Error) {
+      if (error.message.includes("INVALID_ARGUMENT")) {
+        return NextResponse.json(
+          { error: "Invalid image format" },
+          { status: 400 }
+        );
+      }
+      if (error.message.includes("PERMISSION_DENIED")) {
+        return NextResponse.json(
+          { error: "Google Cloud Vision API access denied" },
+          { status: 500 }
+        );
+      }
+    }
+
+    return NextResponse.json(
+      {
+        error: "Failed to process image",
+        details: process.env.NODE_ENV === "development" ? error : undefined,
+      },
+      { status: 500 }
+    );
   }
+}
+
+// Optional: Add other HTTP methods if needed
+export async function GET() {
+  return NextResponse.json(
+    { error: "Method not allowed. Use POST to upload images." },
+    { status: 405 }
+  );
 }
