@@ -1,34 +1,34 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // app/api/detect/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { ImageAnnotatorClient } from "@google-cloud/vision";
 import path from "path";
 
-// Initialize Google Cloud Vision client
-let vision: ImageAnnotatorClient;
+// Initialize Google Cloud Vision client (lazy)
+let vision: ImageAnnotatorClient | null = null;
 
-try {
-  // Option 1: Try to use service account file
-  const serviceAccountPath = path.join(process.cwd(), "service-account.json");
-  vision = new ImageAnnotatorClient({
-    keyFilename: serviceAccountPath,
-  });
-} catch {
-  // Option 2: Use environment variables (recommended for production)
+function initializeVisionClient() {
+  // Check for credentials before initializing
   if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    vision = new ImageAnnotatorClient({
+    console.log("🔧 Using GOOGLE_APPLICATION_CREDENTIALS file path");
+    return new ImageAnnotatorClient({
       keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
     });
-  } else if (process.env.GOOGLE_CLOUD_CREDENTIALS) {
-    // Option 3: Use credentials from environment variable (JSON string)
-    const credentials = JSON.parse(process.env.GOOGLE_CLOUD_CREDENTIALS);
-    vision = new ImageAnnotatorClient({
+  }
+  if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
+    console.log("🔧 Using GOOGLE_APPLICATION_CREDENTIALS_JSON");
+    const credentials = JSON.parse(
+      process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON
+    );
+    return new ImageAnnotatorClient({
       credentials,
       projectId: credentials.project_id,
     });
-  } else {
-    // Option 4: Use Application Default Credentials (for Google Cloud environments)
-    vision = new ImageAnnotatorClient();
   }
+  const serviceAccountPath = path.join(process.cwd(), "service-account.json");
+  return new ImageAnnotatorClient({
+    keyFilename: serviceAccountPath,
+  });
 }
 
 // Product data
@@ -159,6 +159,22 @@ function matchConcreteProduct(labels: string[]) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Initialize Vision client if not already done
+    if (!vision) {
+      try {
+        vision = initializeVisionClient();
+      } catch (error) {
+        console.error("❌ Failed to initialize Vision client:", error);
+        return NextResponse.json(
+          {
+            error:
+              "Google Cloud Vision API initialization failed. Please check your credentials.",
+          },
+          { status: 500 }
+        );
+      }
+    }
+
     // Get form data from request
     const formData = await request.formData();
     const file = formData.get("image") as File;
@@ -193,16 +209,34 @@ export async function POST(request: NextRequest) {
     // Call Google Cloud Vision API
     let result;
     try {
+      console.log("📸 Calling Google Vision API...");
       [result] = await vision.labelDetection({
         image: { content: imageBuffer },
       });
-    } catch (visionError) {
-      console.error("Google Cloud Vision API Error:", visionError);
+      console.log("✅ Vision API call successful");
+    } catch (visionError: any) {
+      console.error("❌ Google Cloud Vision API Error:", visionError);
+      console.error("Error code:", visionError.code);
+      console.error("Error message:", visionError.message);
+
+      // Provide more specific error messages
+      if (visionError.code === 7) {
+        return NextResponse.json(
+          {
+            error:
+              "Google Cloud Vision API access denied. Please check if the Vision API is enabled and your service account has the correct permissions.",
+          },
+          { status: 500 }
+        );
+      } else if (visionError.code === 3) {
+        return NextResponse.json(
+          { error: "Invalid image format. Please upload a valid image file." },
+          { status: 400 }
+        );
+      }
+
       return NextResponse.json(
-        {
-          error:
-            "Google Cloud Vision API is not properly configured. Please check your credentials.",
-        },
+        { error: `Google Cloud Vision API error: ${visionError.message}` },
         { status: 500 }
       );
     }
