@@ -79,12 +79,12 @@
     "tailwindcss-animate": "^1.0.7",
     "twilio": "^5.7.2",
     "vaul": "^1.1.2",
-    "xlsx": "^0.18.5",
     "zod": "^3.24.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/exceljs": "^0.5.3",
     "@types/next-auth": "^3.13.0",
     "@types/node": "^20",
     "@types/react": "^19",
