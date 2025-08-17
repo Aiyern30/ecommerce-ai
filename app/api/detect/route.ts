@@ -4,9 +4,32 @@ import { ImageAnnotatorClient } from "@google-cloud/vision";
 import path from "path";
 
 // Initialize Google Cloud Vision client
-const vision = new ImageAnnotatorClient({
-  keyFilename: path.join(process.cwd(), "service-account.json"),
-});
+let vision: ImageAnnotatorClient;
+
+try {
+  // Option 1: Try to use service account file
+  const serviceAccountPath = path.join(process.cwd(), "service-account.json");
+  vision = new ImageAnnotatorClient({
+    keyFilename: serviceAccountPath,
+  });
+} catch {
+  // Option 2: Use environment variables (recommended for production)
+  if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    vision = new ImageAnnotatorClient({
+      keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+    });
+  } else if (process.env.GOOGLE_CLOUD_CREDENTIALS) {
+    // Option 3: Use credentials from environment variable (JSON string)
+    const credentials = JSON.parse(process.env.GOOGLE_CLOUD_CREDENTIALS);
+    vision = new ImageAnnotatorClient({
+      credentials,
+      projectId: credentials.project_id,
+    });
+  } else {
+    // Option 4: Use Application Default Credentials (for Google Cloud environments)
+    vision = new ImageAnnotatorClient();
+  }
+}
 
 // Product data
 const CONCRETE_PRODUCTS = [
@@ -168,9 +191,21 @@ export async function POST(request: NextRequest) {
     const imageBuffer = Buffer.from(arrayBuffer);
 
     // Call Google Cloud Vision API
-    const [result] = await vision.labelDetection({
-      image: { content: imageBuffer },
-    });
+    let result;
+    try {
+      [result] = await vision.labelDetection({
+        image: { content: imageBuffer },
+      });
+    } catch (visionError) {
+      console.error("Google Cloud Vision API Error:", visionError);
+      return NextResponse.json(
+        {
+          error:
+            "Google Cloud Vision API is not properly configured. Please check your credentials.",
+        },
+        { status: 500 }
+      );
+    }
 
     const labels = result.labelAnnotations || [];
     const labelTexts = labels.map((l) => l.description || "").filter(Boolean);
