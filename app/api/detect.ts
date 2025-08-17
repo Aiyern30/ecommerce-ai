@@ -122,14 +122,10 @@ const CONCRETE_KEYWORDS = {
   ],
 };
 
-function matchConcreteProduct(
-  labels: string[]
-): (typeof CONCRETE_PRODUCTS)[0] | null {
-  const labelTexts = labels.map((label) => label.toLowerCase());
-
+function matchConcreteProduct(labels: string[]) {
+  const labelTexts = labels.map((l) => l.toLowerCase());
   let bestMatch = { grade: "", score: 0 };
 
-  // Score each concrete grade based on detected labels
   Object.entries(CONCRETE_KEYWORDS).forEach(([grade, keywords]) => {
     let score = 0;
     keywords.forEach((keyword) => {
@@ -137,19 +133,12 @@ function matchConcreteProduct(
         score += 1;
       }
     });
-
-    if (score > bestMatch.score) {
-      bestMatch = { grade, score };
-    }
+    if (score > bestMatch.score) bestMatch = { grade, score };
   });
 
-  // If no specific match found, default to N20 (most versatile)
   if (bestMatch.score === 0) {
-    return (
-      CONCRETE_PRODUCTS.find((p) => p.grade === "N20") || CONCRETE_PRODUCTS[0]
-    );
+    return CONCRETE_PRODUCTS.find((p) => p.grade === "N20");
   }
-
   return CONCRETE_PRODUCTS.find((p) => p.grade === bestMatch.grade) || null;
 }
 
@@ -162,15 +151,10 @@ export default async function handler(
   }
 
   try {
-    // Parse form data
     const form = formidable({
-      maxFileSize: 10 * 1024 * 1024, // 10MB limit
-      filter: function (part: formidable.Part) {
-        // Only allow image files
-        return (
-          typeof part.mimetype === "string" && part.mimetype.includes("image")
-        );
-      },
+      maxFileSize: 10 * 1024 * 1024,
+      filter: (part) =>
+        typeof part.mimetype === "string" && part.mimetype.includes("image"),
     });
 
     const { files } = await new Promise<{
@@ -191,31 +175,23 @@ export default async function handler(
       typeof uploadedFile !== "object" ||
       !("filepath" in uploadedFile)
     ) {
-      return res.status(400).json({ error: "No image file uploaded" });
+      return res.status(400).json({ error: "No image uploaded" });
     }
 
-    // Read the uploaded file
-    const imageBuffer = fs.readFileSync(
-      (uploadedFile as formidable.File).filepath
-    );
+    const file = uploadedFile as formidable.File;
+    const imageBuffer = fs.readFileSync(file.filepath);
 
-    // Call Google Cloud Vision API
     const [result] = await vision.labelDetection({
       image: { content: imageBuffer },
     });
-
     const labels = result.labelAnnotations || [];
-    const labelTexts = labels
-      .map((label) => label.description || "")
-      .filter(Boolean);
+    const labelTexts = labels.map((l) => l.description || "").filter(Boolean);
 
-    // Clean up temporary file
-    fs.unlinkSync(uploadedFile.filepath);
+    try {
+      fs.unlinkSync(file.filepath);
+    } catch {}
 
-    // Match to concrete product
     const matchedProduct = matchConcreteProduct(labelTexts);
-
-    // Calculate confidence score
     const confidence =
       labels.length > 0
         ? Math.min(0.95, Math.max(0.3, labels[0].score || 0.5))
@@ -223,31 +199,15 @@ export default async function handler(
 
     return res.status(200).json({
       success: true,
-      detectedLabels: labelTexts.slice(0, 10), // Return top 10 labels
+      detectedLabels: labelTexts.slice(0, 10),
       matchedProduct,
       confidence: Math.round(confidence * 100),
       message: matchedProduct
-        ? `Based on the image analysis, we recommend ${matchedProduct.name}`
-        : "Could not determine the best concrete type from this image",
+        ? `We recommend ${matchedProduct.name}`
+        : "No suitable concrete type detected",
     });
-  } catch (error) {
-    console.error("Vision API Error:", error);
-
-    // Return specific error messages
-    if (error instanceof Error) {
-      if (error.message.includes("INVALID_ARGUMENT")) {
-        return res.status(400).json({ error: "Invalid image format" });
-      }
-      if (error.message.includes("PERMISSION_DENIED")) {
-        return res
-          .status(500)
-          .json({ error: "Google Cloud Vision API access denied" });
-      }
-    }
-
-    return res.status(500).json({
-      error: "Failed to process image",
-      details: process.env.NODE_ENV === "development" ? error : undefined,
-    });
+  } catch (err) {
+    console.error("Vision API Error:", err);
+    return res.status(500).json({ error: "Image processing failed" });
   }
 }
