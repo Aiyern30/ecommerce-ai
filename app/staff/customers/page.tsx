@@ -136,7 +136,10 @@ function CustomerGridSkeleton() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {Array.from({ length: 12 }).map((_, i) => (
-        <Card key={i} className="p-6">
+        <Card
+          key={i}
+          className="p-6 min-h-[300px] flex flex-col justify-between relative"
+        >
           <div className="flex items-center space-x-4 mb-4">
             <Skeleton className="h-12 w-12 rounded-full" />
             <div className="space-y-2 flex-1">
@@ -157,10 +160,23 @@ function CustomerGridSkeleton() {
               <Skeleton className="h-4 w-4" />
               <Skeleton className="h-3 w-3/4" />
             </div>
-            <div className="flex justify-between items-center pt-2">
-              <Skeleton className="h-6 w-16" />
-              <Skeleton className="h-4 w-4 rounded-sm" />
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-4 w-4" />
+              <Skeleton className="h-3 w-1/2" />
             </div>
+          </div>
+          {/* Button row layout */}
+          <div className="grid grid-cols-4 gap-2 pt-4 mt-4 border-t border-border">
+            <div className="col-span-3">
+              <Skeleton className="h-9 w-full rounded" />
+            </div>
+            <div className="col-span-1 flex justify-end">
+              <Skeleton className="h-9 w-10 rounded" />
+            </div>
+          </div>
+          {/* Badge skeleton at top-right */}
+          <div className="absolute top-4 right-4">
+            <Skeleton className="h-6 w-20 rounded" />
           </div>
         </Card>
       ))}
@@ -222,11 +238,12 @@ function CustomerCard({
 
   return (
     <Card
-      className="p-6 hover:shadow-md dark:hover:shadow-lg transition-all duration-200 cursor-pointer relative border-border bg-card hover:bg-accent/50"
+      className="p-6 min-h-[300px] flex flex-col justify-between hover:shadow-md dark:hover:shadow-lg transition-all duration-200 cursor-pointer relative border-border bg-card hover:bg-accent/50"
       onClick={() => onViewDetails(customer.id)}
     >
+      {/* Checkbox remains top-left */}
       <div
-        className="absolute top-4 right-4 z-10"
+        className="absolute top-4 left-4 z-10"
         onClick={(e) => e.stopPropagation()}
       >
         <Checkbox
@@ -235,6 +252,12 @@ function CustomerCard({
           aria-label={`Select customer ${customer.full_name || customer.email}`}
           className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
         />
+      </div>
+      {/* Badge at top-right */}
+      <div className="absolute top-4 right-4 z-10">
+        <Badge className={`${getStatusColor(customer.status)} border`}>
+          {customer.status}
+        </Badge>
       </div>
 
       <div className="flex items-center space-x-4 mb-4">
@@ -294,30 +317,28 @@ function CustomerCard({
         )}
       </div>
 
-      <div className="flex justify-between items-center pt-4 mt-4 border-t border-border">
-        <Badge className={`${getStatusColor(customer.status)} border`}>
-          {customer.status}
-        </Badge>
-
-        <div className="flex items-center gap-2">
+      {/* Button row: View (3/4), Dots (1/4) */}
+      <div className="grid grid-cols-4 gap-2 pt-4 mt-4 border-t border-border">
+        <div className="col-span-3 flex">
           <Button
             variant="outline"
-            size="sm"
+            size="lg"
             onClick={(e) => {
               e.stopPropagation();
               onViewDetails(customer.id);
             }}
-            className="border-border hover:bg-accent"
+            className="border-border hover:bg-accent w-full"
           >
             <Eye className="h-4 w-4 mr-1" />
             View
           </Button>
-
+        </div>
+        <div className="col-span-1 flex justify-end">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                size="sm"
+                size="lg"
                 onClick={(e) => e.stopPropagation()}
                 className="border-border hover:bg-accent"
               >
