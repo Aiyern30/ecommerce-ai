@@ -90,7 +90,6 @@ interface CustomerFilters {
     | "email-asc"
     | "email-desc";
   status: "all" | "active" | "inactive" | "banned";
-  role: "all" | "customer" | "admin" | "staff";
 }
 
 // Empty State Component
@@ -395,7 +394,6 @@ export default function CustomersPage() {
     search: "",
     sortBy: "date-new",
     status: "all",
-    role: "all",
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
@@ -432,10 +430,11 @@ export default function CustomersPage() {
         phone: user.phone || "",
         location: user.user_metadata?.location || "",
         status: user.user_metadata?.status || "active",
-        // Check both raw_app_meta_data and user_metadata for role
+        // Use app_metadata.role if present, fallback to user_metadata.role
         role:
-          user.raw_app_meta_data?.role ||
+          user.app_metadata?.role ||
           user.user_metadata?.role ||
+          user.raw_app_meta_data?.role || // fallback for legacy data
           "customer",
         created_at: user.created_at,
         updated_at: user.updated_at,
@@ -519,7 +518,6 @@ export default function CustomersPage() {
       search: "",
       sortBy: "date-new",
       status: "all",
-      role: "all",
     });
     setCurrentPage(1);
   };
@@ -631,11 +629,6 @@ export default function CustomersPage() {
       return false;
     }
 
-    // Role filter
-    if (filters.role !== "all" && customer.role !== filters.role) {
-      return false;
-    }
-
     return true;
   });
 
@@ -719,40 +712,6 @@ export default function CustomersPage() {
                     <SelectItem value="banned">Banned</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select
-                  value={filters.role}
-                  onValueChange={(value) =>
-                    updateFilter("role", value as CustomerFilters["role"])
-                  }
-                >
-                  <SelectTrigger className="w-full sm:w-[140px] h-9 border-border bg-background text-foreground">
-                    <SelectValue placeholder="Role Filter" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border">
-                    <SelectItem value="all">All Roles</SelectItem>
-                    <SelectItem value="customer">Customer</SelectItem>
-                    <SelectItem value="staff">Staff</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={filters.sortBy}
-                  onValueChange={(value) =>
-                    updateFilter("sortBy", value as CustomerFilters["sortBy"])
-                  }
-                >
-                  <SelectTrigger className="w-full sm:w-[160px] h-9 border-border bg-background text-foreground">
-                    <SelectValue placeholder="Sort By" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border">
-                    <SelectItem value="date-new">Newest First</SelectItem>
-                    <SelectItem value="date-old">Oldest First</SelectItem>
-                    <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-                    <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-                    <SelectItem value="email-asc">Email (A-Z)</SelectItem>
-                    <SelectItem value="email-desc">Email (Z-A)</SelectItem>
-                  </SelectContent>
-                </Select>
                 <div className="flex gap-2 mt-2">
                   <Button
                     variant="outline"
@@ -819,40 +778,6 @@ export default function CustomersPage() {
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
                 <SelectItem value="banned">Banned</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              value={filters.role}
-              onValueChange={(value) =>
-                updateFilter("role", value as CustomerFilters["role"])
-              }
-            >
-              <SelectTrigger className="w-full sm:w-[140px] h-9 border-border bg-background text-foreground">
-                <SelectValue placeholder="Role" />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border">
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="customer">Customer</SelectItem>
-                <SelectItem value="staff">Staff</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              value={filters.sortBy}
-              onValueChange={(value) =>
-                updateFilter("sortBy", value as CustomerFilters["sortBy"])
-              }
-            >
-              <SelectTrigger className="w-full sm:w-[160px] h-9 border-border bg-background text-foreground">
-                <SelectValue placeholder="Sort By" />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border">
-                <SelectItem value="date-new">Newest First</SelectItem>
-                <SelectItem value="date-old">Oldest First</SelectItem>
-                <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-                <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-                <SelectItem value="email-asc">Email (A-Z)</SelectItem>
-                <SelectItem value="email-desc">Email (Z-A)</SelectItem>
               </SelectContent>
             </Select>
           </div>
