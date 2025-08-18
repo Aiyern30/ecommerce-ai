@@ -23,6 +23,7 @@ export async function POST(req: Request) {
     status,
     is_featured,
     images,
+    keywords, // <-- add keywords here
   } = body;
 
   if (!name || !grade || !product_type || !category || !unit || !status) {
@@ -50,6 +51,7 @@ export async function POST(req: Request) {
       stock_quantity,
       status,
       is_featured,
+      keywords: Array.isArray(keywords) ? keywords : [],
     })
     .select("id")
     .single();
