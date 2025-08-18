@@ -319,21 +319,6 @@ export default function CustomersPage() {
 
   const itemsPerPage = 12;
 
-  // Fetch authenticated user
-  const fetchAuthUser = useCallback(async () => {
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
-
-    if (error) {
-      console.error("Error fetching auth user:", error.message);
-      toast.error("Failed to fetch user information");
-    } else {
-      setAuthUser(user);
-    }
-  }, []);
-
   // Fetch customers from custom API route
   const fetchCustomers = useCallback(async () => {
     setLoading(true);
@@ -369,20 +354,44 @@ export default function CustomersPage() {
   }, []);
 
   useEffect(() => {
-    fetchAuthUser();
     fetchCustomers();
-  }, [fetchAuthUser, fetchCustomers]);
+  }, [fetchCustomers]);
 
-  // Listen for auth changes
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error("Error getting initial session:", error.message);
+        // Only show error for unexpected issues
+        if (
+          error.message !== "Auth session missing!" &&
+          error.message !== "JWT expired"
+        ) {
+          toast.error("Authentication error occurred");
+        }
+      }
       setAuthUser(session?.user || null);
     });
 
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log(
+        "Auth state change:",
+        event,
+        session?.user?.email || "no user"
+      );
+      setAuthUser(session?.user || null);
+
+      // Refetch customers when user signs in
+      if (event === "SIGNED_IN") {
+        fetchCustomers();
+      }
+    });
+
     return () => subscription.unsubscribe();
-  }, []);
+  }, [fetchCustomers]);
 
   const updateFilter = (key: keyof CustomerFilters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
