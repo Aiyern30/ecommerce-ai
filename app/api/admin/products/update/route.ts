@@ -42,6 +42,7 @@ export async function PATCH(req: Request) {
         status: isDraft ? "draft" : data.status,
         is_featured: data.is_featured,
         updated_at: new Date().toISOString(),
+        keywords: Array.isArray(data.keywords) ? data.keywords : [],
       })
       .eq("id", productId);
 
