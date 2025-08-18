@@ -1,16 +1,21 @@
-import { NextResponse } from "next/server";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { NextResponse, type NextRequest } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
-export async function GET(req: Request, context: { params: { id: string } }) {
-  // Await context.params before using its properties
-  const { params } = context;
-  const userId = params?.id;
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  // Correct approach: await the params promise
+  const { id: userId } = await params;
+
   if (!userId) {
     return NextResponse.json({ error: "Missing user id" }, { status: 400 });
   }
 
   try {
     const { data, error } = await supabaseAdmin.auth.admin.getUserById(userId);
+
     if (error || !data?.user) {
       return NextResponse.json(
         { error: error?.message || "User not found" },
@@ -19,7 +24,10 @@ export async function GET(req: Request, context: { params: { id: string } }) {
     }
 
     const user = data.user;
-    // Map to Customer type with more info
+
+    // Type assertion for properties that might exist but aren't typed
+    const userWithExtendedProps = user as any;
+
     const customer = {
       id: user.id,
       email: user.email,
@@ -36,10 +44,11 @@ export async function GET(req: Request, context: { params: { id: string } }) {
       providers: user.app_metadata?.providers || [],
       email_confirmed_at: user.email_confirmed_at,
       phone_confirmed_at: user.phone_confirmed_at,
-      // Remove is_super_admin and banned_until (not in type User)
+      is_super_admin: userWithExtendedProps.is_super_admin ?? false,
       is_sso_user: user.is_sso_user ?? false,
       is_anonymous: user.is_anonymous ?? false,
-      deleted_at: user.deleted_at,
+      banned_until: userWithExtendedProps.banned_until || null,
+      deleted_at: userWithExtendedProps.deleted_at || null,
       email_verified: user.user_metadata?.email_verified ?? false,
       phone_verified: user.user_metadata?.phone_verified ?? false,
       provider_id: user.user_metadata?.provider_id || "",
@@ -47,6 +56,10 @@ export async function GET(req: Request, context: { params: { id: string } }) {
 
     return NextResponse.json({ customer });
   } catch (error) {
-    return NextResponse.json({ error: error?.toString() }, { status: 500 });
+    console.error("Error fetching customer:", error);
+    return NextResponse.json(
+      { error: (error as Error).message },
+      { status: 500 }
+    );
   }
 }
