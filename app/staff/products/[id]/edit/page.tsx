@@ -279,9 +279,18 @@ export default function EditProductPage() {
     form.setValue("keywords", newKeywords);
   };
 
+  // Extract watched keywords to a variable for stable dependency
+  const watchedKeywords = form.watch("keywords");
+
   useEffect(() => {
-    setKeywords(form.getValues("keywords"));
-  }, [form]);
+    // Always sync keywords from form to local state
+    const formKeywords = form.getValues("keywords");
+    if (Array.isArray(formKeywords)) {
+      setKeywords(formKeywords);
+    } else {
+      setKeywords([]);
+    }
+  }, [watchedKeywords, form]);
 
   // Fetch product data
   useEffect(() => {
