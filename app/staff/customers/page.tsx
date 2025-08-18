@@ -328,30 +328,56 @@ export default function CustomersPage() {
       if (!res.ok) throw new Error("Failed to fetch users");
       const data = await res.json();
 
-      // Map Supabase Auth users to Customer type if needed
-      setCustomers(
-        (data.users || []).map((user: any) => ({
-          id: user.id,
-          email: user.email,
-          full_name:
-            user.user_metadata?.full_name || user.user_metadata?.name || "",
-          avatar_url: user.user_metadata?.avatar_url || "",
-          phone: user.phone || "",
-          location: user.user_metadata?.location || "",
-          status: user.user_metadata?.status || "active",
-          role: user.user_metadata?.role || "customer",
-          created_at: user.created_at,
-          updated_at: user.updated_at,
-          last_sign_in_at: user.last_sign_in_at,
-        }))
-      );
+      // Get current user's role to determine filtering
+      const currentUserRole =
+        authUser?.app_metadata?.role || authUser?.user_metadata?.role;
+
+      // Map Supabase Auth users to Customer type
+      const mappedUsers = (data.users || []).map((user: any) => ({
+        id: user.id,
+        email: user.email,
+        full_name:
+          user.user_metadata?.full_name || user.user_metadata?.name || "",
+        avatar_url: user.user_metadata?.avatar_url || "",
+        phone: user.phone || "",
+        location: user.user_metadata?.location || "",
+        status: user.user_metadata?.status || "active",
+        // Check both raw_app_meta_data and user_metadata for role
+        role:
+          user.raw_app_meta_data?.role ||
+          user.user_metadata?.role ||
+          "customer",
+        created_at: user.created_at,
+        updated_at: user.updated_at,
+        last_sign_in_at: user.last_sign_in_at,
+      }));
+
+      // Filter based on current user's role
+      let filteredUsers = mappedUsers;
+
+      if (currentUserRole === "staff") {
+        // Staff users should only see customers (not other staff or admins)
+        filteredUsers = mappedUsers.filter(
+          (user: { role: string }) => user.role === "customer"
+        );
+      } else if (currentUserRole === "admin") {
+        // Admins can see everyone (no filtering needed)
+        filteredUsers = mappedUsers;
+      } else {
+        // Regular customers shouldn't see this page, but if they do, show only customers
+        filteredUsers = mappedUsers.filter(
+          (user: { role: string }) => user.role === "customer"
+        );
+      }
+
+      setCustomers(filteredUsers);
     } catch (error: any) {
       console.error("Error fetching customers:", error.message);
       toast.error("Failed to fetch customers");
       setCustomers([]);
     }
     setLoading(false);
-  }, []);
+  }, [authUser]);
 
   useEffect(() => {
     fetchCustomers();
