@@ -354,7 +354,8 @@ export default function ConcreteDetectorPage() {
                           className={`px-4 py-2 rounded-full text-sm font-bold ${
                             getProductStyle(result.matchedProduct.grade).color
                           } ${
-                            getProductStyle(result.matchedProduct.grade).textColor
+                            getProductStyle(result.matchedProduct.grade)
+                              .textColor
                           } border-2`}
                         >
                           {result.matchedProduct.grade}
@@ -448,24 +449,25 @@ export default function ConcreteDetectorPage() {
                   )}
 
                   {/* Detected Elements */}
-                  {result.detectedLabels && result.detectedLabels.length > 0 && (
-                    <div className="rounded-lg p-4 border bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800">
-                      <h4 className="font-semibold mb-3 flex items-center text-gray-900 dark:text-gray-100">
-                        <Info className="h-4 w-4 mr-2" />
-                        AI Detected Elements
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {result.detectedLabels.map((label, index) => (
-                          <span
-                            key={index}
-                            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full text-sm text-gray-700 dark:text-gray-200 shadow-sm"
-                          >
-                            {label}
-                          </span>
-                        ))}
+                  {result.detectedLabels &&
+                    result.detectedLabels.length > 0 && (
+                      <div className="rounded-lg p-4 border bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800">
+                        <h4 className="font-semibold mb-3 flex items-center text-gray-900 dark:text-gray-100">
+                          <Info className="h-4 w-4 mr-2" />
+                          AI Detected Elements
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {result.detectedLabels.map((label, index) => (
+                            <span
+                              key={index}
+                              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full text-sm text-gray-700 dark:text-gray-200 shadow-sm"
+                            >
+                              {label}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                 </div>
               )}
             </CardContent>
