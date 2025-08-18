@@ -553,11 +553,6 @@ export default function CustomersPage() {
       <div className="flex items-center justify-between">
         <div>
           <TypographyH2 className="border-none pb-0">Customers</TypographyH2>
-          {authUser && (
-            <TypographyP className="text-muted-foreground">
-              Logged in as: {authUser.email}
-            </TypographyP>
-          )}
         </div>
       </div>
 
