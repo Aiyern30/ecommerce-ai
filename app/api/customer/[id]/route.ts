@@ -3,9 +3,11 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
-  const userId = params.id;
+  // Await context.params before using its properties
+  const { params } = context;
+  const userId = params?.id;
   if (!userId) {
     return NextResponse.json({ error: "Missing user id" }, { status: 400 });
   }
