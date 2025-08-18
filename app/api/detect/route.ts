@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ImageAnnotatorClient } from "@google-cloud/vision";
 import path from "path";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 // Initialize Google Cloud Vision client (lazy)
 let vision: ImageAnnotatorClient | null = null;
@@ -31,130 +32,111 @@ function initializeVisionClient() {
   });
 }
 
-// Product data
-const CONCRETE_PRODUCTS = [
-  {
-    idx: 0,
-    id: "13f81f76-2797-43d1-8fd7-e358a5039955",
-    name: "Concrete N25",
-    description:
-      "Commonly used for structural elements in residential and commercial buildings, including columns and beams.",
-    grade: "N25",
-    product_type: "concrete",
-    category: "building_materials",
-    normal_price: "284.00",
-    pump_price: "290.00",
-    unit: "per m³",
-    stock_quantity: 105,
-    status: "published",
-    is_featured: true,
-  },
-  {
-    idx: 1,
-    id: "23eb3873-c189-4bd4-ba38-0a96a3181381",
-    name: "Concrete N20",
-    description:
-      "A versatile mix for residential driveways, foundations, and floors.",
-    grade: "N20",
-    product_type: "concrete",
-    category: "building_materials",
-    normal_price: "275.00",
-    pump_price: "281.00",
-    unit: "per m³",
-    stock_quantity: 250,
-    status: "published",
-    is_featured: true,
-  },
-  {
-    idx: 2,
-    id: "5acc3df3-bcb8-45f2-965f-a14dff33f55a",
-    name: "Concrete N15",
-    description:
-      "Suitable for light-duty residential slabs, footpaths, and kerbs.",
-    grade: "N15",
-    product_type: "concrete",
-    category: "building_materials",
-    normal_price: "270.00",
-    unit: "per m³",
-    stock_quantity: 70,
-    status: "published",
-    is_featured: true,
-  },
-];
+// Cache for products to avoid repeated database calls
+let cachedProducts: any[] | null = null;
+let cacheTimestamp: number = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-// Keywords mapping for concrete grades
-const CONCRETE_KEYWORDS = {
-  N25: [
-    "building",
-    "structure",
-    "structural",
-    "column",
-    "beam",
-    "commercial",
-    "high-rise",
-    "reinforcement",
-    "rebar",
-    "construction",
-    "framework",
-    "support",
-    "load-bearing",
-    "concrete mixer",
-    "heavy duty",
-  ],
-  N20: [
-    "driveway",
-    "foundation",
-    "floor",
-    "residential",
-    "slab",
-    "basement",
-    "garage",
-    "patio",
-    "sidewalk",
-    "pavement",
-    "pathway",
-    "concrete truck",
-    "pouring",
-    "flatwork",
-    "home construction",
-  ],
-  N15: [
-    "footpath",
-    "kerb",
-    "curb",
-    "light",
-    "walkway",
-    "garden",
-    "decorative",
-    "small project",
-    "pathway",
-    "edging",
-    "border",
-    "landscaping",
-    "minor construction",
-    "patch",
-    "repair",
-  ],
-};
+async function getProductsFromDatabase() {
+  const now = Date.now();
 
-function matchConcreteProduct(labels: string[]) {
+  // Return cached data if it's still fresh
+  if (cachedProducts && now - cacheTimestamp < CACHE_DURATION) {
+    return cachedProducts;
+  }
+
+  try {
+    const { data: products, error } = await supabaseAdmin
+      .from("products")
+      .select("*")
+      .eq("product_type", "concrete")
+      .eq("status", "published");
+
+    if (error) {
+      console.error("❌ Error fetching products from database:", error);
+      throw new Error(`Database error: ${error.message}`);
+    }
+
+    if (!products || products.length === 0) {
+      console.warn("⚠️ No concrete products found in database");
+      return [];
+    }
+
+    // Update cache
+    cachedProducts = products;
+    cacheTimestamp = now;
+
+    console.log(`✅ Fetched ${products.length} products from database`);
+    return products;
+  } catch (error) {
+    console.error("❌ Failed to fetch products:", error);
+    throw error;
+  }
+}
+
+function matchConcreteProduct(labels: string[], products: any[]) {
+  if (!products || products.length === 0) {
+    return null;
+  }
+
   const labelTexts = labels.map((l) => l.toLowerCase());
-  let bestMatch = { grade: "", score: 0 };
+  let bestMatch = { product: null, score: 0 };
 
-  Object.entries(CONCRETE_KEYWORDS).forEach(([grade, keywords]) => {
+  products.forEach((product) => {
     let score = 0;
-    keywords.forEach((keyword) => {
+
+    // Parse keywords from the product (assuming it's stored as JSON array)
+    let keywords: string[] = [];
+    if (product.keywords) {
+      try {
+        keywords = Array.isArray(product.keywords)
+          ? product.keywords
+          : JSON.parse(product.keywords);
+      } catch (e) {
+        console.warn(
+          `⚠️ Failed to parse keywords for product ${product.name}:`,
+          e
+        );
+        keywords = [];
+      }
+    }
+
+    // Match against product keywords
+    keywords.forEach((keyword: string) => {
       if (labelTexts.some((label) => label.includes(keyword.toLowerCase()))) {
         score += 1;
       }
     });
-    if (score > bestMatch.score) bestMatch = { grade, score };
+
+    // Also match against product name and description
+    const productName = product.name?.toLowerCase() || "";
+    const productDesc = product.description?.toLowerCase() || "";
+
+    labelTexts.forEach((label) => {
+      if (
+        productName.includes(label) ||
+        label.includes(productName.replace("concrete ", ""))
+      ) {
+        score += 2; // Higher weight for name matches
+      }
+      if (productDesc.includes(label)) {
+        score += 1;
+      }
+    });
+
+    if (score > bestMatch.score) {
+      bestMatch = { product, score };
+    }
   });
 
+  // If no match found, return a default product (e.g., most versatile one like N20)
   if (bestMatch.score === 0) {
-    return CONCRETE_PRODUCTS.find((p) => p.grade === "N20");
+    const defaultProduct =
+      products.find((p) => p.grade === "N20") || products[0];
+    return defaultProduct;
   }
-  return CONCRETE_PRODUCTS.find((p) => p.grade === bestMatch.grade) || null;
+
+  return bestMatch.product;
 }
 
 export async function POST(request: NextRequest) {
@@ -202,6 +184,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Fetch products from database
+    let products;
+    try {
+      products = await getProductsFromDatabase();
+    } catch (dbError) {
+      console.error("❌ Database error:", dbError);
+      return NextResponse.json(
+        {
+          error: "Failed to fetch product data from database",
+          details: process.env.NODE_ENV === "development" ? dbError : undefined,
+        },
+        { status: 500 }
+      );
+    }
+
     // Convert file to buffer
     const arrayBuffer = await file.arrayBuffer();
     const imageBuffer = Buffer.from(arrayBuffer);
@@ -245,7 +242,7 @@ export async function POST(request: NextRequest) {
     const labelTexts = labels.map((l) => l.description || "").filter(Boolean);
 
     // Match to concrete product
-    const matchedProduct = matchConcreteProduct(labelTexts);
+    const matchedProduct = matchConcreteProduct(labelTexts, products);
 
     // Calculate confidence score
     const confidence =
@@ -261,6 +258,7 @@ export async function POST(request: NextRequest) {
       message: matchedProduct
         ? `We recommend ${matchedProduct.name}`
         : "No suitable concrete type detected",
+      totalProducts: products.length, // For debugging
     });
   } catch (error) {
     console.error("Vision API Error:", error);
