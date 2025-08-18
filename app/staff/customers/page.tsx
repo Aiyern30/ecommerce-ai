@@ -15,11 +15,14 @@ import {
   Phone,
   Shield,
   User,
+  Eye,
+  UserX,
+  MoreVertical,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { User as SupabaseUser } from "@supabase/supabase-js";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 import {
   Button,
@@ -52,6 +55,11 @@ import {
   Avatar,
   AvatarImage,
   AvatarFallback,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import { formatDate } from "@/lib/utils/format";
@@ -166,22 +174,26 @@ function CustomerCard({
   isSelected,
   onSelect,
   onViewDetails,
+  onBanUser,
+  onDeleteUser,
 }: {
   customer: Customer;
   isSelected: boolean;
   onSelect: (id: string) => void;
   onViewDetails: (id: string) => void;
+  onBanUser: (id: string) => void;
+  onDeleteUser: (id: string) => void;
 }) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
-        return "bg-green-500 hover:bg-green-600 text-white";
+        return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 border-green-200 dark:border-green-800";
       case "inactive":
-        return "bg-yellow-500 hover:bg-yellow-600 text-white";
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800";
       case "banned":
-        return "bg-red-500 hover:bg-red-600 text-white";
+        return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400 border-red-200 dark:border-red-800";
       default:
-        return "bg-gray-500 hover:bg-gray-600 text-white";
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400 border-gray-200 dark:border-gray-800";
     }
   };
 
@@ -210,7 +222,7 @@ function CustomerCard({
 
   return (
     <Card
-      className="p-6 hover:shadow-md transition-shadow cursor-pointer relative"
+      className="p-6 hover:shadow-md dark:hover:shadow-lg transition-all duration-200 cursor-pointer relative border-border bg-card hover:bg-accent/50"
       onClick={() => onViewDetails(customer.id)}
     >
       <div
@@ -221,23 +233,26 @@ function CustomerCard({
           checked={isSelected}
           onCheckedChange={() => onSelect(customer.id)}
           aria-label={`Select customer ${customer.full_name || customer.email}`}
+          className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
         />
       </div>
 
       <div className="flex items-center space-x-4 mb-4">
-        <Avatar className="h-12 w-12">
-          <AvatarImage src={customer.avatar_url} />
-          <AvatarFallback>
+        <Avatar className="h-12 w-12 border-2 border-border">
+          <AvatarImage src={customer.avatar_url || "/placeholder.svg"} />
+          <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
             {getInitials(customer.full_name, customer.email)}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold truncate">
+          <h3 className="font-semibold truncate text-foreground">
             {customer.full_name || "No name"}
           </h3>
           <div className="flex items-center gap-2">
-            {getRoleIcon(customer.role)}
-            <span className="text-sm text-gray-500 capitalize">
+            <span className="text-muted-foreground">
+              {getRoleIcon(customer.role)}
+            </span>
+            <span className="text-sm text-muted-foreground capitalize">
               {customer.role}
             </span>
           </div>
@@ -245,7 +260,7 @@ function CustomerCard({
       </div>
 
       <div className="space-y-3 text-sm">
-        <div className="flex items-center gap-2 text-gray-600">
+        <div className="flex items-center gap-2 text-muted-foreground">
           <Mail className="h-4 w-4 flex-shrink-0" />
           <span className="truncate" title={customer.email}>
             {customer.email}
@@ -253,46 +268,98 @@ function CustomerCard({
         </div>
 
         {customer.phone && (
-          <div className="flex items-center gap-2 text-gray-600">
+          <div className="flex items-center gap-2 text-muted-foreground">
             <Phone className="h-4 w-4 flex-shrink-0" />
             <span className="truncate">{customer.phone}</span>
           </div>
         )}
 
         {customer.location && (
-          <div className="flex items-center gap-2 text-gray-600">
+          <div className="flex items-center gap-2 text-muted-foreground">
             <MapPin className="h-4 w-4 flex-shrink-0" />
             <span className="truncate">{customer.location}</span>
           </div>
         )}
 
-        <div className="flex items-center gap-2 text-gray-600">
+        <div className="flex items-center gap-2 text-muted-foreground">
           <Calendar className="h-4 w-4 flex-shrink-0" />
           <span>Joined {formatDate(customer.created_at)}</span>
         </div>
 
         {customer.last_sign_in_at && (
-          <div className="flex items-center gap-2 text-gray-600">
+          <div className="flex items-center gap-2 text-muted-foreground">
             <User className="h-4 w-4 flex-shrink-0" />
             <span>Last seen {formatDate(customer.last_sign_in_at)}</span>
           </div>
         )}
       </div>
 
-      <div className="flex justify-between items-center pt-4 mt-4 border-t">
-        <Badge className={getStatusColor(customer.status)}>
+      <div className="flex justify-between items-center pt-4 mt-4 border-t border-border">
+        <Badge className={`${getStatusColor(customer.status)} border`}>
           {customer.status}
         </Badge>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            onViewDetails(customer.id);
-          }}
-        >
-          View Details
-        </Button>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewDetails(customer.id);
+            }}
+            className="border-border hover:bg-accent"
+          >
+            <Eye className="h-4 w-4 mr-1" />
+            View
+          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => e.stopPropagation()}
+                className="border-border hover:bg-accent"
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewDetails(customer.id);
+                }}
+                className="cursor-pointer"
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                View Details
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onBanUser(customer.id);
+                }}
+                className="cursor-pointer text-orange-600 dark:text-orange-400 focus:text-orange-600 dark:focus:text-orange-400"
+                disabled={customer.status === "banned"}
+              >
+                <UserX className="h-4 w-4 mr-2" />
+                {customer.status === "banned" ? "Already Banned" : "Ban User"}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteUser(customer.id);
+                }}
+                className="cursor-pointer text-destructive focus:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete User
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </Card>
   );
@@ -314,6 +381,8 @@ export default function CustomersPage() {
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [customersToDelete, setCustomersToDelete] = useState<Customer[]>([]);
+  const [isBanDialogOpen, setIsBanDialogOpen] = useState(false);
+  const [customerToBan, setCustomerToBan] = useState<Customer | null>(null);
   const { isMobile } = useDeviceType();
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
@@ -493,6 +562,36 @@ export default function CustomersPage() {
     }
   };
 
+  const handleBanUser = async (customerId: string) => {
+    const customer = customers.find((c) => c.id === customerId);
+    if (!customer) return;
+
+    setCustomerToBan(customer);
+    setIsBanDialogOpen(true);
+  };
+
+  const confirmBanUser = async () => {
+    if (!customerToBan) return;
+
+    try {
+      // This would typically call an API to update user status
+      toast.info("User ban functionality requires admin API implementation.");
+      setIsBanDialogOpen(false);
+      setCustomerToBan(null);
+    } catch (error) {
+      console.error("Error banning user:", error);
+      toast.error("Failed to ban user");
+    }
+  };
+
+  const handleDeleteSingleUser = async (customerId: string) => {
+    const customer = customers.find((c) => c.id === customerId);
+    if (!customer) return;
+
+    setCustomersToDelete([customer]);
+    setIsDeleteDialogOpen(true);
+  };
+
   // Filter and sort customers
   const filteredCustomers = customers.filter((customer) => {
     // Search filter
@@ -549,10 +648,12 @@ export default function CustomersPage() {
   );
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-full">
+    <div className="flex flex-col gap-6 w-full max-w-full bg-background">
       <div className="flex items-center justify-between">
         <div>
-          <TypographyH2 className="border-none pb-0">Customers</TypographyH2>
+          <TypographyH2 className="border-none pb-0 text-foreground">
+            Customers
+          </TypographyH2>
         </div>
       </div>
 
@@ -562,16 +663,16 @@ export default function CustomersPage() {
           <Button
             variant="outline"
             size="sm"
-            className="flex items-center gap-1 w-full h-9"
+            className="flex items-center gap-1 w-full h-9 border-border hover:bg-accent bg-transparent"
             onClick={() => setMobileFilterOpen(true)}
           >
             <Filter className="h-4 w-4" />
             Filters
           </Button>
           <Drawer open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
-            <DrawerContent>
+            <DrawerContent className="bg-card border-border">
               <DrawerHeader>
-                <DrawerTitle>Filters</DrawerTitle>
+                <DrawerTitle className="text-foreground">Filters</DrawerTitle>
               </DrawerHeader>
               <div className="flex flex-col gap-3 p-4">
                 <Input
@@ -579,6 +680,7 @@ export default function CustomersPage() {
                   placeholder="Search by name or email..."
                   value={filters.search}
                   onChange={(e) => updateFilter("search", e.target.value)}
+                  className="border-border bg-background text-foreground placeholder:text-muted-foreground"
                 />
                 <Select
                   value={filters.status}
@@ -586,10 +688,10 @@ export default function CustomersPage() {
                     updateFilter("status", value as CustomerFilters["status"])
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full sm:w-[140px] h-9 border-border bg-background text-foreground">
                     <SelectValue placeholder="Status Filter" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-card border-border">
                     <SelectItem value="all">All Status</SelectItem>
                     <SelectItem value="active">Active</SelectItem>
                     <SelectItem value="inactive">Inactive</SelectItem>
@@ -602,10 +704,10 @@ export default function CustomersPage() {
                     updateFilter("role", value as CustomerFilters["role"])
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full sm:w-[140px] h-9 border-border bg-background text-foreground">
                     <SelectValue placeholder="Role Filter" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-card border-border">
                     <SelectItem value="all">All Roles</SelectItem>
                     <SelectItem value="customer">Customer</SelectItem>
                     <SelectItem value="staff">Staff</SelectItem>
@@ -618,10 +720,10 @@ export default function CustomersPage() {
                     updateFilter("sortBy", value as CustomerFilters["sortBy"])
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full sm:w-[160px] h-9 border-border bg-background text-foreground">
                     <SelectValue placeholder="Sort By" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-card border-border">
                     <SelectItem value="date-new">Newest First</SelectItem>
                     <SelectItem value="date-old">Oldest First</SelectItem>
                     <SelectItem value="name-asc">Name (A-Z)</SelectItem>
@@ -638,12 +740,15 @@ export default function CustomersPage() {
                       clearAllFilters();
                       setMobileFilterOpen(false);
                     }}
-                    className="flex-1"
+                    className="flex-1 border-border hover:bg-accent"
                   >
                     Clear
                   </Button>
                   <DrawerClose asChild>
-                    <Button size="sm" className="flex-1">
+                    <Button
+                      size="sm"
+                      className="flex-1 border-border hover:bg-accent"
+                    >
                       Apply
                     </Button>
                   </DrawerClose>
@@ -655,11 +760,11 @@ export default function CustomersPage() {
       ) : (
         <div className="flex flex-col sm:flex-row flex-wrap gap-2">
           <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Search by name or email..."
-              className="pl-8"
+              className="pl-8 border-border bg-background text-foreground placeholder:text-muted-foreground"
               value={filters.search}
               onChange={(e) => updateFilter("search", e.target.value)}
             />
@@ -668,7 +773,7 @@ export default function CustomersPage() {
             <Button
               variant="outline"
               size="sm"
-              className="flex items-center gap-1 w-full sm:w-auto bg-transparent h-9"
+              className="flex items-center gap-1 w-full sm:w-auto bg-transparent h-9 border-border hover:bg-accent"
               onClick={() => setShowFilters(!showFilters)}
             >
               <Filter className="h-4 w-4" />
@@ -685,10 +790,10 @@ export default function CustomersPage() {
                 updateFilter("status", value as CustomerFilters["status"])
               }
             >
-              <SelectTrigger className="w-full sm:w-[140px] h-9">
+              <SelectTrigger className="w-full sm:w-[140px] h-9 border-border bg-background text-foreground">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-card border-border">
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
@@ -701,10 +806,10 @@ export default function CustomersPage() {
                 updateFilter("role", value as CustomerFilters["role"])
               }
             >
-              <SelectTrigger className="w-full sm:w-[140px] h-9">
+              <SelectTrigger className="w-full sm:w-[140px] h-9 border-border bg-background text-foreground">
                 <SelectValue placeholder="Role" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-card border-border">
                 <SelectItem value="all">All Roles</SelectItem>
                 <SelectItem value="customer">Customer</SelectItem>
                 <SelectItem value="staff">Staff</SelectItem>
@@ -717,10 +822,10 @@ export default function CustomersPage() {
                 updateFilter("sortBy", value as CustomerFilters["sortBy"])
               }
             >
-              <SelectTrigger className="w-full sm:w-[160px] h-9">
+              <SelectTrigger className="w-full sm:w-[160px] h-9 border-border bg-background text-foreground">
                 <SelectValue placeholder="Sort By" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-card border-border">
                 <SelectItem value="date-new">Newest First</SelectItem>
                 <SelectItem value="date-old">Oldest First</SelectItem>
                 <SelectItem value="name-asc">Name (A-Z)</SelectItem>
@@ -782,10 +887,12 @@ export default function CustomersPage() {
                     Delete Selected ({selectedCustomers.length})
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="bg-card border-border">
                   <DialogHeader>
-                    <DialogTitle>Confirm Deletion</DialogTitle>
-                    <DialogDescription>
+                    <DialogTitle className="text-foreground">
+                      Confirm Deletion
+                    </DialogTitle>
+                    <DialogDescription className="text-muted-foreground">
                       Are you sure you want to delete the following{" "}
                       {customersToDelete.length} customer(s)? This action cannot
                       be undone.
@@ -795,20 +902,22 @@ export default function CustomersPage() {
                     {customersToDelete.map((customer) => (
                       <div
                         key={customer.id}
-                        className="flex items-center gap-3 p-2 border rounded-md"
+                        className="flex items-center gap-3 p-2 border border-border rounded-md bg-muted/50"
                       >
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={customer.avatar_url} />
-                          <AvatarFallback>
+                          <AvatarImage
+                            src={customer.avatar_url || "/placeholder.svg"}
+                          />
+                          <AvatarFallback className="bg-muted text-muted-foreground">
                             {customer.full_name?.charAt(0) ||
                               customer.email.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <span className="font-medium">
+                          <span className="font-medium text-foreground">
                             {customer.full_name || "No name"}
                           </span>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-muted-foreground">
                             {customer.email}
                           </div>
                         </div>
@@ -819,6 +928,7 @@ export default function CustomersPage() {
                     <Button
                       variant="outline"
                       onClick={() => setIsDeleteDialogOpen(false)}
+                      className="border-border hover:bg-accent"
                     >
                       Cancel
                     </Button>
@@ -835,6 +945,7 @@ export default function CustomersPage() {
                 variant="outline"
                 size="sm"
                 onClick={clearCustomerSelection}
+                className="border-border hover:bg-accent bg-transparent"
               >
                 Clear Selection
               </Button>
@@ -862,10 +973,114 @@ export default function CustomersPage() {
               isSelected={selectedCustomers.includes(customer.id)}
               onSelect={toggleCustomerSelection}
               onViewDetails={(id) => router.push(`/staff/customers/${id}`)}
+              onBanUser={handleBanUser}
+              onDeleteUser={handleDeleteSingleUser}
             />
           ))}
         </div>
       )}
+
+      <Dialog open={isBanDialogOpen} onOpenChange={setIsBanDialogOpen}>
+        <DialogContent className="bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Ban User</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Are you sure you want to ban this user? They will no longer be
+              able to access the platform.
+            </DialogDescription>
+          </DialogHeader>
+          {customerToBan && (
+            <div className="flex items-center gap-3 p-3 border border-border rounded-md bg-muted/50">
+              <Avatar className="h-10 w-10">
+                <AvatarImage
+                  src={customerToBan.avatar_url || "/placeholder.svg"}
+                />
+                <AvatarFallback className="bg-muted text-muted-foreground">
+                  {customerToBan.full_name?.charAt(0) ||
+                    customerToBan.email.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <span className="font-medium text-foreground">
+                  {customerToBan.full_name || "No name"}
+                </span>
+                <div className="text-sm text-muted-foreground">
+                  {customerToBan.email}
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsBanDialogOpen(false)}
+              className="border-border hover:bg-accent"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmBanUser}
+              className="bg-orange-600 hover:bg-orange-700 text-white"
+            >
+              Ban User
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Enhanced Delete Dialog with better theming */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">
+              Confirm Deletion
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Are you sure you want to delete the following{" "}
+              {customersToDelete.length} customer(s)? This action cannot be
+              undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-60 overflow-y-auto space-y-2">
+            {customersToDelete.map((customer) => (
+              <div
+                key={customer.id}
+                className="flex items-center gap-3 p-2 border border-border rounded-md bg-muted/50"
+              >
+                <Avatar className="h-8 w-8">
+                  <AvatarImage
+                    src={customer.avatar_url || "/placeholder.svg"}
+                  />
+                  <AvatarFallback className="bg-muted text-muted-foreground">
+                    {customer.full_name?.charAt(0) || customer.email.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <span className="font-medium text-foreground">
+                    {customer.full_name || "No name"}
+                  </span>
+                  <div className="text-sm text-muted-foreground">
+                    {customer.email}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              className="border-border hover:bg-accent"
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteCustomers}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Pagination */}
       {totalPages > 1 && (
@@ -875,6 +1090,7 @@ export default function CustomersPage() {
             size="sm"
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1 || loading}
+            className="border-border hover:bg-accent"
           >
             <ChevronLeft className="h-4 w-4" />
             Previous
@@ -887,6 +1103,7 @@ export default function CustomersPage() {
             size="sm"
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages || loading}
+            className="border-border hover:bg-accent"
           >
             Next
             <ChevronRight className="h-4 w-4" />
