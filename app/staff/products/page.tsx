@@ -101,6 +101,7 @@ function ProductTableSkeleton() {
               <TableHead>Stock</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
+              <TableHead>Keywords</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -153,6 +154,12 @@ function ProductTableSkeleton() {
                 </TableCell>
                 <TableCell className="text-right">
                   <Skeleton className="h-8 w-12 ml-auto rounded" />
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1">
+                    <Skeleton className="h-5 w-16 rounded" />
+                    <Skeleton className="h-5 w-12 rounded" />
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -857,6 +864,7 @@ export default function ProductsPage() {
                 <TableHead className="min-w-[80px]">Unit</TableHead>
                 <TableHead className="min-w-[80px]">Stock</TableHead>
                 <TableHead className="min-w-[100px]">Status</TableHead>
+                <TableHead className="min-w-[120px]">Keywords</TableHead>
                 <TableHead className="text-right min-w-[100px]">
                   Actions
                 </TableHead>
@@ -952,6 +960,25 @@ export default function ProductsPage() {
                         : product.status.charAt(0).toUpperCase() +
                           product.status.slice(1)}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                      {Array.isArray(product.keywords) &&
+                      product.keywords.length > 0 ? (
+                        product.keywords.map((kw, idx) => (
+                          <Badge
+                            key={idx}
+                            className="bg-blue-100 text-blue-800 border-blue-200 px-2 py-1 text-xs font-medium"
+                          >
+                            {kw}
+                          </Badge>
+                        ))
+                      ) : (
+                        <span className="text-gray-400 text-xs">
+                          No keywords
+                        </span>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell
                     className="text-right"
