@@ -10,6 +10,7 @@ import {
   Info,
 } from "lucide-react";
 import Image from "next/image";
+import { Card, CardContent } from "@/components/ui";
 
 interface DetectionResult {
   success: boolean;
@@ -188,30 +189,39 @@ export default function ConcreteDetectorPage() {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <div className="border-b">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-4">
-              <Package className="h-8 w-8 text-blue-600 mr-3" />
-              <h1 className="text-4xl font-bold">AI Concrete Detector</h1>
+      <Card className="border-b rounded-none">
+        <CardContent>
+          <div className="max-w-6xl mx-auto px-4 py-6">
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-4">
+                <Package className="h-8 w-8 text-blue-600 mr-3" />
+                <h1 className="text-4xl font-bold">AI Concrete Detector</h1>
+              </div>
+              <p className="text-lg max-w-2xl mx-auto">
+                Upload construction photos and get instant AI-powered concrete
+                grade recommendations with pricing and availability
+              </p>
             </div>
-            <p className="text-lg max-w-2xl mx-auto">
-              Upload construction photos and get instant AI-powered concrete
-              grade recommendations with pricing and availability
-            </p>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Vertical layout: input/upload at top, product guide below */}
         <div className="flex flex-col gap-8">
           {/* Main Upload Section (top) */}
-          <div>
-            <div className="rounded-xl shadow-lg p-8">
+          <Card>
+            <CardContent>
               <div className="space-y-6">
                 {/* File Upload Area */}
-                <div className="border-2 border-dashed rounded-xl p-8 text-center hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-200">
+                <div
+                  className="
+    border-2 border-dashed rounded-xl p-8 text-center
+    transition-all duration-200
+    hover:border-blue-400 hover:bg-blue-50/50
+    dark:hover:border-blue-500 dark:hover:bg-blue-950/60
+    bg-white dark:bg-card
+  "
+                >
                   <input
                     type="file"
                     accept="image/*"
@@ -297,7 +307,6 @@ export default function ConcreteDetectorPage() {
                   </button>
                 )}
               </div>
-
               {/* Error Display */}
               {error && (
                 <div className="mt-6 border rounded-lg p-4 bg-red-50 dark:bg-red-900 border-red-200 dark:border-red-800">
@@ -345,8 +354,7 @@ export default function ConcreteDetectorPage() {
                           className={`px-4 py-2 rounded-full text-sm font-bold ${
                             getProductStyle(result.matchedProduct.grade).color
                           } ${
-                            getProductStyle(result.matchedProduct.grade)
-                              .textColor
+                            getProductStyle(result.matchedProduct.grade).textColor
                           } border-2`}
                         >
                           {result.matchedProduct.grade}
@@ -440,32 +448,31 @@ export default function ConcreteDetectorPage() {
                   )}
 
                   {/* Detected Elements */}
-                  {result.detectedLabels &&
-                    result.detectedLabels.length > 0 && (
-                      <div className="rounded-lg p-4 border bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800">
-                        <h4 className="font-semibold mb-3 flex items-center text-gray-900 dark:text-gray-100">
-                          <Info className="h-4 w-4 mr-2" />
-                          AI Detected Elements
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {result.detectedLabels.map((label, index) => (
-                            <span
-                              key={index}
-                              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full text-sm text-gray-700 dark:text-gray-200 shadow-sm"
-                            >
-                              {label}
-                            </span>
-                          ))}
-                        </div>
+                  {result.detectedLabels && result.detectedLabels.length > 0 && (
+                    <div className="rounded-lg p-4 border bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800">
+                      <h4 className="font-semibold mb-3 flex items-center text-gray-900 dark:text-gray-100">
+                        <Info className="h-4 w-4 mr-2" />
+                        AI Detected Elements
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {result.detectedLabels.map((label, index) => (
+                          <span
+                            key={index}
+                            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full text-sm text-gray-700 dark:text-gray-200 shadow-sm"
+                          >
+                            {label}
+                          </span>
+                        ))}
                       </div>
-                    )}
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
           {/* Product Guide (bottom) */}
-          <div>
-            <div className="rounded-xl shadow-lg p-6">
+          <Card>
+            <CardContent>
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold">Product Guide</h2>
                 <button
@@ -526,8 +533,8 @@ export default function ConcreteDetectorPage() {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
