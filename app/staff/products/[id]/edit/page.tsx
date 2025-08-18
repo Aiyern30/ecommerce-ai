@@ -2,7 +2,7 @@
 import Link from "next/link";
 import type React from "react";
 
-import { ArrowLeft, Plus, X } from "lucide-react";
+import { ArrowLeft, Plus, X, X as XIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -55,7 +55,6 @@ const productSchema = z.object({
   }),
   mortar_ratio: z.string().optional(),
   category: z.string().default("building_materials"),
-  // Pricing fields
   normal_price: z.coerce
     .number()
     .min(0, "Price must be non-negative")
@@ -81,6 +80,7 @@ const productSchema = z.object({
     .default(0),
   status: z.enum(["draft", "published", "archived"]).default("draft"),
   is_featured: z.boolean().default(false),
+  keywords: z.array(z.string()).default([]), // <-- add keywords to schema
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -234,6 +234,8 @@ export default function EditProductPage() {
   >([]);
   const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
+  const [keywordInput, setKeywordInput] = useState("");
+  const [keywords, setKeywords] = useState<string[]>([]);
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -258,6 +260,28 @@ export default function EditProductPage() {
 
   const watchProductType = form.watch("product_type");
   const MAX_IMAGES = 5; // 1 main image + 4 additional images
+
+  // Add keyword to both local state and form
+  const handleAddKeyword = () => {
+    const kw = keywordInput.trim();
+    if (kw && !keywords.includes(kw)) {
+      const newKeywords = [...keywords, kw];
+      setKeywords(newKeywords);
+      form.setValue("keywords", newKeywords);
+      setKeywordInput("");
+    }
+  };
+
+  // Remove keyword from both local state and form
+  const handleRemoveKeyword = (idx: number) => {
+    const newKeywords = keywords.filter((_, i) => i !== idx);
+    setKeywords(newKeywords);
+    form.setValue("keywords", newKeywords);
+  };
+
+  useEffect(() => {
+    setKeywords(form.getValues("keywords"));
+  }, [form]);
 
   // Fetch product data
   useEffect(() => {
@@ -308,6 +332,7 @@ export default function EditProductPage() {
             stock_quantity: product.stock_quantity || 0,
             status: product.status,
             is_featured: product.is_featured,
+            keywords: product.keywords ?? [], // <-- set keywords from db
           });
 
           // Set existing images
@@ -495,6 +520,10 @@ export default function EditProductPage() {
     }
     await handleSubmit(formData, true);
   };
+
+  useEffect(() => {
+    setKeywords(form.getValues("keywords"));
+  }, [form]);
 
   if (isLoading) {
     return <ProductEditSkeleton />;
@@ -732,7 +761,6 @@ export default function EditProductPage() {
                             {...field}
                           />
                         </FormControl>
-                        {/* Fixed height container for description */}
                         <div className="min-h-[32px]">
                           <FormDescription>
                             Total cubic meters (m³) of this grade available in
@@ -767,10 +795,7 @@ export default function EditProductPage() {
                             <SelectItem value="archived">Archived</SelectItem>
                           </SelectContent>
                         </Select>
-                        {/* Fixed height container for description - empty to match stock_quantity field */}
-                        <div className="min-h-[32px]">
-                          {/* Empty space to match stock_quantity description height */}
-                        </div>
+                        <div className="min-h-[32px]">{/* Empty space */}</div>
                         <div className="min-h-[10px]">
                           <FormMessage />
                         </div>
@@ -797,6 +822,68 @@ export default function EditProductPage() {
                           homepage.
                         </FormDescription>
                       </div>
+                    </FormItem>
+                  )}
+                />
+
+                {/* --- Keywords Input --- */}
+                <FormField
+                  control={form.control}
+                  name="keywords"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>Keywords</FormLabel>
+                      <div className="flex gap-2">
+                        <Input
+                          type="text"
+                          placeholder="Enter keyword and press Enter"
+                          value={keywordInput}
+                          onChange={(e) => setKeywordInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleAddKeyword();
+                            }
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleAddKeyword}
+                          disabled={!keywordInput.trim()}
+                        >
+                          Add
+                        </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {Array.isArray(keywords) && keywords.length === 0 && (
+                          <span className="text-xs text-muted-foreground">
+                            No keywords added.
+                          </span>
+                        )}
+                        {(Array.isArray(keywords) ? keywords : []).map(
+                          (kw, idx) => (
+                            <span
+                              key={kw}
+                              className="inline-flex items-center px-2 py-1 rounded bg-blue-100 text-blue-800 text-xs font-medium"
+                            >
+                              {kw}
+                              <button
+                                type="button"
+                                className="ml-1 text-blue-500 hover:text-blue-700"
+                                onClick={() => handleRemoveKeyword(idx)}
+                                aria-label={`Remove keyword ${kw}`}
+                              >
+                                <XIcon className="h-3 w-3" />
+                              </button>
+                            </span>
+                          )
+                        )}
+                      </div>
+                      <FormDescription>
+                        Add keywords to help categorize and search for this
+                        product.
+                      </FormDescription>
                     </FormItem>
                   )}
                 />
