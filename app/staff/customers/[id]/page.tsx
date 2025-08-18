@@ -30,6 +30,17 @@ interface Customer {
   created_at: string;
   updated_at: string;
   last_sign_in_at?: string;
+  providers?: string[];
+  email_confirmed_at?: string;
+  phone_confirmed_at?: string;
+  is_super_admin?: boolean;
+  is_sso_user?: boolean;
+  is_anonymous?: boolean;
+  banned_until?: string | null;
+  deleted_at?: string | null;
+  email_verified?: boolean;
+  phone_verified?: boolean;
+  provider_id?: string;
 }
 
 export default function CustomerDetailsPage() {
@@ -120,6 +131,18 @@ export default function CustomerDetailsPage() {
           <div>
             <span className="font-medium">Role:</span> {customer.role}
           </div>
+          {customer.providers && (
+            <div>
+              <span className="font-medium">Providers:</span>{" "}
+              {customer.providers.join(", ")}
+            </div>
+          )}
+          {customer.provider_id && (
+            <div>
+              <span className="font-medium">Provider ID:</span>{" "}
+              {customer.provider_id}
+            </div>
+          )}
           {customer.phone && (
             <div>
               <span className="font-medium">Phone:</span> {customer.phone}
@@ -131,8 +154,32 @@ export default function CustomerDetailsPage() {
             </div>
           )}
           <div>
+            <span className="font-medium">Email Confirmed:</span>{" "}
+            {customer.email_confirmed_at
+              ? formatDate(customer.email_confirmed_at)
+              : "No"}
+          </div>
+          <div>
+            <span className="font-medium">Phone Confirmed:</span>{" "}
+            {customer.phone_confirmed_at
+              ? formatDate(customer.phone_confirmed_at)
+              : "No"}
+          </div>
+          <div>
+            <span className="font-medium">Email Verified:</span>{" "}
+            {customer.email_verified ? "Yes" : "No"}
+          </div>
+          <div>
+            <span className="font-medium">Phone Verified:</span>{" "}
+            {customer.phone_verified ? "Yes" : "No"}
+          </div>
+          <div>
             <span className="font-medium">Joined:</span>{" "}
             {formatDate(customer.created_at)}
+          </div>
+          <div>
+            <span className="font-medium">Updated:</span>{" "}
+            {formatDate(customer.updated_at)}
           </div>
           {customer.last_sign_in_at && (
             <div>
@@ -140,6 +187,30 @@ export default function CustomerDetailsPage() {
               {formatDate(customer.last_sign_in_at)}
             </div>
           )}
+          {customer.banned_until && (
+            <div>
+              <span className="font-medium">Banned Until:</span>{" "}
+              {formatDate(customer.banned_until)}
+            </div>
+          )}
+          {customer.deleted_at && (
+            <div>
+              <span className="font-medium">Deleted At:</span>{" "}
+              {formatDate(customer.deleted_at)}
+            </div>
+          )}
+          <div>
+            <span className="font-medium">Super Admin:</span>{" "}
+            {customer.is_super_admin ? "Yes" : "No"}
+          </div>
+          <div>
+            <span className="font-medium">SSO User:</span>{" "}
+            {customer.is_sso_user ? "Yes" : "No"}
+          </div>
+          <div>
+            <span className="font-medium">Anonymous:</span>{" "}
+            {customer.is_anonymous ? "Yes" : "No"}
+          </div>
         </div>
         <Button
           variant="outline"
