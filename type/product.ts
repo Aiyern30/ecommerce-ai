@@ -17,6 +17,7 @@ export interface Product {
   is_featured: boolean;
   created_at: string;
   updated_at: string;
+  keywords: string[] | null;
 
   // Related data from joins
   product_images:
