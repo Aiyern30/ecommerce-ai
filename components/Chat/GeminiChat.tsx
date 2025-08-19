@@ -13,7 +13,17 @@ import {
   Calculator,
   Info,
 } from "lucide-react";
-import { Card, Input, Badge, Button } from "../ui";
+import {
+  Card,
+  Input,
+  Badge,
+  Button,
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "../ui";
 import TypingIndicator from "./TypingIndicator";
 import { Product } from "@/type/product";
 import { toast } from "sonner";
@@ -69,6 +79,9 @@ export default function GeminiChat({
   const [isLoading, setIsLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [addingProductId, setAddingProductId] = useState<string | null>(null);
+  const [deliverySelections, setDeliverySelections] = useState<{
+    [id: string]: string;
+  }>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const user = useUser();
@@ -184,6 +197,16 @@ export default function GeminiChat({
     }
   };
 
+  const handleDeliveryTypeChange = (
+    productId: string,
+    deliveryType: string
+  ) => {
+    setDeliverySelections((prev) => ({
+      ...prev,
+      [productId]: deliveryType,
+    }));
+  };
+
   const handleAddToCart = async (product: Product, deliveryType?: string) => {
     if (!user?.id) {
       toast.error("Please login to add items to cart", {
@@ -197,7 +220,10 @@ export default function GeminiChat({
     setAddingProductId(product.id);
     try {
       // Use pump delivery if available, otherwise normal
-      const delivery = deliveryType || (product.pump_price ? "pump" : "normal");
+      const delivery =
+        deliveryType ||
+        deliverySelections[product.id] ||
+        (product.pump_price ? "pump" : "normal");
       const result = await addToCart(user.id, product.id, 1, delivery);
       if (result.success) {
         toast.success("Added to cart!", {
@@ -288,6 +314,39 @@ export default function GeminiChat({
                         message.metadata?.intent === "recommendation" &&
                         idx === 0;
 
+                      // Get available delivery types
+                      const deliveryOptions = [
+                        product.normal_price && {
+                          key: "normal",
+                          label: "Normal",
+                          price: product.normal_price,
+                        },
+                        product.pump_price && {
+                          key: "pump",
+                          label: "Pump",
+                          price: product.pump_price,
+                        },
+                        product.tremie_1_price && {
+                          key: "tremie_1",
+                          label: "Tremie 1",
+                          price: product.tremie_1_price,
+                        },
+                        product.tremie_2_price && {
+                          key: "tremie_2",
+                          label: "Tremie 2",
+                          price: product.tremie_2_price,
+                        },
+                        product.tremie_3_price && {
+                          key: "tremie_3",
+                          label: "Tremie 3",
+                          price: product.tremie_3_price,
+                        },
+                      ].filter(Boolean);
+
+                      const selectedDeliveryType =
+                        deliverySelections[product.id] ||
+                        (product.pump_price ? "pump" : "normal");
+
                       return (
                         <Card
                           key={product.id}
@@ -350,6 +409,38 @@ export default function GeminiChat({
                                 )}
                               </div>
 
+                              {/* Delivery Type Selector */}
+                              {deliveryOptions.length > 1 && (
+                                <div className="mt-2 flex items-center gap-2">
+                                  <span className="text-xs text-gray-500">
+                                    Delivery:
+                                  </span>
+                                  <Select
+                                    value={selectedDeliveryType}
+                                    onValueChange={(val) =>
+                                      handleDeliveryTypeChange(product.id, val)
+                                    }
+                                  >
+                                    <SelectTrigger className="w-28 h-8 px-2 py-1 text-xs">
+                                      <SelectValue placeholder="Delivery type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {deliveryOptions.map(
+                                        (opt) =>
+                                          opt && (
+                                            <SelectItem
+                                              key={opt.key}
+                                              value={opt.key}
+                                            >
+                                              {opt.label} (RM{opt.price})
+                                            </SelectItem>
+                                          )
+                                      )}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              )}
+
                               {/* Stock Status */}
                               <div className="mt-1 flex items-center justify-between">
                                 <span className="text-xs text-gray-500">
@@ -377,7 +468,8 @@ export default function GeminiChat({
                               onClick={() =>
                                 handleAddToCart(
                                   product,
-                                  product.pump_price ? "pump" : "normal"
+                                  deliverySelections[product.id] ||
+                                    (product.pump_price ? "pump" : "normal")
                                 )
                               }
                             >
