@@ -5,6 +5,11 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { ConcreteIntentAnalyzer } from "@/lib/gemini/concreteIntentAnalyzer";
+import {
+  getCartItems,
+  removeFromCart,
+  updateCartItemQuantity,
+} from "@/lib/cart/utils";
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
@@ -359,7 +364,7 @@ async function getProductsBasedOnIntent(
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, conversationHistory } = await request.json();
+    const { message, conversationHistory, userId } = await request.json();
 
     if (!message) {
       return NextResponse.json(
@@ -448,6 +453,82 @@ Keep the response conversational and focused on helping the customer make inform
           ConcreteIntentAnalyzer.isConstructionQuery(message),
       },
     };
+
+    // Conversational Cart Management
+    // Use string comparison for intent/type checks
+    if (
+      intentAnalysis.intent === "cart_show" ||
+      (typeof message === "string" && /show.*cart/i.test(message))
+    ) {
+      if (!userId) {
+        return NextResponse.json({
+          message: "Please login to view your cart.",
+          type: "cart",
+          metadata: { cart: [] },
+        });
+      }
+      const cartItems = await getCartItems(userId);
+      return NextResponse.json({
+        message: cartItems.length
+          ? "Here are the items in your cart:"
+          : "Your cart is empty.",
+        type: "cart",
+        metadata: { cart: cartItems },
+      });
+    }
+
+    // Remove item from cart
+    const removeMatch =
+      typeof message === "string" &&
+      message.match(/remove\s+([a-zA-Z0-9\s]+)\s+from.*cart/i);
+    if (removeMatch && userId) {
+      const productName = removeMatch[1].trim().toLowerCase();
+      const cartItems = await getCartItems(userId);
+      const item = cartItems.find(
+        (ci) => ci.product?.name?.toLowerCase() === productName
+      );
+      if (item) {
+        await removeFromCart(item.id);
+        return NextResponse.json({
+          message: `Removed ${item.product.name} from your cart.`,
+          type: "cart",
+          metadata: { cart: await getCartItems(userId) },
+        });
+      } else {
+        return NextResponse.json({
+          message: `Could not find ${productName} in your cart.`,
+          type: "cart",
+          metadata: { cart: cartItems },
+        });
+      }
+    }
+
+    // Update quantity in cart
+    const updateMatch =
+      typeof message === "string" &&
+      message.match(/update\s+quantity\s+of\s+([a-zA-Z0-9\s]+)\s+to\s+(\d+)/i);
+    if (updateMatch && userId) {
+      const productName = updateMatch[1].trim().toLowerCase();
+      const newQty = parseInt(updateMatch[2]);
+      const cartItems = await getCartItems(userId);
+      const item = cartItems.find(
+        (ci) => ci.product?.name?.toLowerCase() === productName
+      );
+      if (item) {
+        await updateCartItemQuantity(item.id, newQty);
+        return NextResponse.json({
+          message: `Updated quantity of ${item.product.name} to ${newQty}.`,
+          type: "cart",
+          metadata: { cart: await getCartItems(userId) },
+        });
+      } else {
+        return NextResponse.json({
+          message: `Could not find ${productName} in your cart.`,
+          type: "cart",
+          metadata: { cart: cartItems },
+        });
+      }
+    }
 
     return NextResponse.json(responseData);
   } catch (error) {
