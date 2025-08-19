@@ -18,7 +18,7 @@ import { SpecificationsTable } from "@/components/Comparison/Tabs/SpecificationT
 import { ProductSelector } from "@/components/Comparison/ProductSelector";
 import { TypographyH1 } from "@/components/ui/Typography";
 import { BarChart3 } from "lucide-react";
-import { AISmartComparison } from "@/components/AiSmartComparison";
+import { AISmartComparison } from "@/components/AISmartComparison";
 
 export default function CompareProductsContent() {
   const router = useRouter();
