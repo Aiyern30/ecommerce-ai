@@ -27,6 +27,12 @@ interface ProductSelectorProps {
   comparedProducts: ProductWithPriceType[];
   onProductChange: (index: number, newProductId: string) => void;
   onPriceTypeChange?: (productId: string, newPriceType: string) => void;
+  // Add a new prop for combined changes
+  onProductAndPriceTypeChange?: (
+    index: number,
+    newProductId: string,
+    newPriceType: string
+  ) => void;
 }
 
 export function ProductSelector({
@@ -34,6 +40,7 @@ export function ProductSelector({
   comparedProducts,
   onProductChange,
   onPriceTypeChange,
+  onProductAndPriceTypeChange,
 }: ProductSelectorProps) {
   console.log("ProductSelector", products);
   const getPriceOptions = (product: Product) => {
@@ -191,25 +198,29 @@ export function ProductSelector({
                                 <DropdownMenuItem
                                   key={opt.key}
                                   onClick={() => {
-                                    // If we're selecting the same product, just change price type
-                                    if (availableProduct.id === product.id) {
-                                      onPriceTypeChange?.(
+                                    if (onProductAndPriceTypeChange) {
+                                      onProductAndPriceTypeChange(
+                                        index,
                                         availableProduct.id,
                                         opt.key
                                       );
                                     } else {
-                                      // If selecting a different product, change both product and price type
-                                      onProductChange(
-                                        index,
-                                        availableProduct.id
-                                      );
-                                      // Use a timeout to ensure the product change happens first
-                                      setTimeout(() => {
+                                      // Fallback (less reliable)
+                                      if (availableProduct.id === product.id) {
                                         onPriceTypeChange?.(
                                           availableProduct.id,
                                           opt.key
                                         );
-                                      }, 0);
+                                      } else {
+                                        onProductChange(
+                                          index,
+                                          availableProduct.id
+                                        );
+                                        onPriceTypeChange?.(
+                                          availableProduct.id,
+                                          opt.key
+                                        );
+                                      }
                                     }
                                   }}
                                   className="flex items-center justify-between"
