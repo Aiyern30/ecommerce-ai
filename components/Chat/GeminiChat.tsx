@@ -19,6 +19,7 @@ import { Product } from "@/type/product";
 import { toast } from "sonner";
 import { addToCart } from "@/lib/cart/utils"; // adjust import if needed
 import { useUser } from "@supabase/auth-helpers-react";
+import ReactMarkdown from "react-markdown";
 
 interface Message {
   id: string;
@@ -252,7 +253,13 @@ export default function GeminiChat({
                   : "bg-blue-500 text-white"
               }`}
             >
-              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+              {isBot ? (
+                <ReactMarkdown className="text-sm">
+                  {message.content}
+                </ReactMarkdown>
+              ) : (
+                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+              )}
             </div>
 
             {/* Intent Indicator for Development/Debugging */}
