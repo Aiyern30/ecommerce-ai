@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -19,6 +18,11 @@ import {
 
 interface AIComparisonProps {
   comparedProducts: Product[];
+  aiResult: AIComparisonResult | null;
+  loading: boolean;
+  error: string | null;
+  onGenerate: () => void;
+  onClear: () => void;
 }
 
 interface AIInsight {
@@ -37,57 +41,14 @@ interface AIComparisonResult {
   insights: AIInsight[];
 }
 
-export function AISmartComparison({ comparedProducts }: AIComparisonProps) {
-  const [aiResult, setAiResult] = useState<AIComparisonResult | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const generateAIComparison = async () => {
-    if (comparedProducts.length < 2) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch("/api/ai-comparison", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          products: comparedProducts.map((product) => ({
-            id: product.id,
-            name: product.name,
-            description: product.description,
-            grade: product.grade,
-            product_type: product.product_type,
-            category: product.category,
-            normal_price: product.normal_price,
-            pump_price: product.pump_price,
-            tremie_1_price: product.tremie_1_price,
-            tremie_2_price: product.tremie_2_price,
-            tremie_3_price: product.tremie_3_price,
-            unit: product.unit,
-            stock_quantity: product.stock_quantity,
-            keywords: product.keywords,
-            mortar_ratio: product.mortar_ratio,
-          })),
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to generate AI comparison");
-      }
-
-      const result = await response.json();
-      setAiResult(result);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+export function AISmartComparison({
+  comparedProducts,
+  aiResult,
+  loading,
+  error,
+  onGenerate,
+  onClear,
+}: AIComparisonProps) {
   const getIcon = (iconType: string) => {
     switch (iconType) {
       case "brain":
@@ -152,7 +113,7 @@ export function AISmartComparison({ comparedProducts }: AIComparisonProps) {
                 products.
               </p>
               <Button
-                onClick={generateAIComparison}
+                onClick={onGenerate}
                 className="bg-purple-600 hover:bg-purple-700 text-white"
               >
                 <Brain className="w-4 h-4 mr-2" />
@@ -170,7 +131,7 @@ export function AISmartComparison({ comparedProducts }: AIComparisonProps) {
             <div className="text-center py-6">
               <AlertCircle className="w-8 h-8 mx-auto mb-4 text-red-500" />
               <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
-              <Button onClick={generateAIComparison} variant="outline">
+              <Button onClick={onGenerate} variant="outline">
                 Try Again
               </Button>
             </div>
@@ -297,14 +258,13 @@ export function AISmartComparison({ comparedProducts }: AIComparisonProps) {
                 </div>
               )}
 
-              <div className="flex justify-center pt-4">
-                <Button
-                  onClick={generateAIComparison}
-                  variant="outline"
-                  size="sm"
-                >
+              <div className="flex justify-center pt-4 gap-2">
+                <Button onClick={onGenerate} variant="outline" size="sm">
                   <Brain className="w-4 h-4 mr-2" />
                   Regenerate Analysis
+                </Button>
+                <Button onClick={onClear} variant="destructive" size="sm">
+                  Clear Analysis
                 </Button>
               </div>
             </div>
