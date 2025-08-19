@@ -12,15 +12,70 @@ import { Shuffle } from "lucide-react";
 
 interface ProductSelectorProps {
   products: Product[];
-  comparedProducts: Product[];
+  comparedProducts: (Product & { selectedPriceType?: string })[];
   onProductChange: (index: number, newProductId: string) => void;
+  onPriceTypeChange?: (productId: string, newPriceType: string) => void;
 }
 
 export function ProductSelector({
   products,
   comparedProducts,
   onProductChange,
+  onPriceTypeChange,
 }: ProductSelectorProps) {
+  const getPriceOptions = (product: Product) => {
+    const options = [];
+    if (product.normal_price)
+      options.push({
+        key: "normal",
+        label: "Normal Delivery",
+        price: product.normal_price,
+      });
+    if (product.pump_price)
+      options.push({
+        key: "pump",
+        label: "Pump Delivery",
+        price: product.pump_price,
+      });
+    if (product.tremie_1_price)
+      options.push({
+        key: "tremie_1",
+        label: "Tremie 1",
+        price: product.tremie_1_price,
+      });
+    if (product.tremie_2_price)
+      options.push({
+        key: "tremie_2",
+        label: "Tremie 2",
+        price: product.tremie_2_price,
+      });
+    if (product.tremie_3_price)
+      options.push({
+        key: "tremie_3",
+        label: "Tremie 3",
+        price: product.tremie_3_price,
+      });
+    return options;
+  };
+
+  const getSelectedPrice = (
+    product: Product & { selectedPriceType?: string }
+  ) => {
+    const priceType = product.selectedPriceType || "normal";
+    switch (priceType) {
+      case "pump":
+        return product.pump_price || product.normal_price || 0;
+      case "tremie_1":
+        return product.tremie_1_price || product.normal_price || 0;
+      case "tremie_2":
+        return product.tremie_2_price || product.normal_price || 0;
+      case "tremie_3":
+        return product.tremie_3_price || product.normal_price || 0;
+      default:
+        return product.normal_price || 0;
+    }
+  };
+
   return (
     <div className="mb-8 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
       {/* Header */}
@@ -33,91 +88,164 @@ export function ProductSelector({
             Select Products to Compare
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Choose different products to analyze their features and
-            specifications
+            Choose different products and price types to analyze their features
+            and specifications
           </p>
         </div>
       </div>
 
       {/* Product Selection Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {comparedProducts.map((product, index) => (
-          <div key={index} className="space-y-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Product {index + 1}
-            </label>
+        {comparedProducts.map((product, index) => {
+          const priceOptions = getPriceOptions(product);
+          const selectedPrice = getSelectedPrice(product);
+          const selectedPriceType = product.selectedPriceType || "normal";
 
-            <Select
-              value={product.id}
-              onValueChange={(newProductId) =>
-                onProductChange(index, newProductId)
-              }
-            >
-              <SelectTrigger className="w-full h-12 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 hover:border-gray-400 dark:hover:border-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors">
-                <div className="flex items-center gap-2 w-full">
-                  <div className="w-6 h-6 rounded overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
-                    <Image
-                      src={
-                        product.product_images?.find((img) => img.is_primary)
-                          ?.image_url ||
-                        product.product_images?.[0]?.image_url ||
-                        "/placeholder.svg"
-                      }
-                      alt={product.name}
-                      width={24}
-                      height={24}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1 text-left min-w-0">
-                    <div className="font-medium truncate text-sm">
-                      {product.name}
+          return (
+            <div key={index} className="space-y-3">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Product {index + 1}
+              </label>
+
+              {/* Product Selection */}
+              <Select
+                value={product.id}
+                onValueChange={(newProductId) =>
+                  onProductChange(index, newProductId)
+                }
+              >
+                <SelectTrigger className="w-full h-12 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 hover:border-gray-400 dark:hover:border-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors">
+                  <div className="flex items-center gap-2 w-full">
+                    <div className="w-6 h-6 rounded overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
+                      <Image
+                        src={
+                          product.product_images?.find((img) => img.is_primary)
+                            ?.image_url ||
+                          product.product_images?.[0]?.image_url ||
+                          "/placeholder.svg"
+                        }
+                        alt={product.name}
+                        width={24}
+                        height={24}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
+                    <div className="flex-1 text-left min-w-0">
+                      <div className="font-medium truncate text-sm">
+                        {product.name}
+                      </div>
+                    </div>
+                  </div>
+                </SelectTrigger>
+
+                <SelectContent className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg min-w-[280px] max-h-[300px]">
+                  {products.map((availableProduct) => (
+                    <SelectItem
+                      key={availableProduct.id}
+                      value={availableProduct.id}
+                      className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded p-2 m-1 cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3 w-full">
+                        <div className="w-8 h-8 rounded overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
+                          <Image
+                            src={
+                              availableProduct.product_images?.find(
+                                (img) => img.is_primary
+                              )?.image_url ||
+                              availableProduct.product_images?.[0]?.image_url ||
+                              "/placeholder.svg"
+                            }
+                            alt={availableProduct.name}
+                            width={32}
+                            height={32}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium truncate">
+                            {availableProduct.name}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            RM{(availableProduct.normal_price ?? 0).toFixed(0)}{" "}
+                            / {availableProduct.unit}
+                          </div>
+                        </div>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Price Type Selection */}
+              {priceOptions.length > 1 && onPriceTypeChange && (
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                    Compare Price Type:
+                  </label>
+                  <Select
+                    value={selectedPriceType}
+                    onValueChange={(newPriceType) =>
+                      onPriceTypeChange(product.id, newPriceType)
+                    }
+                  >
+                    <SelectTrigger className="w-full h-10 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg text-blue-900 dark:text-blue-100 hover:border-blue-300 dark:hover:border-blue-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors">
+                      <div className="flex items-center justify-between w-full">
+                        <span className="text-sm font-medium">
+                          {priceOptions.find(
+                            (opt) => opt.key === selectedPriceType
+                          )?.label || "Normal Delivery"}
+                        </span>
+                        <span className="text-sm font-bold">
+                          RM{selectedPrice.toFixed(2)}
+                        </span>
+                      </div>
+                    </SelectTrigger>
+
+                    <SelectContent className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg">
+                      {priceOptions.map((option) => (
+                        <SelectItem
+                          key={option.key}
+                          value={option.key}
+                          className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded p-2 m-1 cursor-pointer"
+                        >
+                          <div className="flex items-center justify-between w-full">
+                            <span className="font-medium">{option.label}</span>
+                            <span className="text-sm text-gray-600 dark:text-gray-400 ml-4">
+                              RM{option.price.toFixed(2)}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Current Selection Display */}
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">
+                    Current Price:
+                  </span>
+                  <div className="text-right">
+                    <div className="font-semibold text-sm text-gray-900 dark:text-gray-100">
+                      RM{selectedPrice.toFixed(2)}
+                    </div>
+                    {priceOptions.length > 1 && (
+                      <div className="text-xs text-blue-600 dark:text-blue-400">
+                        {
+                          priceOptions.find(
+                            (opt) => opt.key === selectedPriceType
+                          )?.label
+                        }
+                      </div>
+                    )}
                   </div>
                 </div>
-              </SelectTrigger>
-
-              <SelectContent className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg min-w-[280px] max-h-[300px]">
-                {products.map((availableProduct) => (
-                  <SelectItem
-                    key={availableProduct.id}
-                    value={availableProduct.id}
-                    className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded p-2 m-1 cursor-pointer"
-                  >
-                    <div className="flex items-center gap-3 w-full">
-                      <div className="w-8 h-8 rounded overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
-                        <Image
-                          src={
-                            availableProduct.product_images?.find(
-                              (img) => img.is_primary
-                            )?.image_url ||
-                            availableProduct.product_images?.[0]?.image_url ||
-                            "/placeholder.svg"
-                          }
-                          alt={availableProduct.name}
-                          width={32}
-                          height={32}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium truncate">
-                          {availableProduct.name}
-                        </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          RM
-                          {(availableProduct.normal_price ?? 0).toFixed(
-                            0
-                          )} / {availableProduct.unit}
-                        </div>
-                      </div>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
