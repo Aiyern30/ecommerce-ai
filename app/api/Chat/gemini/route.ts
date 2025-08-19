@@ -399,8 +399,8 @@ export async function POST(request: NextRequest) {
     // Generate enhanced system prompt
     const systemPrompt = generateSystemPrompt(products, intentAnalysis);
 
-    // Initialize Gemini model
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    // Initialize Gemini model - using the correct model name
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // Prepare the full prompt with intent-aware context
     const fullPrompt = `${systemPrompt}
