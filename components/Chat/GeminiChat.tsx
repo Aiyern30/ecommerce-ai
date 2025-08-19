@@ -308,195 +308,198 @@ export default function GeminiChat({
             {message.metadata?.products &&
               message.metadata.products.length > 0 && (
                 <div className="mt-2 space-y-2 w-full">
-                  {message.metadata.products.map(
-                    (product: Product, idx: number) => {
-                      console.log("Rendering product:", product);
-                      const isRecommended =
-                        message.metadata?.intent === "recommendation" &&
-                        idx === 0;
+                  {/* Filter out duplicate products by id */}
+                  {Array.from(
+                    new Map(
+                      message.metadata.products.map((p) => [p.id, p])
+                    ).values()
+                  ).map((product: Product, idx: number) => {
+                    console.log("Rendering product:", product);
+                    const isRecommended =
+                      message.metadata?.intent === "recommendation" &&
+                      idx === 0;
 
-                      // Get available delivery types
-                      const deliveryOptions = [
-                        product.normal_price && {
-                          key: "normal",
-                          label: "Normal",
-                          price: product.normal_price,
-                        },
-                        product.pump_price && {
-                          key: "pump",
-                          label: "Pump",
-                          price: product.pump_price,
-                        },
-                        product.tremie_1_price && {
-                          key: "tremie_1",
-                          label: "Tremie 1",
-                          price: product.tremie_1_price,
-                        },
-                        product.tremie_2_price && {
-                          key: "tremie_2",
-                          label: "Tremie 2",
-                          price: product.tremie_2_price,
-                        },
-                        product.tremie_3_price && {
-                          key: "tremie_3",
-                          label: "Tremie 3",
-                          price: product.tremie_3_price,
-                        },
-                      ].filter(Boolean);
+                    // Get available delivery types
+                    const deliveryOptions = [
+                      product.normal_price && {
+                        key: "normal",
+                        label: "Normal",
+                        price: product.normal_price,
+                      },
+                      product.pump_price && {
+                        key: "pump",
+                        label: "Pump",
+                        price: product.pump_price,
+                      },
+                      product.tremie_1_price && {
+                        key: "tremie_1",
+                        label: "Tremie 1",
+                        price: product.tremie_1_price,
+                      },
+                      product.tremie_2_price && {
+                        key: "tremie_2",
+                        label: "Tremie 2",
+                        price: product.tremie_2_price,
+                      },
+                      product.tremie_3_price && {
+                        key: "tremie_3",
+                        label: "Tremie 3",
+                        price: product.tremie_3_price,
+                      },
+                    ].filter(Boolean);
 
-                      const selectedDeliveryType =
-                        deliverySelections[product.id] ||
-                        (product.pump_price ? "pump" : "normal");
+                    const selectedDeliveryType =
+                      deliverySelections[product.id] ||
+                      (product.pump_price ? "pump" : "normal");
 
-                      return (
-                        <Card
-                          key={`${product.id}-${idx}`}
-                          className="p-3 max-w-sm relative"
-                        >
-                          {/* Recommended badge */}
-                          {isRecommended && (
-                            <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded shadow">
-                              Recommended
+                    return (
+                      <Card
+                        key={`${product.id}-${idx}`}
+                        className="p-3 max-w-sm relative"
+                      >
+                        {/* Recommended badge */}
+                        {isRecommended && (
+                          <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded shadow">
+                            Recommended
+                          </div>
+                        )}
+                        <div className="flex items-start gap-3">
+                          {/* Show product image if available, else icon */}
+                          <div className="w-12 h-12 bg-gradient-to-br from-gray-200 to-gray-300 rounded-md flex items-center justify-center flex-shrink-0 overflow-hidden">
+                            {product.product_images &&
+                            product.product_images.length > 0 &&
+                            product.product_images[0].image_url ? (
+                              <Image
+                                src={product.product_images[0].image_url}
+                                alt={product.name}
+                                width={48}
+                                height={48}
+                                className="w-12 h-12 object-cover rounded-md"
+                              />
+                            ) : (
+                              <Package size={16} className="text-gray-600" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-medium text-sm truncate">
+                                {product.name}
+                              </h4>
+                              <Badge
+                                variant="secondary"
+                                className={`text-xs ${
+                                  product.grade.startsWith("N")
+                                    ? "bg-green-100 text-green-700"
+                                    : "bg-blue-100 text-blue-700"
+                                }`}
+                              >
+                                {product.grade}
+                              </Badge>
                             </div>
-                          )}
-                          <div className="flex items-start gap-3">
-                            {/* Show product image if available, else icon */}
-                            <div className="w-12 h-12 bg-gradient-to-br from-gray-200 to-gray-300 rounded-md flex items-center justify-center flex-shrink-0 overflow-hidden">
-                              {product.product_images &&
-                              product.product_images.length > 0 &&
-                              product.product_images[0].image_url ? (
-                                <Image
-                                  src={product.product_images[0].image_url}
-                                  alt={product.name}
-                                  width={48}
-                                  height={48}
-                                  className="w-12 h-12 object-cover rounded-md"
-                                />
-                              ) : (
-                                <Package size={16} className="text-gray-600" />
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <h4 className="font-medium text-sm truncate">
-                                  {product.name}
-                                </h4>
-                                <Badge
-                                  variant="secondary"
-                                  className={`text-xs ${
-                                    product.grade.startsWith("N")
-                                      ? "bg-green-100 text-green-700"
-                                      : "bg-blue-100 text-blue-700"
-                                  }`}
-                                >
-                                  {product.grade}
-                                </Badge>
+
+                            {product.description && (
+                              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                                {product.description}
+                              </p>
+                            )}
+
+                            {/* Price Display */}
+                            <div className="mt-2 space-y-1">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-gray-500">
+                                  Normal:
+                                </span>
+                                <span className="text-sm font-medium">
+                                  {product.normal_price
+                                    ? `RM${product.normal_price}`
+                                    : "N/A"}
+                                </span>
                               </div>
-
-                              {product.description && (
-                                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
-                                  {product.description}
-                                </p>
-                              )}
-
-                              {/* Price Display */}
-                              <div className="mt-2 space-y-1">
+                              {product.pump_price && (
                                 <div className="flex items-center justify-between">
                                   <span className="text-xs text-gray-500">
-                                    Normal:
+                                    Pump:
                                   </span>
                                   <span className="text-sm font-medium">
-                                    {product.normal_price
-                                      ? `RM${product.normal_price}`
-                                      : "N/A"}
+                                    RM{product.pump_price}
                                   </span>
-                                </div>
-                                {product.pump_price && (
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-xs text-gray-500">
-                                      Pump:
-                                    </span>
-                                    <span className="text-sm font-medium">
-                                      RM{product.pump_price}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Delivery Type Selector */}
-                              {deliveryOptions.length > 1 && (
-                                <div className="mt-2 flex items-center gap-2">
-                                  <span className="text-xs text-gray-500">
-                                    Delivery:
-                                  </span>
-                                  <Select
-                                    value={selectedDeliveryType}
-                                    onValueChange={(val) =>
-                                      handleDeliveryTypeChange(product.id, val)
-                                    }
-                                  >
-                                    <SelectTrigger className="w-28 h-8 px-2 py-1 text-xs">
-                                      <SelectValue placeholder="Delivery type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {deliveryOptions.map(
-                                        (opt) =>
-                                          opt && (
-                                            <SelectItem
-                                              key={opt.key}
-                                              value={opt.key}
-                                            >
-                                              {opt.label}
-                                            </SelectItem>
-                                          )
-                                      )}
-                                    </SelectContent>
-                                  </Select>
                                 </div>
                               )}
-
-                              {/* Stock Status */}
-                              <div className="mt-1 flex items-center justify-between">
-                                <span className="text-xs text-gray-500">
-                                  Stock:
-                                </span>
-                                <span
-                                  className={`text-xs ${
-                                    (product.stock_quantity || 0) > 50
-                                      ? "text-green-600"
-                                      : (product.stock_quantity || 0) > 10
-                                      ? "text-orange-600"
-                                      : "text-red-600"
-                                  }`}
-                                >
-                                  {product.stock_quantity || 0} units
-                                </span>
-                              </div>
                             </div>
 
-                            <Button
-                              size="sm"
-                              variant={isRecommended ? "default" : "outline"}
-                              className="flex-shrink-0"
-                              disabled={addingProductId === product.id}
-                              onClick={() =>
-                                handleAddToCart(
-                                  product,
-                                  deliverySelections[product.id] ||
-                                    (product.pump_price ? "pump" : "normal")
-                                )
-                              }
-                            >
-                              <ShoppingCart size={12} className="mr-1" />
-                              {addingProductId === product.id
-                                ? "Adding..."
-                                : "Add"}
-                            </Button>
+                            {/* Delivery Type Selector */}
+                            {deliveryOptions.length > 1 && (
+                              <div className="mt-2 flex items-center gap-2">
+                                <span className="text-xs text-gray-500">
+                                  Delivery:
+                                </span>
+                                <Select
+                                  value={selectedDeliveryType}
+                                  onValueChange={(val) =>
+                                    handleDeliveryTypeChange(product.id, val)
+                                  }
+                                >
+                                  <SelectTrigger className="w-28 h-8 px-2 py-1 text-xs">
+                                    <SelectValue placeholder="Delivery type" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {deliveryOptions.map(
+                                      (opt) =>
+                                        opt && (
+                                          <SelectItem
+                                            key={opt.key}
+                                            value={opt.key}
+                                          >
+                                            {opt.label}
+                                          </SelectItem>
+                                        )
+                                    )}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            )}
+
+                            {/* Stock Status */}
+                            <div className="mt-1 flex items-center justify-between">
+                              <span className="text-xs text-gray-500">
+                                Stock:
+                              </span>
+                              <span
+                                className={`text-xs ${
+                                  (product.stock_quantity || 0) > 50
+                                    ? "text-green-600"
+                                    : (product.stock_quantity || 0) > 10
+                                    ? "text-orange-600"
+                                    : "text-red-600"
+                                }`}
+                              >
+                                {product.stock_quantity || 0} units
+                              </span>
+                            </div>
                           </div>
-                        </Card>
-                      );
-                    }
-                  )}
+
+                          <Button
+                            size="sm"
+                            variant={isRecommended ? "default" : "outline"}
+                            className="flex-shrink-0"
+                            disabled={addingProductId === product.id}
+                            onClick={() =>
+                              handleAddToCart(
+                                product,
+                                deliverySelections[product.id] ||
+                                  (product.pump_price ? "pump" : "normal")
+                              )
+                            }
+                          >
+                            <ShoppingCart size={12} className="mr-1" />
+                            {addingProductId === product.id
+                              ? "Adding..."
+                              : "Add"}
+                          </Button>
+                        </div>
+                      </Card>
+                    );
+                  })}
                 </div>
               )}
 
