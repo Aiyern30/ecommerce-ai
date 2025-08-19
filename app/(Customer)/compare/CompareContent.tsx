@@ -19,12 +19,14 @@ import { ProductSelector } from "@/components/Comparison/ProductSelector";
 import { TypographyH1 } from "@/components/ui/Typography";
 import { BarChart3 } from "lucide-react";
 import { AISmartComparison } from "@/components/AISmartComparison";
+
 interface AIInsight {
   type: "recommendation" | "analysis" | "warning" | "tip";
   title: string;
   content: string;
   icon: "brain" | "lightbulb" | "trending" | "alert";
 }
+
 interface AIComparisonResult {
   summary: string;
   keyDifferences: string[];
@@ -33,11 +35,18 @@ interface AIComparisonResult {
   costAnalysis: string;
   insights: AIInsight[];
 }
+
+interface ProductWithPriceType extends Product {
+  selectedPriceType?: string;
+}
+
 export default function CompareProductsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
-  const [comparedProducts, setComparedProducts] = useState<Product[]>([]);
+  const [comparedProducts, setComparedProducts] = useState<
+    ProductWithPriceType[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const [aiResult, setAiResult] = useState<AIComparisonResult | null>(null);
@@ -50,20 +59,16 @@ export default function CompareProductsContent() {
       const productIds = searchParams
         ? [...new Set(searchParams.getAll("products"))]
         : [];
+      const priceTypes = searchParams ? searchParams.getAll("priceType") : [];
+
       if (productIds.length === 0) {
         setLoading(false);
         return;
       }
-      const originalIds = searchParams ? searchParams.getAll("products") : [];
-      if (originalIds.length !== productIds.length) {
-        const params = new URLSearchParams();
-        productIds.forEach((id) => params.append("products", id));
-        router.replace(`/compare?${params.toString()}`);
-      }
 
       const { data, error } = await supabase.from("products").select(`
         *,
-        product_images(image_url)
+        product_images(image_url, is_primary)
       `);
 
       if (error) {
@@ -71,9 +76,12 @@ export default function CompareProductsContent() {
         toast.error("Failed to load products");
       } else {
         setProducts(data || []);
-        const selectedProducts = (data || []).filter((p) =>
-          productIds.includes(p.id)
-        );
+        const selectedProducts = (data || [])
+          .filter((p) => productIds.includes(p.id))
+          .map((product, index) => ({
+            ...product,
+            selectedPriceType: priceTypes[index] || "normal",
+          }));
         setComparedProducts(selectedProducts);
       }
       setLoading(false);
@@ -89,20 +97,29 @@ export default function CompareProductsContent() {
     setAiLoading(false);
   }, [comparedProducts]);
 
-  const updateURL = (productIds: string[]) => {
-    const uniqueIds = [...new Set(productIds)];
+  const updateURL = (
+    productsWithPriceTypes: { id: string; priceType: string }[]
+  ) => {
     const params = new URLSearchParams();
-    uniqueIds.forEach((id) => params.append("products", id));
+    productsWithPriceTypes.forEach((item) => {
+      params.append("products", item.id);
+      params.append("priceType", item.priceType);
+    });
     router.replace(`/compare?${params.toString()}`);
   };
 
   const removeProductFromCompare = (id: string) => {
-    const newIds = comparedProducts.filter((p) => p.id !== id).map((p) => p.id);
-    if (newIds.length < 2) {
+    const newProducts = comparedProducts.filter((p) => p.id !== id);
+    if (newProducts.length < 2) {
       router.push("/products");
     } else {
-      setComparedProducts((prev) => prev.filter((p) => p.id !== id));
-      updateURL(newIds);
+      setComparedProducts(newProducts);
+      updateURL(
+        newProducts.map((p) => ({
+          id: p.id,
+          priceType: p.selectedPriceType || "normal",
+        }))
+      );
     }
   };
 
@@ -118,15 +135,41 @@ export default function CompareProductsContent() {
       return;
     }
 
-    const newIds = [...currentIds];
-    newIds[index] = newProductId;
-    const newProducts = products.filter((p) => newIds.includes(p.id));
-    const orderedProducts = newIds
-      .map((id) => newProducts.find((p) => p.id === id))
-      .filter(Boolean) as Product[];
+    const newProducts = [...comparedProducts];
+    const newProduct = products.find((p) => p.id === newProductId);
+    if (newProduct) {
+      newProducts[index] = {
+        ...newProduct,
+        selectedPriceType: newProducts[index]?.selectedPriceType || "normal",
+      };
+      setComparedProducts(newProducts);
+      updateURL(
+        newProducts.map((p) => ({
+          id: p.id,
+          priceType: p.selectedPriceType || "normal",
+        }))
+      );
+    }
+  };
 
-    setComparedProducts(orderedProducts);
-    updateURL(newIds);
+  const handlePriceTypeChange = (productId: string, newPriceType: string) => {
+    setComparedProducts((prev) =>
+      prev.map((product) =>
+        product.id === productId
+          ? { ...product, selectedPriceType: newPriceType }
+          : product
+      )
+    );
+
+    // Update URL immediately
+    const updatedProducts = comparedProducts.map((product) => ({
+      id: product.id,
+      priceType:
+        product.id === productId
+          ? newPriceType
+          : product.selectedPriceType || "normal",
+    }));
+    updateURL(updatedProducts);
   };
 
   const generateAIComparison = async () => {
@@ -158,6 +201,7 @@ export default function CompareProductsContent() {
             stock_quantity: product.stock_quantity,
             keywords: product.keywords,
             mortar_ratio: product.mortar_ratio,
+            selectedPriceType: product.selectedPriceType,
           })),
         }),
       });
@@ -228,6 +272,7 @@ export default function CompareProductsContent() {
               products={products}
               comparedProducts={comparedProducts}
               onProductChange={changeProductAtIndex}
+              onPriceTypeChange={handlePriceTypeChange}
             />
 
             <Tabs

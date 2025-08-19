@@ -18,9 +18,13 @@ import type { Product } from "@/type/product";
 import Image from "next/image";
 import { Shuffle } from "lucide-react";
 
+interface ProductWithPriceType extends Product {
+  selectedPriceType?: string;
+}
+
 interface ProductSelectorProps {
   products: Product[];
-  comparedProducts: (Product & { selectedPriceType?: string })[];
+  comparedProducts: ProductWithPriceType[];
   onProductChange: (index: number, newProductId: string) => void;
   onPriceTypeChange?: (productId: string, newPriceType: string) => void;
 }
@@ -67,9 +71,7 @@ export function ProductSelector({
     return options;
   };
 
-  const getSelectedPrice = (
-    product: Product & { selectedPriceType?: string }
-  ) => {
+  const getSelectedPrice = (product: ProductWithPriceType) => {
     const priceType = product.selectedPriceType || "normal";
     switch (priceType) {
       case "pump":
@@ -112,7 +114,7 @@ export function ProductSelector({
           const selectedProduct = products.find((p) => p.id === product.id);
 
           return (
-            <div key={index} className="space-y-3">
+            <div key={`${product.id}-${index}`} className="space-y-3">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Product {index + 1}
               </label>
@@ -189,11 +191,26 @@ export function ProductSelector({
                                 <DropdownMenuItem
                                   key={opt.key}
                                   onClick={() => {
-                                    onProductChange(index, availableProduct.id);
-                                    onPriceTypeChange?.(
-                                      availableProduct.id,
-                                      opt.key
-                                    );
+                                    // If we're selecting the same product, just change price type
+                                    if (availableProduct.id === product.id) {
+                                      onPriceTypeChange?.(
+                                        availableProduct.id,
+                                        opt.key
+                                      );
+                                    } else {
+                                      // If selecting a different product, change both product and price type
+                                      onProductChange(
+                                        index,
+                                        availableProduct.id
+                                      );
+                                      // Use a timeout to ensure the product change happens first
+                                      setTimeout(() => {
+                                        onPriceTypeChange?.(
+                                          availableProduct.id,
+                                          opt.key
+                                        );
+                                      }, 0);
+                                    }
                                   }}
                                   className="flex items-center justify-between"
                                 >
