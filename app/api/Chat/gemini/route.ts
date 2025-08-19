@@ -10,6 +10,7 @@ import {
   removeFromCart,
   updateCartItemQuantity,
 } from "@/lib/cart/utils";
+import { getRecentOrders } from "@/lib/order/utils";
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
@@ -528,6 +529,32 @@ Keep the response conversational and focused on helping the customer make inform
           metadata: { cart: cartItems },
         });
       }
+    }
+
+    // Conversational Order Tracking
+    if (
+      intentAnalysis.intent === "order_status" ||
+      (typeof message === "string" &&
+        /(order status|track order|my orders|recent orders|order history|show my orders|show recent orders|where is my order)/i.test(
+          message
+        ))
+    ) {
+      if (!userId) {
+        return NextResponse.json({
+          message: "Please login to view your orders.",
+          type: "order",
+          metadata: { orders: [] },
+        });
+      }
+      // Fetch recent orders for the user
+      const orders = await getRecentOrders(userId, 5); // last 5 orders
+      return NextResponse.json({
+        message: orders.length
+          ? "Here are your recent orders:"
+          : "You have no recent orders.",
+        type: "order",
+        metadata: { orders },
+      });
     }
 
     return NextResponse.json(responseData);

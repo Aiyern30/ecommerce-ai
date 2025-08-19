@@ -38,7 +38,7 @@ interface Message {
   content: string;
   sender: "user" | "bot";
   timestamp: Date;
-  type?: "text" | "product" | "error" | "cart";
+  type?: "text" | "product" | "error" | "cart" | "order";
   metadata?: {
     products?: Product[];
     suggestions?: string[];
@@ -47,6 +47,7 @@ interface Message {
     extractedData?: any;
     isConstructionQuery?: boolean;
     cart?: CartItem[];
+    orders?: any[];
   };
 }
 
@@ -311,6 +312,53 @@ export default function GeminiChat({
                   >
                     Update Qty
                   </Button>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Conversational Order Tracking UI
+    if (message.type === "order" && message.metadata?.orders) {
+      const orders = message.metadata.orders;
+      return (
+        <div className="mb-4">
+          <div className="font-semibold mb-2">{message.content}</div>
+          {orders.length === 0 ? (
+            <div className="text-gray-500 text-sm">
+              You have no recent orders.
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {orders.map((order: any) => (
+                <Card key={order.id} className="p-3">
+                  <div className="font-medium text-sm">
+                    Order #{order.order_number || order.id}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Status: {order.status} | Delivery: {order.delivery_status}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Placed: {new Date(order.created_at).toLocaleDateString()}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Total: RM{order.total_amount}
+                  </div>
+                  {order.items && order.items.length > 0 && (
+                    <div className="mt-2">
+                      <div className="font-semibold text-xs mb-1">Items:</div>
+                      <ul className="list-disc pl-4 text-xs">
+                        {order.items.map((item: any) => (
+                          <li key={item.id}>
+                            {item.product?.name} ({item.product?.grade}) x{" "}
+                            {item.quantity}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </Card>
               ))}
             </div>

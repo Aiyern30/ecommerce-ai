@@ -13,7 +13,8 @@ export interface ConcreteIntentAnalysis {
     | "application_inquiry"
     | "comparison_request"
     | "general_question"
-    | "cart_show"; // <-- Added cart_show
+    | "cart_show"
+    | "order_status";
   confidence: number;
   extractedData: {
     query?: string;
@@ -338,6 +339,32 @@ export class ConcreteIntentAnalyzer {
     "display cart",
   ];
 
+  private static readonly ORDER_STATUS_KEYWORDS = [
+    "order status",
+    "track order",
+    "my orders",
+    "recent orders",
+    "order history",
+    "order update",
+    "order tracking",
+    "delivery status",
+    "where is my order",
+    "order progress",
+    "order details",
+    "order info",
+    "order number",
+    "order id",
+    "show my orders",
+    "show recent orders",
+    "view orders",
+    "order placed",
+    "order shipped",
+    "order delivered",
+    "order pending",
+    "order completed",
+    "order cancelled",
+  ];
+
   static analyzeIntent(message: string): ConcreteIntentAnalysis {
     const lowerMessage = message.toLowerCase();
 
@@ -377,6 +404,8 @@ export class ConcreteIntentAnalyzer {
         ]) * 0.9,
       general_question: 0.1, // Default low score
       cart_show: this.calculateScore(lowerMessage, this.CART_KEYWORDS) * 2.0, // <-- Added cart_show scoring
+      order_status:
+        this.calculateScore(lowerMessage, this.ORDER_STATUS_KEYWORDS) * 2.0, // <-- Added order_status scoring
     };
 
     // Boost scores based on question patterns and context
