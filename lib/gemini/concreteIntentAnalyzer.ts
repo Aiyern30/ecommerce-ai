@@ -12,7 +12,8 @@ export interface ConcreteIntentAnalysis {
     | "stock_inquiry"
     | "application_inquiry"
     | "comparison_request"
-    | "general_question";
+    | "general_question"
+    | "cart_show"; // <-- Added cart_show
   confidence: number;
   extractedData: {
     query?: string;
@@ -321,6 +322,22 @@ export class ConcreteIntentAnalyzer {
     ],
   };
 
+  private static readonly CART_KEYWORDS = [
+    "cart",
+    "show cart",
+    "view cart",
+    "my cart",
+    "cart items",
+    "shopping cart",
+    "basket",
+    "show my cart",
+    "see my cart",
+    "cart list",
+    "cart contents",
+    "what's in my cart",
+    "display cart",
+  ];
+
   static analyzeIntent(message: string): ConcreteIntentAnalysis {
     const lowerMessage = message.toLowerCase();
 
@@ -359,6 +376,7 @@ export class ConcreteIntentAnalyzer {
           "what should",
         ]) * 0.9,
       general_question: 0.1, // Default low score
+      cart_show: this.calculateScore(lowerMessage, this.CART_KEYWORDS) * 2.0, // <-- Added cart_show scoring
     };
 
     // Boost scores based on question patterns and context

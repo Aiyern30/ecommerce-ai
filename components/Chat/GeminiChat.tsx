@@ -37,7 +37,7 @@ interface Message {
   content: string;
   sender: "user" | "bot";
   timestamp: Date;
-  type?: "text" | "product" | "error";
+  type?: "text" | "product" | "error" | "cart";
   metadata?: {
     products?: Product[];
     suggestions?: string[];
@@ -45,6 +45,7 @@ interface Message {
     confidence?: number;
     extractedData?: any;
     isConstructionQuery?: boolean;
+    cart?: any;
   };
 }
 
@@ -245,6 +246,78 @@ export default function GeminiChat({
 
   const renderMessage = (message: Message) => {
     const isBot = message.sender === "bot";
+
+    if (message.type === "cart" && message.metadata?.cart) {
+      const cartItems = message.metadata.cart;
+      return (
+        <div className="mb-4">
+          <div className="font-semibold mb-2">{message.content}</div>
+          {cartItems.length === 0 ? (
+            <div className="text-gray-500 text-sm">Your cart is empty.</div>
+          ) : (
+            <div className="space-y-2">
+              {cartItems.map((item: any) => (
+                <Card key={item.id} className="p-3 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center overflow-hidden">
+                    {item.product?.product_images &&
+                    item.product.product_images.length > 0 &&
+                    item.product.product_images[0].image_url ? (
+                      <Image
+                        src={item.product.product_images[0].image_url}
+                        alt={item.product.name}
+                        width={40}
+                        height={40}
+                        className="object-cover rounded"
+                      />
+                    ) : (
+                      <Package size={16} className="text-gray-400" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sm truncate">
+                      {item.product?.name}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Grade: {item.product?.grade}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Qty: {item.quantity}
+                    </div>
+                  </div>
+                  {/* Remove and update buttons */}
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() =>
+                      sendMessage(`remove ${item.product?.name} from my cart`)
+                    }
+                  >
+                    Remove
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      const newQty = prompt(
+                        `Update quantity for ${item.product?.name}:`,
+                        item.quantity
+                      );
+                      if (newQty && !isNaN(Number(newQty))) {
+                        sendMessage(
+                          `update quantity of ${item.product?.name} to ${newQty}`
+                        );
+                      }
+                    }}
+                  >
+                    Update Qty
+                  </Button>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
 
     return (
       <div
