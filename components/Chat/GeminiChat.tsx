@@ -27,10 +27,11 @@ import {
 import TypingIndicator from "./TypingIndicator";
 import { Product } from "@/type/product";
 import { toast } from "sonner";
-import { addToCart } from "@/lib/cart/utils"; // adjust import if needed
+import { addToCart } from "@/lib/cart/utils";
 import { useUser } from "@supabase/auth-helpers-react";
 import ReactMarkdown from "react-markdown";
 import Image from "next/image";
+import type { CartItem } from "@/type/cart";
 
 interface Message {
   id: string;
@@ -45,7 +46,7 @@ interface Message {
     confidence?: number;
     extractedData?: any;
     isConstructionQuery?: boolean;
-    cart?: any;
+    cart?: CartItem[];
   };
 }
 
