@@ -61,13 +61,29 @@ export async function POST(request: NextRequest) {
     // Create the prompt for AI analysis
     const prompt = createComparisonPrompt(products);
 
-    // Get AI model
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    // Generate AI response
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    // Try primary model first
+    let model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    let result, response, text;
+    try {
+      result = await model.generateContent(prompt);
+      response = await result.response;
+      text = response.text();
+    } catch (err) {
+      // If error (quota/rate limit), fallback to another model
+      console.warn("gemini-1.5-flash failed, trying gemini-pro", err);
+      model = genAI.getGenerativeModel({ model: "gemini-pro" });
+      try {
+        result = await model.generateContent(prompt);
+        response = await result.response;
+        text = response.text();
+      } catch (err2) {
+        console.error("All Gemini models failed", err2);
+        return NextResponse.json(
+          { error: "AI quota exceeded or all models failed" },
+          { status: 429 }
+        );
+      }
+    }
 
     // Parse the AI response
     const aiResult = parseAIResponse(text, products);
