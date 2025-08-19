@@ -30,6 +30,7 @@ import { toast } from "sonner";
 import { addToCart } from "@/lib/cart/utils"; // adjust import if needed
 import { useUser } from "@supabase/auth-helpers-react";
 import ReactMarkdown from "react-markdown";
+import Image from "next/image";
 
 interface Message {
   id: string;
@@ -309,7 +310,7 @@ export default function GeminiChat({
                 <div className="mt-2 space-y-2 w-full">
                   {message.metadata.products.map(
                     (product: Product, idx: number) => {
-                      // Example: Mark first product as recommended if intent is 'recommendation'
+                      console.log("Rendering product:", product);
                       const isRecommended =
                         message.metadata?.intent === "recommendation" &&
                         idx === 0;
@@ -349,7 +350,7 @@ export default function GeminiChat({
 
                       return (
                         <Card
-                          key={product.id}
+                          key={`${product.id}-${idx}`}
                           className="p-3 max-w-sm relative"
                         >
                           {/* Recommended badge */}
@@ -359,8 +360,21 @@ export default function GeminiChat({
                             </div>
                           )}
                           <div className="flex items-start gap-3">
-                            <div className="w-12 h-12 bg-gradient-to-br from-gray-200 to-gray-300 rounded-md flex items-center justify-center flex-shrink-0">
-                              <Package size={16} className="text-gray-600" />
+                            {/* Show product image if available, else icon */}
+                            <div className="w-12 h-12 bg-gradient-to-br from-gray-200 to-gray-300 rounded-md flex items-center justify-center flex-shrink-0 overflow-hidden">
+                              {product.product_images &&
+                              product.product_images.length > 0 &&
+                              product.product_images[0].image_url ? (
+                                <Image
+                                  src={product.product_images[0].image_url}
+                                  alt={product.name}
+                                  width={48}
+                                  height={48}
+                                  className="w-12 h-12 object-cover rounded-md"
+                                />
+                              ) : (
+                                <Package size={16} className="text-gray-600" />
+                              )}
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
@@ -432,7 +446,7 @@ export default function GeminiChat({
                                               key={opt.key}
                                               value={opt.key}
                                             >
-                                              {opt.label} (RM{opt.price})
+                                              {opt.label}
                                             </SelectItem>
                                           )
                                       )}

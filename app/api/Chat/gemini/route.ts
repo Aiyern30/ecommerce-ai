@@ -50,7 +50,18 @@ async function searchProducts(
   try {
     let queryBuilder = supabase
       .from("products")
-      .select("*")
+      .select(
+        `
+        *,
+        product_images (
+          id,
+          image_url,
+          alt_text,
+          is_primary,
+          sort_order
+        )
+      `
+      )
       .eq("is_active", true)
       .eq("status", "published")
       .gt("stock_quantity", 0);
