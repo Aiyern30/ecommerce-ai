@@ -86,14 +86,10 @@ export default function ProductListPage() {
     if (selectedProducts.length >= 2) {
       const params = new URLSearchParams();
 
-      // Add product IDs
+      // Add product IDs and their price types together
       selectedProducts.forEach((product) => {
         params.append("products", product.id);
-      });
-
-      // Add price types for each product
-      selectedProducts.forEach((product) => {
-        params.append("priceTypes", product.priceType);
+        params.append("priceType", product.priceType);
       });
 
       router.push(`/compare?${params.toString()}`);

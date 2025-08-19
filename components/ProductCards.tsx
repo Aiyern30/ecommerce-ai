@@ -72,7 +72,7 @@ export function ProductCard({
   const [zoomImage, setZoomImage] = useState<string | null>(null);
   const [zoomImages, setZoomImages] = useState<string[]>([]);
   const [zoomIndex, setZoomIndex] = useState(0);
-  const [selectedDelivery, setSelectedDelivery] = useState("normal");
+  const [selectedDelivery, setSelectedDelivery] = useState(selectedPriceType);
   const router = useRouter();
   const user = useUser();
 
@@ -98,7 +98,13 @@ export function ProductCard({
     e.preventDefault();
     e.stopPropagation();
 
-    if (onCompareToggle) onCompareToggle(id, !isCompared);
+    if (onCompareToggle) {
+      // If adding to compare, use current delivery selection as initial compare price type
+      if (!isCompared && onPriceTypeChange) {
+        onPriceTypeChange(id, selectedDelivery);
+      }
+      onCompareToggle(id, !isCompared);
+    }
     toast[!isCompared ? "success" : "info"](
       `${name} ${!isCompared ? "added to" : "removed from"} comparison`
     );
@@ -175,6 +181,15 @@ export function ProductCard({
     (opt) => opt.key === selectedPriceType
   );
   const comparePrice = compareOption ? compareOption.price : price;
+
+  // When user changes delivery dropdown (not compare), update local state
+  const handleDeliveryChange = (value: string) => {
+    setSelectedDelivery(value);
+    // If already compared, also update compare price type
+    if (isCompared && onPriceTypeChange) {
+      onPriceTypeChange(id, value);
+    }
+  };
 
   return (
     <>
@@ -368,7 +383,7 @@ export function ProductCard({
                 </label>
                 <Select
                   value={selectedDelivery}
-                  onValueChange={setSelectedDelivery}
+                  onValueChange={handleDeliveryChange}
                 >
                   <SelectTrigger className="w-36 h-8 px-2 py-1 text-xs">
                     <SelectValue placeholder="Select delivery" />
