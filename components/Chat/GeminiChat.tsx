@@ -147,8 +147,7 @@ export default function GeminiChat({
       };
 
       setMessages((prev) => [...prev, botMessage]);
-    } catch (error) {
-      console.error("Error sending message:", error);
+    } catch {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         content:
@@ -257,7 +256,7 @@ export default function GeminiChat({
             <div className="text-gray-500 text-sm">Your cart is empty.</div>
           ) : (
             <div className="space-y-2">
-              {cartItems.map((item: any) => (
+              {cartItems.map((item: CartItem) => (
                 <Card key={item.id} className="p-3 flex items-center gap-3">
                   <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center overflow-hidden">
                     {item.product?.product_images &&
@@ -301,7 +300,7 @@ export default function GeminiChat({
                     onClick={() => {
                       const newQty = prompt(
                         `Update quantity for ${item.product?.name}:`,
-                        item.quantity
+                        String(item.quantity)
                       );
                       if (newQty && !isNaN(Number(newQty))) {
                         sendMessage(
@@ -388,7 +387,6 @@ export default function GeminiChat({
                       message.metadata.products.map((p) => [p.id, p])
                     ).values()
                   ).map((product: Product, idx: number) => {
-                    console.log("Rendering product:", product);
                     const isRecommended =
                       message.metadata?.intent === "recommendation" &&
                       idx === 0;
