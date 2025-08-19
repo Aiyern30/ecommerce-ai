@@ -276,11 +276,13 @@ export default function GeminiChat({
             </p>
           </div>
         </div>
+        {/* Add close button */}
         <Button
           variant="ghost"
           size="sm"
           onClick={onClose}
           className="h-8 w-8 p-0"
+          aria-label="Close AI Chat"
         >
           <X size={16} />
         </Button>
