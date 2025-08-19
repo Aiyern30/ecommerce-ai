@@ -394,26 +394,6 @@ export default function GeminiChat({
                 </div>
               )}
 
-            {/* Enhanced Suggestions */}
-            {message.metadata?.suggestions &&
-              message.metadata.suggestions.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {message.metadata.suggestions.map(
-                    (suggestion: string, index: number) => (
-                      <Button
-                        key={index}
-                        variant="outline"
-                        size="sm"
-                        className="text-xs hover:bg-blue-50"
-                        onClick={() => handleSuggestionClick(suggestion)}
-                      >
-                        {suggestion}
-                      </Button>
-                    )
-                  )}
-                </div>
-              )}
-
             <span className="text-xs text-gray-500 mt-1">
               {message.timestamp.toLocaleTimeString([], {
                 hour: "2-digit",
@@ -424,6 +404,21 @@ export default function GeminiChat({
         </div>
       </div>
     );
+  };
+
+  // Get personalized quick actions from last bot message
+  const getQuickActions = () => {
+    // Find the last bot message with suggestions
+    const lastBotMsg = [...messages]
+      .reverse()
+      .find(
+        (msg) =>
+          msg.sender === "bot" &&
+          Array.isArray(msg.metadata?.suggestions) &&
+          msg.metadata.suggestions.length > 0
+      );
+    // Remove fallback hardcoded suggestions, just use what's in metadata
+    return lastBotMsg?.metadata?.suggestions || [];
   };
 
   if (!isOpen) return null;
@@ -501,26 +496,17 @@ export default function GeminiChat({
           </Button>
         </form>
 
-        {/* Quick Actions */}
+        {/* Personalized Quick Actions */}
         <div className="mt-2 flex flex-wrap gap-1">
-          <button
-            onClick={() => handleSuggestionClick("Show me N20 concrete")}
-            className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
-          >
-            N20 Grade
-          </button>
-          <button
-            onClick={() => handleSuggestionClick("Compare delivery methods")}
-            className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200"
-          >
-            Delivery Options
-          </button>
-          <button
-            onClick={() => handleSuggestionClick("Foundation concrete pricing")}
-            className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-md hover:bg-purple-200"
-          >
-            Pricing
-          </button>
+          {getQuickActions().map((suggestion, idx) => (
+            <button
+              key={idx}
+              onClick={() => handleSuggestionClick(suggestion)}
+              className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
+            >
+              {suggestion}
+            </button>
+          ))}
         </div>
       </div>
     </Card>
