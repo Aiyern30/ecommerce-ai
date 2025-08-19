@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { Card, Input, Badge, Button } from "../ui";
+import TypingIndicator from "./TypingIndicator";
+
 interface Message {
   id: string;
   content: string;
@@ -262,7 +264,7 @@ export default function GeminiChat({
   if (!isOpen) return null;
 
   return (
-    <Card className="fixed bottom-20 right-4 w-96 h-[600px] shadow-xl border z-50 flex flex-col">
+    <Card className="fixed bottom-20 right-4 w-96 h-[600px] shadow-xl p-0">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b bg-blue-50 dark:bg-blue-950 rounded-t-lg">
         <div className="flex items-center gap-2">
@@ -304,6 +306,8 @@ export default function GeminiChat({
               </div>
             </div>
           )}
+          {/* Show TypingIndicator when bot is typing */}
+          {isTyping && <TypingIndicator />}
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
