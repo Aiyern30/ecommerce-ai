@@ -19,7 +19,20 @@ import { ProductSelector } from "@/components/Comparison/ProductSelector";
 import { TypographyH1 } from "@/components/ui/Typography";
 import { BarChart3 } from "lucide-react";
 import { AISmartComparison } from "@/components/AISmartComparison";
-
+interface AIInsight {
+  type: "recommendation" | "analysis" | "warning" | "tip";
+  title: string;
+  content: string;
+  icon: "brain" | "lightbulb" | "trending" | "alert";
+}
+interface AIComparisonResult {
+  summary: string;
+  keyDifferences: string[];
+  recommendations: string[];
+  useCases: { product: string; useCase: string; reason: string }[];
+  costAnalysis: string;
+  insights: AIInsight[];
+}
 export default function CompareProductsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -27,6 +40,9 @@ export default function CompareProductsContent() {
   const [comparedProducts, setComparedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
+  const [aiResult, setAiResult] = useState<AIComparisonResult | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchProducts() {
@@ -66,6 +82,13 @@ export default function CompareProductsContent() {
     fetchProducts();
   }, [searchParams, router]);
 
+  // Clear AI analysis when comparedProducts change
+  useEffect(() => {
+    setAiResult(null);
+    setAiError(null);
+    setAiLoading(false);
+  }, [comparedProducts]);
+
   const updateURL = (productIds: string[]) => {
     const uniqueIds = [...new Set(productIds)];
     const params = new URLSearchParams();
@@ -104,6 +127,58 @@ export default function CompareProductsContent() {
 
     setComparedProducts(orderedProducts);
     updateURL(newIds);
+  };
+
+  const generateAIComparison = async () => {
+    if (comparedProducts.length < 2) return;
+
+    setAiLoading(true);
+    setAiError(null);
+
+    try {
+      const response = await fetch("/api/ai-comparison", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          products: comparedProducts.map((product) => ({
+            id: product.id,
+            name: product.name,
+            description: product.description,
+            grade: product.grade,
+            product_type: product.product_type,
+            category: product.category,
+            normal_price: product.normal_price,
+            pump_price: product.pump_price,
+            tremie_1_price: product.tremie_1_price,
+            tremie_2_price: product.tremie_2_price,
+            tremie_3_price: product.tremie_3_price,
+            unit: product.unit,
+            stock_quantity: product.stock_quantity,
+            keywords: product.keywords,
+            mortar_ratio: product.mortar_ratio,
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate AI comparison");
+      }
+
+      const result = await response.json();
+      setAiResult(result);
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const clearAIAnalysis = () => {
+    setAiResult(null);
+    setAiError(null);
+    setAiLoading(false);
   };
 
   return (
@@ -186,7 +261,14 @@ export default function CompareProductsContent() {
               </TabsContent>
 
               <TabsContent value="ai-analysis" className="mt-0">
-                <AISmartComparison comparedProducts={comparedProducts} />
+                <AISmartComparison
+                  comparedProducts={comparedProducts}
+                  aiResult={aiResult}
+                  loading={aiLoading}
+                  error={aiError}
+                  onGenerate={generateAIComparison}
+                  onClear={clearAIAnalysis}
+                />
               </TabsContent>
             </Tabs>
           </>
