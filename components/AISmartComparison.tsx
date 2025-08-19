@@ -15,6 +15,7 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 interface AIComparisonProps {
   comparedProducts: Product[];
@@ -142,9 +143,9 @@ export function AISmartComparison({
                 <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-2">
                   AI Summary
                 </h3>
-                <p className="text-purple-800 dark:text-purple-200 text-sm leading-relaxed">
-                  {aiResult.summary}
-                </p>
+                <div className="text-purple-800 dark:text-purple-200 text-sm leading-relaxed">
+                  <ReactMarkdown>{aiResult.summary}</ReactMarkdown>
+                </div>
               </div>
 
               {/* Key Differences */}
@@ -159,7 +160,7 @@ export function AISmartComparison({
                       <li key={index} className="flex items-start gap-2">
                         <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 flex-shrink-0" />
                         <span className="text-gray-700 dark:text-gray-300 text-sm">
-                          {diff}
+                          <ReactMarkdown>{diff}</ReactMarkdown>
                         </span>
                       </li>
                     ))}
@@ -181,13 +182,14 @@ export function AISmartComparison({
                         className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700"
                       >
                         <div className="font-medium text-gray-900 dark:text-gray-100 mb-1">
-                          {useCase.product}
+                          <ReactMarkdown>{useCase.product}</ReactMarkdown>
                         </div>
                         <div className="text-sm text-gray-700 dark:text-gray-300 mb-1">
-                          <strong>Best for:</strong> {useCase.useCase}
+                          <strong>Best for:</strong>{" "}
+                          <ReactMarkdown>{useCase.useCase}</ReactMarkdown>
                         </div>
                         <div className="text-xs text-gray-600 dark:text-gray-400">
-                          {useCase.reason}
+                          <ReactMarkdown>{useCase.reason}</ReactMarkdown>
                         </div>
                       </div>
                     ))}
@@ -202,9 +204,9 @@ export function AISmartComparison({
                     <TrendingUp className="w-4 h-4" />
                     Cost Analysis
                   </h3>
-                  <p className="text-green-800 dark:text-green-200 text-sm">
-                    {aiResult.costAnalysis}
-                  </p>
+                  <div className="text-green-800 dark:text-green-200 text-sm">
+                    <ReactMarkdown>{aiResult.costAnalysis}</ReactMarkdown>
+                  </div>
                 </div>
               )}
 
@@ -226,12 +228,12 @@ export function AISmartComparison({
                         <div className="flex items-center gap-2 mb-2">
                           {getIcon(insight.icon)}
                           <span className="font-medium text-sm">
-                            {insight.title}
+                            <ReactMarkdown>{insight.title}</ReactMarkdown>
                           </span>
                         </div>
-                        <p className="text-sm leading-relaxed">
-                          {insight.content}
-                        </p>
+                        <div className="text-sm leading-relaxed">
+                          <ReactMarkdown>{insight.content}</ReactMarkdown>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -250,7 +252,7 @@ export function AISmartComparison({
                       <li key={index} className="flex items-start gap-2">
                         <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 flex-shrink-0" />
                         <span className="text-blue-800 dark:text-blue-200 text-sm">
-                          {rec}
+                          <ReactMarkdown>{rec}</ReactMarkdown>
                         </span>
                       </li>
                     ))}
