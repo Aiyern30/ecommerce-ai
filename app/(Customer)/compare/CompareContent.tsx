@@ -18,6 +18,7 @@ import { SpecificationsTable } from "@/components/Comparison/Tabs/SpecificationT
 import { ProductSelector } from "@/components/Comparison/ProductSelector";
 import { TypographyH1 } from "@/components/ui/Typography";
 import { BarChart3 } from "lucide-react";
+import { AISmartComparison } from "@/components/AiSmartComparison";
 
 export default function CompareProductsContent() {
   const router = useRouter();
@@ -159,12 +160,15 @@ export default function CompareProductsContent() {
               onValueChange={setActiveTab}
               className="w-full"
             >
-              <TabsList className="mb-6 w-full max-w-md">
+              <TabsList className="mb-6 w-full max-w-lg">
                 <TabsTrigger value="overview" className="flex-1">
                   Overview
                 </TabsTrigger>
                 <TabsTrigger value="specifications" className="flex-1">
                   Specifications
+                </TabsTrigger>
+                <TabsTrigger value="ai-analysis" className="flex-1">
+                  AI Analysis
                 </TabsTrigger>
               </TabsList>
 
@@ -179,6 +183,10 @@ export default function CompareProductsContent() {
                 <div className="w-full overflow-x-auto">
                   <SpecificationsTable products={comparedProducts} />
                 </div>
+              </TabsContent>
+
+              <TabsContent value="ai-analysis" className="mt-0">
+                <AISmartComparison comparedProducts={comparedProducts} />
               </TabsContent>
             </Tabs>
           </>
