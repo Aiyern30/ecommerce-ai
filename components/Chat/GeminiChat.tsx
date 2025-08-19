@@ -129,7 +129,6 @@ export default function GeminiChat({
         body: JSON.stringify({
           message: message.trim(),
           conversationHistory: messages.slice(-5),
-          userId: user?.id, // <-- Pass userId here
         }),
       });
 
