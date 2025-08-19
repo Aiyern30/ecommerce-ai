@@ -535,7 +535,7 @@ Keep the response conversational and focused on helping the customer make inform
     if (
       intentAnalysis.intent === "order_status" ||
       (typeof message === "string" &&
-        /(order status|track order|my orders|recent orders|order history|show my orders|show recent orders|where is my order)/i.test(
+        /(order status|track order|my orders|recent orders|order history|show my orders|show recent orders|where is my order|show my order|show order)/i.test(
           message
         ))
     ) {
@@ -548,6 +548,7 @@ Keep the response conversational and focused on helping the customer make inform
       }
       // Fetch recent orders for the user
       const orders = await getRecentOrders(userId, 5); // last 5 orders
+      console.log("Order debug:", { userId, orders }); // <-- Add this line
       return NextResponse.json({
         message: orders.length
           ? "Here are your recent orders:"
