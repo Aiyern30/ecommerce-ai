@@ -12,6 +12,9 @@ import {
   Package,
   Calculator,
   Info,
+  Plus,
+  Minus,
+  Trash2,
 } from "lucide-react";
 import {
   Card,
@@ -86,6 +89,7 @@ export default function GeminiChat({
   const [deliverySelections, setDeliverySelections] = useState<{
     [id: string]: string;
   }>({});
+  const [qtyInputs, setQtyInputs] = useState<{ [id: string]: string }>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const user = useUser();
@@ -245,75 +249,192 @@ export default function GeminiChat({
     }
   };
 
-  const renderMessage = (message: Message) => {
+  // Handler for quantity change
+  const handleQtyInputChange = (itemId: string, value: string) => {
+    setQtyInputs((prev) => ({ ...prev, [itemId]: value }));
+  };
+
+  // Handler for updating quantity
+  const handleQtyUpdate = (item: CartItem) => {
+    const newQty = Number(qtyInputs[item.id] ?? item.quantity);
+    if (!isNaN(newQty) && newQty > 0 && newQty !== item.quantity) {
+      sendMessage(`update quantity of ${item.product?.name} to ${newQty}`);
+    }
+  };
+
+  // Handler for plus/minus
+  const handleQtyStep = (item: CartItem, step: number) => {
+    const newQty = item.quantity + step;
+    if (newQty < 1) {
+      sendMessage(`remove ${item.product?.name} from my cart`);
+    } else {
+      sendMessage(`update quantity of ${item.product?.name} to ${newQty}`);
+    }
+  };
+
+  const renderMessage = (
+    message: Message,
+    qtyInputs: { [id: string]: string },
+    handleQtyInputChange: (itemId: string, value: string) => void,
+    handleQtyUpdate: (item: CartItem) => void,
+    handleQtyStep: (item: CartItem, step: number) => void
+  ) => {
     const isBot = message.sender === "bot";
 
     if (message.type === "cart" && message.metadata?.cart) {
       const cartItems = message.metadata.cart;
+      // Helper function for variant display name
+      const getVariantDisplayName = (
+        variantType: string | null | undefined
+      ) => {
+        switch (variantType) {
+          case "pump":
+            return "Pump Delivery";
+          case "tremie_1":
+            return "Tremie 1";
+          case "tremie_2":
+            return "Tremie 2";
+          case "tremie_3":
+            return "Tremie 3";
+          case "normal":
+          case null:
+          case undefined:
+          default:
+            return "Normal Delivery";
+        }
+      };
+      // Helper function for price (fallback to normal_price)
+      const getProductPrice = (
+        product: any,
+        variantType: string | null | undefined
+      ) => {
+        switch (variantType) {
+          case "pump":
+            return product.pump_price || product.normal_price || 0;
+          case "tremie_1":
+            return product.tremie_1_price || product.normal_price || 0;
+          case "tremie_2":
+            return product.tremie_2_price || product.normal_price || 0;
+          case "tremie_3":
+            return product.tremie_3_price || product.normal_price || 0;
+          case "normal":
+          case null:
+          case undefined:
+          default:
+            return product.normal_price || 0;
+        }
+      };
       return (
         <div className="mb-4">
           <div className="font-semibold mb-2">{message.content}</div>
           {cartItems.length === 0 ? (
             <div className="text-gray-500 text-sm">Your cart is empty.</div>
           ) : (
-            <div className="space-y-2">
-              {cartItems.map((item: CartItem) => (
-                <Card key={item.id} className="p-3 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center overflow-hidden">
-                    {item.product?.product_images &&
-                    item.product.product_images.length > 0 &&
-                    item.product.product_images[0].image_url ? (
+            <div className="space-y-4">
+              {cartItems.map((item: CartItem) => {
+                const itemPrice = getProductPrice(
+                  item.product,
+                  item.variant_type
+                );
+                return (
+                  <div
+                    key={item.id}
+                    className="flex gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-900/30 rounded-lg transition-colors"
+                  >
+                    <div className="h-16 w-16 bg-gray-100 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
                       <Image
-                        src={item.product.product_images[0].image_url}
-                        alt={item.product.name}
-                        width={40}
-                        height={40}
-                        className="object-cover rounded"
+                        src={
+                          item.product?.product_images?.[0]?.image_url ||
+                          item.product?.image_url ||
+                          "/placeholder.svg"
+                        }
+                        alt={item.product?.name || "Product"}
+                        width={64}
+                        height={64}
+                        className="h-full w-full object-cover"
                       />
-                    ) : (
-                      <Package size={16} className="text-gray-400" />
-                    )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm mb-1 line-clamp-2">
+                        {item.product?.name}
+                      </div>
+                      <div className="text-xs text-gray-500 mb-1">
+                        Unit: {item.product?.unit || "per bag"}
+                      </div>
+                      <div className="text-xs text-blue-600 mb-1">
+                        {getVariantDisplayName(item.variant_type)}
+                      </div>
+                      <div className="text-xs text-gray-500 mb-3">
+                        Price: RM{itemPrice.toFixed(2)}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {/* Quantity controls */}
+                        <div className="flex items-center border rounded-lg px-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 hover:bg-gray-100"
+                            onClick={() => handleQtyStep(item, -1)}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <input
+                            type="number"
+                            min={1}
+                            value={qtyInputs[item.id] ?? item.quantity}
+                            onChange={(e) =>
+                              handleQtyInputChange(item.id, e.target.value)
+                            }
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleQtyUpdate(item);
+                            }}
+                            className="w-10 text-center text-sm font-medium bg-transparent outline-none"
+                            style={{ appearance: "textfield" }}
+                          />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 hover:bg-gray-100"
+                            onClick={() => handleQtyStep(item, 1)}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0"
+                            onClick={() => handleQtyUpdate(item)}
+                            aria-label="Update quantity"
+                          >
+                            ✓
+                          </Button>
+                        </div>
+                        {/* Remove button */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 border rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                          onClick={() =>
+                            sendMessage(
+                              `remove ${item.product?.name} from my cart`
+                            )
+                          }
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-semibold text-sm">
+                        RM{(itemPrice * item.quantity).toFixed(2)}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Qty: {item.quantity}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm truncate">
-                      {item.product?.name}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      Grade: {item.product?.grade}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      Qty: {item.quantity}
-                    </div>
-                  </div>
-                  {/* Remove and update buttons */}
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() =>
-                      sendMessage(`remove ${item.product?.name} from my cart`)
-                    }
-                  >
-                    Remove
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      const newQty = prompt(
-                        `Update quantity for ${item.product?.name}:`,
-                        String(item.quantity)
-                      );
-                      if (newQty && !isNaN(Number(newQty))) {
-                        sendMessage(
-                          `update quantity of ${item.product?.name} to ${newQty}`
-                        );
-                      }
-                    }}
-                  >
-                    Update Qty
-                  </Button>
-                </Card>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -684,7 +805,15 @@ export default function GeminiChat({
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto p-4">
           <div className="space-y-4">
-            {messages.map(renderMessage)}
+            {messages.map((msg) =>
+              renderMessage(
+                msg,
+                qtyInputs,
+                handleQtyInputChange,
+                handleQtyUpdate,
+                handleQtyStep
+              )
+            )}
             {isLoading && (
               <div className="flex justify-start mb-4">
                 <div className="flex items-center gap-2">
