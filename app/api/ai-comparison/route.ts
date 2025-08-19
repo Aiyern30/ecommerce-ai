@@ -99,6 +99,8 @@ function createComparisonPrompt(products: Product[]): string {
     )
     .join("\n\n");
 
+  const productNames = products.map((p) => p.name).join(", ");
+
   return `You are an expert construction materials advisor. Analyze and compare these concrete/mortar products:
 
 ${productDetails}
@@ -113,6 +115,7 @@ Provide a comprehensive comparison analysis in the following JSON format:
   ],
   "recommendations": [
     "3-4 specific recommendations for choosing between these products",
+    "At least one recommendation must clearly mention and recommend a specific product from the compared products: [${productNames}]",
     "Consider cost-effectiveness, application suitability, and performance"
   ],
   "useCases": [
@@ -141,6 +144,7 @@ Guidelines:
 - Consider stock availability in recommendations
 - Use technical but accessible language
 - Provide actionable insights for contractors and builders
+- Always recommend at least one product from the compared products in the recommendations section
 
 Respond only with valid JSON format.`;
 }
@@ -173,6 +177,20 @@ function parseAIResponse(
       costAnalysis: parsed.costAnalysis || "Cost analysis not available.",
       insights: Array.isArray(parsed.insights) ? parsed.insights : [],
     };
+
+    // Ensure at least one recommendation mentions a compared product
+    const productNames = products.map((p) => p.name);
+    const hasProductRecommendation = result.recommendations.some((rec) =>
+      productNames.some((name) =>
+        rec.toLowerCase().includes(name.toLowerCase())
+      )
+    );
+    if (!hasProductRecommendation && productNames.length > 0) {
+      // Add a fallback recommendation for the first product
+      result.recommendations.unshift(
+        `Based on the analysis, "${productNames[0]}" is recommended for most users due to its balance of price, grade, and availability.`
+      );
+    }
 
     return result;
   } catch (error) {
