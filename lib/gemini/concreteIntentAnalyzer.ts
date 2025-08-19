@@ -10,21 +10,28 @@ export interface ConcreteIntentAnalysis {
     | "technical_question"
     | "recommendation"
     | "stock_inquiry"
+    | "application_inquiry"
+    | "comparison_request"
     | "general_question";
   confidence: number;
   extractedData: {
     query?: string;
     productType?: "concrete" | "mortar";
     grade?: string;
+    gradeRange?: { min?: string; max?: string };
     deliveryMethod?: "normal" | "pump" | "tremie_1" | "tremie_2" | "tremie_3";
     priceRange?: { min?: number; max?: number };
     volume?: number;
     searchTerms?: string[];
     location?: string;
+    applicationType?: string;
+    projectType?: string;
+    strengthRequirement?: string;
   };
 }
 
 export class ConcreteIntentAnalyzer {
+  // Enhanced product keywords specific to your concrete business
   private static readonly PRODUCT_KEYWORDS = [
     "concrete",
     "mortar",
@@ -38,30 +45,85 @@ export class ConcreteIntentAnalyzer {
     "construction",
     "ready mix",
     "premix",
+    "readymix",
+    "concrete mix",
+    "building materials",
+    "slab",
+    "beam",
+    "column",
+    "footing",
+    "driveway",
+    "floor",
+    "patio",
+    "sidewalk",
+    "pavement",
+    "pathway",
+    "basement",
   ];
 
+  // Updated grade keywords to match your N10-N25 and S30-S45 products
   private static readonly GRADE_KEYWORDS = [
-    "c25",
-    "c30",
-    "c35",
-    "c40",
-    "c45",
-    "c50",
-    "m15",
-    "m20",
-    "m25",
-    "m30",
+    // N-Series grades (N10 to N25)
+    "n10",
+    "n15",
+    "n20",
+    "n25",
+    // S-Series grades (S30 to S45)
+    "s30",
+    "s35",
+    "s40",
+    "s45",
+    // Generic grade terms
     "grade",
     "strength",
+    "class",
+    "series",
+    // Strength measurements
     "mpa",
     "n/mm2",
-    "class",
+    "megapascal",
+    "newton",
+    // Common alternative references
+    "low grade",
+    "medium grade",
+    "high grade",
+    "standard grade",
+    "premium grade",
+    "residential grade",
+    "commercial grade",
+    "structural grade",
   ];
 
   private static readonly DELIVERY_KEYWORDS = {
-    normal: ["normal", "standard", "regular", "truck", "lorry"],
-    pump: ["pump", "pumped", "pumping", "concrete pump", "boom pump"],
-    tremie: ["tremie", "underwater", "tremie 1", "tremie 2", "tremie 3"],
+    normal: [
+      "normal",
+      "standard",
+      "regular",
+      "truck",
+      "lorry",
+      "delivery truck",
+      "concrete truck",
+      "mixer truck",
+    ],
+    pump: [
+      "pump",
+      "pumped",
+      "pumping",
+      "concrete pump",
+      "boom pump",
+      "line pump",
+      "trailer pump",
+      "stationary pump",
+    ],
+    tremie: [
+      "tremie",
+      "underwater",
+      "tremie 1",
+      "tremie 2",
+      "tremie 3",
+      "special delivery",
+      "difficult access",
+    ],
   };
 
   private static readonly PRICE_KEYWORDS = [
@@ -74,18 +136,31 @@ export class ConcreteIntentAnalyzer {
     "budget",
     "per m3",
     "per cubic",
+    "per cube",
     "rm",
-    "$",
     "ringgit",
+    "dollar",
+    "$",
     "quotation",
     "quote",
+    "estimate",
+    "pricing",
+    "charges",
+    "fees",
+    "affordable",
+    "economical",
+    "value",
+    "total cost",
+    "unit price",
   ];
 
+  // Enhanced technical keywords relevant to concrete specifications
   private static readonly TECHNICAL_KEYWORDS = [
     "specification",
     "spec",
     "datasheet",
     "properties",
+    "technical data",
     "compressive strength",
     "workability",
     "slump",
@@ -97,6 +172,17 @@ export class ConcreteIntentAnalyzer {
     "durability",
     "waterproof",
     "admixture",
+    "additive",
+    "water cement ratio",
+    "consistency",
+    "density",
+    "porosity",
+    "permeability",
+    "shrinkage",
+    "expansion",
+    "freeze thaw",
+    "chemical resistance",
+    "abrasion resistance",
   ];
 
   private static readonly DELIVERY_INQUIRY_KEYWORDS = [
@@ -111,6 +197,16 @@ export class ConcreteIntentAnalyzer {
     "distance",
     "minimum order",
     "lead time",
+    "same day",
+    "next day",
+    "urgent",
+    "rush",
+    "timing",
+    "availability",
+    "coverage area",
+    "service area",
+    "delivery fee",
+    "freight",
   ];
 
   private static readonly STOCK_KEYWORDS = [
@@ -123,7 +219,107 @@ export class ConcreteIntentAnalyzer {
     "availability",
     "ready",
     "immediate",
+    "on hand",
+    "reserve",
+    "backorder",
+    "out of stock",
+    "restock",
+    "replenish",
   ];
+
+  // New application-specific keywords
+  private static readonly APPLICATION_KEYWORDS = [
+    // Residential applications
+    "residential",
+    "home",
+    "house",
+    "driveway",
+    "garage",
+    "patio",
+    "sidewalk",
+    "pathway",
+    "basement",
+    "foundation",
+    "slab",
+
+    // Commercial applications
+    "commercial",
+    "office",
+    "retail",
+    "warehouse",
+    "factory",
+    "industrial",
+    "shopping center",
+    "building",
+
+    // Infrastructure applications
+    "bridge",
+    "tunnel",
+    "road",
+    "highway",
+    "airport",
+    "port",
+    "infrastructure",
+    "public works",
+
+    // Specific structural elements
+    "beam",
+    "column",
+    "wall",
+    "footing",
+    "pile",
+    "deck",
+    "staircase",
+    "ramp",
+    "curb",
+    "gutter",
+  ];
+
+  // Project type keywords
+  private static readonly PROJECT_TYPE_KEYWORDS = {
+    foundation: [
+      "foundation",
+      "footing",
+      "basement",
+      "underground",
+      "pile",
+      "deep foundation",
+    ],
+    structural: [
+      "beam",
+      "column",
+      "slab",
+      "structural",
+      "frame",
+      "load bearing",
+      "reinforced",
+    ],
+    flatwork: [
+      "driveway",
+      "sidewalk",
+      "patio",
+      "floor",
+      "flatwork",
+      "pavement",
+      "pathway",
+    ],
+    wall: ["wall", "retaining wall", "boundary wall", "partition", "barrier"],
+    repair: [
+      "repair",
+      "patch",
+      "fix",
+      "maintenance",
+      "restoration",
+      "renovation",
+    ],
+    decorative: [
+      "decorative",
+      "architectural",
+      "stamped",
+      "colored",
+      "textured",
+    ],
+  };
 
   static analyzeIntent(message: string): ConcreteIntentAnalysis {
     const lowerMessage = message.toLowerCase();
@@ -142,6 +338,17 @@ export class ConcreteIntentAnalyzer {
         this.calculateScore(lowerMessage, this.TECHNICAL_KEYWORDS) * 1.0,
       stock_inquiry:
         this.calculateScore(lowerMessage, this.STOCK_KEYWORDS) * 1.1,
+      application_inquiry:
+        this.calculateScore(lowerMessage, this.APPLICATION_KEYWORDS) * 1.0,
+      comparison_request:
+        this.calculateScore(lowerMessage, [
+          "compare",
+          "vs",
+          "versus",
+          "difference",
+          "better",
+          "best",
+        ]) * 0.9,
       recommendation:
         this.calculateScore(lowerMessage, [
           "recommend",
@@ -149,11 +356,12 @@ export class ConcreteIntentAnalyzer {
           "best",
           "suitable",
           "which",
+          "what should",
         ]) * 0.9,
       general_question: 0.1, // Default low score
     };
 
-    // Boost scores based on question patterns
+    // Boost scores based on question patterns and context
     if (
       lowerMessage.includes("what") ||
       lowerMessage.includes("which") ||
@@ -176,6 +384,28 @@ export class ConcreteIntentAnalyzer {
       ) {
         scores.technical_question *= 1.4;
       }
+      if (
+        this.APPLICATION_KEYWORDS.some((keyword) =>
+          lowerMessage.includes(keyword)
+        )
+      ) {
+        scores.application_inquiry *= 1.3;
+      }
+    }
+
+    // Boost comparison requests
+    if (
+      lowerMessage.includes("compare") ||
+      lowerMessage.includes("vs") ||
+      lowerMessage.includes("difference")
+    ) {
+      scores.comparison_request *= 2.0;
+    }
+
+    // Boost grade inquiry for specific grade mentions
+    const gradeMatches = this.extractGradeInformation(lowerMessage);
+    if (gradeMatches.grade || gradeMatches.gradeRange) {
+      scores.grade_inquiry *= 1.8;
     }
 
     // Find the intent with the highest score
@@ -185,14 +415,13 @@ export class ConcreteIntentAnalyzer {
         : b
     );
 
-    const intent = topIntent[0] as keyof typeof scores;
-    const confidence = Math.min(scores[intent], 1);
+    const confidence = Math.min(scores[topIntent[0] as keyof typeof scores], 1);
 
     // Extract relevant data based on intent
-    const extractedData = this.extractData(message, intent);
+    const extractedData = this.extractData(message);
 
     return {
-      intent,
+      intent: topIntent[0] as keyof typeof scores,
       confidence,
       extractedData,
     };
@@ -200,16 +429,93 @@ export class ConcreteIntentAnalyzer {
 
   private static calculateScore(message: string, keywords: string[]): number {
     let score = 0;
+    const wordCount = keywords.length;
+
     keywords.forEach((keyword) => {
       if (message.includes(keyword)) {
-        score += 1 / keywords.length;
+        // Give higher weight to exact matches
+        const exactMatch = new RegExp(`\\b${keyword}\\b`, "i").test(message);
+        score += exactMatch ? 1.5 / wordCount : 1 / wordCount;
       }
     });
+
     return Math.min(score, 1);
   }
 
-  private static extractData(message: string, intent: string): any {
-    console.log(`Extracting data for intent: ${intent}`);
+  private static extractGradeInformation(message: string): {
+    grade?: string;
+    gradeRange?: { min?: string; max?: string };
+  } {
+    const result: {
+      grade?: string;
+      gradeRange?: { min?: string; max?: string };
+    } = {};
+
+    // Specific grade patterns for N10-N25 and S30-S45
+    const gradePatterns = [
+      /\b([ns])(\d{2})\b/gi, // N20, S30, etc.
+      /\bgrade\s+([ns]\d{2})\b/gi, // Grade N20
+      /\b([ns])\s*(\d{2})\b/gi, // N 20, S 30
+    ];
+
+    // Range patterns
+    const rangePatterns = [
+      /\b([ns]\d{2})\s*(?:to|-|through)\s*([ns]\d{2})\b/gi, // N20 to N25
+      /\bbetween\s+([ns]\d{2})\s+and\s+([ns]\d{2})\b/gi, // between N20 and N25
+    ];
+
+    // Check for single grade
+    for (const pattern of gradePatterns) {
+      const matches = Array.from(message.matchAll(pattern));
+      for (const match of matches) {
+        if (match[1] && match[2]) {
+          const grade = `${match[1].toUpperCase()}${match[2]}`;
+          // Validate grade is within our range
+          if (this.isValidGrade(grade)) {
+            result.grade = grade;
+            break;
+          }
+        }
+      }
+      if (result.grade) break;
+    }
+
+    // Check for grade ranges
+    if (!result.grade) {
+      for (const pattern of rangePatterns) {
+        const matches = Array.from(message.matchAll(pattern));
+        for (const match of matches) {
+          if (match[1] && match[2]) {
+            const minGrade = match[1].toUpperCase();
+            const maxGrade = match[2].toUpperCase();
+            if (this.isValidGrade(minGrade) && this.isValidGrade(maxGrade)) {
+              result.gradeRange = { min: minGrade, max: maxGrade };
+              break;
+            }
+          }
+        }
+        if (result.gradeRange) break;
+      }
+    }
+
+    return result;
+  }
+
+  private static isValidGrade(grade: string): boolean {
+    const validGrades = [
+      "N10",
+      "N15",
+      "N20",
+      "N25",
+      "S30",
+      "S35",
+      "S40",
+      "S45",
+    ];
+    return validGrades.includes(grade);
+  }
+
+  private static extractData(message: string): any {
     const data: any = {};
     const lowerMessage = message.toLowerCase();
 
@@ -226,37 +532,37 @@ export class ConcreteIntentAnalyzer {
       data.productType = "mortar";
     }
 
-    // Extract grade information
-    const gradePatterns = [
-      /\bc(\d{2})(?:\/(\d{2}))?\b/gi, // C25/30, C30, etc.
-      /\bm(\d{1,2})\b/gi, // M15, M20, etc.
-      /grade\s+(\w+)/gi, // Grade C25
-      /(\d{2,3})\s*(?:mpa|n\/mm2)/gi, // 25 MPa, 30 N/mm2
-    ];
-
-    for (const pattern of gradePatterns) {
-      const matches = lowerMessage.matchAll(pattern);
-      for (const match of matches) {
-        if (match[0]) {
-          data.grade = match[0].toUpperCase();
-          break;
-        }
-      }
-      if (data.grade) break;
+    // Extract grade information using enhanced method
+    const gradeInfo = this.extractGradeInformation(lowerMessage);
+    if (gradeInfo.grade) {
+      data.grade = gradeInfo.grade;
+    }
+    if (gradeInfo.gradeRange) {
+      data.gradeRange = gradeInfo.gradeRange;
     }
 
-    // Extract delivery method
+    // Extract delivery method with enhanced detection
     for (const [method, keywords] of Object.entries(this.DELIVERY_KEYWORDS)) {
       if (keywords.some((keyword) => lowerMessage.includes(keyword))) {
         if (method === "tremie") {
-          // Check for specific tremie types
-          if (lowerMessage.includes("tremie 1"))
+          if (
+            lowerMessage.includes("tremie 1") ||
+            lowerMessage.includes("tremie1")
+          ) {
             data.deliveryMethod = "tremie_1";
-          else if (lowerMessage.includes("tremie 2"))
+          } else if (
+            lowerMessage.includes("tremie 2") ||
+            lowerMessage.includes("tremie2")
+          ) {
             data.deliveryMethod = "tremie_2";
-          else if (lowerMessage.includes("tremie 3"))
+          } else if (
+            lowerMessage.includes("tremie 3") ||
+            lowerMessage.includes("tremie3")
+          ) {
             data.deliveryMethod = "tremie_3";
-          else data.deliveryMethod = "tremie_1"; // Default tremie
+          } else {
+            data.deliveryMethod = "tremie_1"; // Default tremie
+          }
         } else {
           data.deliveryMethod = method;
         }
@@ -264,7 +570,7 @@ export class ConcreteIntentAnalyzer {
       }
     }
 
-    // Extract price range
+    // Extract price range with Malaysian Ringgit patterns
     const pricePatterns = [
       /under\s+(?:rm\s*)?(\d+)/gi,
       /below\s+(?:rm\s*)?(\d+)/gi,
@@ -274,6 +580,7 @@ export class ConcreteIntentAnalyzer {
       /more\s+than\s+(?:rm\s*)?(\d+)/gi,
       /between\s+(?:rm\s*)?(\d+)(?:\s+and\s+|\s*-\s*)(?:rm\s*)?(\d+)/gi,
       /rm\s*(\d+)(?:\s*-\s*|\s+to\s+)rm\s*(\d+)/gi,
+      /budget\s+(?:of\s+)?(?:rm\s*)?(\d+)/gi,
     ];
 
     for (const pattern of pricePatterns) {
@@ -290,15 +597,17 @@ export class ConcreteIntentAnalyzer {
               min: parseInt(nums[0]),
               max: parseInt(nums[1]),
             };
+          } else if (pattern.source.includes("budget")) {
+            data.priceRange = { max: parseInt(nums[0]) };
           }
         }
         break;
       }
     }
 
-    // Extract volume information
+    // Extract volume with enhanced patterns
     const volumePatterns = [
-      /(\d+(?:\.\d+)?)\s*(?:m3|cubic\s*met(?:er|re)s?|m³)/gi,
+      /(\d+(?:\.\d+)?)\s*(?:m3|cubic\s*met(?:er|re)s?|m³|meter\s*cube|cube)/gi,
       /(\d+(?:\.\d+)?)\s*(?:meter|metre)s?\s*cube/gi,
     ];
 
@@ -313,7 +622,16 @@ export class ConcreteIntentAnalyzer {
       }
     }
 
-    // Extract location information
+    // Extract application type
+    data.applicationType = this.extractApplicationType(lowerMessage);
+
+    // Extract project type
+    data.projectType = this.getProjectType(lowerMessage);
+
+    // Extract strength requirement context
+    data.strengthRequirement = this.extractStrengthRequirement(lowerMessage);
+
+    // Extract location (Malaysian locations)
     const locationPatterns = [
       /(?:in|at|to|for)\s+([a-zA-Z\s]+?)(?:\s|$|,)/gi,
       /area\s*:\s*([a-zA-Z\s]+?)(?:\s|$|,)/gi,
@@ -324,7 +642,6 @@ export class ConcreteIntentAnalyzer {
       const match = lowerMessage.match(pattern);
       if (match && match[1]) {
         const location = match[1].trim();
-        // Filter out common non-location words
         if (
           !["delivery", "construction", "building", "project"].includes(
             location.toLowerCase()
@@ -336,7 +653,7 @@ export class ConcreteIntentAnalyzer {
       }
     }
 
-    // Extract search terms (filter out stop words)
+    // Enhanced search terms extraction
     const stopWords = [
       "the",
       "and",
@@ -352,94 +669,154 @@ export class ConcreteIntentAnalyzer {
       "can",
       "do",
       "does",
+      "a",
+      "an",
     ];
     data.searchTerms = message
       .toLowerCase()
       .split(/\s+/)
       .filter((term) => term.length > 2 && !stopWords.includes(term))
-      .slice(0, 5); // Limit to first 5 meaningful terms
+      .slice(0, 6); // Increased to 6 terms
 
     return data;
   }
 
-  // Helper method to generate appropriate suggestions based on intent
+  // Helper methods
+  private static extractApplicationType(message: string): string | null {
+    const applications = {
+      residential: [
+        "residential",
+        "home",
+        "house",
+        "driveway",
+        "garage",
+        "patio",
+      ],
+      commercial: [
+        "commercial",
+        "office",
+        "retail",
+        "warehouse",
+        "factory",
+        "industrial",
+      ],
+      infrastructure: [
+        "bridge",
+        "tunnel",
+        "road",
+        "highway",
+        "airport",
+        "port",
+      ],
+      structural: [
+        "beam",
+        "column",
+        "structural",
+        "load bearing",
+        "reinforced",
+      ],
+    };
+
+    for (const [type, keywords] of Object.entries(applications)) {
+      if (keywords.some((keyword) => message.includes(keyword))) {
+        return type;
+      }
+    }
+    return null;
+  }
+
+  private static extractStrengthRequirement(message: string): string | null {
+    if (message.includes("high strength") || message.includes("heavy duty"))
+      return "high";
+    if (message.includes("medium strength") || message.includes("standard"))
+      return "medium";
+    if (message.includes("low strength") || message.includes("light duty"))
+      return "low";
+    return null;
+  }
+
   static generateSuggestions(intent: string, extractedData: any): string[] {
     const suggestions: { [key: string]: string[] } = {
       product_search: [
-        "Show me concrete grades",
-        "What about mortar options?",
-        "Compare different strengths",
+        "Show me N-series grades (N10-N25)",
+        "Show me S-series grades (S30-S45)",
+        "Compare delivery methods",
       ],
       grade_inquiry: [
-        "Show C25/30 products",
-        "What about higher grades?",
-        "Compare grade prices",
+        "Show N20 products",
+        "Compare N20 vs N25",
+        "What about S-series grades?",
       ],
       price_inquiry: [
-        "Compare delivery methods",
-        "Show pump prices",
-        "Budget options under RM100",
+        "Compare delivery prices",
+        "Show pump vs normal prices",
+        "Budget options under RM300",
       ],
       delivery_inquiry: [
-        "Minimum order quantity?",
-        "Delivery schedule?",
-        "Available areas",
+        "Normal delivery pricing",
+        "Pump delivery options",
+        "Tremie delivery info",
       ],
       technical_question: [
         "Product specifications",
-        "Mix design details",
-        "Application guide",
+        "Strength comparisons",
+        "Application guidelines",
       ],
       stock_inquiry: [
-        "Check availability",
-        "Alternative products",
-        "Restock schedule",
+        "Check N20 availability",
+        "Check S30 availability",
+        "Current stock levels",
       ],
-      recommendation: [
+      application_inquiry: [
         "For foundation work",
         "For structural work",
+        "For residential projects",
+      ],
+      comparison_request: [
+        "N20 vs N25 comparison",
+        "S30 vs S35 comparison",
+        "Delivery method comparison",
+      ],
+      recommendation: [
+        "For driveway projects",
+        "For commercial buildings",
         "Budget-friendly options",
       ],
       general_question: [
-        "Browse concrete products",
-        "Show popular grades",
-        "Compare prices",
+        "Browse concrete grades",
+        "Popular products",
+        "Price list",
       ],
     };
 
     let baseSuggestions = suggestions[intent] || suggestions.general_question;
 
-    // Customize suggestions based on extracted data
-    if (extractedData.productType === "concrete") {
+    // Customize based on extracted data
+    if (extractedData.grade) {
+      const grade = extractedData.grade;
+      baseSuggestions = [
+        `Show ${grade} details`,
+        `${grade} pricing options`,
+        `Compare ${grade} with other grades`,
+      ];
+    }
+
+    if (extractedData.projectType) {
+      const projectType = extractedData.projectType;
       baseSuggestions = baseSuggestions.map((s) =>
-        s.replace("products", "concrete mixes")
-      );
-    } else if (extractedData.productType === "mortar") {
-      baseSuggestions = baseSuggestions.map((s) =>
-        s.replace("products", "mortar mixes")
+        s.includes("work") ? `For ${projectType} work` : s
       );
     }
 
     return baseSuggestions;
   }
 
-  // Helper method to determine if the query is construction-related
   static isConstructionQuery(message: string): boolean {
     const constructionKeywords = [
       ...this.PRODUCT_KEYWORDS,
       ...this.GRADE_KEYWORDS,
       ...this.TECHNICAL_KEYWORDS,
-      "building",
-      "construction",
-      "foundation",
-      "slab",
-      "beam",
-      "column",
-      "footing",
-      "driveway",
-      "sidewalk",
-      "patio",
-      "structure",
+      ...this.APPLICATION_KEYWORDS,
     ];
 
     const lowerMessage = message.toLowerCase();
@@ -448,24 +825,47 @@ export class ConcreteIntentAnalyzer {
     );
   }
 
-  // Helper method to extract construction project type
   static getProjectType(message: string): string | null {
-    const projectTypes = {
-      foundation: ["foundation", "footing", "basement"],
-      structural: ["beam", "column", "slab", "structural", "frame"],
-      flatwork: ["driveway", "sidewalk", "patio", "floor", "flatwork"],
-      wall: ["wall", "retaining", "boundary"],
-      repair: ["repair", "patch", "fix", "maintenance"],
-    };
-
     const lowerMessage = message.toLowerCase();
 
-    for (const [type, keywords] of Object.entries(projectTypes)) {
+    for (const [type, keywords] of Object.entries(this.PROJECT_TYPE_KEYWORDS)) {
       if (keywords.some((keyword) => lowerMessage.includes(keyword))) {
         return type;
       }
     }
 
     return null;
+  }
+
+  // New helper method to get grade recommendations based on application
+  static getGradeRecommendations(
+    applicationType?: string,
+    projectType?: string
+  ): string[] {
+    const recommendations: { [key: string]: string[] } = {
+      // Application-based recommendations
+      residential: ["N15", "N20", "N25"],
+      commercial: ["N20", "N25", "S30", "S35"],
+      structural: ["N25", "S30", "S35", "S40"],
+      infrastructure: ["S35", "S40", "S45"],
+
+      // Project-based recommendations
+      foundation: ["N20", "N25", "S30"],
+      flatwork: ["N15", "N20", "N25"],
+      wall: ["N20", "N25", "S30"],
+      repair: ["N15", "N20"],
+      decorative: ["N15", "N20"],
+    };
+
+    if (applicationType && recommendations[applicationType]) {
+      return recommendations[applicationType];
+    }
+
+    if (projectType && recommendations[projectType]) {
+      return recommendations[projectType];
+    }
+
+    // Default recommendations
+    return ["N20", "N25", "S30"];
   }
 }
