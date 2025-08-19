@@ -1,11 +1,19 @@
 "use client";
 
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
 } from "@/components/ui/";
+import { Button } from "@/components/ui/";
 import type { Product } from "@/type/product";
 import Image from "next/image";
 import { Shuffle } from "lucide-react";
@@ -23,6 +31,7 @@ export function ProductSelector({
   onProductChange,
   onPriceTypeChange,
 }: ProductSelectorProps) {
+  console.log("ProductSelector", products);
   const getPriceOptions = (product: Product) => {
     const options = [];
     if (product.normal_price)
@@ -100,6 +109,7 @@ export function ProductSelector({
           const priceOptions = getPriceOptions(product);
           const selectedPrice = getSelectedPrice(product);
           const selectedPriceType = product.selectedPriceType || "normal";
+          const selectedProduct = products.find((p) => p.id === product.id);
 
           return (
             <div key={index} className="space-y-3">
@@ -107,119 +117,100 @@ export function ProductSelector({
                 Product {index + 1}
               </label>
 
-              {/* Product Selection */}
-              <Select
-                value={product.id}
-                onValueChange={(newProductId) =>
-                  onProductChange(index, newProductId)
-                }
-              >
-                <SelectTrigger className="w-full h-12 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 hover:border-gray-400 dark:hover:border-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors">
-                  <div className="flex items-center gap-2 w-full">
+              {/* Product + Delivery Option Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full h-12 flex items-center gap-2 justify-start"
+                  >
                     <div className="w-6 h-6 rounded overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
                       <Image
                         src={
-                          product.product_images?.find((img) => img.is_primary)
-                            ?.image_url ||
-                          product.product_images?.[0]?.image_url ||
+                          selectedProduct?.product_images?.find(
+                            (img) => img.is_primary
+                          )?.image_url ||
+                          selectedProduct?.product_images?.[0]?.image_url ||
                           "/placeholder.svg"
                         }
-                        alt={product.name}
+                        alt={selectedProduct?.name || "Product"}
                         width={24}
                         height={24}
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <div className="flex-1 text-left min-w-0">
-                      <div className="font-medium truncate text-sm">
-                        {product.name}
-                      </div>
-                    </div>
-                  </div>
-                </SelectTrigger>
-
-                <SelectContent className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg min-w-[280px] max-h-[300px]">
-                  {products.map((availableProduct) => (
-                    <SelectItem
-                      key={availableProduct.id}
-                      value={availableProduct.id}
-                      className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded p-2 m-1 cursor-pointer"
-                    >
-                      <div className="flex items-center gap-3 w-full">
-                        <div className="w-8 h-8 rounded overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
-                          <Image
-                            src={
-                              availableProduct.product_images?.find(
-                                (img) => img.is_primary
-                              )?.image_url ||
-                              availableProduct.product_images?.[0]?.image_url ||
-                              "/placeholder.svg"
-                            }
-                            alt={availableProduct.name}
-                            width={32}
-                            height={32}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium truncate">
-                            {availableProduct.name}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            RM{(availableProduct.normal_price ?? 0).toFixed(0)}{" "}
-                            / {availableProduct.unit}
-                          </div>
-                        </div>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {/* Price Type Selection */}
-              {priceOptions.length > 1 && onPriceTypeChange && (
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-blue-600 dark:text-blue-400">
-                    Compare Price Type:
-                  </label>
-                  <Select
-                    value={selectedPriceType}
-                    onValueChange={(newPriceType) =>
-                      onPriceTypeChange(product.id, newPriceType)
-                    }
-                  >
-                    <SelectTrigger className="w-full h-10 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg text-blue-900 dark:text-blue-100 hover:border-blue-300 dark:hover:border-blue-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors">
-                      <div className="flex items-center justify-between w-full">
-                        <span className="text-sm font-medium">
-                          {priceOptions.find(
-                            (opt) => opt.key === selectedPriceType
-                          )?.label || "Normal Delivery"}
-                        </span>
-                        <span className="text-sm font-bold">
-                          RM{selectedPrice.toFixed(2)}
-                        </span>
-                      </div>
-                    </SelectTrigger>
-
-                    <SelectContent className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg">
-                      {priceOptions.map((option) => (
-                        <SelectItem
-                          key={option.key}
-                          value={option.key}
-                          className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded p-2 m-1 cursor-pointer"
-                        >
-                          <div className="flex items-center justify-between w-full">
-                            <span className="font-medium">{option.label}</span>
-                            <span className="text-sm text-gray-600 dark:text-gray-400 ml-4">
-                              RM{option.price.toFixed(2)}
+                    <span className="font-medium truncate text-sm flex-1">
+                      {selectedProduct?.name || "Select Product"}
+                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {priceOptions.find((opt) => opt.key === selectedPriceType)
+                        ?.label || "Normal Delivery"}
+                    </span>
+                    <span className="text-xs text-gray-900 dark:text-gray-100 font-bold ml-2">
+                      RM{selectedPrice.toFixed(2)}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-80" align="start">
+                  <DropdownMenuLabel>
+                    Select Product & Delivery Option
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuGroup>
+                    {products.map((availableProduct) => {
+                      const availablePriceOptions =
+                        getPriceOptions(availableProduct);
+                      return (
+                        <DropdownMenuSub key={availableProduct.id}>
+                          <DropdownMenuSubTrigger className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
+                              <Image
+                                src={
+                                  availableProduct.product_images?.find(
+                                    (img) => img.is_primary
+                                  )?.image_url ||
+                                  availableProduct.product_images?.[0]
+                                    ?.image_url ||
+                                  "/placeholder.svg"
+                                }
+                                alt={availableProduct.name}
+                                width={24}
+                                height={24}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <span className="font-medium truncate text-sm flex-1">
+                              {availableProduct.name}
                             </span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+                          </DropdownMenuSubTrigger>
+                          <DropdownMenuPortal>
+                            <DropdownMenuSubContent>
+                              {availablePriceOptions.map((opt) => (
+                                <DropdownMenuItem
+                                  key={opt.key}
+                                  onClick={() => {
+                                    onProductChange(index, availableProduct.id);
+                                    onPriceTypeChange?.(
+                                      availableProduct.id,
+                                      opt.key
+                                    );
+                                  }}
+                                  className="flex items-center justify-between"
+                                >
+                                  <span>{opt.label}</span>
+                                  <span className="text-xs text-gray-900 dark:text-gray-100 font-bold ml-2">
+                                    RM{Number(opt.price).toFixed(2)}
+                                  </span>
+                                </DropdownMenuItem>
+                              ))}
+                            </DropdownMenuSubContent>
+                          </DropdownMenuPortal>
+                        </DropdownMenuSub>
+                      );
+                    })}
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               {/* Current Selection Display */}
               <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
