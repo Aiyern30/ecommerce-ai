@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Card, Input, Badge, Button } from "../ui";
 import TypingIndicator from "./TypingIndicator";
+import { Product } from "@/type/product";
 
 interface Message {
   id: string;
@@ -30,23 +31,6 @@ interface Message {
     extractedData?: any;
     isConstructionQuery?: boolean;
   };
-}
-
-interface Product {
-  id: string;
-  name: string;
-  description?: string;
-  grade: string;
-  product_type: "concrete" | "mortar";
-  normal_price?: number;
-  pump_price?: number;
-  tremie_1_price?: number;
-  tremie_2_price?: number;
-  tremie_3_price?: number;
-  unit?: string;
-  stock_quantity?: number;
-  category?: string;
-  keywords?: string[];
 }
 
 interface GeminiChatProps {
