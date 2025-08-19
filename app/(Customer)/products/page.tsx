@@ -11,11 +11,22 @@ import { Skeleton } from "@/components/ui/";
 import { TypographyH1 } from "@/components/ui/Typography";
 import { Product } from "@/type/product";
 
+interface ProductSelection {
+  id: string;
+  priceType: string;
+}
+
 export default function ProductListPage() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  console.log("products", products);
+  const [selectedProducts, setSelectedProducts] = useState<ProductSelection[]>(
+    []
+  );
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  // Helper to get selected IDs for backward compatibility
+  const selectedIds = selectedProducts.map((p) => p.id);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -49,30 +60,49 @@ export default function ProductListPage() {
   }, []);
 
   const handleCompareToggle = (id: string, add: boolean) => {
-    setSelectedIds((prev) => {
+    setSelectedProducts((prev) => {
       if (add) {
         if (prev.length >= 4) {
           toast.warning("You can only compare up to 4 products");
           return prev;
         }
-        return [...prev, id];
+        // Add with default price type (normal)
+        return [...prev, { id, priceType: "normal" }];
       } else {
-        return prev.filter((item) => item !== id);
+        return prev.filter((item) => item.id !== id);
       }
     });
   };
 
+  const handlePriceTypeChange = (productId: string, newPriceType: string) => {
+    setSelectedProducts((prev) =>
+      prev.map((item) =>
+        item.id === productId ? { ...item, priceType: newPriceType } : item
+      )
+    );
+  };
+
   const handleCompare = () => {
-    if (selectedIds.length >= 2) {
+    if (selectedProducts.length >= 2) {
       const params = new URLSearchParams();
-      selectedIds.forEach((id) => params.append("products", id));
+
+      // Add product IDs
+      selectedProducts.forEach((product) => {
+        params.append("products", product.id);
+      });
+
+      // Add price types for each product
+      selectedProducts.forEach((product) => {
+        params.append("priceTypes", product.priceType);
+      });
+
       router.push(`/compare?${params.toString()}`);
     } else {
       toast.info("Select at least 2 products to compare");
     }
   };
 
-  const clearSelection = () => setSelectedIds([]);
+  const clearSelection = () => setSelectedProducts([]);
 
   return (
     <section className="container mx-auto px-4 pt-0 pb-4">
@@ -81,22 +111,22 @@ export default function ProductListPage() {
       <div className="mb-4 flex gap-2">
         <Button
           onClick={handleCompare}
-          disabled={selectedIds.length < 2}
+          disabled={selectedProducts.length < 2}
           variant="default"
           className="flex items-center gap-2"
         >
           <SlidersHorizontal
             className={`h-4 w-4 ${
-              selectedIds.length < 2
+              selectedProducts.length < 2
                 ? "text-gray-400 dark:text-gray-500"
                 : "text-white dark:text-black"
             }`}
           />
-          Compare ({selectedIds.length})
+          Compare ({selectedProducts.length})
         </Button>
         <Button
           onClick={clearSelection}
-          disabled={selectedIds.length === 0}
+          disabled={selectedProducts.length === 0}
           variant="secondary"
           className="flex items-center gap-2"
         >
@@ -117,6 +147,11 @@ export default function ProductListPage() {
             const mainImage =
               product.product_images?.find((img) => img.is_primary) ||
               product.product_images?.[0];
+            const isSelected = selectedIds.includes(product.id);
+            const selectedProduct = selectedProducts.find(
+              (p) => p.id === product.id
+            );
+
             return (
               <ProductCard
                 key={product.id}
@@ -135,9 +170,13 @@ export default function ProductListPage() {
                 tremie_2_price={product.tremie_2_price}
                 tremie_3_price={product.tremie_3_price}
                 showCompare
-                isCompared={selectedIds.includes(product.id)}
+                isCompared={isSelected}
                 onCompareToggle={handleCompareToggle}
-                compareCount={selectedIds.length}
+                compareCount={selectedProducts.length}
+                selectedPriceType={selectedProduct?.priceType || "normal"}
+                onPriceTypeChange={
+                  isSelected ? handlePriceTypeChange : undefined
+                }
               />
             );
           })}

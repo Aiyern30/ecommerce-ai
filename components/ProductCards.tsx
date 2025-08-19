@@ -39,6 +39,9 @@ interface ProductCardProps {
   tremie_1_price?: number | null;
   tremie_2_price?: number | null;
   tremie_3_price?: number | null;
+  // New props for compare price type
+  selectedPriceType?: string;
+  onPriceTypeChange?: (productId: string, priceType: string) => void;
 }
 
 export function ProductCard({
@@ -61,6 +64,9 @@ export function ProductCard({
   tremie_1_price,
   tremie_2_price,
   tremie_3_price,
+  // New props for compare price type
+  selectedPriceType = "normal",
+  onPriceTypeChange,
 }: ProductCardProps) {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
@@ -134,6 +140,12 @@ export function ProductCard({
     setIsAddingToCart(false);
   };
 
+  const handleComparePriceTypeChange = (newPriceType: string) => {
+    if (onPriceTypeChange) {
+      onPriceTypeChange(id, newPriceType);
+    }
+  };
+
   // If you have multiple images, replace this with your images array logic.
   // For now, just support single image.
   useEffect(() => {
@@ -157,6 +169,12 @@ export function ProductCard({
     (opt) => opt.key === selectedDelivery
   );
   const selectedPrice = selectedOption ? selectedOption.price : price;
+
+  // Get compare price based on selected price type
+  const compareOption = deliveryOptions.find(
+    (opt) => opt.key === selectedPriceType
+  );
+  const comparePrice = compareOption ? compareOption.price : price;
 
   return (
     <>
@@ -341,8 +359,9 @@ export function ProductCard({
                 </span>
               )}
             </div>
-            {/* Delivery method selector */}
-            {deliveryOptions.length > 1 && (
+
+            {/* Delivery method selector for cart */}
+            {deliveryOptions.length > 1 && !isCompared && (
               <div className="flex items-center gap-2">
                 <label htmlFor={`delivery-method-${id}`} className="text-xs">
                   Delivery:
@@ -364,8 +383,43 @@ export function ProductCard({
                 </Select>
               </div>
             )}
+
+            {/* Compare price type selector (only when item is being compared) */}
+            {deliveryOptions.length > 1 && isCompared && onPriceTypeChange && (
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-blue-600 font-medium">
+                  Compare as:
+                </label>
+                <Select
+                  value={selectedPriceType}
+                  onValueChange={handleComparePriceTypeChange}
+                >
+                  <SelectTrigger className="w-36 h-8 px-2 py-1 text-xs border-blue-200 bg-blue-50 dark:bg-blue-600">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {deliveryOptions.map((opt) => (
+                      <SelectItem key={opt.key} value={opt.key}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             <div className="flex items-center gap-2">
-              <span className="font-medium">RM{selectedPrice.toFixed(2)}</span>
+              <span className="font-medium">
+                RM{(isCompared ? comparePrice : selectedPrice).toFixed(2)}
+              </span>
+              {isCompared && selectedPriceType !== "normal" && (
+                <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded">
+                  {
+                    deliveryOptions.find((opt) => opt.key === selectedPriceType)
+                      ?.label
+                  }
+                </span>
+              )}
             </div>
           </CardContent>
         </Card>
