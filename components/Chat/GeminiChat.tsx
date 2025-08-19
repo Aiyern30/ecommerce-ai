@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -9,8 +10,9 @@ import {
   Loader2,
   ShoppingCart,
   Package,
+  Calculator,
+  Info,
 } from "lucide-react";
-import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { Card, Input, Badge, Button } from "../ui";
 import TypingIndicator from "./TypingIndicator";
 
@@ -23,16 +25,28 @@ interface Message {
   metadata?: {
     products?: Product[];
     suggestions?: string[];
+    intent?: string;
+    confidence?: number;
+    extractedData?: any;
+    isConstructionQuery?: boolean;
   };
 }
 
 interface Product {
   id: string;
   name: string;
-  price: number;
-  image?: string;
-  category?: string;
   description?: string;
+  grade: string;
+  product_type: "concrete" | "mortar";
+  normal_price?: number;
+  pump_price?: number;
+  tremie_1_price?: number;
+  tremie_2_price?: number;
+  tremie_3_price?: number;
+  unit?: string;
+  stock_quantity?: number;
+  category?: string;
+  keywords?: string[];
 }
 
 interface GeminiChatProps {
@@ -49,10 +63,18 @@ export default function GeminiChat({
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      content: `Hi! I'm your AI shopping assistant for ${businessName}. I can help you find products, answer questions about our inventory, and provide personalized recommendations. What are you looking for today?`,
+      content: `Hi! I'm your concrete specialist AI assistant for ${businessName}. I can help you find the right concrete grade for your project, provide pricing information, and assist with delivery options. We offer N-series grades (N10-N25) for residential projects and S-series grades (S30-S45) for structural work. What can I help you with today?`,
       sender: "bot",
       timestamp: new Date(),
       type: "text",
+      metadata: {
+        suggestions: [
+          "Show me N-series concrete grades",
+          "What's the difference between N20 and N25?",
+          "Pricing for foundation concrete",
+          "Pump delivery options",
+        ],
+      },
     },
   ]);
   const [inputMessage, setInputMessage] = useState("");
@@ -99,7 +121,7 @@ export default function GeminiChat({
         },
         body: JSON.stringify({
           message: message.trim(),
-          conversationHistory: messages.slice(-5), // Send last 5 messages for context
+          conversationHistory: messages.slice(-5),
         }),
       });
 
@@ -124,10 +146,17 @@ export default function GeminiChat({
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         content:
-          "I'm sorry, I'm having trouble responding right now. Please try again in a moment.",
+          "I'm sorry, I'm having trouble responding right now. Please try again in a moment, or contact our sales team for immediate assistance.",
         sender: "bot",
         timestamp: new Date(),
         type: "error",
+        metadata: {
+          suggestions: [
+            "Try asking about concrete grades",
+            "Ask about pricing",
+            "Contact sales team",
+          ],
+        },
       };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
@@ -152,6 +181,19 @@ export default function GeminiChat({
     sendMessage(suggestion);
   };
 
+  const getIntentIcon = (intent?: string) => {
+    switch (intent) {
+      case "price_inquiry":
+        return <Calculator size={12} className="text-green-600" />;
+      case "technical_question":
+        return <Info size={12} className="text-purple-600" />;
+      case "product_search":
+        return <Package size={12} className="text-orange-600" />;
+      default:
+        return <Bot size={12} className="text-gray-600" />;
+    }
+  };
+
   const renderMessage = (message: Message) => {
     const isBot = message.sender === "bot";
 
@@ -161,7 +203,7 @@ export default function GeminiChat({
         className={`flex ${isBot ? "justify-start" : "justify-end"} mb-4`}
       >
         <div
-          className={`flex max-w-[80%] ${
+          className={`flex max-w-[85%] ${
             isBot ? "flex-row" : "flex-row-reverse"
           }`}
         >
@@ -192,31 +234,97 @@ export default function GeminiChat({
               <p className="text-sm whitespace-pre-wrap">{message.content}</p>
             </div>
 
-            {/* Product Cards */}
+            {/* Intent Indicator for Development/Debugging */}
+            {isBot &&
+              message.metadata?.intent &&
+              process.env.NODE_ENV === "development" && (
+                <div className="mt-1 flex items-center gap-1 text-xs text-gray-500">
+                  {getIntentIcon(message.metadata.intent)}
+                  <span>{message.metadata.intent}</span>
+                  {message.metadata.confidence && (
+                    <span>
+                      ({Math.round(message.metadata.confidence * 100)}%)
+                    </span>
+                  )}
+                </div>
+              )}
+
+            {/* Enhanced Product Cards */}
             {message.metadata?.products &&
               message.metadata.products.length > 0 && (
                 <div className="mt-2 space-y-2 w-full">
-                  {message.metadata.products.map((product) => (
-                    <Card key={product.id} className="p-3 max-w-xs">
+                  {message.metadata.products.map((product: Product) => (
+                    <Card key={product.id} className="p-3 max-w-sm">
                       <div className="flex items-start gap-3">
-                        {product.image && (
-                          <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center flex-shrink-0">
-                            <Package size={16} className="text-gray-500" />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-sm truncate">
-                            {product.name}
-                          </h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            ${product.price}
-                          </p>
-                          {product.category && (
-                            <Badge variant="secondary" className="mt-1 text-xs">
-                              {product.category}
-                            </Badge>
-                          )}
+                        <div className="w-12 h-12 bg-gradient-to-br from-gray-200 to-gray-300 rounded-md flex items-center justify-center flex-shrink-0">
+                          <Package size={16} className="text-gray-600" />
                         </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-medium text-sm truncate">
+                              {product.name}
+                            </h4>
+                            <Badge
+                              variant="secondary"
+                              className={`text-xs ${
+                                product.grade.startsWith("N")
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-blue-100 text-blue-700"
+                              }`}
+                            >
+                              {product.grade}
+                            </Badge>
+                          </div>
+
+                          {product.description && (
+                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                              {product.description}
+                            </p>
+                          )}
+
+                          {/* Price Display */}
+                          <div className="mt-2 space-y-1">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-gray-500">
+                                Normal:
+                              </span>
+                              <span className="text-sm font-medium">
+                                {product.normal_price
+                                  ? `RM${product.normal_price}`
+                                  : "N/A"}
+                              </span>
+                            </div>
+                            {product.pump_price && (
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-gray-500">
+                                  Pump:
+                                </span>
+                                <span className="text-sm font-medium">
+                                  RM{product.pump_price}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Stock Status */}
+                          <div className="mt-1 flex items-center justify-between">
+                            <span className="text-xs text-gray-500">
+                              Stock:
+                            </span>
+                            <span
+                              className={`text-xs ${
+                                (product.stock_quantity || 0) > 50
+                                  ? "text-green-600"
+                                  : (product.stock_quantity || 0) > 10
+                                  ? "text-orange-600"
+                                  : "text-red-600"
+                              }`}
+                            >
+                              {product.stock_quantity || 0} units
+                            </span>
+                          </div>
+                        </div>
+
                         <Button
                           size="sm"
                           variant="outline"
@@ -231,21 +339,23 @@ export default function GeminiChat({
                 </div>
               )}
 
-            {/* Suggestions */}
+            {/* Enhanced Suggestions */}
             {message.metadata?.suggestions &&
               message.metadata.suggestions.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {message.metadata.suggestions.map((suggestion, index) => (
-                    <Button
-                      key={index}
-                      variant="outline"
-                      size="sm"
-                      className="text-xs"
-                      onClick={() => handleSuggestionClick(suggestion)}
-                    >
-                      {suggestion}
-                    </Button>
-                  ))}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {message.metadata.suggestions.map(
+                    (suggestion: string, index: number) => (
+                      <Button
+                        key={index}
+                        variant="outline"
+                        size="sm"
+                        className="text-xs hover:bg-blue-50"
+                        onClick={() => handleSuggestionClick(suggestion)}
+                      >
+                        {suggestion}
+                      </Button>
+                    )
+                  )}
                 </div>
               )}
 
@@ -264,26 +374,27 @@ export default function GeminiChat({
   if (!isOpen) return null;
 
   return (
-    <Card className="fixed bottom-20 right-4 w-96 h-[600px] shadow-xl p-0">
+    <Card className="fixed bottom-20 right-4 w-[420px] h-[650px] shadow-xl p-0 z-50 flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b bg-blue-50 dark:bg-blue-950 rounded-t-lg">
+      <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 rounded-t-lg">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
             <Bot size={16} className="text-white" />
           </div>
           <div>
-            <h3 className="font-semibold text-sm">AI Shopping Assistant</h3>
+            <h3 className="font-semibold text-sm">Concrete Specialist AI</h3>
             <p className="text-xs text-gray-600 dark:text-gray-400">
-              {isTyping ? "Typing..." : "Online"}
+              {isTyping
+                ? "Analyzing your query..."
+                : "Ready to help with concrete solutions"}
             </p>
           </div>
         </div>
-        {/* Add close button */}
         <Button
           variant="ghost"
           size="sm"
           onClick={onClose}
-          className="h-8 w-8 p-0"
+          className="h-8 w-8 p-0 hover:bg-blue-200"
           aria-label="Close AI Chat"
         >
           <X size={16} />
@@ -291,47 +402,71 @@ export default function GeminiChat({
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 p-4">
-        <div className="space-y-4">
-          {messages.map(renderMessage)}
-          {isLoading && (
-            <div className="flex justify-start mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Bot size={16} className="text-blue-600" />
-                </div>
-                <div className="bg-gray-100 dark:bg-gray-800 rounded-lg px-4 py-2">
-                  <Loader2 size={16} className="animate-spin" />
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full overflow-y-auto p-4">
+          <div className="space-y-4">
+            {messages.map(renderMessage)}
+            {isLoading && (
+              <div className="flex justify-start mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Bot size={16} className="text-blue-600" />
+                  </div>
+                  <div className="bg-gray-100 dark:bg-gray-800 rounded-lg px-4 py-2">
+                    <Loader2 size={16} className="animate-spin" />
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-          {/* Show TypingIndicator when bot is typing */}
-          {isTyping && <TypingIndicator />}
-          <div ref={messagesEndRef} />
+            )}
+            {isTyping && <TypingIndicator />}
+            <div ref={messagesEndRef} />
+          </div>
         </div>
-      </ScrollArea>
+      </div>
 
       {/* Input */}
-      <div className="p-4 border-t">
+      <div className="p-4 border-t bg-gray-50 dark:bg-gray-900">
         <form onSubmit={handleSubmit} className="flex gap-2">
           <Input
             ref={inputRef}
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Ask about our products..."
+            placeholder="Ask about concrete grades, pricing, delivery..."
             disabled={isLoading}
-            className="flex-1"
+            className="flex-1 bg-white dark:bg-gray-800"
           />
           <Button
             type="submit"
             disabled={isLoading || !inputMessage.trim()}
             size="sm"
+            className="bg-blue-500 hover:bg-blue-600"
           >
             <Send size={16} />
           </Button>
         </form>
+
+        {/* Quick Actions */}
+        <div className="mt-2 flex flex-wrap gap-1">
+          <button
+            onClick={() => handleSuggestionClick("Show me N20 concrete")}
+            className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
+          >
+            N20 Grade
+          </button>
+          <button
+            onClick={() => handleSuggestionClick("Compare delivery methods")}
+            className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200"
+          >
+            Delivery Options
+          </button>
+          <button
+            onClick={() => handleSuggestionClick("Foundation concrete pricing")}
+            className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-md hover:bg-purple-200"
+          >
+            Pricing
+          </button>
+        </div>
       </div>
     </Card>
   );
