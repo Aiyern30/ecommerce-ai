@@ -6,38 +6,52 @@ export async function getRecentOrders(userId: string, limit = 5) {
     .select(
       `
       id,
-      order_number,
       status,
+      payment_status,
+      subtotal,
+      shipping_cost,
+      tax,
+      total,
+      address_id,
+      addresses (
+        id,
+        user_id,
+        full_name,
+        phone,
+        address_line1,
+        address_line2,
+        city,
+        state,
+        postal_code,
+        country,
+        is_default,
+        created_at,
+        updated_at
+      ),
+      order_items (
+        id,
+        order_id,
+        product_id,
+        name,
+        grade,
+        price,
+        quantity,
+        variant_type,
+        image_url,
+        created_at
+      ),
+      order_additional_services (
+        id,
+        additional_service_id,
+        service_name,
+        rate_per_m3,
+        quantity,
+        total_price
+      ),
       created_at,
       updated_at,
-      total_amount,
-      delivery_date,
-      delivery_status,
-      items:order_items (
-        id,
-        product_id,
-        quantity,
-        product:products (
-          id,
-          name,
-          grade,
-          product_type,
-          normal_price,
-          pump_price,
-          tremie_1_price,
-          tremie_2_price,
-          tremie_3_price,
-          unit,
-          product_images (
-            id,
-            image_url,
-            alt_text,
-            is_primary,
-            sort_order
-          )
-        )
-      )
-    `
+      notes
+      `
     )
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
