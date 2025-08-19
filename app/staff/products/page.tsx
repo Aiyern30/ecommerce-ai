@@ -965,14 +965,21 @@ export default function ProductsPage() {
                     <div className="flex flex-wrap gap-1">
                       {Array.isArray(product.keywords) &&
                       product.keywords.length > 0 ? (
-                        product.keywords.map((kw, idx) => (
-                          <Badge
-                            key={idx}
-                            className="bg-blue-100 text-blue-800 border-blue-200 px-2 py-1 text-xs font-medium"
-                          >
-                            {kw}
-                          </Badge>
-                        ))
+                        <>
+                          {product.keywords.slice(0, 3).map((kw, idx) => (
+                            <Badge
+                              key={idx}
+                              className="bg-blue-100 text-blue-800 border-blue-200 px-2 py-1 text-xs font-medium"
+                            >
+                              {kw}
+                            </Badge>
+                          ))}
+                          {product.keywords.length > 3 && (
+                            <Badge className="bg-gray-100 text-gray-800 border-gray-200 px-2 py-1 text-xs font-medium">
+                              +{product.keywords.length - 3} more
+                            </Badge>
+                          )}
+                        </>
                       ) : (
                         <span className="text-gray-400 text-xs">
                           No keywords
