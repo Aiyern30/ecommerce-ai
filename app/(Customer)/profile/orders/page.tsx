@@ -544,7 +544,7 @@ export default function OrdersPage() {
                           <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
                             <MapPin className="h-5 w-5 text-blue-600" />
                           </div>
-                          <div>
+                          <div className="max-w-[160px] truncate">
                             <p className="text-sm text-gray-600 dark:text-gray-300">
                               Shipping To
                             </p>
