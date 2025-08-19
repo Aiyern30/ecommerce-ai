@@ -5,12 +5,13 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { ConcreteIntentAnalyzer } from "@/lib/gemini/concreteIntentAnalyzer";
+
 import {
-  getCartItems,
-  removeFromCart,
-  updateCartItemQuantity,
-} from "@/lib/cart/utils";
-import { getRecentOrders } from "@/lib/order/utils";
+  getCartItemsServerSide,
+  getRecentOrdersServerSide,
+  removeFromCartServerSide,
+  updateCartItemQuantityServerSide,
+} from "@/lib/cart/serverUtils";
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
@@ -365,7 +366,7 @@ async function getProductsBasedOnIntent(
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, conversationHistory, userId } = await request.json();
+    const { message, conversationHistory } = await request.json();
 
     if (!message) {
       return NextResponse.json(
@@ -374,10 +375,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const supabase = createRouteHandlerClient({ cookies });
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError) {
+      console.error("Authentication error:", authError);
+    }
+
     // Use ConcreteIntentAnalyzer for better understanding
     const intentAnalysis = ConcreteIntentAnalyzer.analyzeIntent(message);
     console.log("Intent Analysis:", intentAnalysis);
-
     // Get products based on intent analysis
     let products: Product[] = [];
     let suggestions: string[] = [];
@@ -455,20 +465,18 @@ Keep the response conversational and focused on helping the customer make inform
       },
     };
 
-    // Conversational Cart Management
-    // Use string comparison for intent/type checks
     if (
       intentAnalysis.intent === "cart_show" ||
       (typeof message === "string" && /show.*cart/i.test(message))
     ) {
-      if (!userId) {
+      if (!user?.id) {
         return NextResponse.json({
           message: "Please login to view your cart.",
           type: "cart",
           metadata: { cart: [] },
         });
       }
-      const cartItems = await getCartItems(userId);
+      const cartItems = await getCartItemsServerSide(user.id);
       return NextResponse.json({
         message: cartItems.length
           ? "Here are the items in your cart:"
@@ -482,18 +490,18 @@ Keep the response conversational and focused on helping the customer make inform
     const removeMatch =
       typeof message === "string" &&
       message.match(/remove\s+([a-zA-Z0-9\s]+)\s+from.*cart/i);
-    if (removeMatch && userId) {
+    if (removeMatch && user?.id) {
       const productName = removeMatch[1].trim().toLowerCase();
-      const cartItems = await getCartItems(userId);
+      const cartItems = await getCartItemsServerSide(user.id);
       const item = cartItems.find(
         (ci) => ci.product?.name?.toLowerCase() === productName
       );
       if (item) {
-        await removeFromCart(item.id);
+        await removeFromCartServerSide(item.id);
         return NextResponse.json({
           message: `Removed ${item.product.name} from your cart.`,
           type: "cart",
-          metadata: { cart: await getCartItems(userId) },
+          metadata: { cart: await getCartItemsServerSide(user.id) },
         });
       } else {
         return NextResponse.json({
@@ -508,19 +516,19 @@ Keep the response conversational and focused on helping the customer make inform
     const updateMatch =
       typeof message === "string" &&
       message.match(/update\s+quantity\s+of\s+([a-zA-Z0-9\s]+)\s+to\s+(\d+)/i);
-    if (updateMatch && userId) {
+    if (updateMatch && user?.id) {
       const productName = updateMatch[1].trim().toLowerCase();
       const newQty = parseInt(updateMatch[2]);
-      const cartItems = await getCartItems(userId);
+      const cartItems = await getCartItemsServerSide(user.id);
       const item = cartItems.find(
         (ci) => ci.product?.name?.toLowerCase() === productName
       );
       if (item) {
-        await updateCartItemQuantity(item.id, newQty);
+        await updateCartItemQuantityServerSide(item.id, newQty);
         return NextResponse.json({
           message: `Updated quantity of ${item.product.name} to ${newQty}.`,
           type: "cart",
-          metadata: { cart: await getCartItems(userId) },
+          metadata: { cart: await getCartItemsServerSide(user.id) },
         });
       } else {
         return NextResponse.json({
@@ -539,16 +547,15 @@ Keep the response conversational and focused on helping the customer make inform
           message
         ))
     ) {
-      if (!userId) {
+      if (!user?.id) {
         return NextResponse.json({
           message: "Please login to view your orders.",
           type: "order",
           metadata: { orders: [] },
         });
       }
-      // Fetch recent orders for the user
-      const orders = await getRecentOrders(userId, 5); // last 5 orders
-      console.log("Order debug:", { userId, orders }); // <-- Add this line
+      const orders = await getRecentOrdersServerSide(user.id, 5);
+      console.log("Order debug:", { userId: user.id, orders });
       return NextResponse.json({
         message: orders.length
           ? "Here are your recent orders:"
