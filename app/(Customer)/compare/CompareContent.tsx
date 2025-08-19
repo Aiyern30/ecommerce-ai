@@ -46,9 +46,7 @@ export default function CompareProductsContent() {
 
       const { data, error } = await supabase.from("products").select(`
         *,
-        product_images(image_url),
-        product_certificates(certificate),
-        product_tags(tags(name))
+        product_images(image_url)
       `);
 
       if (error) {
