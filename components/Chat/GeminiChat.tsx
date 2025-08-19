@@ -16,6 +16,9 @@ import {
 import { Card, Input, Badge, Button } from "../ui";
 import TypingIndicator from "./TypingIndicator";
 import { Product } from "@/type/product";
+import { toast } from "sonner";
+import { addToCart } from "@/lib/cart/utils"; // adjust import if needed
+import { useUser } from "@supabase/auth-helpers-react";
 
 interface Message {
   id: string;
@@ -64,8 +67,10 @@ export default function GeminiChat({
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [addingProductId, setAddingProductId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const user = useUser();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -178,6 +183,38 @@ export default function GeminiChat({
     }
   };
 
+  const handleAddToCart = async (product: Product, deliveryType?: string) => {
+    if (!user?.id) {
+      toast.error("Please login to add items to cart", {
+        action: {
+          label: "Login",
+          onClick: () => (window.location.href = "/login"),
+        },
+      });
+      return;
+    }
+    setAddingProductId(product.id);
+    try {
+      // Use pump delivery if available, otherwise normal
+      const delivery = deliveryType || (product.pump_price ? "pump" : "normal");
+      const result = await addToCart(user.id, product.id, 1, delivery);
+      if (result.success) {
+        toast.success("Added to cart!", {
+          description: `${product.name} (${delivery}) has been added to your cart.`,
+        });
+        window.dispatchEvent(new CustomEvent("cartUpdated"));
+      } else {
+        toast.error("Failed to add item to cart", {
+          description: "Please try again.",
+        });
+      }
+    } catch {
+      toast.error("Failed to add item to cart");
+    } finally {
+      setAddingProductId(null);
+    }
+  };
+
   const renderMessage = (message: Message) => {
     const isBot = message.sender === "bot";
 
@@ -237,89 +274,116 @@ export default function GeminiChat({
             {message.metadata?.products &&
               message.metadata.products.length > 0 && (
                 <div className="mt-2 space-y-2 w-full">
-                  {message.metadata.products.map((product: Product) => (
-                    <Card key={product.id} className="p-3 max-w-sm">
-                      <div className="flex items-start gap-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-gray-200 to-gray-300 rounded-md flex items-center justify-center flex-shrink-0">
-                          <Package size={16} className="text-gray-600" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-medium text-sm truncate">
-                              {product.name}
-                            </h4>
-                            <Badge
-                              variant="secondary"
-                              className={`text-xs ${
-                                product.grade.startsWith("N")
-                                  ? "bg-green-100 text-green-700"
-                                  : "bg-blue-100 text-blue-700"
-                              }`}
-                            >
-                              {product.grade}
-                            </Badge>
-                          </div>
+                  {message.metadata.products.map(
+                    (product: Product, idx: number) => {
+                      // Example: Mark first product as recommended if intent is 'recommendation'
+                      const isRecommended =
+                        message.metadata?.intent === "recommendation" &&
+                        idx === 0;
 
-                          {product.description && (
-                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
-                              {product.description}
-                            </p>
-                          )}
-
-                          {/* Price Display */}
-                          <div className="mt-2 space-y-1">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs text-gray-500">
-                                Normal:
-                              </span>
-                              <span className="text-sm font-medium">
-                                {product.normal_price
-                                  ? `RM${product.normal_price}`
-                                  : "N/A"}
-                              </span>
+                      return (
+                        <Card
+                          key={product.id}
+                          className="p-3 max-w-sm relative"
+                        >
+                          {/* Recommended badge */}
+                          {isRecommended && (
+                            <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded shadow">
+                              Recommended
                             </div>
-                            {product.pump_price && (
-                              <div className="flex items-center justify-between">
+                          )}
+                          <div className="flex items-start gap-3">
+                            <div className="w-12 h-12 bg-gradient-to-br from-gray-200 to-gray-300 rounded-md flex items-center justify-center flex-shrink-0">
+                              <Package size={16} className="text-gray-600" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-medium text-sm truncate">
+                                  {product.name}
+                                </h4>
+                                <Badge
+                                  variant="secondary"
+                                  className={`text-xs ${
+                                    product.grade.startsWith("N")
+                                      ? "bg-green-100 text-green-700"
+                                      : "bg-blue-100 text-blue-700"
+                                  }`}
+                                >
+                                  {product.grade}
+                                </Badge>
+                              </div>
+
+                              {product.description && (
+                                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                                  {product.description}
+                                </p>
+                              )}
+
+                              {/* Price Display */}
+                              <div className="mt-2 space-y-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs text-gray-500">
+                                    Normal:
+                                  </span>
+                                  <span className="text-sm font-medium">
+                                    {product.normal_price
+                                      ? `RM${product.normal_price}`
+                                      : "N/A"}
+                                  </span>
+                                </div>
+                                {product.pump_price && (
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs text-gray-500">
+                                      Pump:
+                                    </span>
+                                    <span className="text-sm font-medium">
+                                      RM{product.pump_price}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Stock Status */}
+                              <div className="mt-1 flex items-center justify-between">
                                 <span className="text-xs text-gray-500">
-                                  Pump:
+                                  Stock:
                                 </span>
-                                <span className="text-sm font-medium">
-                                  RM{product.pump_price}
+                                <span
+                                  className={`text-xs ${
+                                    (product.stock_quantity || 0) > 50
+                                      ? "text-green-600"
+                                      : (product.stock_quantity || 0) > 10
+                                      ? "text-orange-600"
+                                      : "text-red-600"
+                                  }`}
+                                >
+                                  {product.stock_quantity || 0} units
                                 </span>
                               </div>
-                            )}
-                          </div>
+                            </div>
 
-                          {/* Stock Status */}
-                          <div className="mt-1 flex items-center justify-between">
-                            <span className="text-xs text-gray-500">
-                              Stock:
-                            </span>
-                            <span
-                              className={`text-xs ${
-                                (product.stock_quantity || 0) > 50
-                                  ? "text-green-600"
-                                  : (product.stock_quantity || 0) > 10
-                                  ? "text-orange-600"
-                                  : "text-red-600"
-                              }`}
+                            <Button
+                              size="sm"
+                              variant={isRecommended ? "default" : "outline"}
+                              className="flex-shrink-0"
+                              disabled={addingProductId === product.id}
+                              onClick={() =>
+                                handleAddToCart(
+                                  product,
+                                  product.pump_price ? "pump" : "normal"
+                                )
+                              }
                             >
-                              {product.stock_quantity || 0} units
-                            </span>
+                              <ShoppingCart size={12} className="mr-1" />
+                              {addingProductId === product.id
+                                ? "Adding..."
+                                : "Add"}
+                            </Button>
                           </div>
-                        </div>
-
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-shrink-0"
-                        >
-                          <ShoppingCart size={12} className="mr-1" />
-                          Add
-                        </Button>
-                      </div>
-                    </Card>
-                  ))}
+                        </Card>
+                      );
+                    }
+                  )}
                 </div>
               )}
 
