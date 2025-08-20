@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -15,6 +16,7 @@ import {
   Plus,
   Minus,
   Trash2,
+  ShoppingBag,
 } from "lucide-react";
 import {
   Card,
@@ -34,6 +36,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  CardContent,
 } from "../ui";
 import TypingIndicator from "./TypingIndicator";
 import { Product } from "@/type/product";
@@ -415,8 +418,11 @@ export default function GeminiChat({
                       <div className="text-xs text-blue-600 mb-1">
                         {getVariantDisplayName(item.variant_type)}
                       </div>
-                      <div className="text-xs text-gray-500 mb-3">
-                        Price: RM{itemPrice.toFixed(2)}
+                      <div className="text-xs text-gray-500 mb-3 flex items-center gap-2">
+                        <span>Price:</span>
+                        <span className="bg-green-100 text-green-600 font-semibold px-2 py-0.5 rounded">
+                          RM{itemPrice.toFixed(2)}
+                        </span>
                       </div>
                       <div className="flex items-center gap-3">
                         {/* Quantity controls */}
@@ -472,7 +478,7 @@ export default function GeminiChat({
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-semibold text-sm">
+                      <div className="font-semibold text-sm text-green-600 bg-green-50 px-2 py-1 rounded">
                         RM{(itemPrice * item.quantity).toFixed(2)}
                       </div>
                       <div className="text-xs text-gray-500">
@@ -495,33 +501,70 @@ export default function GeminiChat({
         <div className="mb-4">
           <div className="font-semibold mb-2">{message.content}</div>
           {orders.length === 0 ? (
-            <div className="text-gray-500 text-sm">
-              You have no recent orders.
-            </div>
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-16 text-center">
+                <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Package className="w-10 h-10 text-blue-500" />
+                </div>
+                <h2 className="text-2xl font-semibold mb-3 text-gray-900">
+                  No orders yet
+                </h2>
+                <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                  You haven't placed any orders yet. Start shopping to see your
+                  orders here and track their progress.
+                </p>
+                <Link href="/products">
+                  <Button size="lg" className="px-8">
+                    <ShoppingBag className="mr-2 h-5 w-5" />
+                    Start Shopping
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
           ) : (
             <div className="space-y-2">
               {orders.map((order: any) => (
                 <Card key={order.id} className="p-3">
-                  <div className="font-medium text-sm">
-                    Order #{order.order_number || order.id}
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <div className="font-medium text-sm">
+                        Order #{order.order_number || order.id.slice(0, 8)}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Status: {order.status} | Payment: {order.payment_status}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Placed:{" "}
+                        {new Date(order.created_at).toLocaleDateString()}
+                      </div>
+                      <div className="text-xs font-semibold mt-1">
+                        <span className="text-gray-500">Total:</span>{" "}
+                        <span className="text-green-600 bg-green-50 px-2 py-0.5 rounded font-bold">
+                          RM{order.total?.toFixed(2) ?? order.total}
+                        </span>
+                      </div>
+                    </div>
+                    <Link
+                      href={`/profile/orders/${order.id}`}
+                      target="_blank"
+                      className="ml-2"
+                    >
+                      <Button size="sm" variant="outline">
+                        View Details
+                      </Button>
+                    </Link>
                   </div>
-                  <div className="text-xs text-gray-500">
-                    Status: {order.status} | Delivery: {order.delivery_status}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    Placed: {new Date(order.created_at).toLocaleDateString()}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    Total: RM{order.total_amount}
-                  </div>
-                  {order.items && order.items.length > 0 && (
+                  {order.order_items && order.order_items.length > 0 && (
                     <div className="mt-2">
                       <div className="font-semibold text-xs mb-1">Items:</div>
                       <ul className="list-disc pl-4 text-xs">
-                        {order.items.map((item: any) => (
+                        {order.order_items.map((item: any) => (
                           <li key={item.id}>
-                            {item.product?.name} ({item.product?.grade}) x{" "}
-                            {item.quantity}
+                            {item.product?.name}
+                            {item.product?.grade
+                              ? ` (${item.product.grade})`
+                              : ""}
+                            {item.quantity ? ` x ${item.quantity}` : ""}
                           </li>
                         ))}
                       </ul>
@@ -697,7 +740,7 @@ export default function GeminiChat({
                                 <span className="text-xs text-gray-500">
                                   Normal:
                                 </span>
-                                <span className="text-sm font-medium">
+                                <span className="text-sm font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded">
                                   {product.normal_price
                                     ? `RM${product.normal_price}`
                                     : "N/A"}
@@ -708,7 +751,7 @@ export default function GeminiChat({
                                   <span className="text-xs text-gray-500">
                                     Pump:
                                   </span>
-                                  <span className="text-sm font-medium">
+                                  <span className="text-sm font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded">
                                     RM{product.pump_price}
                                   </span>
                                 </div>
