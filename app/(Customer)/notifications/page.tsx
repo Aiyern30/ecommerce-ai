@@ -319,6 +319,50 @@ export default function NotificationsPage() {
                   <TypographyP className="text-gray-600 dark:text-gray-300 !mt-0">
                     {notification.message}
                   </TypographyP>
+                  {/* Show order details if present */}
+                  {notification.order && (
+                    <div className="mt-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+                      <div className="text-xs font-semibold mb-1 text-blue-700 dark:text-blue-300">
+                        Order #{notification.order.id}
+                      </div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                        Status: {notification.order.status} | Payment:{" "}
+                        {notification.order.payment_status}
+                      </div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                        Placed:{" "}
+                        {new Date(
+                          notification.order.created_at
+                        ).toLocaleDateString()}
+                      </div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                        Total:{" "}
+                        <span className="font-bold text-green-700 dark:text-green-400">
+                          RM{notification.order.total?.toFixed(2)}
+                        </span>
+                      </div>
+                      {notification.order.order_items &&
+                        notification.order.order_items.length > 0 && (
+                          <div className="mt-2">
+                            <div className="font-semibold text-xs mb-1">
+                              Items:
+                            </div>
+                            <ul className="list-disc pl-4 text-xs">
+                              {notification.order.order_items.map((item) => (
+                                <li key={item.id}>
+                                  {item.name}
+                                  {item.grade ? ` (${item.grade})` : ""}
+                                  {item.quantity ? ` x ${item.quantity}` : ""}
+                                  {item.variant_type
+                                    ? ` [${item.variant_type}]`
+                                    : ""}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 ml-4">
                   {!notification.read && (

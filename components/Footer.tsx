@@ -84,10 +84,10 @@ const Footer = () => {
                 </li>
                 <li>
                   <Link
-                    href="/order-success"
+                    href="/profile/orders"
                     className="hover:text-gray-900 dark:hover:text-white transition-colors"
                   >
-                    Order Success
+                    Order
                   </Link>
                 </li>
               </ul>
