@@ -35,6 +35,7 @@ import { useUser } from "@supabase/auth-helpers-react";
 import ReactMarkdown from "react-markdown";
 import Image from "next/image";
 import type { CartItem } from "@/type/cart";
+import Link from "next/link";
 
 interface Message {
   id: string;
@@ -328,7 +329,20 @@ export default function GeminiChat({
         <div className="mb-4">
           <div className="font-semibold mb-2">{message.content}</div>
           {cartItems.length === 0 ? (
-            <div className="text-gray-500 text-sm">Your cart is empty.</div>
+            <div className="flex flex-col items-center justify-center text-center h-[60vh] space-y-6">
+              <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center">
+                <ShoppingCart className="h-12 w-12 text-blue-600" />
+              </div>
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold">Your cart is empty</h3>
+                <p className="text-muted-foreground max-w-sm">
+                  Discover our amazing products and add them to your cart to get started.
+                </p>
+              </div>
+              <Link href="/products">
+                <Button>Browse Products</Button>
+              </Link>
+            </div>
           ) : (
             <div className="space-y-4">
               {cartItems.map((item: CartItem) => {
