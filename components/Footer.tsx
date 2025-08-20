@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TypographyH3, TypographyP } from "./ui/Typography";
 
 const Footer = () => {
   return (
@@ -7,18 +8,18 @@ const Footer = () => {
         <div className="container mx-auto px-4">
           <div className="grid gap-8 md:grid-cols-4">
             <div>
-              <h3 className="mb-4 text-lg font-bold dark:text-white">
-                Shop YTL
-              </h3>
-              <p className="text-sm text-muted-foreground dark:text-gray-400">
+              <TypographyH3 className="mb-4 dark:text-white">
+                YTL CONCRETE HUB
+              </TypographyH3>
+              <TypographyP className="text-sm text-muted-foreground dark:text-gray-400">
                 We have clothes that suit your style and which you&apos;re proud
                 to wear.
-              </p>
+              </TypographyP>
             </div>
             <div>
-              <h3 className="mb-4 text-lg font-bold dark:text-white">
+              <TypographyH3 className="mb-4 dark:text-white">
                 COMPANY
-              </h3>
+              </TypographyH3>
               <ul className="space-y-2 text-sm text-muted-foreground dark:text-gray-400">
                 <li>
                   <Link
@@ -30,47 +31,47 @@ const Footer = () => {
                 </li>
                 <li>
                   <Link
-                    href="/careers"
+                    href="/compare"
                     className="hover:text-gray-900 dark:hover:text-white transition-colors"
                   >
-                    Careers
+                    Compare
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="/terms"
+                    href="/blogs"
                     className="hover:text-gray-900 dark:hover:text-white transition-colors"
                   >
-                    Terms & Conditions
+                    Blogs
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="/privacy"
+                    href="/contact"
                     className="hover:text-gray-900 dark:hover:text-white transition-colors"
                   >
-                    Privacy Policy
+                    Contact
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="mb-4 text-lg font-bold dark:text-white">HELP</h3>
+              <TypographyH3 className="mb-4 dark:text-white">HELP</TypographyH3>
               <ul className="space-y-2 text-sm text-muted-foreground dark:text-gray-400">
                 <li>
                   <Link
-                    href="/support"
+                    href="/faq"
                     className="hover:text-gray-900 dark:hover:text-white transition-colors"
                   >
-                    Customer Support
+                    FAQ
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="/delivery"
+                    href="/privacy"
                     className="hover:text-gray-900 dark:hover:text-white transition-colors"
                   >
-                    Delivery Details
+                    Privacy Policy
                   </Link>
                 </li>
                 <li>
@@ -83,49 +84,66 @@ const Footer = () => {
                 </li>
                 <li>
                   <Link
-                    href="/privacy"
+                    href="/order-success"
                     className="hover:text-gray-900 dark:hover:text-white transition-colors"
                   >
-                    Privacy Policy
+                    Order Success
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="mb-4 text-lg font-bold dark:text-white">
+              <TypographyH3 className="mb-4 dark:text-white">
                 RESOURCES
-              </h3>
+              </TypographyH3>
               <ul className="space-y-2 text-sm text-muted-foreground dark:text-gray-400">
                 <li>
                   <Link
-                    href="/free-ebook"
+                    href="/products"
                     className="hover:text-gray-900 dark:hover:text-white transition-colors"
                   >
-                    Free eBook
+                    Products
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="/development"
+                    href="/cart"
                     className="hover:text-gray-900 dark:hover:text-white transition-colors"
                   >
-                    Development Tutorial
+                    Cart
+                  </Link>
+                </li>
+
+                <li>
+                  <Link
+                    href="/profile"
+                    className="hover:text-gray-900 dark:hover:text-white transition-colors"
+                  >
+                    Profile
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="/blog"
+                    href="/checkout"
                     className="hover:text-gray-900 dark:hover:text-white transition-colors"
                   >
-                    Blog
+                    Checkout
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="/youtube"
+                    href="/notifications"
                     className="hover:text-gray-900 dark:hover:text-white transition-colors"
                   >
-                    YouTube Playlist
+                    Notifications
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/search"
+                    className="hover:text-gray-900 dark:hover:text-white transition-colors"
+                  >
+                    Search
                   </Link>
                 </li>
               </ul>
@@ -137,9 +155,9 @@ const Footer = () => {
 
         <div className="container mx-auto px-4">
           <div className="mt-8 flex flex-col items-center justify-between gap-4 py-4 md:flex-row">
-            <p className="text-sm text-muted-foreground dark:text-gray-400">
+            <TypographyP className="text-sm text-muted-foreground dark:text-gray-400">
               © 2024 SHOP.CO All Rights Reserved.
-            </p>
+            </TypographyP>
             <div className="flex gap-2">
               {["visa", "mastercard", "paypal"].map((payment) => (
                 <div
