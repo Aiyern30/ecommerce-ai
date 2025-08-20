@@ -11,13 +11,10 @@ const stripePromise = loadStripe(
 
 interface StripeProviderProps {
   children: React.ReactNode;
-  amount: number; // Amount in cents (e.g., 2300 for RM23.00)
+  amount: number;
 }
 
 export function StripeProvider({ children, amount }: StripeProviderProps) {
-  // No state needed since we're not managing PaymentIntent creation here
-
-  // Validate amount
   if (amount < 100) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
@@ -33,7 +30,6 @@ export function StripeProvider({ children, amount }: StripeProviderProps) {
     );
   }
 
-  // No clientSecret needed upfront - we'll create PaymentIntent when user confirms payment
   const options = {
     mode: "payment" as const,
     amount: amount,
@@ -59,7 +55,6 @@ export function StripeProvider({ children, amount }: StripeProviderProps) {
   );
 }
 
-// Utility function to clear payment data when order is completed
 export function clearPaymentSession() {
   sessionStorage.removeItem("stripe-client-secret");
   sessionStorage.removeItem("stripe-amount");

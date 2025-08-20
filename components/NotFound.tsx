@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Home, ShoppingBag, ArrowLeft } from "lucide-react";
+import { Home, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/";
 
 export default function NotFoundPage() {
@@ -46,16 +46,6 @@ export default function NotFoundPage() {
             <Link href="/products">
               <ShoppingBag className="h-4 w-4" />
               Browse Products
-            </Link>
-          </Button>
-          <Button
-            asChild
-            variant="outline"
-            className="gap-2 dark:border-gray-600 dark:text-white"
-          >
-            <Link href="/contact">
-              <ArrowLeft className="h-4 w-4" />
-              Contact Support
             </Link>
           </Button>
         </div>
