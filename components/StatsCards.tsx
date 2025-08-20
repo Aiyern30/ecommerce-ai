@@ -10,8 +10,8 @@ interface StatsCardsProps {
   description?: string;
   growth?: number;
   icon: any;
-  gradient?: string; // Icon background gradient
-  bgGradient?: string; // Card background gradient
+  gradient?: string;
+  bgGradient?: string;
   hideGrowth?: boolean;
 }
 
@@ -70,7 +70,6 @@ export function StatsCards({
     >
       <CardContent className="p-6">
         <div className="flex flex-col gap-4">
-          {/* Header */}
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
@@ -92,7 +91,6 @@ export function StatsCards({
             </div>
           </div>
 
-          {/* Growth / Real-time indicator */}
           {!hideGrowth && (
             <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
               {renderGrowthIndicator(growth)}
