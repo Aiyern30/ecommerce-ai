@@ -47,6 +47,7 @@ import ReactMarkdown from "react-markdown";
 import Image from "next/image";
 import type { CartItem } from "@/type/cart";
 import Link from "next/link";
+import { getFaqs } from "@/lib/faq/getFaqs";
 
 interface Message {
   id: string;
@@ -120,6 +121,36 @@ export default function GeminiChat({
     }
   }, [isOpen]);
 
+  // Add a simple string similarity function (can be improved)
+  function stringSimilarity(a: string, b: string): number {
+    a = a.toLowerCase();
+    b = b.toLowerCase();
+    if (a === b) return 1;
+    const aWords = a.split(/\s+/);
+    const bWords = b.split(/\s+/);
+    const common = aWords.filter((w) => bWords.includes(w));
+    return common.length / Math.max(aWords.length, bWords.length);
+  }
+
+  // Find best matching FAQ (returns answer if similarity > 0.5)
+  async function findMatchingFaq(
+    userQuestion: string
+  ): Promise<{ question: string; answer: string } | null> {
+    const faqs = await getFaqs();
+    let bestMatch = null;
+    let bestScore = 0.5; // Threshold
+    for (const faq of faqs) {
+      const score = stringSimilarity(userQuestion, faq.question);
+      if (score > bestScore) {
+        bestScore = score;
+        bestMatch = faq;
+      }
+    }
+    return bestMatch
+      ? { question: bestMatch.question, answer: bestMatch.answer }
+      : null;
+  }
+
   const sendMessage = async (message: string, { system = false } = {}) => {
     if (!message.trim() || isLoading) return;
 
@@ -139,6 +170,26 @@ export default function GeminiChat({
     setIsTyping(true);
 
     try {
+      // 1. Try FAQ match first
+      const faqMatch = await findMatchingFaq(message.trim());
+      if (faqMatch) {
+        const botMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content: faqMatch.answer,
+          sender: "bot",
+          timestamp: new Date(),
+          type: "text",
+          metadata: {
+            suggestions: ["Ask another question", "Show all FAQs"],
+          },
+        };
+        setMessages((prev) => [...prev, botMessage]);
+        setIsLoading(false);
+        setIsTyping(false);
+        return;
+      }
+
+      // 2. Fallback to normal AI chat
       const response = await fetch("/api/chat/gemini", {
         method: "POST",
         headers: {
