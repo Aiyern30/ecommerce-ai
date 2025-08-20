@@ -321,46 +321,65 @@ export default function NotificationsPage() {
                   </TypographyP>
                   {/* Show order details if present */}
                   {notification.order && (
-                    <div className="mt-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
-                      <div className="text-xs font-semibold mb-1 text-blue-700 dark:text-blue-300">
-                        Order #{notification.order.id}
-                      </div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">
-                        Status: {notification.order.status} | Payment:{" "}
-                        {notification.order.payment_status}
-                      </div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">
-                        Placed:{" "}
-                        {new Date(
-                          notification.order.created_at
-                        ).toLocaleDateString()}
-                      </div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">
-                        Total:{" "}
-                        <span className="font-bold text-green-700 dark:text-green-400">
-                          RM{notification.order.total?.toFixed(2)}
+                    <div className="mt-4 rounded-xl border border-blue-100 dark:border-blue-900 bg-blue-50/40 dark:bg-blue-900/30 p-4 shadow-sm">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">
+                          Order
+                        </span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          #{notification.order.id}
+                        </span>
+                        <span className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                          {notification.order.status.charAt(0).toUpperCase() +
+                            notification.order.status.slice(1)}
+                        </span>
+                        <span className="text-xs px-2 py-1 rounded bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">
+                          {notification.order.payment_status.charAt(0).toUpperCase() +
+                            notification.order.payment_status.slice(1)}
+                        </span>
+                        <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
+                          {new Date(notification.order.created_at).toLocaleDateString("en-MY", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
                         </span>
                       </div>
-                      {notification.order.order_items &&
-                        notification.order.order_items.length > 0 && (
-                          <div className="mt-2">
-                            <div className="font-semibold text-xs mb-1">
-                              Items:
-                            </div>
-                            <ul className="list-disc pl-4 text-xs">
-                              {notification.order.order_items.map((item) => (
-                                <li key={item.id}>
-                                  {item.name}
-                                  {item.grade ? ` (${item.grade})` : ""}
-                                  {item.quantity ? ` x ${item.quantity}` : ""}
-                                  {item.variant_type
-                                    ? ` [${item.variant_type}]`
-                                    : ""}
-                                </li>
-                              ))}
-                            </ul>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm font-bold text-green-700 dark:text-green-400">
+                          RM{notification.order.total?.toFixed(2)}
+                        </span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          Total
+                        </span>
+                      </div>
+                      {notification.order.order_items && notification.order.order_items.length > 0 && (
+                        <div className="mt-2">
+                          <div className="font-semibold text-xs mb-1">Items:</div>
+                          <div className="overflow-x-auto">
+                            <table className="min-w-full text-xs">
+                              <thead>
+                                <tr className="bg-gray-100 dark:bg-gray-800">
+                                  <th className="px-2 py-1 text-left">Name</th>
+                                  <th className="px-2 py-1 text-left">Grade</th>
+                                  <th className="px-2 py-1 text-center">Qty</th>
+                                  <th className="px-2 py-1 text-left">Delivery</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {notification.order.order_items.map((item) => (
+                                  <tr key={item.id} className="border-b border-gray-100 dark:border-gray-800">
+                                    <td className="px-2 py-1">{item.name}</td>
+                                    <td className="px-2 py-1">{item.grade}</td>
+                                    <td className="px-2 py-1 text-center">{item.quantity}</td>
+                                    <td className="px-2 py-1">{item.variant_type ? item.variant_type.replace("_", " ") : "normal"}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
                           </div>
-                        )}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
