@@ -424,7 +424,7 @@ export default function GeminiChat({
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 w-7 p-0 hover:bg-gray-100"
+                            className="h-7 w-7"
                             onClick={() => handleQtyStep(item, -1)}
                           >
                             <Minus className="h-3 w-3" />
@@ -445,7 +445,7 @@ export default function GeminiChat({
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 w-7 p-0 hover:bg-gray-100"
+                            className="h-7 w-7"
                             onClick={() => handleQtyStep(item, 1)}
                           >
                             <Plus className="h-3 w-3" />
@@ -453,7 +453,7 @@ export default function GeminiChat({
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 w-7 p-0"
+                            className="h-7 w-7"
                             onClick={() => handleQtyUpdate(item)}
                             aria-label="Update quantity"
                           >
