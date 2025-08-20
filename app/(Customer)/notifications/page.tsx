@@ -326,19 +326,28 @@ export default function NotificationsPage() {
                         <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">
                           Order
                         </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                        <Link
+                          href={`/profile/orders/${notification.order.id}`}
+                          target="_blank"
+                          className="text-xs text-blue-600 dark:text-blue-300 underline hover:text-blue-800"
+                          title={`View order ${notification.order.id}`}
+                        >
                           #{notification.order.id}
-                        </span>
+                        </Link>
                         <span className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
                           {notification.order.status.charAt(0).toUpperCase() +
                             notification.order.status.slice(1)}
                         </span>
                         <span className="text-xs px-2 py-1 rounded bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">
-                          {notification.order.payment_status.charAt(0).toUpperCase() +
+                          {notification.order.payment_status
+                            .charAt(0)
+                            .toUpperCase() +
                             notification.order.payment_status.slice(1)}
                         </span>
                         <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
-                          {new Date(notification.order.created_at).toLocaleDateString("en-MY", {
+                          {new Date(
+                            notification.order.created_at
+                          ).toLocaleDateString("en-MY", {
                             year: "numeric",
                             month: "short",
                             day: "numeric",
@@ -353,33 +362,62 @@ export default function NotificationsPage() {
                           Total
                         </span>
                       </div>
-                      {notification.order.order_items && notification.order.order_items.length > 0 && (
-                        <div className="mt-2">
-                          <div className="font-semibold text-xs mb-1">Items:</div>
-                          <div className="overflow-x-auto">
-                            <table className="min-w-full text-xs">
-                              <thead>
-                                <tr className="bg-gray-100 dark:bg-gray-800">
-                                  <th className="px-2 py-1 text-left">Name</th>
-                                  <th className="px-2 py-1 text-left">Grade</th>
-                                  <th className="px-2 py-1 text-center">Qty</th>
-                                  <th className="px-2 py-1 text-left">Delivery</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {notification.order.order_items.map((item) => (
-                                  <tr key={item.id} className="border-b border-gray-100 dark:border-gray-800">
-                                    <td className="px-2 py-1">{item.name}</td>
-                                    <td className="px-2 py-1">{item.grade}</td>
-                                    <td className="px-2 py-1 text-center">{item.quantity}</td>
-                                    <td className="px-2 py-1">{item.variant_type ? item.variant_type.replace("_", " ") : "normal"}</td>
+                      {notification.order.order_items &&
+                        notification.order.order_items.length > 0 && (
+                          <div className="mt-2">
+                            <div className="font-semibold text-xs mb-1">
+                              Items:
+                            </div>
+                            <div className="overflow-x-auto">
+                              <table className="min-w-full text-xs">
+                                <thead>
+                                  <tr className="bg-gray-100 dark:bg-gray-800">
+                                    <th className="px-2 py-1 text-left">
+                                      Name
+                                    </th>
+                                    <th className="px-2 py-1 text-left">
+                                      Grade
+                                    </th>
+                                    <th className="px-2 py-1 text-center">
+                                      Qty
+                                    </th>
+                                    <th className="px-2 py-1 text-left">
+                                      Delivery
+                                    </th>
                                   </tr>
-                                ))}
-                              </tbody>
-                            </table>
+                                </thead>
+                                <tbody>
+                                  {notification.order.order_items.map(
+                                    (item) => (
+                                      <tr
+                                        key={item.id}
+                                        className="border-b border-gray-100 dark:border-gray-800"
+                                      >
+                                        <td className="px-2 py-1">
+                                          {item.name}
+                                        </td>
+                                        <td className="px-2 py-1">
+                                          {item.grade}
+                                        </td>
+                                        <td className="px-2 py-1 text-center">
+                                          {item.quantity}
+                                        </td>
+                                        <td className="px-2 py-1">
+                                          {item.variant_type
+                                            ? item.variant_type.replace(
+                                                "_",
+                                                " "
+                                              )
+                                            : "normal"}
+                                        </td>
+                                      </tr>
+                                    )
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
                     </div>
                   )}
                 </div>
