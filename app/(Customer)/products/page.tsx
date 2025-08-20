@@ -45,6 +45,7 @@ export default function ProductListPage() {
         `
         )
         .eq("status", "published")
+        .gt("stock_quantity", 5)
         .order("created_at", { ascending: false });
 
       if (error) {
