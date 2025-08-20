@@ -161,8 +161,10 @@ export default function FaqPage() {
           )}
         </div>
 
-        {/* Right: Contact form */}
-        {loading ? <ContactFormSkeleton /> : <ContactForm />}
+        {/* Right: Contact form - sticky on desktop */}
+        <div className="md:sticky md:top-48 h-fit">
+          {loading ? <ContactFormSkeleton /> : <ContactForm />}
+        </div>
       </div>
     </div>
   );
