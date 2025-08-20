@@ -406,7 +406,10 @@ export default function ProductDetailClient() {
                     product.status.slice(1)}
                 </Badge>
                 {product.is_featured && (
-                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+                  <Badge
+                    variant="secondary"
+                    className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+                  >
                     <Star className="w-3 h-3 mr-1" />
                     Featured
                   </Badge>

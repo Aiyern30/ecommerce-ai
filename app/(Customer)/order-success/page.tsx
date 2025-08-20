@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useUser } from "@supabase/auth-helpers-react";
-import { Button } from "@/components/ui";
+import { Button, Skeleton } from "@/components/ui";
 import {
   CheckCircle,
   Package,
@@ -63,10 +63,27 @@ export default function OrderSuccessPage() {
     return (
       <div className="container mx-auto px-4 pt-0 pb-4">
         <TypographyH1 className="my-8">ORDER SUCCESS</TypographyH1>
-        <div className="flex justify-center items-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-            <TypographyP>Loading order details...</TypographyP>
+        <div className="mx-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8">
+            <div className="flex flex-col items-center mb-8">
+              <Skeleton className="w-16 h-16 rounded-full mb-4" />
+              <Skeleton className="h-8 w-48 mb-2" />
+              <Skeleton className="h-4 w-64 mb-2" />
+              <Skeleton className="h-4 w-40 mb-2" />
+            </div>
+            <div className="grid md:grid-cols-3 gap-4 mb-8">
+              <Skeleton className="h-24 w-full rounded-lg" />
+              <Skeleton className="h-24 w-full rounded-lg" />
+              <Skeleton className="h-24 w-full rounded-lg" />
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+              <Skeleton className="h-64 w-full rounded-lg" />
+              <Skeleton className="h-64 w-full rounded-lg" />
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+              <Skeleton className="h-12 w-40 rounded-lg" />
+              <Skeleton className="h-12 w-40 rounded-lg" />
+            </div>
           </div>
         </div>
       </div>
