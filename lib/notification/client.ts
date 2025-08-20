@@ -9,7 +9,26 @@ export async function getUserNotifications(
     const supabase = createClientComponentClient();
     const { data, error } = await supabase
       .from("notifications")
-      .select("*")
+      .select(
+        `
+        *,
+        order:orders(
+          id,
+          status,
+          payment_status,
+          total,
+          created_at,
+          order_items(
+            id,
+            name,
+            grade,
+            price,
+            quantity,
+            variant_type
+          )
+        )
+      `
+      )
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
     if (error) {
