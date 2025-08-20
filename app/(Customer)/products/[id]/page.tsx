@@ -324,7 +324,7 @@ export default function ProductDetailClient() {
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Image Gallery */}
           <div className="space-y-4">
-            <div className="relative aspect-square rounded-2xl overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg sticky top-8">
+            <div className="relative aspect-square rounded-2xl overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg sticky top-40">
               {currentImage ? (
                 <Image
                   src={currentImage.image_url}
@@ -541,20 +541,35 @@ export default function ProductDetailClient() {
                     </button>
                     <input
                       type="number"
-                      min={1}
+                      min={0}
                       max={product.stock_quantity ?? 999}
-                      value={quantity}
-                      onChange={(e) =>
-                        setQuantity(
-                          Math.max(
-                            1,
-                            Math.min(
-                              Number(e.target.value),
-                              product.stock_quantity ?? 999
+                      value={isNaN(quantity) ? "" : quantity}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        // Allow empty string for editing, show empty
+                        if (val === "") {
+                          setQuantity(NaN);
+                        } else {
+                          // Remove leading zeros
+                          const num = Number(val.replace(/^0+/, "") || "0");
+                          setQuantity(
+                            Math.max(
+                              0,
+                              Math.min(num, product.stock_quantity ?? 999)
                             )
-                          )
-                        )
-                      }
+                          );
+                        }
+                      }}
+                      onBlur={(e) => {
+                        // If input is empty or invalid, reset to 0
+                        if (
+                          !e.target.value ||
+                          isNaN(Number(e.target.value)) ||
+                          Number(e.target.value) < 0
+                        ) {
+                          setQuantity(0);
+                        }
+                      }}
                       className="w-20 h-10 text-center border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
                     <button
@@ -574,7 +589,10 @@ export default function ProductDetailClient() {
                       Total Price
                     </div>
                     <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                      RM {((selectedPrice ?? 0) * quantity).toFixed(2)}
+                      RM{" "}
+                      {(
+                        (selectedPrice ?? 0) * (isNaN(quantity) ? 0 : quantity)
+                      ).toFixed(2)}
                     </div>
                   </div>
                   <Button
