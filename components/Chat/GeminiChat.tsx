@@ -26,6 +26,14 @@ import {
   SelectContent,
   SelectItem,
   SelectValue,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "../ui";
 import TypingIndicator from "./TypingIndicator";
 import { Product } from "@/type/product";
@@ -109,18 +117,20 @@ export default function GeminiChat({
     }
   }, [isOpen]);
 
-  const sendMessage = async (message: string) => {
+  const sendMessage = async (message: string, { system = false } = {}) => {
     if (!message.trim() || isLoading) return;
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: message.trim(),
-      sender: "user",
-      timestamp: new Date(),
-      type: "text",
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
+    // Only add to chat history if not a system command
+    if (!system) {
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        content: message.trim(),
+        sender: "user",
+        timestamp: new Date(),
+        type: "text",
+      };
+      setMessages((prev) => [...prev, userMessage]);
+    }
     setInputMessage("");
     setIsLoading(true);
     setIsTyping(true);
@@ -142,6 +152,11 @@ export default function GeminiChat({
       }
 
       const data = await response.json();
+
+      // If cartUpdated flag is present, dispatch event
+      if (data.cartUpdated) {
+        window.dispatchEvent(new CustomEvent("cartUpdated"));
+      }
 
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -263,13 +278,34 @@ export default function GeminiChat({
     }
   };
 
-  // Handler for plus/minus
+  // Handler for plus/minus (remove if quantity < 1)
   const handleQtyStep = (item: CartItem, step: number) => {
     const newQty = item.quantity + step;
     if (newQty < 1) {
-      sendMessage(`remove ${item.product?.name} from my cart`);
+      // Use message format that works with backend
+      sendMessage(`remove ${item.product?.name} from carts`, { system: true });
     } else {
       sendMessage(`update quantity of ${item.product?.name} to ${newQty}`);
+    }
+  };
+
+  // Handler for remove button (open dialog)
+  const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
+  const [itemToRemove, setItemToRemove] = useState<CartItem | null>(null);
+
+  const handleRemoveClick = (item: CartItem) => {
+    setItemToRemove(item);
+    setRemoveDialogOpen(true);
+  };
+
+  // Handler for confirm remove (use working format)
+  const confirmRemove = () => {
+    if (itemToRemove) {
+      sendMessage(`remove ${itemToRemove.product?.name} from carts`, {
+        system: true,
+      });
+      setRemoveDialogOpen(false);
+      setItemToRemove(null);
     }
   };
 
@@ -336,7 +372,8 @@ export default function GeminiChat({
               <div className="space-y-3">
                 <h3 className="text-lg font-semibold">Your cart is empty</h3>
                 <p className="text-muted-foreground max-w-sm">
-                  Discover our amazing products and add them to your cart to get started.
+                  Discover our amazing products and add them to your cart to get
+                  started.
                 </p>
               </div>
               <Link href="/products">
@@ -423,16 +460,12 @@ export default function GeminiChat({
                             ✓
                           </Button>
                         </div>
-                        {/* Remove button */}
+                        {/* Remove button - now opens dialog */}
                         <Button
                           variant="ghost"
                           size="sm"
                           className="h-7 w-7 p-0 border rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-                          onClick={() =>
-                            sendMessage(
-                              `remove ${item.product?.name} from my cart`
-                            )
-                          }
+                          onClick={() => handleRemoveClick(item)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -881,6 +914,56 @@ export default function GeminiChat({
           ))}
         </div>
       </div>
+
+      {/* Remove confirmation dialog */}
+      <AlertDialog open={removeDialogOpen} onOpenChange={setRemoveDialogOpen}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove item from cart?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove this item from your cart? This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {itemToRemove && (
+            <div className="flex gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+              <div className="h-16 w-16 bg-gray-100 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
+                <Image
+                  src={
+                    itemToRemove.product?.product_images?.[0]?.image_url ||
+                    itemToRemove.product?.image_url ||
+                    "/placeholder.svg"
+                  }
+                  alt={itemToRemove.product?.name || "Product"}
+                  width={64}
+                  height={64}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="flex-1">
+                <div className="font-medium text-sm mb-1">
+                  {itemToRemove.product?.name}
+                </div>
+                <div className="text-xs text-blue-600 mb-1">
+                  {itemToRemove.variant_type}
+                </div>
+                <div className="text-xs text-gray-500 mb-1">
+                  Quantity: {itemToRemove.quantity}
+                </div>
+              </div>
+            </div>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmRemove}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Remove Item
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

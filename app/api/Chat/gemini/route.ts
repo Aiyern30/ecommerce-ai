@@ -491,17 +491,23 @@ Keep the response conversational and focused on helping the customer make inform
       typeof message === "string" &&
       message.match(/remove\s+([a-zA-Z0-9\s]+)\s+from.*cart/i);
     if (removeMatch && user?.id) {
-      const productName = removeMatch[1].trim().toLowerCase();
+      const productName = removeMatch[1]
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, " ");
       const cartItems = await getCartItemsServerSide(user.id);
       const item = cartItems.find(
-        (ci) => ci.product?.name?.toLowerCase() === productName
+        (ci) =>
+          ci.product?.name?.toLowerCase().replace(/\s+/g, " ") === productName
       );
       if (item) {
         await removeFromCartServerSide(item.id);
+        // Add cartUpdated flag
         return NextResponse.json({
           message: `Removed ${item.product.name} from your cart.`,
           type: "cart",
           metadata: { cart: await getCartItemsServerSide(user.id) },
+          cartUpdated: true,
         });
       } else {
         return NextResponse.json({
@@ -512,23 +518,46 @@ Keep the response conversational and focused on helping the customer make inform
       }
     }
 
+    // Remove by cart item id
+    if (
+      typeof message === "string" &&
+      message.startsWith("remove_cart_item_id:")
+    ) {
+      const itemId = message.replace("remove_cart_item_id:", "").trim();
+      if (user?.id && itemId) {
+        await removeFromCartServerSide(itemId);
+        return NextResponse.json({
+          message: "Removed item from your cart.",
+          type: "cart",
+          metadata: { cart: await getCartItemsServerSide(user.id) },
+          cartUpdated: true,
+        });
+      }
+    }
+
     // Update quantity in cart
     const updateMatch =
       typeof message === "string" &&
       message.match(/update\s+quantity\s+of\s+([a-zA-Z0-9\s]+)\s+to\s+(\d+)/i);
     if (updateMatch && user?.id) {
-      const productName = updateMatch[1].trim().toLowerCase();
+      const productName = updateMatch[1]
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, " ");
       const newQty = parseInt(updateMatch[2]);
       const cartItems = await getCartItemsServerSide(user.id);
       const item = cartItems.find(
-        (ci) => ci.product?.name?.toLowerCase() === productName
+        (ci) =>
+          ci.product?.name?.toLowerCase().replace(/\s+/g, " ") === productName
       );
       if (item) {
         await updateCartItemQuantityServerSide(item.id, newQty);
+        // Add cartUpdated flag
         return NextResponse.json({
           message: `Updated quantity of ${item.product.name} to ${newQty}.`,
           type: "cart",
           metadata: { cart: await getCartItemsServerSide(user.id) },
+          cartUpdated: true,
         });
       } else {
         return NextResponse.json({
@@ -543,7 +572,7 @@ Keep the response conversational and focused on helping the customer make inform
     if (
       intentAnalysis.intent === "order_status" ||
       (typeof message === "string" &&
-        /(order status|track order|my orders|recent orders|order history|show my orders|show recent orders|where is my order|show my order|show order)/i.test(
+        /(order status|track order|my orders|recent orders|order history|show my orders|show recent orders|where is my order|show order)/i.test(
           message
         ))
     ) {
