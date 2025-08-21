@@ -86,10 +86,25 @@ export default function CompareProductsContent() {
         setProducts(data || []);
         const selectedProducts = (data || [])
           .filter((p) => productIds.includes(p.id))
-          .map((product, index) => ({
-            ...product,
-            selectedPriceType: priceTypes[index] || "normal",
-          }));
+          .map((product, index) => {
+            // Determine the default priceType for this product
+            const priceTypesAvailable = [
+              product.normal_price != null ? "normal" : null,
+              product.pump_price != null ? "pump" : null,
+              product.tremie_1_price != null ? "tremie_1" : null,
+              product.tremie_2_price != null ? "tremie_2" : null,
+              product.tremie_3_price != null ? "tremie_3" : null,
+            ].filter(Boolean) as string[];
+            const urlPriceType = priceTypes[index];
+            const defaultPriceType =
+              urlPriceType && priceTypesAvailable.includes(urlPriceType)
+                ? urlPriceType
+                : priceTypesAvailable[0] || "normal";
+            return {
+              ...product,
+              selectedPriceType: defaultPriceType,
+            };
+          });
 
         console.log(
           "✅ [CompareProducts] Selected products:",
