@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import type { Product } from "@/type/product";
@@ -46,14 +47,36 @@ export function OverviewTabs({
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              RM
-              {Math.min(
-                ...comparedProducts.map((p) => p.normal_price ?? 0)
-              ).toFixed(0)}
-              {" - "}RM
-              {Math.max(
-                ...comparedProducts.map((p) => p.normal_price ?? 0)
-              ).toFixed(0)}
+              {/* Show price range based on selectedPriceType for each product */}
+              {(() => {
+                const selectedPrices = comparedProducts
+                  .map((p) => {
+                    const type = (p as any).selectedPriceType || "normal";
+                    switch (type) {
+                      case "pump":
+                        return p.pump_price;
+                      case "tremie_1":
+                        return p.tremie_1_price;
+                      case "tremie_2":
+                        return p.tremie_2_price;
+                      case "tremie_3":
+                        return p.tremie_3_price;
+                      case "normal":
+                      default:
+                        return p.normal_price;
+                    }
+                  })
+                  .filter((price) => price !== null && price !== undefined);
+                if (selectedPrices.length === 0) {
+                  return "-";
+                }
+                return (
+                  <>
+                    RM{Math.min(...selectedPrices).toFixed(0)}
+                    {" - "}RM{Math.max(...selectedPrices).toFixed(0)}
+                  </>
+                );
+              })()}
             </div>
             <div className="text-gray-600 dark:text-gray-400">Price Range</div>
           </div>
@@ -71,13 +94,34 @@ export function OverviewTabs({
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              RM
-              {(
-                comparedProducts.reduce(
-                  (sum, p) => sum + (p.normal_price ?? 0),
-                  0
-                ) / comparedProducts.length
-              ).toFixed(0)}
+              {/* Average price based on selectedPriceType for each product */}
+              {(() => {
+                const selectedPrices = comparedProducts
+                  .map((p) => {
+                    const type = (p as any).selectedPriceType || "normal";
+                    switch (type) {
+                      case "pump":
+                        return p.pump_price;
+                      case "tremie_1":
+                        return p.tremie_1_price;
+                      case "tremie_2":
+                        return p.tremie_2_price;
+                      case "tremie_3":
+                        return p.tremie_3_price;
+                      case "normal":
+                      default:
+                        return p.normal_price;
+                    }
+                  })
+                  .filter((price) => price !== null && price !== undefined);
+                if (selectedPrices.length === 0) {
+                  return "-";
+                }
+                return `RM${(
+                  selectedPrices.reduce((sum, p) => sum + p, 0) /
+                  selectedPrices.length
+                ).toFixed(0)}`;
+              })()}
             </div>
             <div className="text-gray-600 dark:text-gray-400">Avg Price</div>
           </div>

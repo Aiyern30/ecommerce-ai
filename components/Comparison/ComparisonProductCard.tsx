@@ -6,7 +6,7 @@ import { X, Star, CheckCircle } from "lucide-react";
 import Image from "next/image";
 
 interface ComparisonProductCardProps {
-  product: Product;
+  product: Product & { selectedPriceType?: string };
   onRemove?: () => void;
   showRemove?: boolean;
 }
@@ -20,6 +20,31 @@ export function ComparisonProductCard({
   const mainImage =
     product.product_images?.find((img) => img.is_primary) ||
     product.product_images?.[0];
+
+  // Delivery options for display
+  const deliveryOptions = [
+    product.normal_price != null
+      ? { key: "normal", label: "Normal Delivery", price: product.normal_price }
+      : null,
+    product.pump_price != null
+      ? { key: "pump", label: "Pump Delivery", price: product.pump_price }
+      : null,
+    product.tremie_1_price != null
+      ? { key: "tremie_1", label: "Tremie 1", price: product.tremie_1_price }
+      : null,
+    product.tremie_2_price != null
+      ? { key: "tremie_2", label: "Tremie 2", price: product.tremie_2_price }
+      : null,
+    product.tremie_3_price != null
+      ? { key: "tremie_3", label: "Tremie 3", price: product.tremie_3_price }
+      : null,
+  ].filter(Boolean) as { key: string; label: string; price: number }[];
+
+  // Find selected price type
+  const selectedType = product.selectedPriceType || "normal";
+  const selectedOption = deliveryOptions.find(
+    (opt) => opt.key === selectedType
+  );
 
   return (
     <Card className="relative flex flex-col h-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 p-0">
@@ -91,13 +116,29 @@ export function ComparisonProductCard({
         <div className="h-24 mb-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center">
           <div className="text-center w-full">
             <div className="flex items-baseline justify-center gap-1 mb-1">
-              <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                RM
-                {product.normal_price !== null &&
-                product.normal_price !== undefined
-                  ? Number(product.normal_price).toFixed(2)
-                  : "0.00"}
-              </span>
+              {selectedOption ? (
+                <>
+                  <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    RM{Number(selectedOption.price).toFixed(2)}
+                  </span>
+                  <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded ml-2">
+                    {selectedOption.label}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="text-2xl font-bold text-gray-400 dark:text-gray-500">
+                    Not available for this delivery type
+                  </span>
+                  {/* Show available types */}
+                  {deliveryOptions.length > 0 && (
+                    <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded ml-2">
+                      Available:{" "}
+                      {deliveryOptions.map((opt) => opt.label).join(", ")}
+                    </span>
+                  )}
+                </>
+              )}
               {product.unit && (
                 <span className="text-sm text-gray-500 dark:text-gray-400">
                   /{product.unit}
