@@ -223,10 +223,17 @@ export class ConcreteProductSearchManager {
         .from("products")
         .select(
           `
-          id, name, description, grade, product_type, product_images, mortar_ratio, category,
+          id, name, description, grade, product_type, mortar_ratio, category,
           normal_price, pump_price, tremie_1_price, tremie_2_price, tremie_3_price,
           unit, stock_quantity, status, is_featured, is_active, keywords,
-          created_at, updated_at
+          created_at, updated_at,
+          product_images (
+            id,
+            image_url,
+            alt_text,
+            is_primary,
+            sort_order
+          )
         `
         )
         .eq("status", "published")
