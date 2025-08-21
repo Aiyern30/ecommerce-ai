@@ -47,7 +47,6 @@ interface ProductCardProps {
 export function ProductCard({
   id,
   name,
-
   grade,
   productType,
   unit,
@@ -285,9 +284,14 @@ export function ProductCard({
       </Dialog>
 
       {/* 📦 Product Card */}
-      <Link href={href} className="group block relative h-full">
+      <div className="group block relative h-full">
         <Card className="py-0 h-full flex flex-col hover:shadow-lg transition-shadow duration-300 overflow-hidden">
-          <div className="relative aspect-square overflow-hidden bg-gray-100">
+          {/* Image section with Link */}
+          <Link
+            href={href}
+            className="relative aspect-square overflow-hidden bg-gray-100 block"
+            tabIndex={-1}
+          >
             <Image
               src={image || "/placeholder.svg"}
               alt={name}
@@ -386,10 +390,17 @@ export function ProductCard({
                 )}
               </div>
             </div>
-          </div>
+          </Link>
 
+          {/* Card content without Link wrapper */}
           <CardContent className="flex-1 p-4 space-y-2">
-            <h3 className="font-medium text-sm line-clamp-2">{name}</h3>
+            {/* Clickable title */}
+            <Link href={href} className="block">
+              <h3 className="font-medium text-sm line-clamp-2 hover:text-blue-600 transition-colors">
+                {name}
+              </h3>
+            </Link>
+
             <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
               {grade && <span>Grade: {grade}</span>}
               {productType && <span>Type: {productType}</span>}
@@ -424,7 +435,7 @@ export function ProductCard({
                   <SelectTrigger className="w-36 h-8 px-2 py-1 text-xs">
                     <SelectValue placeholder="Select delivery" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent side="bottom" align="start">
                     {deliveryOptions.map((opt) => (
                       <SelectItem key={opt.key} value={opt.key}>
                         {opt.label}
@@ -453,7 +464,7 @@ export function ProductCard({
                   <SelectTrigger className="w-36 h-8 px-2 py-1 text-xs border-blue-200 bg-blue-50 dark:bg-blue-600">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent side="bottom" align="start">
                     {deliveryOptions.map((opt) => (
                       <SelectItem key={opt.key} value={opt.key}>
                         {opt.label}
@@ -491,7 +502,7 @@ export function ProductCard({
             </div>
           </CardContent>
         </Card>
-      </Link>
+      </div>
     </>
   );
 }
