@@ -701,34 +701,49 @@ export default function GeminiChat({
                       message.metadata?.intent === "recommendation" &&
                       idx === 0;
 
-                    // Get available delivery types
+                    // Get available delivery types and prices (show only those that exist)
                     const deliveryOptions = [
-                      product.normal_price && {
-                        key: "normal",
-                        label: "Normal",
-                        price: product.normal_price,
-                      },
-                      product.pump_price && {
-                        key: "pump",
-                        label: "Pump",
-                        price: product.pump_price,
-                      },
-                      product.tremie_1_price && {
-                        key: "tremie_1",
-                        label: "Tremie 1",
-                        price: product.tremie_1_price,
-                      },
-                      product.tremie_2_price && {
-                        key: "tremie_2",
-                        label: "Tremie 2",
-                        price: product.tremie_2_price,
-                      },
-                      product.tremie_3_price && {
-                        key: "tremie_3",
-                        label: "Tremie 3",
-                        price: product.tremie_3_price,
-                      },
-                    ].filter(Boolean);
+                      product.normal_price
+                        ? {
+                            key: "normal",
+                            label: "Normal",
+                            price: product.normal_price,
+                          }
+                        : null,
+                      product.pump_price
+                        ? {
+                            key: "pump",
+                            label: "Pump",
+                            price: product.pump_price,
+                          }
+                        : null,
+                      product.tremie_1_price
+                        ? {
+                            key: "tremie_1",
+                            label: "Tremie 1",
+                            price: product.tremie_1_price,
+                          }
+                        : null,
+                      product.tremie_2_price
+                        ? {
+                            key: "tremie_2",
+                            label: "Tremie 2",
+                            price: product.tremie_2_price,
+                          }
+                        : null,
+                      product.tremie_3_price
+                        ? {
+                            key: "tremie_3",
+                            label: "Tremie 3",
+                            price: product.tremie_3_price,
+                          }
+                        : null,
+                    ].filter(
+                      (
+                        opt
+                      ): opt is { key: string; label: string; price: number } =>
+                        opt !== null
+                    );
 
                     const selectedDeliveryType =
                       deliverySelections[product.id] ||
@@ -785,28 +800,21 @@ export default function GeminiChat({
                               </p>
                             )}
 
-                            {/* Price Display */}
+                            {/* Price Display - show only available price types */}
                             <div className="mt-2 space-y-1">
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs text-gray-500">
-                                  Normal:
-                                </span>
-                                <span className="text-sm font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded">
-                                  {product.normal_price
-                                    ? `RM${product.normal_price}`
-                                    : "N/A"}
-                                </span>
-                              </div>
-                              {product.pump_price && (
-                                <div className="flex items-center justify-between">
+                              {deliveryOptions.map((opt) => (
+                                <div
+                                  key={opt.key}
+                                  className="flex items-center justify-between"
+                                >
                                   <span className="text-xs text-gray-500">
-                                    Pump:
+                                    {opt.label}:
                                   </span>
                                   <span className="text-sm font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded">
-                                    RM{product.pump_price}
+                                    RM{opt.price}
                                   </span>
                                 </div>
-                              )}
+                              ))}
                             </div>
 
                             {/* Delivery Type Selector */}
@@ -827,7 +835,7 @@ export default function GeminiChat({
                                   <SelectContent>
                                     {deliveryOptions.map(
                                       (opt) =>
-                                        opt && (
+                                        opt != null && (
                                           <SelectItem
                                             key={opt.key}
                                             value={opt.key}
