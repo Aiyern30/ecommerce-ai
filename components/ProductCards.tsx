@@ -94,6 +94,11 @@ export function ProductCard({
       : null,
   ].filter(Boolean) as { key: string; label: string; price: number }[];
 
+  const onlyOneDeliveryType = deliveryOptions.length === 1;
+  const onlyDeliveryLabel = onlyOneDeliveryType
+    ? deliveryOptions[0].label
+    : null;
+
   const handleCompareClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -399,6 +404,13 @@ export function ProductCard({
               </div>
             )}
 
+            {/* If only one delivery type, show a clear label */}
+            {onlyOneDeliveryType && (
+              <div className="flex items-center gap-2 text-xs text-blue-600 font-medium">
+                <span>Only {onlyDeliveryLabel} available</span>
+              </div>
+            )}
+
             {/* Compare price type selector (only when item is being compared) */}
             {deliveryOptions.length > 1 && isCompared && onPriceTypeChange && (
               <div className="flex items-center gap-2">
@@ -433,6 +445,12 @@ export function ProductCard({
                     deliveryOptions.find((opt) => opt.key === selectedPriceType)
                       ?.label
                   }
+                </span>
+              )}
+              {/* Show delivery type label if only one type */}
+              {onlyOneDeliveryType && (
+                <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded">
+                  {onlyDeliveryLabel}
                 </span>
               )}
             </div>
