@@ -17,9 +17,6 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
 } from "@/components/ui/";
 import NotificationSheet from "./Notification";
 import { useTheme } from "./ThemeProvider";
@@ -37,10 +34,85 @@ const Header = () => {
   const [isStaff, setIsStaff] = useState(false);
 
   const [searchResults, setSearchResults] = useState<Product[]>([]);
-  console.log("Search Results:", searchResults);
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  // Updated search change handler
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+
+    if (value.length < 2) {
+      setSearchResults([]);
+      setShowDropdown(false);
+      return;
+    }
+
+    searchTimeout.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `/api/products-search?q=${encodeURIComponent(value)}`
+        );
+        const data = await res.json();
+        setSearchResults(data.products || []);
+        if (data.products && data.products.length > 0 && isSearchFocused) {
+          setShowDropdown(true);
+        }
+      } catch (error) {
+        console.error("Search error:", error);
+        setSearchResults([]);
+        setShowDropdown(false);
+      }
+    }, 300);
+  };
+
+  // Updated result click handler
+  const handleResultClick = (id: string) => {
+    router.push(`/products/${id}`);
+    setShowDropdown(false);
+    setSearchQuery("");
+    setIsSearchFocused(false);
+  };
+
+  // Updated focus handler
+  const handleInputFocus = () => {
+    setIsSearchFocused(true);
+    if (searchResults.length > 0 && searchQuery.length >= 2) {
+      setShowDropdown(true);
+    }
+  };
+
+  // Updated blur handler - simplified
+  const handleInputBlur = () => {
+    setIsSearchFocused(false);
+    // Delay closing to allow clicks on dropdown items
+    setTimeout(() => {
+      setShowDropdown(false);
+    }, 150);
+  };
+
+  // Add this effect to handle clicks outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target as Node)
+      ) {
+        setShowDropdown(false);
+        setIsSearchFocused(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const isActive = (path: string) => pathname?.startsWith(path);
 
@@ -112,34 +184,6 @@ const Header = () => {
     checkUser();
   }, []);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-
-    if (searchTimeout.current) clearTimeout(searchTimeout.current);
-
-    if (value.length < 2) {
-      setSearchResults([]);
-      setShowDropdown(false);
-      return;
-    }
-
-    searchTimeout.current = setTimeout(async () => {
-      const res = await fetch(
-        `/api/products-search?q=${encodeURIComponent(value)}`
-      );
-      const data = await res.json();
-      setSearchResults(data.products || []);
-      setShowDropdown(true);
-    }, 300);
-  };
-
-  const handleResultClick = (id: string) => {
-    router.push(`/products/${id}`);
-    setShowDropdown(false);
-    setSearchQuery("");
-  };
-
   const getBestPriceAndLabel = (product: Product) => {
     const priceFields = [
       { key: "normal", label: "Normal Delivery", price: product.normal_price },
@@ -177,87 +221,98 @@ const Header = () => {
               <span className="hidden md:block">YTL Concrete Hub</span>
             </Link>
 
-            {/* Search Bar - Center (Desktop only) */}
-            <div className="relative flex-1 max-w-md mx-8 hidden md:block">
-              <Popover
-                open={showDropdown && searchResults.length > 0}
-                onOpenChange={setShowDropdown}
-              >
-                <PopoverTrigger asChild>
-                  <Input
-                    type="search"
-                    placeholder="Search for products..."
-                    value={searchQuery}
-                    onChange={handleSearchChange}
-                    onFocus={() =>
-                      searchResults.length > 0 && setShowDropdown(true)
-                    }
-                    onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
-                    className="w-full pl-10 dark:bg-gray-800 dark:border-gray-700"
-                  />
-                </PopoverTrigger>
-                <PopoverContent className="w-[400px] p-0">
-                  <ul>
-                    {searchResults.map((product) => {
-                      const mainImage =
-                        product.product_images?.find((img) => img.is_primary) ||
-                        product.product_images?.[0];
-                      const { price, label } = getBestPriceAndLabel(product);
-                      return (
-                        <li
-                          key={product.id}
-                          className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900 transition"
-                          onMouseDown={() => handleResultClick(product.id)}
-                        >
-                          <div className="w-10 h-10 rounded bg-gray-100 overflow-hidden flex items-center justify-center border border-gray-200 dark:border-gray-700">
-                            <Image
-                              src={mainImage?.image_url || "/placeholder.svg"}
-                              alt={product.name}
-                              width={40}
-                              height={40}
-                              className="object-cover w-full h-full"
-                            />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-sm truncate">
-                              {product.name}
+            <div
+              ref={searchContainerRef}
+              className="relative flex-1 max-w-md mx-8 hidden md:block"
+            >
+              <div className="relative">
+                <Input
+                  type="search"
+                  placeholder="Search for products..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  onFocus={handleInputFocus}
+                  onBlur={handleInputBlur}
+                  className="w-full pl-10 dark:bg-gray-800 dark:border-gray-700"
+                />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              </div>
+
+              {/* Custom dropdown instead of Popover */}
+              <AnimatePresence>
+                {showDropdown && searchResults.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto"
+                  >
+                    <ul>
+                      {searchResults.map((product) => {
+                        const mainImage =
+                          product.product_images?.find(
+                            (img) => img.is_primary
+                          ) || product.product_images?.[0];
+                        const { price, label } = getBestPriceAndLabel(product);
+                        return (
+                          <li
+                            key={product.id}
+                            className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                            onMouseDown={(e) => {
+                              e.preventDefault(); // Prevent blur from firing
+                              handleResultClick(product.id);
+                            }}
+                          >
+                            <div className="w-10 h-10 rounded bg-gray-100 overflow-hidden flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                              <Image
+                                src={mainImage?.image_url || "/placeholder.svg"}
+                                alt={product.name}
+                                width={40}
+                                height={40}
+                                className="object-cover w-full h-full"
+                              />
                             </div>
-                            {product.category && (
-                              <div className="text-xs text-gray-400 truncate">
-                                {product.category}
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm truncate">
+                                {product.name}
                               </div>
-                            )}
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded">
-                                {label || "No price"}
-                              </span>
-                              <span className="font-semibold text-sm">
-                                {price !== undefined
-                                  ? `RM${price.toFixed(2)}`
-                                  : "N/A"}
-                              </span>
-                              {typeof product.stock_quantity === "number" && (
-                                <span
-                                  className={`text-xs ml-2 ${
-                                    product.stock_quantity > 20
-                                      ? "text-green-600"
-                                      : product.stock_quantity > 5
-                                      ? "text-yellow-600"
-                                      : "text-red-600"
-                                  }`}
-                                >
-                                  {product.stock_quantity} in stock
-                                </span>
+                              {product.category && (
+                                <div className="text-xs text-gray-400 truncate">
+                                  {product.category}
+                                </div>
                               )}
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-xs text-blue-600 bg-blue-100 dark:bg-blue-800 dark:text-blue-200 px-2 py-0.5 rounded">
+                                  {label || "No price"}
+                                </span>
+                                <span className="font-semibold text-sm">
+                                  {price !== undefined
+                                    ? `RM${price.toFixed(2)}`
+                                    : "N/A"}
+                                </span>
+                                {typeof product.stock_quantity === "number" && (
+                                  <span
+                                    className={`text-xs ml-2 ${
+                                      product.stock_quantity > 20
+                                        ? "text-green-600"
+                                        : product.stock_quantity > 5
+                                        ? "text-yellow-600"
+                                        : "text-red-600"
+                                    }`}
+                                  >
+                                    {product.stock_quantity} in stock
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </PopoverContent>
-              </Popover>
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Right Icons */}
