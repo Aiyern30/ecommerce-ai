@@ -190,7 +190,7 @@ export default function GeminiChat({
       }
 
       // 2. Fallback to normal AI chat
-      const response = await fetch("/api/chat/gemini", {
+      const response = await fetch("/api/gemini", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
