@@ -58,13 +58,11 @@ export function ProductCard({
   isCompared = false,
   onCompareToggle,
   compareCount = 0,
-  // Add price fields
   normal_price,
   pump_price,
   tremie_1_price,
   tremie_2_price,
   tremie_3_price,
-  // New props for compare price type
   selectedPriceType = "normal",
   onPriceTypeChange,
 }: ProductCardProps) {
@@ -104,7 +102,6 @@ export function ProductCard({
     e.stopPropagation();
 
     if (onCompareToggle) {
-      // If adding to compare, use current delivery selection as initial compare price type
       if (!isCompared && onPriceTypeChange) {
         onPriceTypeChange(id, selectedDelivery);
       }
@@ -128,7 +125,6 @@ export function ProductCard({
 
     setIsAddingToCart(true);
 
-    // Pass delivery method if needed
     const result = await addToCart(user.id, id, 1, selectedDelivery);
 
     if (result.success) {
@@ -157,8 +153,6 @@ export function ProductCard({
     }
   };
 
-  // If you have multiple images, replace this with your images array logic.
-  // For now, just support single image.
   useEffect(() => {
     if (zoomImage) {
       setZoomImages([zoomImage]);
@@ -176,9 +170,7 @@ export function ProductCard({
     setZoomIndex((prev) => (prev + 1) % zoomImages.length);
   };
 
-  // Helper to get the best available price by delivery "level"
   const getBestPrice = () => {
-    // Level order: normal, pump, tremie_1, tremie_2, tremie_3
     const levels = [
       { key: "normal", price: normal_price },
       { key: "pump", price: pump_price },
@@ -200,7 +192,6 @@ export function ProductCard({
       ? selectedOption.price
       : undefined;
 
-  // If no selected price, fallback to best available price
   const displayPrice =
     selectedPrice !== undefined
       ? selectedPrice
@@ -214,7 +205,6 @@ export function ProductCard({
       ? deliveryOptions.find((opt) => opt.key === getBestPrice()!.key)?.label
       : undefined;
 
-  // Get compare price based on selected price type
   const compareOption = deliveryOptions.find(
     (opt) => opt.key === selectedPriceType
   );
@@ -231,10 +221,8 @@ export function ProductCard({
       ? deliveryOptions.find((opt) => opt.key === getBestPrice()!.key)?.label
       : undefined;
 
-  // When user changes delivery dropdown (not compare), update local state
   const handleDeliveryChange = (value: string) => {
     setSelectedDelivery(value);
-    // If already compared, also update compare price type
     if (isCompared && onPriceTypeChange) {
       onPriceTypeChange(id, value);
     }
@@ -424,7 +412,6 @@ export function ProductCard({
               )}
             </div>
 
-            {/* Delivery method selector for cart */}
             {deliveryOptions.length > 1 && !isCompared && (
               <div className="flex items-center gap-2">
                 <label htmlFor={`delivery-method-${id}`} className="text-xs">
@@ -448,14 +435,12 @@ export function ProductCard({
               </div>
             )}
 
-            {/* If only one delivery type, show a clear label */}
             {onlyOneDeliveryType && (
               <div className="flex items-center gap-2 text-xs text-blue-600 font-medium">
                 <span>Only {onlyDeliveryLabel} available</span>
               </div>
             )}
 
-            {/* Compare price type selector (only when item is being compared) */}
             {deliveryOptions.length > 1 && isCompared && onPriceTypeChange && (
               <div className="flex items-center gap-2">
                 <label className="text-xs text-blue-600 font-medium">
@@ -498,7 +483,6 @@ export function ProductCard({
                   {compareLabel}
                 </span>
               )}
-              {/* Show delivery type label if only one type or fallback */}
               {(onlyOneDeliveryType || (!selectedOption && getBestPrice())) && (
                 <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded">
                   {displayLabel}

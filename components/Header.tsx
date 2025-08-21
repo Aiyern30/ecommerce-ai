@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Search, Menu, X, ChevronDown, Moon, Sun } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Input } from "./ui/Input";
 import { Button } from "./ui/Button";
 import CartSheet from "./Cart";
@@ -25,14 +25,31 @@ import { useUser } from "@supabase/auth-helpers-react";
 import { supabase } from "@/lib/supabase/browserClient";
 import { Product } from "@/type/product";
 
-const Header = () => {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const pathname = usePathname();
-  const router = useRouter();
-  const { theme, setTheme } = useTheme();
-  const user = useUser();
-  const [isStaff, setIsStaff] = useState(false);
+function getBestPriceAndLabel(product: Product) {
+  const priceFields = [
+    { key: "normal", label: "Normal Delivery", price: product.normal_price },
+    { key: "pump", label: "Pump Delivery", price: product.pump_price },
+    { key: "tremie_1", label: "Tremie 1", price: product.tremie_1_price },
+    { key: "tremie_2", label: "Tremie 2", price: product.tremie_2_price },
+    { key: "tremie_3", label: "Tremie 3", price: product.tremie_3_price },
+  ];
+  const found = priceFields.find(
+    (f) => f.price !== null && f.price !== undefined
+  );
+  return found
+    ? { price: Number(found.price), label: found.label }
+    : { price: undefined, label: undefined };
+}
 
+function ProductSearchBox({
+  className = "",
+  inputClassName = "",
+}: {
+  className?: string;
+  inputClassName?: string;
+  mobile?: boolean;
+}) {
+  const router = useRouter();
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
@@ -40,7 +57,6 @@ const Header = () => {
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
-  // Updated search change handler
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
@@ -63,15 +79,13 @@ const Header = () => {
         if (data.products && data.products.length > 0 && isSearchFocused) {
           setShowDropdown(true);
         }
-      } catch (error) {
-        console.error("Search error:", error);
+      } catch {
         setSearchResults([]);
         setShowDropdown(false);
       }
     }, 300);
   };
 
-  // Updated result click handler
   const handleResultClick = (id: string) => {
     router.push(`/products/${id}`);
     setShowDropdown(false);
@@ -79,7 +93,6 @@ const Header = () => {
     setIsSearchFocused(false);
   };
 
-  // Updated focus handler
   const handleInputFocus = () => {
     setIsSearchFocused(true);
     if (searchResults.length > 0 && searchQuery.length >= 2) {
@@ -87,16 +100,13 @@ const Header = () => {
     }
   };
 
-  // Updated blur handler - simplified
   const handleInputBlur = () => {
     setIsSearchFocused(false);
-    // Delay closing to allow clicks on dropdown items
     setTimeout(() => {
       setShowDropdown(false);
     }, 150);
   };
 
-  // Add this effect to handle clicks outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -107,12 +117,110 @@ const Header = () => {
         setIsSearchFocused(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  return (
+    <div ref={searchContainerRef} className={`relative ${className}`}>
+      <div className="relative">
+        <Input
+          type="search"
+          placeholder="Search for products..."
+          value={searchQuery}
+          onChange={handleSearchChange}
+          onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
+          className={`pl-10 ${inputClassName}`}
+        />
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 pointer-events-none" />
+      </div>
+      <AnimatePresence>
+        {showDropdown && searchResults.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className={`absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto`}
+          >
+            <ul>
+              {searchResults.map((product) => {
+                const mainImage =
+                  product.product_images?.find((img) => img.is_primary) ||
+                  product.product_images?.[0];
+                const { price, label } = getBestPriceAndLabel(product);
+                return (
+                  <li
+                    key={product.id}
+                    className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleResultClick(product.id);
+                    }}
+                  >
+                    <div className="w-10 h-10 rounded bg-gray-100 overflow-hidden flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                      <Image
+                        src={mainImage?.image_url || "/placeholder.svg"}
+                        alt={product.name}
+                        width={40}
+                        height={40}
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm truncate">
+                        {product.name}
+                      </div>
+                      {product.category && (
+                        <div className="text-xs text-gray-400 truncate">
+                          {product.category}
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-blue-600 bg-blue-100 dark:bg-blue-800 dark:text-blue-200 px-2 py-0.5 rounded">
+                          {label || "No price"}
+                        </span>
+                        <span className="font-semibold text-sm">
+                          {price !== undefined
+                            ? `RM${price.toFixed(2)}`
+                            : "N/A"}
+                        </span>
+                        {typeof product.stock_quantity === "number" && (
+                          <span
+                            className={`text-xs ml-2 ${
+                              product.stock_quantity > 20
+                                ? "text-green-600"
+                                : product.stock_quantity > 5
+                                ? "text-yellow-600"
+                                : "text-red-600"
+                            }`}
+                          >
+                            {product.stock_quantity} in stock
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+const Header = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+  const { theme, setTheme } = useTheme();
+  const user = useUser();
+  const [isStaff, setIsStaff] = useState(false);
 
   const isActive = (path: string) => pathname?.startsWith(path);
 
@@ -184,22 +292,6 @@ const Header = () => {
     checkUser();
   }, []);
 
-  const getBestPriceAndLabel = (product: Product) => {
-    const priceFields = [
-      { key: "normal", label: "Normal Delivery", price: product.normal_price },
-      { key: "pump", label: "Pump Delivery", price: product.pump_price },
-      { key: "tremie_1", label: "Tremie 1", price: product.tremie_1_price },
-      { key: "tremie_2", label: "Tremie 2", price: product.tremie_2_price },
-      { key: "tremie_3", label: "Tremie 3", price: product.tremie_3_price },
-    ];
-    const found = priceFields.find(
-      (f) => f.price !== null && f.price !== undefined
-    );
-    return found
-      ? { price: Number(found.price), label: found.label }
-      : { price: undefined, label: undefined };
-  };
-
   return (
     <div>
       <header className="fixed top-0 left-0 w-full bg-white dark:bg-gray-900 shadow-md border-b z-50 dark:border-gray-800">
@@ -221,98 +313,9 @@ const Header = () => {
               <span className="hidden md:block">YTL Concrete Hub</span>
             </Link>
 
-            <div
-              ref={searchContainerRef}
-              className="relative flex-1 max-w-md mx-8 hidden md:block"
-            >
-              <div className="relative">
-                <Input
-                  type="search"
-                  placeholder="Search for products..."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  onFocus={handleInputFocus}
-                  onBlur={handleInputBlur}
-                  className="w-full pl-10 dark:bg-gray-800 dark:border-gray-700"
-                />
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 pointer-events-none" />
-              </div>
-
-              {/* Custom dropdown instead of Popover */}
-              <AnimatePresence>
-                {showDropdown && searchResults.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto"
-                  >
-                    <ul>
-                      {searchResults.map((product) => {
-                        const mainImage =
-                          product.product_images?.find(
-                            (img) => img.is_primary
-                          ) || product.product_images?.[0];
-                        const { price, label } = getBestPriceAndLabel(product);
-                        return (
-                          <li
-                            key={product.id}
-                            className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors first:rounded-t-lg last:rounded-b-lg"
-                            onMouseDown={(e) => {
-                              e.preventDefault(); // Prevent blur from firing
-                              handleResultClick(product.id);
-                            }}
-                          >
-                            <div className="w-10 h-10 rounded bg-gray-100 overflow-hidden flex items-center justify-center border border-gray-200 dark:border-gray-700">
-                              <Image
-                                src={mainImage?.image_url || "/placeholder.svg"}
-                                alt={product.name}
-                                width={40}
-                                height={40}
-                                className="object-cover w-full h-full"
-                              />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium text-sm truncate">
-                                {product.name}
-                              </div>
-                              {product.category && (
-                                <div className="text-xs text-gray-400 truncate">
-                                  {product.category}
-                                </div>
-                              )}
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="text-xs text-blue-600 bg-blue-100 dark:bg-blue-800 dark:text-blue-200 px-2 py-0.5 rounded">
-                                  {label || "No price"}
-                                </span>
-                                <span className="font-semibold text-sm">
-                                  {price !== undefined
-                                    ? `RM${price.toFixed(2)}`
-                                    : "N/A"}
-                                </span>
-                                {typeof product.stock_quantity === "number" && (
-                                  <span
-                                    className={`text-xs ml-2 ${
-                                      product.stock_quantity > 20
-                                        ? "text-green-600"
-                                        : product.stock_quantity > 5
-                                        ? "text-yellow-600"
-                                        : "text-red-600"
-                                    }`}
-                                  >
-                                    {product.stock_quantity} in stock
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+            {/* Desktop Search Bar */}
+            <div className="flex-1 max-w-md mx-8 hidden md:block">
+              <ProductSearchBox />
             </div>
 
             {/* Right Icons */}
@@ -402,14 +405,10 @@ const Header = () => {
         {/* Mobile Search Row */}
         <div className="block md:hidden border-b dark:border-gray-800">
           <div className="container mx-auto p-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <Input
-                type="search"
-                placeholder="Search for products..."
-                className="w-full pl-10 dark:bg-gray-800 dark:border-gray-700"
-              />
-            </div>
+            <ProductSearchBox
+              inputClassName="w-full pl-10 dark:bg-gray-800 dark:border-gray-700"
+              mobile
+            />
           </div>
         </div>
 
