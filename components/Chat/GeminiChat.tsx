@@ -697,6 +697,10 @@ export default function GeminiChat({
                       message.metadata.products.map((p) => [p.id, p])
                     ).values()
                   ).map((product: Product, idx: number) => {
+                    console.log(
+                      "Rendering product:",
+                      JSON.stringify(product, null, 2)
+                    );
                     const isRecommended =
                       message.metadata?.intent === "recommendation" &&
                       idx === 0;
