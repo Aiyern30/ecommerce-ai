@@ -69,9 +69,6 @@ export function ProductCard({
   const [zoomImage, setZoomImage] = useState<string | null>(null);
   const [zoomImages, setZoomImages] = useState<string[]>([]);
   const [zoomIndex, setZoomIndex] = useState(0);
-  const [selectedDelivery, setSelectedDelivery] = useState(selectedPriceType);
-  const router = useRouter();
-  const user = useUser();
 
   const deliveryOptions = [
     normal_price != null
@@ -92,9 +89,19 @@ export function ProductCard({
   ].filter(Boolean) as { key: string; label: string; price: number }[];
 
   const onlyOneDeliveryType = deliveryOptions.length === 1;
+  const onlyDeliveryKey = onlyOneDeliveryType
+    ? deliveryOptions[0].key
+    : "normal";
   const onlyDeliveryLabel = onlyOneDeliveryType
     ? deliveryOptions[0].label
     : null;
+  const router = useRouter();
+  const user = useUser();
+
+  // Set initial selectedDelivery based on available options
+  const [selectedDelivery, setSelectedDelivery] = useState(
+    onlyOneDeliveryType ? onlyDeliveryKey : selectedPriceType
+  );
 
   const handleCompareClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -124,6 +131,7 @@ export function ProductCard({
 
     setIsAddingToCart(true);
 
+    // Always use the correct selectedDelivery (not default "normal")
     const result = await addToCart(user.id, id, 1, selectedDelivery);
 
     if (result.success) {
