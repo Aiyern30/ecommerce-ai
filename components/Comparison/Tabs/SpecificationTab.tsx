@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import {
@@ -37,9 +38,9 @@ export function SpecificationsTable({ products }: SpecificationsTableProps) {
                       index === products.length - 1 ? "rounded-tr-xl" : ""
                     }`}
                   >
-                    <div className="flex items-center gap-3">
-                      {/* Product Image - Left */}
-                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-white dark:bg-gray-700 flex-shrink-0 border border-gray-200 dark:border-gray-600">
+                    <div className="flex flex-col items-center gap-2">
+                      {/* Centered Product Image */}
+                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-white dark:bg-gray-700 flex-shrink-0 border border-gray-200 dark:border-gray-600 mx-auto">
                         <Image
                           src={
                             product.product_images?.find(
@@ -54,15 +55,15 @@ export function SpecificationsTable({ products }: SpecificationsTableProps) {
                           className="w-full h-full object-contain p-1"
                         />
                       </div>
-                      {/* Product Info - Right */}
-                      <div className="flex-1 text-left min-w-0">
+                      {/* Product Info - Centered */}
+                      <div className="flex flex-col items-center min-w-0">
                         <div
-                          className="font-semibold text-sm truncate text-gray-900 dark:text-gray-100"
+                          className="font-semibold text-sm truncate text-gray-900 dark:text-gray-100 text-center"
                           title={product.name}
                         >
                           {product.name}
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate text-center">
                           {product.category || "No category"}
                         </div>
                       </div>
@@ -77,16 +78,61 @@ export function SpecificationsTable({ products }: SpecificationsTableProps) {
                 <TableCell className="font-medium bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-100 sticky left-0 z-10 border-r border-gray-200 dark:border-gray-700 p-4">
                   Price
                 </TableCell>
-                {products.map((product) => (
-                  <TableCell key={product.id} className="text-center p-4">
-                    <div className="font-semibold text-lg text-gray-900 dark:text-gray-100">
-                      RM {(product.normal_price ?? 0).toFixed(2)}
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {product.unit}
-                    </div>
-                  </TableCell>
-                ))}
+                {products.map((product) => {
+                  // Use selectedPriceType if present, fallback to normal
+                  const type = (product as any).selectedPriceType || "normal";
+                  let price: number | null | undefined;
+                  let label: string = "";
+                  switch (type) {
+                    case "pump":
+                      price = product.pump_price;
+                      label = "Pump Delivery";
+                      break;
+                    case "tremie_1":
+                      price = product.tremie_1_price;
+                      label = "Tremie 1";
+                      break;
+                    case "tremie_2":
+                      price = product.tremie_2_price;
+                      label = "Tremie 2";
+                      break;
+                    case "tremie_3":
+                      price = product.tremie_3_price;
+                      label = "Tremie 3";
+                      break;
+                    case "normal":
+                    default:
+                      price = product.normal_price;
+                      label = "Normal Delivery";
+                      break;
+                  }
+                  return (
+                    <TableCell key={product.id} className="text-center p-4">
+                      {price !== null && price !== undefined ? (
+                        <div>
+                          <div className="font-semibold text-lg text-gray-900 dark:text-gray-100">
+                            RM {Number(price).toFixed(2)}
+                          </div>
+                          <div className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded inline-block mt-1">
+                            {label}
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <span className="text-gray-400 dark:text-gray-500">
+                            N/A
+                          </span>
+                          <div className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded inline-block mt-1">
+                            {label}
+                          </div>
+                        </div>
+                      )}
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {product.unit}
+                      </div>
+                    </TableCell>
+                  );
+                })}
               </TableRow>
               {/* Category Row */}
               <TableRow className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
@@ -172,7 +218,7 @@ export function SpecificationsTable({ products }: SpecificationsTableProps) {
                       index === products.length - 1 ? "rounded-br-xl" : ""
                     }`}
                   >
-                    <div className="text-sm text-gray-600 dark:text-gray-400 max-w-[180px] mx-auto">
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mx-auto">
                       {product.description || "No description available"}
                     </div>
                   </TableCell>
