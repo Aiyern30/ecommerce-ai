@@ -794,7 +794,7 @@ export default function CartPage() {
 
               {/* Enhanced Additional Services Section */}
               {selectedItems.length > 0 && (
-                <Card className="overflow-hidden shadow-lg border-2 border-blue-100 dark:border-blue-900 p-0">
+                <Card className="overflow-hidden shadow-lg border-2 border-blue-100 dark:border-blue-900 p-0 mt-6">
                   <CardHeader
                     className={`${
                       isMobile ? "p-4" : "p-6"

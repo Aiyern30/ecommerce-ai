@@ -87,7 +87,7 @@ export function CheckoutSummary({
 
   if (isLoading) {
     return (
-      <Card className="overflow-hidden shadow-sm py-0 gap-0">
+      <Card className="overflow-hidden shadow-sm p-0 gap-0">
         <CardHeader className="p-6 bg-gray-50 dark:bg-gray-900 border-b">
           <CardTitle className="text-xl font-bold flex items-center gap-2">
             <ShoppingCart className="h-5 w-5" />
@@ -132,9 +132,9 @@ export function CheckoutSummary({
   }
 
   return (
-    <Card className="overflow-hidden shadow-lg border-2 border-gray-100 dark:border-gray-700">
-      <CardHeader className="p-6 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-900/20 border-b border-gray-200 dark:border-gray-700">
-        <CardTitle className="text-xl font-bold flex items-center gap-2 text-gray-900 dark:text-gray-100">
+    <Card className="overflow-hidden shadow-sm p-0 gap-0">
+      <CardHeader className="p-6 bg-gray-50 dark:bg-gray-900 border-b">
+        <CardTitle className="text-xl font-bold flex items-center gap-2">
           <ShoppingCart className="h-5 w-5" />
           Order Summary
         </CardTitle>
