@@ -278,6 +278,42 @@ async function getProductsBasedOnIntent(
   const { intent, extractedData } = intentAnalysis;
   let products: Product[] = [];
 
+  if (
+    extractedData.productType === "mortar" &&
+    !extractedData.grade &&
+    !extractedData.gradeRange
+  ) {
+    // Fetch all mortar products
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data, error } = await supabase
+      .from("products")
+      .select(
+        `
+        *,
+        product_images (
+          id,
+          image_url,
+          alt_text,
+          is_primary,
+          sort_order
+        )
+      `
+      )
+      .eq("product_type", "mortar")
+      .eq("is_active", true)
+      .eq("status", "published")
+      .gt("stock_quantity", 0)
+      .order("is_featured", { ascending: false })
+      .order("grade", { ascending: true })
+      .limit(10);
+
+    if (error) {
+      console.error("Mortar product search error:", error);
+      return [];
+    }
+    return data || [];
+  }
+
   switch (intent) {
     case "product_search":
       products = await searchProducts(
