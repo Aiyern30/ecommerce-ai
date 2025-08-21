@@ -308,57 +308,135 @@ export default function CartPage() {
         <TypographyH1 className="my-8">YOUR CART</TypographyH1>
 
         {isLoading ? (
-          <div
-            className={`mt-8 grid gap-8 ${isMobile ? "" : "lg:grid-cols-3"}`}
-          >
-            {/* Cart Items Skeleton */}
-            <div className={isMobile ? "" : "lg:col-span-2"}>
-              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                <div className="flex items-center gap-3 p-6 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-                  <Skeleton className="h-5 w-5 rounded" />
-                  <Skeleton className="h-7 w-48" />
-                  <div className="ml-auto">
-                    <Skeleton className="h-4 w-32" />
-                  </div>
-                </div>
-                <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {[...Array(2)].map((_, index) => (
-                    <div key={index} className="p-6">
-                      <div className="flex gap-4">
-                        <div className="flex items-start pt-3">
-                          <Skeleton className="h-5 w-5 rounded" />
-                        </div>
-                        <Skeleton className="h-24 w-24 md:h-28 md:w-28 rounded-xl flex-shrink-0" />
-                        <div className="flex flex-1 flex-col justify-between min-h-[96px] md:min-h-[112px]">
-                          <div className="flex flex-col md:flex-row md:justify-between md:items-start">
-                            <div className="flex-1 pr-4 space-y-2">
-                              <Skeleton className="h-7 w-64" />
-                              <div className="flex gap-4">
-                                <Skeleton className="h-4 w-20" />
-                                <Skeleton className="h-4 w-24" />
+          <div className="mt-8">
+            {isMobile ? (
+              // Mobile Layout - Single Column
+              <div className="space-y-6 max-w-full overflow-hidden">
+                {/* Cart Items Skeleton - Mobile */}
+                <div className="w-full">
+                  <Card className="overflow-hidden shadow-sm p-0">
+                    <CardHeader className="p-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-5 w-5 rounded flex-shrink-0" />
+                        <Skeleton className="h-6 w-40 flex-shrink-0" />
+                      </div>
+                      <Skeleton className="h-4 w-32 mt-2" />
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                        {[...Array(2)].map((_, index) => (
+                          <div key={index} className="p-4">
+                            <div className="flex gap-3">
+                              <div className="flex items-start pt-2 flex-shrink-0">
+                                <Skeleton className="h-5 w-5 rounded" />
+                              </div>
+                              <Skeleton className="h-20 w-20 rounded-xl flex-shrink-0" />
+                              <div className="flex-1 min-w-0 space-y-2">
+                                <Skeleton className="h-5 w-full max-w-[180px]" />
+                                <div className="flex gap-4">
+                                  <Skeleton className="h-3 w-16" />
+                                  <Skeleton className="h-3 w-20" />
+                                </div>
+                                <div className="flex items-center justify-between pt-2">
+                                  <Skeleton className="h-6 w-16" />
+                                  <Skeleton className="h-8 w-24 rounded-lg" />
+                                </div>
                               </div>
                             </div>
-                            <Skeleton className="h-9 w-9 rounded-lg ml-auto md:ml-0" />
                           </div>
-                          <div className="flex items-center justify-between mt-4">
-                            <Skeleton className="h-8 w-20" />
-                            <Skeleton className="h-10 w-28 rounded-lg" />
-                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Order Summary Skeleton - Mobile */}
+                <div className="w-full">
+                  <Card className="overflow-hidden shadow-sm">
+                    <CardHeader className="p-4">
+                      <Skeleton className="h-6 w-32" />
+                    </CardHeader>
+                    <CardContent className="p-4 space-y-4">
+                      <div className="space-y-3">
+                        <div className="flex justify-between">
+                          <Skeleton className="h-4 w-20" />
+                          <Skeleton className="h-4 w-16" />
+                        </div>
+                        <div className="flex justify-between">
+                          <Skeleton className="h-4 w-24" />
+                          <Skeleton className="h-4 w-16" />
+                        </div>
+                        <div className="flex justify-between">
+                          <Skeleton className="h-4 w-16" />
+                          <Skeleton className="h-4 w-16" />
                         </div>
                       </div>
-                    </div>
-                  ))}
+                      <hr className="border-gray-200 dark:border-gray-700" />
+                      <div className="flex justify-between">
+                        <Skeleton className="h-5 w-12" />
+                        <Skeleton className="h-5 w-20" />
+                      </div>
+                      <Skeleton className="h-12 w-full rounded-lg" />
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
-            </div>
-            {/* Order Summary Skeleton */}
-            {!isMobile && (
-              <div className="lg:col-span-1 self-start sticky top-28">
-                <CheckoutSummary
-                  showCheckoutButton={true}
-                  selectedServices={selectedServices}
-                  totalVolume={totalVolume}
-                />
+            ) : (
+              // Desktop Layout - Grid
+              <div className="grid gap-8 lg:grid-cols-3">
+                {/* Cart Items Skeleton - Desktop */}
+                <div className="lg:col-span-2">
+                  <Card className="overflow-hidden shadow-sm">
+                    <CardHeader className="p-6 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-5 w-5 rounded" />
+                        <Skeleton className="h-7 w-48" />
+                        <div className="ml-auto">
+                          <Skeleton className="h-4 w-32" />
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                        {[...Array(2)].map((_, index) => (
+                          <div key={index} className="p-6">
+                            <div className="flex gap-4">
+                              <div className="flex items-start pt-3">
+                                <Skeleton className="h-5 w-5 rounded" />
+                              </div>
+                              <Skeleton className="h-24 w-24 md:h-28 md:w-28 rounded-xl" />
+                              <div className="flex-1 flex flex-col justify-between min-h-[96px] md:min-h-[112px]">
+                                <div className="flex flex-col md:flex-row md:justify-between md:items-start">
+                                  <div className="flex-1 pr-2 space-y-2">
+                                    <Skeleton className="h-7 w-64" />
+                                    <div className="flex gap-4">
+                                      <Skeleton className="h-4 w-20" />
+                                      <Skeleton className="h-4 w-24" />
+                                    </div>
+                                  </div>
+                                  <Skeleton className="h-9 w-9 rounded-lg ml-auto md:ml-0" />
+                                </div>
+                                <div className="flex items-center justify-between mt-4">
+                                  <Skeleton className="h-8 w-20" />
+                                  <Skeleton className="h-10 w-28 rounded-lg" />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Order Summary Skeleton - Desktop */}
+                <div className="lg:col-span-1 self-start sticky top-28">
+                  <CheckoutSummary
+                    showCheckoutButton={true}
+                    selectedServices={selectedServices}
+                    totalVolume={totalVolume}
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -716,7 +794,7 @@ export default function CartPage() {
 
               {/* Enhanced Additional Services Section */}
               {selectedItems.length > 0 && (
-                <Card className="overflow-hidden shadow-lg border-2 border-blue-100 dark:border-blue-900">
+                <Card className="overflow-hidden shadow-lg border-2 border-blue-100 dark:border-blue-900 p-0">
                   <CardHeader
                     className={`${
                       isMobile ? "p-4" : "p-6"
