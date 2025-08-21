@@ -47,7 +47,7 @@ interface ProductCardProps {
 export function ProductCard({
   id,
   name,
-  price,
+
   grade,
   productType,
   unit,
@@ -176,16 +176,60 @@ export function ProductCard({
     setZoomIndex((prev) => (prev + 1) % zoomImages.length);
   };
 
+  // Helper to get the best available price by delivery "level"
+  const getBestPrice = () => {
+    // Level order: normal, pump, tremie_1, tremie_2, tremie_3
+    const levels = [
+      { key: "normal", price: normal_price },
+      { key: "pump", price: pump_price },
+      { key: "tremie_1", price: tremie_1_price },
+      { key: "tremie_2", price: tremie_2_price },
+      { key: "tremie_3", price: tremie_3_price },
+    ];
+    const found = levels.find(
+      (l) => l.price != null && !isNaN(Number(l.price))
+    );
+    return found ? { key: found.key, price: found.price } : null;
+  };
+
   const selectedOption = deliveryOptions.find(
     (opt) => opt.key === selectedDelivery
   );
-  const selectedPrice = selectedOption ? selectedOption.price : price;
+  const selectedPrice =
+    selectedOption && selectedOption.price != null
+      ? selectedOption.price
+      : undefined;
+
+  // If no selected price, fallback to best available price
+  const displayPrice =
+    selectedPrice !== undefined
+      ? selectedPrice
+      : getBestPrice()
+      ? getBestPrice()!.price
+      : undefined;
+  const displayLabel =
+    selectedOption && selectedOption.label
+      ? selectedOption.label
+      : getBestPrice()
+      ? deliveryOptions.find((opt) => opt.key === getBestPrice()!.key)?.label
+      : undefined;
 
   // Get compare price based on selected price type
   const compareOption = deliveryOptions.find(
     (opt) => opt.key === selectedPriceType
   );
-  const comparePrice = compareOption ? compareOption.price : price;
+  const comparePrice =
+    compareOption && compareOption.price != null
+      ? compareOption.price
+      : getBestPrice()
+      ? getBestPrice()!.price
+      : undefined;
+  const compareLabel =
+    compareOption && compareOption.label
+      ? compareOption.label
+      : getBestPrice()
+      ? deliveryOptions.find((opt) => opt.key === getBestPrice()!.key)?.label
+      : undefined;
 
   // When user changes delivery dropdown (not compare), update local state
   const handleDeliveryChange = (value: string) => {
@@ -437,20 +481,27 @@ export function ProductCard({
 
             <div className="flex items-center gap-2">
               <span className="font-medium">
-                RM{(isCompared ? comparePrice : selectedPrice).toFixed(2)}
+                {isCompared ? (
+                  comparePrice !== undefined ? (
+                    `RM${Number(comparePrice).toFixed(2)}`
+                  ) : (
+                    <span className="text-gray-400">N/A</span>
+                  )
+                ) : displayPrice !== undefined ? (
+                  `RM${Number(displayPrice).toFixed(2)}`
+                ) : (
+                  <span className="text-gray-400">N/A</span>
+                )}
               </span>
               {isCompared && selectedPriceType !== "normal" && (
                 <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded">
-                  {
-                    deliveryOptions.find((opt) => opt.key === selectedPriceType)
-                      ?.label
-                  }
+                  {compareLabel}
                 </span>
               )}
-              {/* Show delivery type label if only one type */}
-              {onlyOneDeliveryType && (
+              {/* Show delivery type label if only one type or fallback */}
+              {(onlyOneDeliveryType || (!selectedOption && getBestPrice())) && (
                 <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded">
-                  {onlyDeliveryLabel}
+                  {displayLabel}
                 </span>
               )}
             </div>
