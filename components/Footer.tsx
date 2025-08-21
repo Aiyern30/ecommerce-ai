@@ -156,18 +156,8 @@ const Footer = () => {
         <div className="container mx-auto px-4">
           <div className="mt-8 flex flex-col items-center justify-between gap-4 py-4 md:flex-row">
             <TypographyP className="text-sm text-muted-foreground dark:text-gray-400">
-              © 2024 SHOP.CO All Rights Reserved.
+              © 2025 YTL Concrete Hub All Rights Reserved.
             </TypographyP>
-            <div className="flex gap-2">
-              {["visa", "mastercard", "paypal"].map((payment) => (
-                <div
-                  key={payment}
-                  className="h-8 w-12 rounded bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs text-gray-500 dark:text-gray-400"
-                >
-                  {payment.charAt(0).toUpperCase() + payment.slice(1)}
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </footer>
