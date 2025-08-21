@@ -4,6 +4,7 @@ import { Button, Badge, Card } from "@/components/ui/";
 import type { Product } from "@/type/product";
 import { X, Star, CheckCircle } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 interface ComparisonProductCardProps {
   product: Product & { selectedPriceType?: string };
@@ -16,6 +17,7 @@ export function ComparisonProductCard({
   onRemove,
   showRemove = false,
 }: ComparisonProductCardProps) {
+  const router = useRouter();
   // Get main image from product_images (first or is_primary)
   const mainImage =
     product.product_images?.find((img) => img.is_primary) ||
@@ -113,41 +115,43 @@ export function ComparisonProductCard({
         </div>
 
         {/* Price Section - Fixed height */}
-        <div className="h-24 mb-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center">
-          <div className="text-center w-full">
-            <div className="flex items-baseline justify-center gap-1 mb-1">
+        <div className="h-48 mb-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-center">
+          <div className="w-full flex flex-col items-center justify-center max-w-[180px] mx-auto">
+            {/* RM total */}
+            <div>
               {selectedOption ? (
-                <>
-                  <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    RM{Number(selectedOption.price).toFixed(2)}
-                  </span>
-                  <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded ml-2">
-                    {selectedOption.label}
-                  </span>
-                </>
+                <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  RM{Number(selectedOption.price).toFixed(2)}
+                </span>
               ) : (
-                <>
-                  <span className="text-2xl font-bold text-gray-400 dark:text-gray-500">
-                    Not available for this delivery type
-                  </span>
-                  {/* Show available types */}
-                  {deliveryOptions.length > 0 && (
-                    <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded ml-2">
-                      Available:{" "}
-                      {deliveryOptions.map((opt) => opt.label).join(", ")}
-                    </span>
-                  )}
-                </>
+                <span className="text-2xl font-bold text-gray-400 dark:text-gray-500">
+                  Not available for this delivery type
+                </span>
+              )}
+            </div>
+            {/* Type and unit */}
+            <div className="mt-1 flex flex-col items-center w-full">
+              {selectedOption && (
+                <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded w-full text-center">
+                  {selectedOption.label}
+                </span>
               )}
               {product.unit && (
-                <span className="text-sm text-gray-500 dark:text-gray-400">
+                <span className="text-sm text-gray-500 dark:text-gray-400 mt-1 w-full text-center">
                   /{product.unit}
+                </span>
+              )}
+              {/* Show available types if not selected */}
+              {!selectedOption && deliveryOptions.length > 0 && (
+                <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded mt-1 w-full text-center">
+                  Available:{" "}
+                  {deliveryOptions.map((opt) => opt.label).join(", ")}
                 </span>
               )}
             </div>
 
             {/* Rating stars */}
-            <div className="flex items-center justify-center gap-1 mb-2">
+            <div className="flex items-center justify-center gap-1 mb-2 mt-2">
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
@@ -204,8 +208,13 @@ export function ComparisonProductCard({
 
         {/* Enhanced Action Button - Fixed height */}
         <div className="h-16 flex flex-col justify-center">
-          <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02]">
-            VIEW DETAILS
+          {/* View Details Button */}
+          <Button
+            variant="default"
+            className="w-full mt-2"
+            onClick={() => router.push(`/products/${product.id}`)}
+          >
+            View Details
           </Button>
           <div className="text-center mt-1">
             <p className="text-xs text-gray-500 dark:text-gray-400">
