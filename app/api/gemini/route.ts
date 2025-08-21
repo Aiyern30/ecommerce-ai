@@ -12,6 +12,7 @@ import {
   removeFromCartServerSide,
   updateCartItemQuantityServerSide,
 } from "@/lib/cart/serverUtils";
+import { Product } from "@/type/product";
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
@@ -23,24 +24,6 @@ interface Message {
   timestamp: Date;
   type?: string;
   metadata?: any;
-}
-
-interface Product {
-  id: string;
-  name: string;
-  description?: string;
-  grade: string;
-  product_type: "concrete" | "mortar";
-  normal_price?: number;
-  pump_price?: number;
-  tremie_1_price?: number;
-  tremie_2_price?: number;
-  tremie_3_price?: number;
-  unit?: string;
-  stock_quantity?: number;
-  category?: string;
-  keywords?: string[];
-  is_active?: boolean;
 }
 
 // Enhanced product search with concrete-specific logic
