@@ -12,9 +12,9 @@ const Footer = () => {
                 YTL CONCRETE HUB
               </TypographyH3>
               <TypographyP className="text-sm text-muted-foreground dark:text-gray-400">
-                YTL Concrete Hub is your trusted source for high-quality concrete
-                and mortar products, serving Malaysian construction projects with
-                reliable materials and expert support.
+                YTL Concrete Hub is your trusted source for high-quality
+                concrete and mortar products, serving Malaysian construction
+                projects with reliable materials and expert support.
               </TypographyP>
             </div>
             <div>
