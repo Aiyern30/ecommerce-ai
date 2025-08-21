@@ -22,6 +22,7 @@ interface Product {
   unit: string | null;
   stock_quantity: number | null;
   keywords: string[] | null;
+  selectedPriceType?: string;
 }
 
 interface AIInsight {
@@ -100,19 +101,43 @@ export async function POST(request: NextRequest) {
 
 function createComparisonPrompt(products: Product[]): string {
   const productDetails = products
-    .map(
-      (product, index) =>
-        `Product ${index + 1}: ${product.name}
+    .map((product, index) => {
+      // Get selected price and label
+      let price: string | null = null;
+      let label: string = "";
+      switch (product.selectedPriceType) {
+        case "pump":
+          price = product.pump_price;
+          label = "Pump Price";
+          break;
+        case "tremie_1":
+          price = product.tremie_1_price;
+          label = "Tremie 1 Price";
+          break;
+        case "tremie_2":
+          price = product.tremie_2_price;
+          label = "Tremie 2 Price";
+          break;
+        case "tremie_3":
+          price = product.tremie_3_price;
+          label = "Tremie 3 Price";
+          break;
+        case "normal":
+        default:
+          price = product.normal_price;
+          label = "Normal Price";
+          break;
+      }
+      return `Product ${index + 1}: ${product.name}
     - Grade: ${product.grade}
     - Type: ${product.product_type}
     - Category: ${product.category || "N/A"}
     - Description: ${product.description || "No description"}
-    - Normal Price: RM ${product.normal_price || "N/A"} ${product.unit || ""}
-    - Pump Price: RM ${product.pump_price || "N/A"} ${product.unit || ""}
+    - ${label}: RM ${price || "N/A"} ${product.unit || ""}
     - Stock: ${product.stock_quantity || "N/A"} units
     - Keywords: ${product.keywords?.join(", ") || "None"}
-    - Mortar Ratio: ${product.mortar_ratio || "N/A"}`
-    )
+    - Mortar Ratio: ${product.mortar_ratio || "N/A"}`;
+    })
     .join("\n\n");
 
   const productNames = products.map((p) => p.name).join(", ");
@@ -218,23 +243,33 @@ function parseAIResponse(
 }
 
 function createFallbackResponse(products: Product[]): AIComparisonResult {
-  const grades = products.map((p) => p.grade).filter(Boolean);
+  // Use selectedPriceType for price calculations
   const prices = products
-    .map((p) => parseFloat(p.normal_price || "0"))
+    .map((p) => {
+      switch (p.selectedPriceType) {
+        case "pump":
+          return parseFloat(p.pump_price || "0");
+        case "tremie_1":
+          return parseFloat(p.tremie_1_price || "0");
+        case "tremie_2":
+          return parseFloat(p.tremie_2_price || "0");
+        case "tremie_3":
+          return parseFloat(p.tremie_3_price || "0");
+        case "normal":
+        default:
+          return parseFloat(p.normal_price || "0");
+      }
+    })
     .filter((p) => p > 0);
-  const minPrice = Math.min(...prices);
-  const maxPrice = Math.max(...prices);
+  const minPrice = prices.length ? Math.min(...prices) : 0;
+  const maxPrice = prices.length ? Math.max(...prices) : 0;
 
   return {
     summary: `Comparing ${
       products.length
-    } concrete products with grades ranging from ${Math.min(
-      ...grades.map((g) => parseInt(g.replace("N", "")))
-    )} to ${Math.max(
-      ...grades.map((g) => parseInt(g.replace("N", "")))
-    )} MPa, with prices from RM${minPrice.toFixed(0)} to RM${maxPrice.toFixed(
+    } products with prices from RM${minPrice.toFixed(
       0
-    )}.`,
+    )} to RM${maxPrice.toFixed(0)}.`,
     keyDifferences: [
       "Different concrete grades indicating varying strength levels",
       "Price variations based on strength and delivery method",
@@ -260,7 +295,7 @@ function createFallbackResponse(products: Product[]): AIComparisonResult {
       0
     )} to RM${maxPrice.toFixed(
       0
-    )} per cubic meter. Higher grades typically cost more due to increased cement content and strength requirements.`,
+    )} per cubic meter. Prices shown are for the selected delivery type for each product.`,
     insights: [
       {
         type: "tip",
