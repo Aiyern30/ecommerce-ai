@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// app/api/chat/gemini/route.ts
+// app/api/gemini/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
