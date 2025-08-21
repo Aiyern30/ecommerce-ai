@@ -63,7 +63,7 @@ export class ConcreteIntentAnalyzer {
     "basement",
   ];
 
-  // Updated grade keywords to match your N10-N25 and S30-S45 products
+  // Updated grade keywords to match your N10-N25, S30-S45, and mortar products
   private static readonly GRADE_KEYWORDS = [
     // N-Series grades (N10 to N25)
     "n10",
@@ -75,6 +75,11 @@ export class ConcreteIntentAnalyzer {
     "s35",
     "s40",
     "s45",
+    // Mortar grades (M034 to M064)
+    "m034",
+    "m044",
+    "m054",
+    "m064",
     // Generic grade terms
     "grade",
     "strength",
@@ -94,6 +99,15 @@ export class ConcreteIntentAnalyzer {
     "residential grade",
     "commercial grade",
     "structural grade",
+    // Mortar specific
+    "mortar",
+    "cement mortar",
+    "mortar mix",
+    "mortar ratio",
+    "1:3",
+    "1:4",
+    "1:5",
+    "1:6",
   ];
 
   private static readonly DELIVERY_KEYWORDS = {
@@ -588,17 +602,20 @@ export class ConcreteIntentAnalyzer {
       gradeRange?: { min?: string; max?: string };
     } = {};
 
-    // Specific grade patterns for N10-N25 and S30-S45
+    // Patterns for N, S, and M grades
     const gradePatterns = [
       /\b([ns])(\d{2})\b/gi, // N20, S30, etc.
       /\bgrade\s+([ns]\d{2})\b/gi, // Grade N20
       /\b([ns])\s*(\d{2})\b/gi, // N 20, S 30
+      /\b([m])(\d{3})\b/gi, // M034, M044, etc.
+      /\bgrade\s+([m]\d{3})\b/gi, // Grade M034
+      /\bmortar\s+1:(3|4|5|6)\b/gi, // mortar 1:3, 1:4, etc.
     ];
 
-    // Range patterns
+    // Range patterns for all grades
     const rangePatterns = [
-      /\b([ns]\d{2})\s*(?:to|-|through)\s*([ns]\d{2})\b/gi, // N20 to N25
-      /\bbetween\s+([ns]\d{2})\s+and\s+([ns]\d{2})\b/gi, // between N20 and N25
+      /\b([ns]\d{2}|m\d{3})\s*(?:to|-|through)\s*([ns]\d{2}|m\d{3})\b/gi,
+      /\bbetween\s+([ns]\d{2}|m\d{3})\s+and\s+([ns]\d{2}|m\d{3})\b/gi,
     ];
 
     // Check for single grade
@@ -606,8 +623,21 @@ export class ConcreteIntentAnalyzer {
       const matches = Array.from(message.matchAll(pattern));
       for (const match of matches) {
         if (match[1] && match[2]) {
-          const grade = `${match[1].toUpperCase()}${match[2]}`;
-          // Validate grade is within our range
+          let grade = "";
+          if (match[1].toLowerCase() === "m" && match[2].length === 3) {
+            grade = `M${match[2]}`;
+          } else if (match[1].toLowerCase() === "mortar" && match[2]) {
+            // mortar 1:3, 1:4, etc.
+            const ratioMap: { [key: string]: string } = {
+              "3": "M034",
+              "4": "M044",
+              "5": "M054",
+              "6": "M064",
+            };
+            grade = ratioMap[match[2]];
+          } else {
+            grade = `${match[1].toUpperCase()}${match[2]}`;
+          }
           if (this.isValidGrade(grade)) {
             result.grade = grade;
             break;
@@ -648,6 +678,10 @@ export class ConcreteIntentAnalyzer {
       "S35",
       "S40",
       "S45",
+      "M034",
+      "M044",
+      "M054",
+      "M064",
     ];
     return validGrades.includes(grade);
   }
@@ -981,17 +1015,16 @@ export class ConcreteIntentAnalyzer {
   ): string[] {
     const recommendations: { [key: string]: string[] } = {
       // Application-based recommendations
-      residential: ["N15", "N20", "N25"],
-      commercial: ["N20", "N25", "S30", "S35"],
-      structural: ["N25", "S30", "S35", "S40"],
+      residential: ["N15", "N20", "N25", "M054", "M064"],
+      commercial: ["N20", "N25", "S30", "S35", "M044", "M054"],
+      structural: ["N25", "S30", "S35", "S40", "M034", "M044"],
       infrastructure: ["S35", "S40", "S45"],
-
       // Project-based recommendations
-      foundation: ["N20", "N25", "S30"],
-      flatwork: ["N15", "N20", "N25"],
-      wall: ["N20", "N25", "S30"],
-      repair: ["N15", "N20"],
-      decorative: ["N15", "N20"],
+      foundation: ["N20", "N25", "S30", "M034"],
+      flatwork: ["N15", "N20", "N25", "M054", "M064"],
+      wall: ["N20", "N25", "S30", "M044", "M054"],
+      repair: ["N15", "N20", "M054", "M064"],
+      decorative: ["N15", "N20", "M054"],
     };
 
     if (applicationType && recommendations[applicationType]) {
@@ -1003,6 +1036,6 @@ export class ConcreteIntentAnalyzer {
     }
 
     // Default recommendations
-    return ["N20", "N25", "S30"];
+    return ["N20", "N25", "S30", "M054", "M064"];
   }
 }
