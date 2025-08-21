@@ -89,9 +89,6 @@ export function ProductCard({
   ].filter(Boolean) as { key: string; label: string; price: number }[];
 
   const onlyOneDeliveryType = deliveryOptions.length === 1;
-  const onlyDeliveryKey = onlyOneDeliveryType
-    ? deliveryOptions[0].key
-    : "normal";
   const onlyDeliveryLabel = onlyOneDeliveryType
     ? deliveryOptions[0].label
     : null;
@@ -99,17 +96,37 @@ export function ProductCard({
   const user = useUser();
 
   // Set initial selectedDelivery based on available options
-  const [selectedDelivery, setSelectedDelivery] = useState(
-    onlyOneDeliveryType ? onlyDeliveryKey : selectedPriceType
-  );
+  const [selectedDelivery, setSelectedDelivery] = useState(() => {
+    if (onlyOneDeliveryType) {
+      return deliveryOptions[0].key;
+    }
+    const hasSelected = deliveryOptions.find(
+      (opt) => opt.key === selectedPriceType
+    );
+    return hasSelected
+      ? selectedPriceType
+      : deliveryOptions[0]?.key || "normal";
+  });
+
+  // Helper for compare/carts: always use the only delivery type if only one is available
+  const getValidDeliveryType = () => {
+    if (onlyOneDeliveryType) {
+      return deliveryOptions[0].key;
+    }
+    return deliveryOptions.find((opt) => opt.key === selectedDelivery)
+      ? selectedDelivery
+      : deliveryOptions[0]?.key || "normal";
+  };
 
   const handleCompareClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
     if (onCompareToggle) {
+      // Always use the only available delivery type if only one
+      const compareDeliveryType = getValidDeliveryType();
       if (!isCompared && onPriceTypeChange) {
-        onPriceTypeChange(id, selectedDelivery);
+        onPriceTypeChange(id, compareDeliveryType);
       }
       onCompareToggle(id, !isCompared);
     }
@@ -131,8 +148,9 @@ export function ProductCard({
 
     setIsAddingToCart(true);
 
-    // Always use the correct selectedDelivery (not default "normal")
-    const result = await addToCart(user.id, id, 1, selectedDelivery);
+    // Always use a valid delivery type for cart
+    const cartDeliveryType = getValidDeliveryType();
+    const result = await addToCart(user.id, id, 1, cartDeliveryType);
 
     if (result.success) {
       if (result.isUpdate) {
@@ -155,9 +173,14 @@ export function ProductCard({
   };
 
   const handleComparePriceTypeChange = (newPriceType: string) => {
+    // Only allow valid price types
+    const validType = deliveryOptions.find((opt) => opt.key === newPriceType)
+      ? newPriceType
+      : deliveryOptions[0]?.key || "normal";
     if (onPriceTypeChange) {
-      onPriceTypeChange(id, newPriceType);
+      onPriceTypeChange(id, validType);
     }
+    setSelectedDelivery(validType);
   };
 
   useEffect(() => {
@@ -212,8 +235,12 @@ export function ProductCard({
       ? deliveryOptions.find((opt) => opt.key === getBestPrice()!.key)?.label
       : undefined;
 
+  // Fix: Use the correct price type for comparison display
+  const effectiveCompareType = onlyOneDeliveryType
+    ? deliveryOptions[0].key
+    : selectedPriceType;
   const compareOption = deliveryOptions.find(
-    (opt) => opt.key === selectedPriceType
+    (opt) => opt.key === effectiveCompareType
   );
   const comparePrice =
     compareOption && compareOption.price != null
@@ -466,7 +493,7 @@ export function ProductCard({
                   Compare as:
                 </label>
                 <Select
-                  value={selectedPriceType}
+                  value={effectiveCompareType}
                   onValueChange={handleComparePriceTypeChange}
                 >
                   <SelectTrigger className="w-36 h-8 px-2 py-1 text-xs border-blue-200 bg-blue-50 dark:bg-blue-600">
@@ -497,15 +524,18 @@ export function ProductCard({
                   <span className="text-gray-400">N/A</span>
                 )}
               </span>
-              {isCompared && selectedPriceType !== "normal" && (
-                <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded">
-                  {compareLabel}
-                </span>
-              )}
-              {(onlyOneDeliveryType || (!selectedOption && getBestPrice())) && (
+              {/* Show badge only once for single delivery type */}
+              {onlyOneDeliveryType ? (
                 <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded">
                   {displayLabel}
                 </span>
+              ) : (
+                isCompared &&
+                effectiveCompareType !== "normal" && (
+                  <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded">
+                    {compareLabel}
+                  </span>
+                )
               )}
             </div>
           </CardContent>

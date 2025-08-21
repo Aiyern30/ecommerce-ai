@@ -125,20 +125,32 @@ export default function CompareProductsContent() {
     setAiLoading(false);
   }, [comparedProducts]);
 
-  const updateURL = (
-    productsWithPriceTypes: { id: string; priceType: string }[]
-  ) => {
-    console.log(
-      "🔄 [CompareProducts] updateURL called with:",
-      productsWithPriceTypes
-    );
+  // Helper to get valid priceType for a product
+  function getValidPriceType(product: ProductWithPriceType): string {
+    const deliveryTypes = [
+      product.normal_price != null ? "normal" : null,
+      product.pump_price != null ? "pump" : null,
+      product.tremie_1_price != null ? "tremie_1" : null,
+      product.tremie_2_price != null ? "tremie_2" : null,
+      product.tremie_3_price != null ? "tremie_3" : null,
+    ].filter(Boolean) as string[];
+    if (deliveryTypes.length === 1) return deliveryTypes[0];
+    if (
+      product.selectedPriceType &&
+      deliveryTypes.includes(product.selectedPriceType)
+    ) {
+      return product.selectedPriceType;
+    }
+    return deliveryTypes[0] || "normal";
+  }
+
+  const updateURL = (productsWithPriceTypes: ProductWithPriceType[]) => {
     const params = new URLSearchParams();
     productsWithPriceTypes.forEach((item) => {
       params.append("products", item.id);
-      params.append("priceType", item.priceType);
+      params.append("priceType", getValidPriceType(item));
     });
     const newUrl = `/compare?${params.toString()}`;
-    console.log("🔄 [CompareProducts] New URL:", newUrl);
     router.replace(newUrl);
   };
 
@@ -149,12 +161,7 @@ export default function CompareProductsContent() {
       router.push("/products");
     } else {
       setComparedProducts(newProducts);
-      updateURL(
-        newProducts.map((p) => ({
-          id: p.id,
-          priceType: p.selectedPriceType || "normal",
-        }))
-      );
+      updateURL(newProducts); // Pass full product objects
     }
   };
 
@@ -185,7 +192,7 @@ export default function CompareProductsContent() {
     if (newProduct) {
       newProducts[index] = {
         ...newProduct,
-        selectedPriceType: newProducts[index]?.selectedPriceType || "normal",
+        selectedPriceType: newProducts[index]?.selectedPriceType,
       };
 
       console.log("✅ [CompareProducts] New products array:", newProducts);
@@ -199,7 +206,7 @@ export default function CompareProductsContent() {
         "🔄 [CompareProducts] URL data for changeProductAtIndex:",
         urlData
       );
-      updateURL(urlData);
+      updateURL(newProducts); // Pass full product objects
     }
   };
 
@@ -233,7 +240,7 @@ export default function CompareProductsContent() {
       "🔄 [CompareProducts] URL data for handlePriceTypeChange:",
       urlData
     );
-    updateURL(urlData);
+    updateURL(newProducts); // Pass full product objects
   };
 
   // Add the missing combined handler
@@ -286,7 +293,7 @@ export default function CompareProductsContent() {
         "🔄 [CompareProducts] URL data for combined change:",
         urlData
       );
-      updateURL(urlData);
+      updateURL(newProducts); // Pass full product objects
     }
   };
 
