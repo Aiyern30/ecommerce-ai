@@ -30,5 +30,5 @@ export interface CreateNotificationData {
   title: string;
   message: string;
   type: "order" | "promotion" | "system" | "payment" | "shipping";
-  order_id?: string;
+  id?: string;
 }

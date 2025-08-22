@@ -245,7 +245,7 @@ export async function POST(request: NextRequest) {
       title: notificationTitle,
       message: notificationMessage,
       type: "order",
-      order_id: order.id,
+      id: order.id,
     });
 
     console.log("Order notification created");

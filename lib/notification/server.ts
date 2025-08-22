@@ -10,7 +10,7 @@ export async function createNotification(
       title: data.title,
       message: data.message,
       type: data.type,
-      order_id: data.order_id,
+      order_id: data.id,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });
