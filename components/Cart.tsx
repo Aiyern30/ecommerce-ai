@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ShoppingCart, Plus, Minus, Trash2 } from "lucide-react";
 import {
   Sheet,
@@ -37,6 +37,16 @@ export default function Cart() {
   const [isOpen, setIsOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<CartItem | null>(null);
+  const [inputQty, setInputQty] = useState<{ [id: string]: string }>({});
+
+  // Sync inputQty state with cartItems when cartItems change
+  useEffect(() => {
+    const qtyState: { [id: string]: string } = {};
+    cartItems.forEach((item) => {
+      qtyState[item.id] = String(item.quantity);
+    });
+    setInputQty(qtyState);
+  }, [cartItems]);
 
   const updateQuantity = async (itemId: string, newQuantity: number) => {
     if (newQuantity < 1) {
@@ -172,6 +182,8 @@ export default function Cart() {
                         item.product,
                         item.variant_type
                       );
+                      const itemInputQty =
+                        inputQty[item.id] ?? String(item.quantity);
 
                       return (
                         <div
@@ -208,20 +220,54 @@ export default function Cart() {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-7 w-7 p-0 hover:bg-gray-100"
+                                  className="h-7 w-7 p-0"
                                   onClick={() =>
                                     updateQuantity(item.id, item.quantity - 1)
                                   }
                                 >
                                   <Minus className="h-3 w-3" />
                                 </Button>
-                                <span className="w-8 text-center text-sm font-medium">
-                                  {item.quantity}
-                                </span>
+                                {/* Number input for quantity */}
+                                <input
+                                  type="number"
+                                  min={1}
+                                  value={itemInputQty}
+                                  onClick={(e) => e.stopPropagation()}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (/^\d*$/.test(val)) {
+                                      setInputQty((prev) => ({
+                                        ...prev,
+                                        [item.id]: val,
+                                      }));
+                                    }
+                                  }}
+                                  onBlur={() => {
+                                    let val = parseInt(itemInputQty, 10);
+                                    if (isNaN(val) || val < 1) val = 1;
+                                    if (val !== item.quantity) {
+                                      updateQuantity(item.id, val);
+                                    }
+                                    setInputQty((prev) => ({
+                                      ...prev,
+                                      [item.id]: String(val),
+                                    }));
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                      (e.target as HTMLInputElement).blur();
+                                    }
+                                  }}
+                                  className="w-20 px-2 py-1.5 text-xs font-bold text-center text-gray-900 dark:text-gray-100 border-x border-gray-200 dark:border-gray-600 outline-none bg-transparent"
+                                  aria-label="Quantity"
+                                  style={{
+                                    MozAppearance: "textfield",
+                                  }}
+                                />
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-7 w-7 p-0 hover:bg-gray-100"
+                                  className="h-7 w-7 p-0"
                                   onClick={() =>
                                     updateQuantity(item.id, item.quantity + 1)
                                   }
