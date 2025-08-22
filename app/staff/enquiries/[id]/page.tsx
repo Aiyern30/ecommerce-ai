@@ -11,13 +11,15 @@ import {
   Input,
   Button,
   Skeleton,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
 } from "@/components/ui";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
@@ -37,7 +39,7 @@ export default function EnquiryDetailPage() {
       : "";
   const [enquiry, setEnquiry] = useState<Enquiry | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
@@ -78,7 +80,7 @@ export default function EnquiryDetailPage() {
       alert("An unexpected error occurred while deleting the enquiry.");
     } finally {
       setIsDeleting(false);
-      setIsDeleteDialogOpen(false);
+      setShowAlert(false);
     }
   };
 
@@ -106,11 +108,8 @@ export default function EnquiryDetailPage() {
             <Edit className="h-4 w-4" />
             Edit
           </Button>
-          <Dialog
-            open={isDeleteDialogOpen}
-            onOpenChange={setIsDeleteDialogOpen}
-          >
-            <DialogTrigger asChild>
+          <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
+            <AlertDialogTrigger asChild>
               <Button
                 variant="destructive"
                 size="sm"
@@ -120,33 +119,28 @@ export default function EnquiryDetailPage() {
                 <Trash2 className="h-4 w-4" />
                 Delete
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Confirm Deletion</DialogTitle>
-                <DialogDescription>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Enquiry?</AlertDialogTitle>
+                <AlertDialogDescription>
                   Are you sure you want to delete this enquiry? This action
                   cannot be undone.
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsDeleteDialogOpen(false)}
-                  disabled={isDeleting}
-                >
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={isDeleting}>
                   Cancel
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => handleDeleteEnquiry(id)}
+                </AlertDialogCancel>
+                <AlertDialogAction
                   disabled={isDeleting}
+                  onClick={() => handleDeleteEnquiry(id)}
                 >
-                  {isDeleting ? "Deleting..." : "Delete Enquiry"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+                  {isDeleting ? "Deleting..." : "Delete"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
       <div className="flex items-center justify-between">
