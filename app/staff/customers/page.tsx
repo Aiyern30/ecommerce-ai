@@ -10,7 +10,7 @@ import {
   Trash2,
   Users,
   Mail,
-  Calendar,
+  Calendar as CalendarIcon, // <-- rename if you need the icon
   MapPin,
   Phone,
   Shield,
@@ -19,6 +19,7 @@ import {
   UserX,
   MoreVertical,
 } from "lucide-react";
+import { Calendar } from "@/components/ui/";
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -27,11 +28,6 @@ import type { User as SupabaseUser } from "@supabase/supabase-js";
 import {
   Button,
   Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Checkbox,
   Card,
   CardContent,
@@ -46,7 +42,6 @@ import {
   DialogTitle,
   DialogTrigger,
   Skeleton,
-  Badge,
   Drawer,
   DrawerContent,
   DrawerHeader,
@@ -64,6 +59,7 @@ import {
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import { formatDate } from "@/lib/utils/format";
 import { useDeviceType } from "@/utils/useDeviceTypes";
+import { format } from "date-fns";
 
 // Types
 interface Customer {
@@ -190,28 +186,13 @@ function CustomerCard({
   onSelect,
   onViewDetails,
   onBanUser,
-  onDeleteUser,
 }: {
   customer: Customer;
   isSelected: boolean;
   onSelect: (id: string) => void;
   onViewDetails: (id: string) => void;
   onBanUser: (id: string) => void;
-  onDeleteUser: (id: string) => void;
 }) {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 border-green-200 dark:border-green-800";
-      case "inactive":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800";
-      case "banned":
-        return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400 border-red-200 dark:border-red-800";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400 border-gray-200 dark:border-gray-800";
-    }
-  };
-
   const getRoleIcon = (role: string) => {
     switch (role) {
       case "admin":
@@ -251,12 +232,6 @@ function CustomerCard({
           aria-label={`Select customer ${customer.full_name || customer.email}`}
           className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
         />
-      </div>
-      {/* Badge at top-right */}
-      <div className="absolute top-4 right-4 z-10">
-        <Badge className={`${getStatusColor(customer.status)} border`}>
-          {customer.status}
-        </Badge>
       </div>
 
       <div className="flex items-center space-x-4 mb-4">
@@ -304,7 +279,7 @@ function CustomerCard({
         )}
 
         <div className="flex items-center gap-2 text-muted-foreground">
-          <Calendar className="h-4 w-4 flex-shrink-0" />
+          <CalendarIcon className="h-4 w-4 flex-shrink-0" />
           <span>Joined {formatDate(customer.created_at)}</span>
         </div>
 
@@ -367,16 +342,6 @@ function CustomerCard({
                 <UserX className="h-4 w-4 mr-2" />
                 {customer.status === "banned" ? "Already Banned" : "Ban User"}
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDeleteUser(customer.id);
-                }}
-                className="cursor-pointer text-destructive focus:text-destructive"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete User
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -402,6 +367,7 @@ export default function CustomersPage() {
   const [customersToDelete, setCustomersToDelete] = useState<Customer[]>([]);
   const [isBanDialogOpen, setIsBanDialogOpen] = useState(false);
   const [customerToBan, setCustomerToBan] = useState<Customer | null>(null);
+  const [banUntil, setBanUntil] = useState<Date | null>(null);
   const { isMobile } = useDeviceType();
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
@@ -429,7 +395,6 @@ export default function CustomersPage() {
         avatar_url: user.user_metadata?.avatar_url || "",
         phone: user.phone || "",
         location: user.user_metadata?.location || "",
-        status: user.user_metadata?.status || "active",
         // Use app_metadata.role if present, fallback to user_metadata.role
         role:
           user.app_metadata?.role ||
@@ -586,29 +551,31 @@ export default function CustomersPage() {
     if (!customer) return;
 
     setCustomerToBan(customer);
+    setBanUntil(null);
     setIsBanDialogOpen(true);
   };
 
   const confirmBanUser = async () => {
-    if (!customerToBan) return;
+    if (!customerToBan || !banUntil) return;
 
     try {
-      // This would typically call an API to update user status
-      toast.info("User ban functionality requires admin API implementation.");
+      // Call API to ban user until banUntil date
+      await fetch("/api/admin/customers/ban", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: customerToBan.id,
+          banned_until: banUntil.toISOString(),
+        }),
+      });
+      toast.success("User banned until " + format(banUntil, "yyyy-MM-dd"));
       setIsBanDialogOpen(false);
       setCustomerToBan(null);
-    } catch (error) {
-      console.error("Error banning user:", error);
+      setBanUntil(null);
+      fetchCustomers();
+    } catch {
       toast.error("Failed to ban user");
     }
-  };
-
-  const handleDeleteSingleUser = async (customerId: string) => {
-    const customer = customers.find((c) => c.id === customerId);
-    if (!customer) return;
-
-    setCustomersToDelete([customer]);
-    setIsDeleteDialogOpen(true);
   };
 
   // Filter and sort customers
@@ -621,11 +588,6 @@ export default function CustomersPage() {
         .includes(filters.search.toLowerCase()) &&
       !customer.email.toLowerCase().includes(filters.search.toLowerCase())
     ) {
-      return false;
-    }
-
-    // Status filter
-    if (filters.status !== "all" && customer.status !== filters.status) {
       return false;
     }
 
@@ -696,22 +658,6 @@ export default function CustomersPage() {
                   onChange={(e) => updateFilter("search", e.target.value)}
                   className="border-border bg-background text-foreground placeholder:text-muted-foreground"
                 />
-                <Select
-                  value={filters.status}
-                  onValueChange={(value) =>
-                    updateFilter("status", value as CustomerFilters["status"])
-                  }
-                >
-                  <SelectTrigger className="w-full sm:w-[140px] h-9 border-border bg-background text-foreground">
-                    <SelectValue placeholder="Status Filter" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border">
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                    <SelectItem value="banned">Banned</SelectItem>
-                  </SelectContent>
-                </Select>
                 <div className="flex gap-2 mt-2">
                   <Button
                     variant="outline"
@@ -764,22 +710,6 @@ export default function CustomersPage() {
                 <ChevronRight className="ml-1 h-4 w-4" />
               )}
             </Button>
-            <Select
-              value={filters.status}
-              onValueChange={(value) =>
-                updateFilter("status", value as CustomerFilters["status"])
-              }
-            >
-              <SelectTrigger className="w-full sm:w-[140px] h-9 border-border bg-background text-foreground">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border">
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-                <SelectItem value="banned">Banned</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
         </div>
       )}
@@ -920,23 +850,23 @@ export default function CustomersPage() {
               onSelect={toggleCustomerSelection}
               onViewDetails={(id) => router.push(`/staff/customers/${id}`)}
               onBanUser={handleBanUser}
-              onDeleteUser={handleDeleteSingleUser}
             />
           ))}
         </div>
       )}
 
+      {/* Ban user dialog */}
       <Dialog open={isBanDialogOpen} onOpenChange={setIsBanDialogOpen}>
-        <DialogContent className="bg-card border-border">
+        <DialogContent className="bg-card border-border max-w-md">
           <DialogHeader>
             <DialogTitle className="text-foreground">Ban User</DialogTitle>
             <DialogDescription className="text-muted-foreground">
-              Are you sure you want to ban this user? They will no longer be
-              able to access the platform.
+              Select a date until when this user will be banned. They will not
+              be able to access the platform until then.
             </DialogDescription>
           </DialogHeader>
           {customerToBan && (
-            <div className="flex items-center gap-3 p-3 border border-border rounded-md bg-muted/50">
+            <div className="flex items-center gap-3 p-3 border border-border rounded-md bg-muted/50 mb-4">
               <Avatar className="h-10 w-10">
                 <AvatarImage
                   src={customerToBan.avatar_url || "/placeholder.svg"}
@@ -956,6 +886,39 @@ export default function CustomersPage() {
               </div>
             </div>
           )}
+          <div className="mt-2">
+            <label className="block text-sm font-medium mb-2 text-foreground">
+              Ban Until
+            </label>
+            <div className="rounded-lg border bg-background p-4 flex flex-col gap-4">
+              <div className="flex flex-col md:flex-row md:items-start gap-6">
+                <div className="bg-muted/40 rounded-lg p-4 shadow-sm w-full md:w-auto">
+                  <Calendar
+                    mode="single"
+                    selected={banUntil ?? undefined}
+                    onSelect={(date) => setBanUntil(date ?? null)}
+                    className="rounded-md border bg-background text-foreground w-full"
+                    captionLayout="dropdown"
+                    fromYear={new Date().getFullYear()}
+                    toYear={new Date().getFullYear() + 2}
+                  />
+                </div>
+                <div className="flex flex-col justify-center items-start min-w-[180px] px-2">
+                  <span className="text-sm text-muted-foreground mb-1">
+                    Selected Date:
+                  </span>
+                  <span className="font-semibold text-base text-foreground">
+                    {banUntil
+                      ? format(banUntil, "yyyy-MM-dd")
+                      : "No date selected"}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <TypographyP className="mt-6 text-xs text-muted-foreground">
+              The user will be automatically unbanned after this date.
+            </TypographyP>
+          </div>
           <DialogFooter>
             <Button
               variant="outline"
@@ -968,61 +931,9 @@ export default function CustomersPage() {
               variant="destructive"
               onClick={confirmBanUser}
               className="bg-orange-600 hover:bg-orange-700 text-white"
+              disabled={!banUntil}
             >
               Ban User
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Enhanced Delete Dialog with better theming */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="bg-card border-border">
-          <DialogHeader>
-            <DialogTitle className="text-foreground">
-              Confirm Deletion
-            </DialogTitle>
-            <DialogDescription className="text-muted-foreground">
-              Are you sure you want to delete the following{" "}
-              {customersToDelete.length} customer(s)? This action cannot be
-              undone.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="max-h-60 overflow-y-auto space-y-2">
-            {customersToDelete.map((customer) => (
-              <div
-                key={customer.id}
-                className="flex items-center gap-3 p-2 border border-border rounded-md bg-muted/50"
-              >
-                <Avatar className="h-8 w-8">
-                  <AvatarImage
-                    src={customer.avatar_url || "/placeholder.svg"}
-                  />
-                  <AvatarFallback className="bg-muted text-muted-foreground">
-                    {customer.full_name?.charAt(0) || customer.email.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <span className="font-medium text-foreground">
-                    {customer.full_name || "No name"}
-                  </span>
-                  <div className="text-sm text-muted-foreground">
-                    {customer.email}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteDialogOpen(false)}
-              className="border-border hover:bg-accent"
-            >
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteCustomers}>
-              Delete
             </Button>
           </DialogFooter>
         </DialogContent>
