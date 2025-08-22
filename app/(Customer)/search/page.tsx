@@ -8,9 +8,14 @@ import {
   AlertCircle,
   Package,
   Info,
+  Zap,
+  Target,
+  TrendingUp,
+  X,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import Image from "next/image";
-import { Card, CardContent } from "@/components/ui";
 
 interface DetectionResult {
   success: boolean;
@@ -40,6 +45,7 @@ const concreteProducts = [
     name: "Concrete N10",
     description: "Non-structural applications",
     use_case: "Blinding, filling, leveling",
+    strength: "10 MPa",
     color: "bg-gray-100 border-gray-300",
     textColor: "text-gray-700",
   },
@@ -48,6 +54,7 @@ const concreteProducts = [
     name: "Concrete N15",
     description: "Light-duty residential",
     use_case: "Footpaths, kerbs, small projects",
+    strength: "15 MPa",
     color: "bg-green-100 border-green-300",
     textColor: "text-green-700",
   },
@@ -56,6 +63,7 @@ const concreteProducts = [
     name: "Concrete N20",
     description: "Versatile construction",
     use_case: "Driveways, foundations, floors",
+    strength: "20 MPa",
     color: "bg-blue-100 border-blue-300",
     textColor: "text-blue-700",
   },
@@ -64,6 +72,7 @@ const concreteProducts = [
     name: "Concrete N25",
     description: "Structural elements",
     use_case: "Columns, beams, commercial",
+    strength: "25 MPa",
     color: "bg-purple-100 border-purple-300",
     textColor: "text-purple-700",
   },
@@ -72,6 +81,7 @@ const concreteProducts = [
     name: "Concrete S30",
     description: "High-strength structural",
     use_case: "Suspended slabs, precast",
+    strength: "30 MPa",
     color: "bg-orange-100 border-orange-300",
     textColor: "text-orange-700",
   },
@@ -80,24 +90,9 @@ const concreteProducts = [
     name: "Concrete S35",
     description: "High-rise buildings",
     use_case: "Infrastructure, durability",
+    strength: "35 MPa",
     color: "bg-red-100 border-red-300",
     textColor: "text-red-700",
-  },
-  {
-    grade: "S40",
-    name: "Concrete S40",
-    description: "Heavy-duty structural",
-    use_case: "Bridges, multi-story parks",
-    color: "bg-indigo-100 border-indigo-300",
-    textColor: "text-indigo-700",
-  },
-  {
-    grade: "S45",
-    name: "Concrete S45",
-    description: "Ultra-high-strength",
-    use_case: "Critical structures, mega projects",
-    color: "bg-pink-100 border-pink-300",
-    textColor: "text-pink-700",
   },
 ];
 
@@ -107,7 +102,7 @@ export default function ConcreteDetectorPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<DetectionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [showAllProducts, setShowAllProducts] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -183,361 +178,338 @@ export default function ConcreteDetectorPage() {
 
   const getProductStyle = (grade: string) => {
     const product = concreteProducts.find((p) => p.grade === grade);
-    return product || concreteProducts[2]; // Default to N20 style
+    return product || concreteProducts[2];
   };
 
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <Card className="border-b rounded-none">
-        <CardContent>
-          <div className="max-w-6xl mx-auto px-4 py-6">
-            <div className="text-center">
-              <div className="flex items-center justify-center mb-4">
-                <Package className="h-8 w-8 text-blue-600 mr-3" />
-                <h1 className="text-4xl font-bold">AI Concrete Detector</h1>
-              </div>
-              <p className="text-lg max-w-2xl mx-auto">
-                Upload construction photos and get instant AI-powered concrete
-                grade recommendations with pricing and availability
-              </p>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      {/* Hero Header */}
+      <div className="relative overflow-hidden bg-white border-b">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-indigo-600/5"></div>
+        <div className="relative max-w-4xl mx-auto px-6 py-12 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-2xl mb-6">
+            <Zap className="h-8 w-8 text-blue-600" />
           </div>
-        </CardContent>
-      </Card>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            AI Concrete Detector
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            Upload your construction photos and get instant AI-powered concrete
+            recommendations with real-time pricing
+          </p>
+        </div>
+      </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="flex flex-col gap-8">
-          {/* Main Upload Section (top) */}
-          <Card>
-            <CardContent>
-              <div className="space-y-6">
-                {/* File Upload Area */}
-                <div
-                  className="
-    border-2 border-dashed rounded-xl p-8 text-center
-    transition-all duration-200
-    hover:border-blue-400 hover:bg-blue-50/50
-    dark:hover:border-blue-500 dark:hover:bg-blue-950/60
-    bg-white dark:bg-card
-  "
-                >
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                    id="file-upload"
-                  />
-                  <label htmlFor="file-upload" className="cursor-pointer">
-                    <div className="space-y-4">
-                      <div className="flex justify-center">
-                        <div className="rounded-full p-4 bg-blue-100 dark:bg-blue-900">
-                          <Upload className="h-8 w-8 text-blue-600" />
-                        </div>
+      <div className="max-w-4xl mx-auto px-6 py-8">
+        {/* Main Detection Card */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          {!result ? (
+            /* Upload State */
+            <div className="p-8">
+              {!file ? (
+                /* Initial Upload */
+                <div className="text-center">
+                  <div
+                    className="relative border-2 border-dashed border-gray-300 rounded-xl p-12 
+                    hover:border-blue-400 hover:bg-blue-50/30 transition-all duration-300 cursor-pointer group"
+                  >
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileSelect}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      id="file-upload"
+                    />
+                    <div className="space-y-6">
+                      <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full group-hover:bg-blue-200 transition-colors">
+                        <Upload className="h-10 w-10 text-blue-600" />
                       </div>
                       <div>
-                        <span className="text-blue-600 font-semibold text-lg">
-                          Click to upload
-                        </span>
-                        <span className="text-gray-500 dark:text-gray-400 text-lg">
-                          {" "}
-                          or drag and drop
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        PNG, JPG, GIF up to 10MB
-                      </p>
-                      <div className="flex items-center justify-center space-x-4 text-xs text-gray-400 dark:text-gray-500">
-                        <span>✓ Construction sites</span>
-                        <span>✓ Building structures</span>
-                        <span>✓ Concrete elements</span>
-                      </div>
-                    </div>
-                  </label>
-                </div>
-
-                {/* Preview */}
-                {preview && (
-                  <div className="relative">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-lg font-semibold flex items-center">
-                        <Camera className="h-5 w-5 mr-2" />
-                        Image Preview
-                      </h3>
-                      <button
-                        type="button"
-                        onClick={resetForm}
-                        className="bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm hover:bg-red-600 transition-colors"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                    <div className="relative w-full h-64 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
-                      <Image
-                        src={preview}
-                        alt="Preview"
-                        fill
-                        className="object-contain rounded-lg"
-                        sizes="100vw"
-                        style={{ objectFit: "contain" }}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Submit Button */}
-                {file && (
-                  <button
-                    onClick={handleSubmit}
-                    disabled={loading}
-                    className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 px-6 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center shadow-lg"
-                  >
-                    {loading ? (
-                      <>
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                        Analyzing Image...
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="h-5 w-5 mr-2" />
-                        Analyze & Get Recommendations
-                      </>
-                    )}
-                  </button>
-                )}
-              </div>
-              {/* Error Display */}
-              {error && (
-                <div className="mt-6 border rounded-lg p-4 bg-red-50 dark:bg-red-900 border-red-200 dark:border-red-800">
-                  <div className="flex items-start">
-                    <AlertCircle className="h-5 w-5 text-red-400 mr-3 mt-0.5" />
-                    <p className="text-sm text-red-800 dark:text-red-200">
-                      {error}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Results Display */}
-              {result && result.success && (
-                <div className="mt-8 space-y-6">
-                  {/* Success Message */}
-                  <div className="border rounded-lg p-6 bg-green-50 dark:bg-green-900 border-green-200 dark:border-green-800">
-                    <div className="flex items-start">
-                      <CheckCircle className="h-6 w-6 text-green-500 mr-3 mt-0.5" />
-                      <div className="flex-1">
-                        <p className="font-semibold text-lg text-green-800 dark:text-green-200">
-                          {result.message}
+                        <h3 className="text-2xl font-semibold text-gray-900 mb-2">
+                          Upload Construction Photo
+                        </h3>
+                        <p className="text-gray-500 text-lg mb-4">
+                          Drag & drop your image or click to browse
                         </p>
-                        <p className="text-sm text-green-600 dark:text-green-300 mt-1">
-                          Confidence Score: {result.confidence}% •{" "}
-                          {result.totalProducts || 0} products analyzed
+                        <p className="text-sm text-gray-400">
+                          Supports PNG, JPG, GIF up to 10MB
                         </p>
                       </div>
+                      <div className="flex items-center justify-center space-x-8 text-sm text-gray-400">
+                        <div className="flex items-center">
+                          <Target className="h-4 w-4 mr-2" />
+                          Construction sites
+                        </div>
+                        <div className="flex items-center">
+                          <Package className="h-4 w-4 mr-2" />
+                          Building structures
+                        </div>
+                        <div className="flex items-center">
+                          <TrendingUp className="h-4 w-4 mr-2" />
+                          Concrete elements
+                        </div>
+                      </div>
                     </div>
                   </div>
+                </div>
+              ) : (
+                /* File Selected State */
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xl font-semibold text-gray-900 flex items-center">
+                      <Camera className="h-5 w-5 mr-2 text-blue-600" />
+                      Ready to Analyze
+                    </h3>
+                    <button
+                      onClick={resetForm}
+                      className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    >
+                      <X className="h-5 w-5 text-gray-500" />
+                    </button>
+                  </div>
 
-                  {/* Product Recommendation */}
-                  {result.matchedProduct && (
-                    <div className="border-2 rounded-xl p-6 shadow-lg bg-white dark:bg-gray-900 border-blue-200 dark:border-blue-800">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                            {result.matchedProduct.name}
-                          </h3>
-                          <p className="text-gray-600 dark:text-gray-300 mt-1">
-                            {result.matchedProduct.description}
-                          </p>
-                        </div>
-                        <span
-                          className={`px-4 py-2 rounded-full text-sm font-bold ${
-                            getProductStyle(result.matchedProduct.grade).color
-                          } ${
-                            getProductStyle(result.matchedProduct.grade)
-                              .textColor
-                          } border-2`}
-                        >
-                          {result.matchedProduct.grade}
-                        </span>
+                  {/* Show image preview if available */}
+                  {preview && (
+                    <div className="flex justify-center mb-4">
+                      <div className="relative w-[520px] h-[520px] rounded-xl border border-gray-200 shadow overflow-hidden">
+                        <Image
+                          src={preview}
+                          alt="Preview"
+                          fill
+                          style={{ objectFit: "contain" }}
+                          sizes="320px"
+                          className="rounded-xl"
+                        />
                       </div>
-
-                      {/* Pricing Grid */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                        <div className="rounded-lg p-4 border bg-green-50 dark:bg-green-900 border-green-200 dark:border-green-800">
-                          <span className="text-sm font-medium text-green-700 dark:text-green-300">
-                            Normal Price
-                          </span>
-                          <div className="text-2xl font-bold text-green-800 dark:text-green-200">
-                            ${result.matchedProduct.normal_price}
-                          </div>
-                          <span className="text-xs text-green-600 dark:text-green-300">
-                            {result.matchedProduct.unit}
-                          </span>
-                        </div>
-
-                        {result.matchedProduct.pump_price && (
-                          <div className="rounded-lg p-4 border bg-blue-50 dark:bg-blue-900 border-blue-200 dark:border-blue-800">
-                            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                              Pump Price
-                            </span>
-                            <div className="text-2xl font-bold text-blue-800 dark:text-blue-200">
-                              ${result.matchedProduct.pump_price}
-                            </div>
-                            <span className="text-xs text-blue-600 dark:text-blue-300">
-                              {result.matchedProduct.unit}
-                            </span>
-                          </div>
-                        )}
-
-                        <div className="rounded-lg p-4 border bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800">
-                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Stock Available
-                          </span>
-                          <div className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-                            {result.matchedProduct.stock_quantity}
-                          </div>
-                          <span className="text-xs text-gray-600 dark:text-gray-400">
-                            m³ in stock
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Additional Pricing Options */}
-                      {(result.matchedProduct.tremie_1_price ||
-                        result.matchedProduct.tremie_2_price ||
-                        result.matchedProduct.tremie_3_price) && (
-                        <div className="border-t pt-4">
-                          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                            Tremie Delivery Options
-                          </h4>
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            {result.matchedProduct.tremie_1_price && (
-                              <div className="text-center p-3 rounded border bg-yellow-50 dark:bg-yellow-900 border-yellow-200 dark:border-yellow-800">
-                                <div className="text-lg font-bold text-yellow-800 dark:text-yellow-200">
-                                  ${result.matchedProduct.tremie_1_price}
-                                </div>
-                                <span className="text-xs text-yellow-600 dark:text-yellow-300">
-                                  Tremie Level 1
-                                </span>
-                              </div>
-                            )}
-                            {result.matchedProduct.tremie_2_price && (
-                              <div className="text-center p-3 rounded border bg-orange-50 dark:bg-orange-900 border-orange-200 dark:border-orange-800">
-                                <div className="text-lg font-bold text-orange-800 dark:text-orange-200">
-                                  ${result.matchedProduct.tremie_2_price}
-                                </div>
-                                <span className="text-xs text-orange-600 dark:text-orange-300">
-                                  Tremie Level 2
-                                </span>
-                              </div>
-                            )}
-                            {result.matchedProduct.tremie_3_price && (
-                              <div className="text-center p-3 rounded border bg-red-50 dark:bg-red-900 border-red-200 dark:border-red-800">
-                                <div className="text-lg font-bold text-red-800 dark:text-red-200">
-                                  ${result.matchedProduct.tremie_3_price}
-                                </div>
-                                <span className="text-xs text-red-600 dark:text-red-300">
-                                  Tremie Level 3
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
                     </div>
                   )}
 
-                  {/* Detected Elements */}
-                  {result.detectedLabels &&
-                    result.detectedLabels.length > 0 && (
-                      <div className="rounded-lg p-4 border bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800">
-                        <h4 className="font-semibold mb-3 flex items-center text-gray-900 dark:text-gray-100">
-                          <Info className="h-4 w-4 mr-2" />
-                          AI Detected Elements
+                  <div className="bg-gray-50 rounded-xl p-4 flex items-center space-x-4">
+                    <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <Camera className="h-8 w-8 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900">{file.name}</p>
+                      <p className="text-sm text-gray-500">
+                        {(file.size / (1024 * 1024)).toFixed(2)} MB
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-6 rounded-xl font-semibold 
+                    hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed 
+                    transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  >
+                    {loading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
+                        AI is analyzing your image...
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="h-5 w-5 mr-2" />
+                        Get AI Recommendations
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {/* Error Display */}
+              {error && (
+                <div className="mt-6 bg-red-50 border border-red-200 rounded-xl p-4">
+                  <div className="flex items-start">
+                    <AlertCircle className="h-5 w-5 text-red-400 mr-3 mt-0.5 flex-shrink-0" />
+                    <p className="text-red-800 font-medium">{error}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Results State */
+            <div>
+              {/* Success Header */}
+              <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-6">
+                <div className="flex items-center text-white">
+                  <CheckCircle className="h-8 w-8 mr-4" />
+                  <div>
+                    <h3 className="text-2xl font-bold">{result.message}</h3>
+                    <p className="text-green-100 mt-1">
+                      {result.confidence}% confidence • Analyzed in seconds
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Product Recommendation */}
+              {result.matchedProduct && (
+                <div className="p-8">
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
+                    <div className="flex items-start justify-between mb-6">
+                      <div>
+                        <h4 className="text-2xl font-bold text-gray-900 mb-2">
+                          {result.matchedProduct.name}
                         </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {result.detectedLabels.map((label, index) => (
-                            <span
-                              key={index}
-                              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full text-sm text-gray-700 dark:text-gray-200 shadow-sm"
-                            >
-                              {label}
-                            </span>
-                          ))}
+                        <p className="text-gray-600 text-lg">
+                          {result.matchedProduct.description}
+                        </p>
+                      </div>
+                      <span
+                        className={`px-4 py-2 rounded-xl font-bold text-lg ${
+                          getProductStyle(result.matchedProduct.grade).color
+                        } ${
+                          getProductStyle(result.matchedProduct.grade).textColor
+                        } border-2`}
+                      >
+                        {result.matchedProduct.grade}
+                      </span>
+                    </div>
+
+                    {/* Pricing Cards */}
+                    <div className="grid md:grid-cols-3 gap-4 mb-6">
+                      <div className="bg-white rounded-xl p-5 border-2 border-green-200 shadow-sm">
+                        <div className="text-center">
+                          <p className="text-sm font-medium text-green-700 mb-1">
+                            Normal Price
+                          </p>
+                          <p className="text-3xl font-bold text-green-800">
+                            ${result.matchedProduct.normal_price}
+                          </p>
+                          <p className="text-sm text-green-600">
+                            {result.matchedProduct.unit}
+                          </p>
                         </div>
                       </div>
-                    )}
+
+                      {result.matchedProduct.pump_price && (
+                        <div className="bg-white rounded-xl p-5 border-2 border-blue-200 shadow-sm">
+                          <div className="text-center">
+                            <p className="text-sm font-medium text-blue-700 mb-1">
+                              Pump Price
+                            </p>
+                            <p className="text-3xl font-bold text-blue-800">
+                              ${result.matchedProduct.pump_price}
+                            </p>
+                            <p className="text-sm text-blue-600">
+                              {result.matchedProduct.unit}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="bg-white rounded-xl p-5 border-2 border-gray-200 shadow-sm">
+                        <div className="text-center">
+                          <p className="text-sm font-medium text-gray-700 mb-1">
+                            In Stock
+                          </p>
+                          <p className="text-3xl font-bold text-gray-800">
+                            {result.matchedProduct.stock_quantity}
+                          </p>
+                          <p className="text-sm text-gray-600">m³ available</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Detected Elements */}
+                    {result.detectedLabels &&
+                      result.detectedLabels.length > 0 && (
+                        <div className="bg-white rounded-xl p-5 border border-gray-200">
+                          <h5 className="font-semibold text-gray-900 mb-3 flex items-center">
+                            <Info className="h-4 w-4 mr-2 text-blue-600" />
+                            AI Detected Elements
+                          </h5>
+                          <div className="flex flex-wrap gap-2">
+                            {result.detectedLabels.map((label, index) => (
+                              <span
+                                key={index}
+                                className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium border border-blue-200"
+                              >
+                                {label}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-4 mt-6">
+                      <button
+                        onClick={resetForm}
+                        className="flex-1 bg-white border-2 border-gray-300 text-gray-700 py-3 px-6 rounded-xl font-semibold 
+                        hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
+                      >
+                        Analyze Another Photo
+                      </button>
+                      <button
+                        className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-6 rounded-xl font-semibold 
+                      hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg"
+                      >
+                        Get Quote
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
-          {/* Product Guide (bottom) */}
-          <Card>
-            <CardContent>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold">Product Guide</h2>
-                <button
-                  onClick={() => setShowAllProducts(!showAllProducts)}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  {showAllProducts ? "Show Less" : "View All"}
-                </button>
+            </div>
+          )}
+        </div>
+
+        {/* Quick Reference Guide - Only show when not analyzing */}
+        {!loading && (
+          <div className="mt-8 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <button
+              onClick={() => setShowGuide(!showGuide)}
+              className="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors"
+            >
+              <div className="flex items-center">
+                <Package className="h-6 w-6 text-blue-600 mr-3" />
+                <h3 className="text-xl font-semibold text-gray-900">
+                  Concrete Grade Reference
+                </h3>
               </div>
-              <div className="space-y-3">
-                {concreteProducts
-                  .slice(0, showAllProducts ? 8 : 4)
-                  .map((product) => (
+              {showGuide ? (
+                <ChevronUp className="h-5 w-5 text-gray-500" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-gray-500" />
+              )}
+            </button>
+
+            {showGuide && (
+              <div className="border-t border-gray-100 p-6">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {concreteProducts.map((product) => (
                     <div
                       key={product.grade}
-                      className={`rounded-lg p-4 border-2 ${product.color} ${product.textColor} hover:shadow-md transition-all duration-200`}
+                      className={`rounded-xl p-4 border-2 ${product.color} hover:shadow-md transition-all duration-200 cursor-pointer`}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-bold text-lg">{product.grade}</h3>
-                        <Package className="h-4 w-4" />
+                        <span
+                          className={`font-bold text-xl ${product.textColor}`}
+                        >
+                          {product.grade}
+                        </span>
+                        <span
+                          className={`text-xs font-medium ${product.textColor} bg-white/70 px-2 py-1 rounded`}
+                        >
+                          {product.strength}
+                        </span>
                       </div>
-                      <p className="text-sm font-medium mb-1">
+                      <h4 className={`font-semibold mb-1 ${product.textColor}`}>
                         {product.description}
+                      </h4>
+                      <p className={`text-sm ${product.textColor} opacity-80`}>
+                        {product.use_case}
                       </p>
-                      <p className="text-xs opacity-80">{product.use_case}</p>
                     </div>
                   ))}
-              </div>
-              {!showAllProducts && (
-                <div className="mt-4 text-center">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    +{concreteProducts.length - 4} more grades available
-                  </p>
-                </div>
-              )}
-              <div className="mt-6 p-4 rounded-lg border bg-blue-50 dark:bg-blue-900 border-blue-200 dark:border-blue-800">
-                <h3 className="font-semibold mb-2 text-blue-900 dark:text-blue-100">
-                  How it works
-                </h3>
-                <div className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
-                  <div className="flex items-start">
-                    <span className="bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">
-                      1
-                    </span>
-                    Upload construction photo
-                  </div>
-                  <div className="flex items-start">
-                    <span className="bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">
-                      2
-                    </span>
-                    AI analyzes structure & context
-                  </div>
-                  <div className="flex items-start">
-                    <span className="bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">
-                      3
-                    </span>
-                    Get personalized recommendations
-                  </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
