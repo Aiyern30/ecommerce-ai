@@ -89,12 +89,8 @@ export default function OrdersPage() {
 
   const loadOrders = useCallback(async () => {
     if (!user?.id) {
-      console.log("No user ID available:", user);
       return;
     }
-
-    console.log("=== LOADING ORDERS DEBUG ===");
-    console.log("User ID:", user.id);
 
     try {
       setIsLoading(true);
@@ -112,23 +108,18 @@ export default function OrdersPage() {
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
-      console.log("Orders query result:", { ordersData, ordersError });
-
       if (ordersError) {
-        console.error("Error loading orders:", ordersError);
         toast.error("Failed to load orders");
         return;
       }
 
       if (!ordersData || ordersData.length === 0) {
-        console.log("No orders found for user");
         setOrders([]);
         return;
       }
 
       setOrders(ordersData);
-    } catch (error) {
-      console.error("Error in loadOrders:", error);
+    } catch {
       toast.error("Failed to load orders");
     } finally {
       setIsLoading(false);
@@ -192,7 +183,6 @@ export default function OrdersPage() {
 
   useEffect(() => {
     if (user?.id) {
-      console.log("User authenticated, loading orders for:", user.id);
       loadOrders();
     }
   }, [user, loadOrders]);

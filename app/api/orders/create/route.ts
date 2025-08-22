@@ -311,275 +311,47 @@ export async function POST(request: NextRequest) {
       // Don't fail the order creation if cart clearing fails
     }
 
-    // Replace your additional services section with this comprehensive debug version
-
+    // --- Insert additional services (optimized, no debug/test logic) ---
     if (
       body.selected_services &&
       body.additional_services_data &&
       body.total_volume
     ) {
-      console.log("=== COMPREHENSIVE ADDITIONAL SERVICES DEBUG ===");
-
-      // Step 1: Log raw input data
-      console.log("1. RAW INPUT DATA:");
-      console.log(
-        "selected_services:",
-        JSON.stringify(body.selected_services, null, 2)
-      );
-      console.log(
-        "additional_services_data:",
-        JSON.stringify(body.additional_services_data, null, 2)
-      );
-      console.log(
-        "total_volume:",
-        body.total_volume,
-        "type:",
-        typeof body.total_volume
-      );
-
-      // Step 2: Filter selected services
       const selectedServiceCodes = Object.keys(body.selected_services).filter(
         (code) => body.selected_services![code] !== null
       );
-      console.log("2. SELECTED SERVICE CODES:", selectedServiceCodes);
 
       if (selectedServiceCodes.length > 0) {
-        // Step 3: Find matching services
         const selectedServicesData = body.additional_services_data.filter(
           (service) => selectedServiceCodes.includes(service.service_code)
         );
-        console.log(
-          "3. MATCHED SERVICES DATA:",
-          JSON.stringify(selectedServicesData, null, 2)
-        );
 
         if (selectedServicesData.length > 0) {
-          // Step 4: Validate each service ID exists in database
-          console.log("4. VALIDATING SERVICE IDs IN DATABASE:");
-          for (const service of selectedServicesData) {
-            console.log(`Checking service ID: ${service.id}`);
-            const { data: serviceExists, error: checkError } =
-              await supabaseAdmin
-                .from("additional_services")
-                .select("id, service_name, service_code")
-                .eq("id", service.id)
-                .single();
-
-            if (checkError) {
-              console.error(
-                `❌ Service ID ${service.id} check failed:`,
-                checkError
-              );
-            } else if (serviceExists) {
-              console.log(`✅ Service ID ${service.id} exists:`, serviceExists);
-            } else {
-              console.log(`❌ Service ID ${service.id} not found in database`);
-            }
-          }
-
-          // Step 5: Create insertion data with explicit type conversion
-          console.log("5. CREATING INSERTION DATA:");
           const orderAdditionalServices = selectedServicesData.map(
-            (service, index) => {
-              const totalVolume = body.total_volume;
-              const ratePerM3 = parseFloat(service.rate_per_m3);
-
-              const orderService = {
-                order_id: order.id,
-                additional_service_id: service.id,
-                service_name: String(service.service_name),
-                rate_per_m3: ratePerM3,
-                quantity: totalVolume,
-                total_price: ratePerM3 * totalVolume,
-              };
-
-              console.log(`Service ${index + 1} mapped:`, {
-                ...orderService,
-                calculations: {
-                  originalRate: service.rate_per_m3,
-                  originalVolume: body.total_volume,
-                  parsedRate: ratePerM3,
-                  parsedVolume: totalVolume,
-                  calculation: `${ratePerM3} × ${totalVolume} = ${
-                    ratePerM3 * totalVolume
-                  }`,
-                },
-              });
-
-              return orderService;
-            }
+            (service) => ({
+              order_id: order.id,
+              additional_service_id: service.id,
+              service_name: String(service.service_name),
+              rate_per_m3: parseFloat(service.rate_per_m3),
+              quantity: body.total_volume,
+              total_price: parseFloat(service.rate_per_m3) * body.total_volume,
+            })
           );
 
-          console.log(
-            "6. FINAL INSERTION ARRAY:",
-            JSON.stringify(orderAdditionalServices, null, 2)
-          );
+          const { error: addServicesError } = await supabaseAdmin
+            .from("order_additional_services")
+            .insert(orderAdditionalServices);
 
-          // Step 6: Validate each record before insertion
-          console.log("7. VALIDATING EACH RECORD:");
-          let hasValidationErrors = false;
-
-          for (const [index, service] of orderAdditionalServices.entries()) {
-            console.log(`Validating record ${index + 1}:`);
-
-            const validations = [
-              {
-                field: "order_id",
-                value: service.order_id,
-                valid: !!service.order_id,
-              },
-              {
-                field: "additional_service_id",
-                value: service.additional_service_id,
-                valid: !!service.additional_service_id,
-              },
-              {
-                field: "service_name",
-                value: service.service_name,
-                valid: !!service.service_name,
-              },
-              {
-                field: "rate_per_m3",
-                value: service.rate_per_m3,
-                valid: !isNaN(service.rate_per_m3) && service.rate_per_m3 > 0,
-              },
-              {
-                field: "quantity",
-                value: service.quantity,
-                valid: !isNaN(service.quantity) && service.quantity > 0,
-              },
-              {
-                field: "total_price",
-                value: service.total_price,
-                valid: !isNaN(service.total_price) && service.total_price >= 0,
-              },
-            ];
-
-            for (const validation of validations) {
-              if (!validation.valid) {
-                console.error(
-                  `❌ ${validation.field}: ${validation.value} (invalid)`
-                );
-                hasValidationErrors = true;
-              } else {
-                console.log(`✅ ${validation.field}: ${validation.value}`);
-              }
-            }
-          }
-
-          if (hasValidationErrors) {
-            console.error("❌ VALIDATION ERRORS FOUND - SKIPPING INSERTION");
-            return;
-          }
-
-          // Step 7: Test with a single record first
-          console.log("8. TESTING WITH SINGLE RECORD:");
-          const testRecord = orderAdditionalServices[0];
-
-          try {
-            const { data: singleTestData, error: singleTestError } =
-              await supabaseAdmin
-                .from("order_additional_services")
-                .insert(testRecord)
-                .select();
-
-            if (singleTestError) {
-              console.error("❌ SINGLE RECORD TEST FAILED:");
-              console.error("Error code:", singleTestError.code);
-              console.error("Error message:", singleTestError.message);
-              console.error("Error details:", singleTestError.details);
-              console.error("Error hint:", singleTestError.hint);
-              console.error(
-                "Full error:",
-                JSON.stringify(singleTestError, null, 2)
-              );
-              return;
-            } else {
-              console.log("✅ SINGLE RECORD TEST SUCCESS:", singleTestData);
-
-              // If single test worked, delete it and proceed with full insertion
-              if (singleTestData && singleTestData[0]) {
-                await supabaseAdmin
-                  .from("order_additional_services")
-                  .delete()
-                  .eq("id", singleTestData[0].id);
-                console.log("Test record cleaned up");
-              }
-            }
-          } catch (singleTestException) {
+          if (addServicesError) {
             console.error(
-              "❌ SINGLE RECORD TEST EXCEPTION:",
-              singleTestException
+              "Failed to insert additional services:",
+              addServicesError
             );
-            return;
+            // Optionally: return error or continue
           }
-
-          // Step 8: Proceed with full insertion
-          console.log("9. PROCEEDING WITH FULL INSERTION:");
-
-          try {
-            const { data: insertedServices, error: addServicesError } =
-              await supabaseAdmin
-                .from("order_additional_services")
-                .insert(orderAdditionalServices)
-                .select();
-
-            if (addServicesError) {
-              console.error("❌ FULL INSERTION FAILED:");
-              console.error("Error code:", addServicesError.code);
-              console.error("Error message:", addServicesError.message);
-              console.error("Error details:", addServicesError.details);
-              console.error("Error hint:", addServicesError.hint);
-              console.error(
-                "Full error:",
-                JSON.stringify(addServicesError, null, 2)
-              );
-            } else {
-              console.log("✅ FULL INSERTION SUCCESS!");
-              console.log(
-                "Inserted records count:",
-                insertedServices?.length || 0
-              );
-              console.log(
-                "Inserted data:",
-                JSON.stringify(insertedServices, null, 2)
-              );
-
-              // Verify insertion by querying back
-              const { data: verifyData, error: verifyError } =
-                await supabaseAdmin
-                  .from("order_additional_services")
-                  .select("*")
-                  .eq("order_id", order.id);
-
-              if (verifyError) {
-                console.error("❌ VERIFICATION QUERY FAILED:", verifyError);
-              } else {
-                console.log(
-                  "✅ VERIFICATION SUCCESS - Records in DB:",
-                  verifyData?.length || 0
-                );
-                console.log(
-                  "Verified data:",
-                  JSON.stringify(verifyData, null, 2)
-                );
-              }
-            }
-          } catch (insertException) {
-            console.error("❌ INSERTION EXCEPTION:", insertException);
-          }
-        } else {
-          console.log("❌ No matching additional services found");
         }
-      } else {
-        console.log("❌ No additional services selected");
       }
-
-      console.log("=== DEBUG END ===");
-    } else {
-      console.log("❌ Missing required data for additional services");
     }
-
     // --- End insert additional services ---
 
     return NextResponse.json({
