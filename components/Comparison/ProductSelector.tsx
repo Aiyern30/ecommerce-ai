@@ -76,27 +76,10 @@ export function ProductSelector({
   };
 
   const getSelectedPrice = (product: ProductWithPriceType) => {
-    console.log(
-      "Getting price for product:",
-      product.name,
-      "selectedPriceType:",
-      product.selectedPriceType
-    );
-    console.log("Product prices:", {
-      normal_price: product.normal_price,
-      pump_price: product.pump_price,
-      tremie_1_price: product.tremie_1_price,
-      tremie_2_price: product.tremie_2_price,
-      tremie_3_price: product.tremie_3_price,
-    });
-
     const priceOptions = getPriceOptions(product);
-    console.log("Price options:", priceOptions);
 
-    // If no selectedPriceType, use the first available price option
     if (!product.selectedPriceType) {
       const firstPrice = priceOptions.length > 0 ? priceOptions[0].price : 0;
-      console.log("No selectedPriceType, using first available:", firstPrice);
       return firstPrice;
     }
 
@@ -120,11 +103,9 @@ export function ProductSelector({
         selectedPrice = product.normal_price || 0;
         break;
       default:
-        // Fallback to first available price if selectedPriceType doesn't exist
         selectedPrice = priceOptions.length > 0 ? priceOptions[0].price : 0;
     }
 
-    console.log("Final selected price:", selectedPrice);
     return selectedPrice;
   };
 
