@@ -16,22 +16,7 @@ export async function GET() {
       );
     }
 
-    // 2. Optionally fetch related user data (if you want to show user info)
-    // const { data: users, error: usersError } = await supabaseAdmin
-    //   .from("users")
-    //   .select("*");
-    // if (usersError) {
-    //   return NextResponse.json({ error: usersError.message }, { status: 500 });
-    // }
-
-    // 3. Merge user info if needed (uncomment if you fetch users)
-    // const enquiriesWithUser = enquiries.map((enq) => ({
-    //   ...enq,
-    //   user: users.find((u) => u.id === enq.user_id) || null,
-    // }));
-
-    // 4. Return enquiries (with or without user info)
-    return NextResponse.json({ enquiries /*: enquiriesWithUser*/ });
+    return NextResponse.json({ enquiries });
   } catch {
     return NextResponse.json(
       { error: "Internal server error" },
