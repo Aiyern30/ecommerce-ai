@@ -16,6 +16,15 @@ import {
   ChevronUp,
 } from "lucide-react";
 import Image from "next/image";
+import {
+  TypographyH1,
+  TypographyH3,
+  TypographyP,
+  TypographyH5,
+  TypographySmall,
+  TypographyMuted,
+} from "@/components/ui/Typography";
+import { Button, Card, CardContent } from "@/components/ui";
 
 interface DetectionResult {
   success: boolean;
@@ -182,33 +191,30 @@ export default function ConcreteDetectorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen ">
       {/* Hero Header */}
-      <div className="relative overflow-hidden bg-white border-b">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-indigo-600/5"></div>
+      <div className="relative overflow-hidden border-b">
+        <div className="absolute inset-0 "></div>
         <div className="relative max-w-4xl mx-auto px-6 py-12 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-2xl mb-6">
             <Zap className="h-8 w-8 text-blue-600" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <TypographyH1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
             AI Concrete Detector
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+          </TypographyH1>
+          <TypographyP className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
             Upload your construction photos and get instant AI-powered concrete
             recommendations with real-time pricing
-          </p>
+          </TypographyP>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-6 py-8">
-        {/* Main Detection Card */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div className="rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
           {!result ? (
-            /* Upload State */
-            <div className="p-8">
+            <Card className="p-4">
               {!file ? (
-                /* Initial Upload */
-                <div className="text-center">
+                <CardContent className="text-center">
                   <div
                     className="relative border-2 border-dashed border-gray-300 rounded-xl p-12 
                     hover:border-blue-400 hover:bg-blue-50/30 transition-all duration-300 cursor-pointer group"
@@ -225,15 +231,13 @@ export default function ConcreteDetectorPage() {
                         <Upload className="h-10 w-10 text-blue-600" />
                       </div>
                       <div>
-                        <h3 className="text-2xl font-semibold text-gray-900 mb-2">
-                          Upload Construction Photo
-                        </h3>
-                        <p className="text-gray-500 text-lg mb-4">
+                        <TypographyH3>Upload Construction Photo</TypographyH3>
+                        <TypographyP>
                           Drag & drop your image or click to browse
-                        </p>
-                        <p className="text-sm text-gray-400">
+                        </TypographyP>
+                        <TypographyP>
                           Supports PNG, JPG, GIF up to 10MB
-                        </p>
+                        </TypographyP>
                       </div>
                       <div className="flex items-center justify-center space-x-8 text-sm text-gray-400">
                         <div className="flex items-center">
@@ -251,40 +255,40 @@ export default function ConcreteDetectorPage() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </CardContent>
               ) : (
                 /* File Selected State */
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-semibold text-gray-900 flex items-center">
+                    <TypographyH3 className="flex items-center">
                       <Camera className="h-5 w-5 mr-2 text-blue-600" />
                       Ready to Analyze
-                    </h3>
-                    <button
+                    </TypographyH3>
+                    <Button
                       onClick={resetForm}
                       className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                     >
                       <X className="h-5 w-5 text-gray-500" />
-                    </button>
+                    </Button>
                   </div>
 
-                  {/* Show image preview if available */}
+                  {/* Enhanced image preview */}
                   {preview && (
                     <div className="flex justify-center mb-4">
-                      <div className="relative w-[520px] h-[520px] rounded-xl border border-gray-200 shadow overflow-hidden">
+                      <div className="relative w-full max-w-md h-[260px] bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-100 rounded-2xl shadow-lg flex items-center justify-center overflow-hidden">
                         <Image
                           src={preview}
                           alt="Preview"
                           fill
                           style={{ objectFit: "contain" }}
-                          sizes="320px"
-                          className="rounded-xl"
+                          sizes="400px"
+                          className="rounded-2xl"
                         />
                       </div>
                     </div>
                   )}
 
-                  <div className="bg-gray-50 rounded-xl p-4 flex items-center space-x-4">
+                  <div className="bg-gray-50 rounded-xl p-4 flex items-center space-x-4 shadow-sm">
                     <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center">
                       <Camera className="h-8 w-8 text-blue-600" />
                     </div>
@@ -327,133 +331,142 @@ export default function ConcreteDetectorPage() {
                   </div>
                 </div>
               )}
-            </div>
+            </Card>
           ) : (
-            /* Results State */
-            <div>
-              {/* Success Header */}
-              <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-6">
-                <div className="flex items-center text-white">
-                  <CheckCircle className="h-8 w-8 mr-4" />
-                  <div>
-                    <h3 className="text-2xl font-bold">{result.message}</h3>
-                    <p className="text-green-100 mt-1">
-                      {result.confidence}% confidence • Analyzed in seconds
-                    </p>
+            // Results State
+            <Card>
+              <CardContent>
+                {/* Success Header */}
+                <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-6 rounded-xl mb-6 shadow">
+                  <div className="flex items-center text-white">
+                    <CheckCircle className="h-8 w-8 mr-4" />
+                    <div>
+                      <TypographyH3 className="text-2xl font-bold">
+                        {result.message}
+                      </TypographyH3>
+                      <TypographyP className="text-green-100 mt-1">
+                        {result.confidence}% confidence • Analyzed in seconds
+                      </TypographyP>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Product Recommendation */}
-              {result.matchedProduct && (
-                <div className="p-8">
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
-                    <div className="flex items-start justify-between mb-6">
-                      <div>
-                        <h4 className="text-2xl font-bold text-gray-900 mb-2">
-                          {result.matchedProduct.name}
-                        </h4>
-                        <p className="text-gray-600 text-lg">
-                          {result.matchedProduct.description}
-                        </p>
-                      </div>
-                      <span
-                        className={`px-4 py-2 rounded-xl font-bold text-lg ${
-                          getProductStyle(result.matchedProduct.grade).color
-                        } ${
-                          getProductStyle(result.matchedProduct.grade).textColor
-                        } border-2`}
-                      >
-                        {result.matchedProduct.grade}
-                      </span>
-                    </div>
-
-                    {/* Pricing Cards */}
-                    <div className="grid md:grid-cols-3 gap-4 mb-6">
-                      <div className="bg-white rounded-xl p-5 border-2 border-green-200 shadow-sm">
-                        <div className="text-center">
-                          <p className="text-sm font-medium text-green-700 mb-1">
-                            Normal Price
-                          </p>
-                          <p className="text-3xl font-bold text-green-800">
-                            ${result.matchedProduct.normal_price}
-                          </p>
-                          <p className="text-sm text-green-600">
-                            {result.matchedProduct.unit}
-                          </p>
+                {/* Product Recommendation */}
+                {result.matchedProduct && (
+                  <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100 mb-6 shadow-lg hover:shadow-xl transition-shadow">
+                    <CardContent>
+                      <div className="flex items-start justify-between mb-6">
+                        <div>
+                          <TypographyH3 className="text-2xl font-bold text-gray-900 mb-2">
+                            {result.matchedProduct.name}
+                          </TypographyH3>
+                          <TypographyP className="text-gray-600 text-lg">
+                            {result.matchedProduct.description}
+                          </TypographyP>
                         </div>
+                        <span
+                          className={`px-4 py-2 rounded-xl font-bold text-lg ${
+                            getProductStyle(result.matchedProduct.grade).color
+                          } ${
+                            getProductStyle(result.matchedProduct.grade)
+                              .textColor
+                          } border-2 shadow`}
+                        >
+                          {result.matchedProduct.grade}
+                        </span>
                       </div>
 
-                      {result.matchedProduct.pump_price && (
-                        <div className="bg-white rounded-xl p-5 border-2 border-blue-200 shadow-sm">
-                          <div className="text-center">
-                            <p className="text-sm font-medium text-blue-700 mb-1">
-                              Pump Price
-                            </p>
-                            <p className="text-3xl font-bold text-blue-800">
-                              ${result.matchedProduct.pump_price}
-                            </p>
-                            <p className="text-sm text-blue-600">
+                      {/* Pricing Cards */}
+                      <div className="grid md:grid-cols-3 gap-4 mb-6">
+                        <Card className="bg-white rounded-xl p-5 border-2 border-green-200 shadow-sm hover:shadow-md transition-shadow">
+                          <CardContent className="text-center">
+                            <TypographySmall className="text-green-700 mb-1">
+                              Normal Price
+                            </TypographySmall>
+                            <TypographyH3 className="text-3xl font-bold text-green-800">
+                              ${result.matchedProduct.normal_price}
+                            </TypographyH3>
+                            <TypographyMuted className="text-green-600">
                               {result.matchedProduct.unit}
-                            </p>
-                          </div>
-                        </div>
-                      )}
+                            </TypographyMuted>
+                          </CardContent>
+                        </Card>
 
-                      <div className="bg-white rounded-xl p-5 border-2 border-gray-200 shadow-sm">
-                        <div className="text-center">
-                          <p className="text-sm font-medium text-gray-700 mb-1">
-                            In Stock
-                          </p>
-                          <p className="text-3xl font-bold text-gray-800">
-                            {result.matchedProduct.stock_quantity}
-                          </p>
-                          <p className="text-sm text-gray-600">m³ available</p>
-                        </div>
+                        {result.matchedProduct.pump_price && (
+                          <Card className="bg-white rounded-xl p-5 border-2 border-blue-200 shadow-sm hover:shadow-md transition-shadow">
+                            <CardContent className="text-center">
+                              <TypographySmall className="text-blue-700 mb-1">
+                                Pump Price
+                              </TypographySmall>
+                              <TypographyH3 className="text-3xl font-bold text-blue-800">
+                                ${result.matchedProduct.pump_price}
+                              </TypographyH3>
+                              <TypographyMuted className="text-blue-600">
+                                {result.matchedProduct.unit}
+                              </TypographyMuted>
+                            </CardContent>
+                          </Card>
+                        )}
+
+                        <Card className="bg-white rounded-xl p-5 border-2 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                          <CardContent className="text-center">
+                            <TypographySmall className="text-gray-700 mb-1">
+                              In Stock
+                            </TypographySmall>
+                            <TypographyH3 className="text-3xl font-bold text-gray-800">
+                              {result.matchedProduct.stock_quantity}
+                            </TypographyH3>
+                            <TypographyMuted className="text-gray-600">
+                              m³ available
+                            </TypographyMuted>
+                          </CardContent>
+                        </Card>
                       </div>
-                    </div>
 
-                    {/* Detected Elements */}
-                    {result.detectedLabels &&
-                      result.detectedLabels.length > 0 && (
-                        <div className="bg-white rounded-xl p-5 border border-gray-200">
-                          <h5 className="font-semibold text-gray-900 mb-3 flex items-center">
-                            <Info className="h-4 w-4 mr-2 text-blue-600" />
-                            AI Detected Elements
-                          </h5>
-                          <div className="flex flex-wrap gap-2">
-                            {result.detectedLabels.map((label, index) => (
-                              <span
-                                key={index}
-                                className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium border border-blue-200"
-                              >
-                                {label}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                      {/* Detected Elements */}
+                      {result.detectedLabels &&
+                        result.detectedLabels.length > 0 && (
+                          <Card className="bg-white rounded-xl p-5 border border-gray-200 mb-4 shadow-sm hover:shadow-md transition-shadow">
+                            <CardContent>
+                              <TypographyH5 className="font-semibold text-gray-900 mb-3 flex items-center">
+                                <Info className="h-4 w-4 mr-2 text-blue-600" />
+                                AI Detected Elements
+                              </TypographyH5>
+                              <div className="flex flex-wrap gap-2">
+                                {result.detectedLabels.map((label, index) => (
+                                  <span
+                                    key={index}
+                                    className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium border border-blue-200"
+                                  >
+                                    {label}
+                                  </span>
+                                ))}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        )}
 
-                    {/* Action Buttons */}
-                    <div className="flex gap-4 mt-6">
-                      <button
-                        onClick={resetForm}
-                        className="flex-1 bg-white border-2 border-gray-300 text-gray-700 py-3 px-6 rounded-xl font-semibold 
-                        hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
-                      >
-                        Analyze Another Photo
-                      </button>
-                      <button
-                        className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-6 rounded-xl font-semibold 
-                      hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg"
-                      >
-                        Get Quote
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+                      {/* Action Buttons */}
+                      <div className="flex gap-4 mt-6">
+                        <Button
+                          onClick={resetForm}
+                          variant="secondary"
+                          className="flex-1"
+                        >
+                          Analyze Another Photo
+                        </Button>
+                        <Button
+                          variant="default"
+                          className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:shadow-xl"
+                        >
+                          Get Quote
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </CardContent>
+            </Card>
           )}
         </div>
 
