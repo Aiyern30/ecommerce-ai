@@ -113,16 +113,6 @@ export function StripePaymentForm({
     0
   );
 
-  console.log("Payment form calculations:", {
-    subtotal,
-    servicesTotal,
-    freightCost,
-    tax,
-    total,
-    totalVolume,
-    selectedServices,
-  });
-
   // PaymentElement options
   const paymentElementOptions: StripePaymentElementOptions = {
     layout: "tabs",
@@ -159,8 +149,6 @@ export function StripePaymentForm({
     }
 
     try {
-      // Step 1: Submit the form to validate payment details
-      console.log("Submitting payment form...");
       const { error: submitError } = await elements.submit();
 
       if (submitError) {
@@ -169,16 +157,13 @@ export function StripePaymentForm({
         return;
       }
 
-      console.log("Creating PaymentIntent for amount:", total, "RM");
-
-      // Step 2: Create PaymentIntent after form validation
       const paymentIntentResponse = await fetch("/api/create-payment-intent", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          amount: total, // Use the calculated total with all charges
+          amount: total,
           currency: "myr",
         }),
       });
@@ -224,44 +209,31 @@ export function StripePaymentForm({
       }
 
       if (paymentIntent && paymentIntent.status === "succeeded") {
-        // Step 4: Payment completed successfully - CREATE THE ORDER IMMEDIATELY
-        console.log(
-          "Payment succeeded, creating order immediately:",
-          paymentIntent.id
-        );
-
         try {
-          // Create order with the completed PaymentIntent ID and pass all the calculation data
           const orderResult = await createOrderAPI(
             user.id,
             cartItems,
-            shippingAddress.id, // Pass address ID instead of full address object
-            paymentIntent.id, // Pass the completed PaymentIntent ID
-            undefined, // notes
-            selectedServices, // Pass selected services
-            additionalServices, // Pass additional services
-            freightCharges, // Pass freight charges
-            totalVolume // Pass total volume
+            shippingAddress.id,
+            paymentIntent.id,
+            undefined,
+            selectedServices,
+            additionalServices,
+            freightCharges,
+            totalVolume
           );
 
           if (!orderResult) {
             throw new Error("Failed to create order after successful payment");
           }
 
-          console.log("Order created successfully:", orderResult.order_id);
-
-          // Clear payment session data since payment is completed
           clearPaymentSession();
 
-          // Force refresh cart to reflect the cleared items
           try {
             await refreshCart();
-            console.log("Cart refreshed after order creation");
           } catch (refreshError) {
             console.warn("Failed to refresh cart:", refreshError);
           }
 
-          // Small delay to ensure cart state is updated
           setTimeout(() => {
             onSuccess(orderResult.order_id);
           }, 500);
@@ -273,7 +245,6 @@ export function StripePaymentForm({
           );
         }
       } else if (paymentIntent && paymentIntent.status === "requires_action") {
-        // Handle 3D Secure or other authentication
         const { error: confirmError } = await stripe.confirmPayment({
           elements,
           clientSecret,
@@ -298,19 +269,16 @@ export function StripePaymentForm({
 
   return (
     <div className="space-y-6">
-      {/* Security Badge */}
       <div className="flex items-center justify-center space-x-2 text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
         <Shield className="h-4 w-4 text-green-600" />
         <span>Secured by Stripe • SSL Encrypted</span>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Payment Element Container */}
         <div className="border rounded-lg p-4 bg-white dark:bg-gray-800 min-h-[300px]">
           <PaymentElement options={paymentElementOptions} />
         </div>
 
-        {/* Error Display */}
         {error && (
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
             <div className="flex items-center space-x-2">
@@ -322,7 +290,6 @@ export function StripePaymentForm({
           </div>
         )}
 
-        {/* Payment Info */}
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
           <div className="flex items-start space-x-3">
             <CreditCard className="h-5 w-5 text-blue-600 mt-0.5" />
@@ -339,7 +306,6 @@ export function StripePaymentForm({
           </div>
         </div>
 
-        {/* Order Total Display */}
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
           <div className="space-y-2">
             <div className="flex justify-between items-center text-sm">
@@ -349,7 +315,6 @@ export function StripePaymentForm({
               <span className="font-medium">{formatCurrency(subtotal)}</span>
             </div>
 
-            {/* Additional Services */}
             {servicesTotal > 0 && (
               <div className="flex justify-between items-center text-sm">
                 <span className="text-gray-600 dark:text-gray-400">
@@ -361,7 +326,6 @@ export function StripePaymentForm({
               </div>
             )}
 
-            {/* Delivery Fee */}
             <div className="flex justify-between items-center text-sm">
               <span className="text-gray-600 dark:text-gray-400">
                 Delivery Fee
@@ -387,7 +351,6 @@ export function StripePaymentForm({
               <span className="font-medium">{formatCurrency(tax)}</span>
             </div>
 
-            {/* Free shipping message */}
             {freightCost === 0 && totalVolume >= 4.5 && (
               <div className="text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 p-2 rounded border border-green-200 dark:border-green-700">
                 🎉 Free delivery for orders 4.5m³ and above!
@@ -405,7 +368,6 @@ export function StripePaymentForm({
           </div>
         </div>
 
-        {/* Submit Button */}
         <Button
           type="submit"
           disabled={isProcessing || !stripe}
@@ -426,7 +388,6 @@ export function StripePaymentForm({
         </Button>
       </form>
 
-      {/* Trust Indicators */}
       <div className="text-center text-xs text-gray-500 dark:text-gray-400">
         <p>Your payment information is secure and encrypted</p>
         <p className="mt-1">Powered by Stripe • PCI DSS Compliant</p>

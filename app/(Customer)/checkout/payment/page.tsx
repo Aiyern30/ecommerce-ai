@@ -34,7 +34,6 @@ export default function CheckoutPaymentPage() {
   const addressId = searchParams?.get("addressId");
   const { cartItems, isLoading } = useCart();
 
-  // Additional services and localStorage state
   const [additionalServices, setAdditionalServices] = useState<
     AdditionalService[]
   >([]);
@@ -45,24 +44,20 @@ export default function CheckoutPaymentPage() {
 
   const selectedItems = cartItems.filter((item) => item.selected);
 
-  // Calculate total volume of selected items
   const totalVolume = selectedItems.reduce(
     (sum, item) => sum + item.quantity,
     0
   );
 
-  // Fetch additional services and freight charges
   useEffect(() => {
     const fetchServicesAndCharges = async () => {
       try {
-        // Fetch additional services
         const { data: services, error: servicesError } = await supabase
           .from("additional_services")
           .select("*")
           .eq("is_active", true)
           .order("service_name");
 
-        // Fetch freight charges
         const { data: charges, error: chargesError } = await supabase
           .from("freight_charges")
           .select("*")
@@ -81,7 +76,6 @@ export default function CheckoutPaymentPage() {
           setFreightCharges(charges || []);
         }
 
-        // Load selected services from localStorage (use SelectedServiceDetails type)
         const savedServices = localStorage.getItem("selectedServices");
         if (savedServices) {
           try {
@@ -133,22 +127,17 @@ export default function CheckoutPaymentPage() {
 
     if (totals.selectedItemsCount === 0) {
       setTotalAmount(0);
-      // Redirect to cart if no items selected
       if (!isLoading) {
         router.push("/cart");
       }
       return;
     }
 
-    // Convert to Stripe amount (cents)
     const stripeAmount = convertToStripeAmount(totals.total);
     setTotalAmount(stripeAmount);
   }, [cartItems, router, isLoading]);
 
-  // Handle successful payment and order creation
   const handlePaymentSuccess = (orderId: string) => {
-    console.log("Payment and order completed, redirecting to success page");
-    // Clear localStorage after successful payment
     localStorage.removeItem("selectedServices");
     router.push(`/order-success?orderId=${orderId}`);
   };
