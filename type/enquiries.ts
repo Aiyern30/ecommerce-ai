@@ -7,6 +7,6 @@ export interface Enquiry {
   message: string;
   created_at: string | null;
   updated_at: string | null;
-  status: string | null;
+  status: "all" | "open" | "pending" | "closed";
   staff_reply: string | null;
 }
