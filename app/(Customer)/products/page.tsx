@@ -11,9 +11,29 @@ import { Skeleton } from "@/components/ui/";
 import { TypographyH1 } from "@/components/ui/Typography";
 import { Product } from "@/type/product";
 
+// Update ProductSelection to include deliveryOptions for correct priceType selection
 interface ProductSelection {
   id: string;
   priceType: string;
+}
+
+// Helper to get delivery options for a product
+function getDeliveryOptions(product: Product) {
+  return [
+    product.normal_price != null
+      ? { key: "normal", label: "Normal Delivery" }
+      : null,
+    product.pump_price != null ? { key: "pump", label: "Pump Delivery" } : null,
+    product.tremie_1_price != null
+      ? { key: "tremie_1", label: "Tremie 1" }
+      : null,
+    product.tremie_2_price != null
+      ? { key: "tremie_2", label: "Tremie 2" }
+      : null,
+    product.tremie_3_price != null
+      ? { key: "tremie_3", label: "Tremie 3" }
+      : null,
+  ].filter(Boolean) as { key: string; label: string }[];
 }
 
 export default function ProductListPage() {
@@ -60,15 +80,23 @@ export default function ProductListPage() {
     fetchProducts();
   }, []);
 
-  const handleCompareToggle = (id: string, add: boolean) => {
+  const handleCompareToggle = (
+    id: string,
+    add: boolean,
+    deliveryOptions?: { key: string; label: string }[]
+  ) => {
     setSelectedProducts((prev) => {
       if (add) {
         if (prev.length >= 4) {
           toast.warning("You can only compare up to 4 products");
           return prev;
         }
-        // Add with default price type (normal)
-        return [...prev, { id, priceType: "normal" }];
+        // Use the only available delivery type if only one, otherwise default to "normal"
+        let priceType = "normal";
+        if (deliveryOptions && deliveryOptions.length === 1) {
+          priceType = deliveryOptions[0].key;
+        }
+        return [...prev, { id, priceType }];
       } else {
         return prev.filter((item) => item.id !== id);
       }
@@ -148,6 +176,7 @@ export default function ProductListPage() {
             const selectedProduct = selectedProducts.find(
               (p) => p.id === product.id
             );
+            const deliveryOptions = getDeliveryOptions(product);
 
             return (
               <ProductCard
@@ -168,9 +197,16 @@ export default function ProductListPage() {
                 tremie_3_price={product.tremie_3_price}
                 showCompare
                 isCompared={isSelected}
-                onCompareToggle={handleCompareToggle}
+                onCompareToggle={(id, add) =>
+                  handleCompareToggle(id, add, deliveryOptions)
+                }
                 compareCount={selectedProducts.length}
-                selectedPriceType={selectedProduct?.priceType || "normal"}
+                selectedPriceType={
+                  selectedProduct?.priceType ||
+                  (deliveryOptions.length === 1
+                    ? deliveryOptions[0].key
+                    : "normal")
+                }
                 onPriceTypeChange={
                   isSelected ? handlePriceTypeChange : undefined
                 }
