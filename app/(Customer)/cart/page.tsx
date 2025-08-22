@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Minus, Plus, Trash2, ShoppingCart, Info } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingCart, Info, Check } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -748,8 +748,8 @@ export default function CartPage() {
                                     className={`appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none
                   ${
                     isMobile
-                      ? "w-10 px-1 py-1.5 text-xs"
-                      : "w-12 px-2 py-2 text-sm"
+                      ? "w-16 px-2 py-1.5 text-xs"
+                      : "w-20 px-2 py-2 text-sm"
                   }
                   font-bold text-center text-gray-900 dark:text-gray-100 border-x border-gray-200 dark:border-gray-600 outline-none bg-transparent`}
                                     aria-label="Quantity"
@@ -757,6 +757,28 @@ export default function CartPage() {
                                       MozAppearance: "textfield",
                                     }}
                                   />
+                                  {/* Tick button for mobile confirmation */}
+                                  {isMobile && (
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        let val = parseInt(itemInputQty, 10);
+                                        if (isNaN(val) || val < 1) val = 1;
+                                        if (val !== item.quantity) {
+                                          updateQuantity(item.id, val);
+                                        }
+                                        setInputQty((prev) => ({
+                                          ...prev,
+                                          [item.id]: String(val),
+                                        }));
+                                      }}
+                                      className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-all duration-200"
+                                      aria-label="Confirm quantity"
+                                    >
+                                      <Check className="h-4 w-4" />
+                                    </button>
+                                  )}
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -933,36 +955,64 @@ export default function CartPage() {
                                           isSelected
                                             ? "bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300"
                                             : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                                        } ${
+                                          isMobile
+                                            ? "min-w-[110px] text-center"
+                                            : ""
                                         }`}
                                       >
-                                        RM{service.rate_per_m3.toFixed(2)} per
-                                        m³
+                                        {service.rate_per_m3.toFixed(2)} per m³
                                       </span>
                                       {totalVolume > 0 && (
-                                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                                        <span
+                                          className={`text-xs text-gray-500 dark:text-gray-400 ${
+                                            isMobile
+                                              ? "min-w-[80px] text-center"
+                                              : ""
+                                          }`}
+                                        >
                                           × {totalVolume.toFixed(2)} m³
                                         </span>
                                       )}
                                     </div>
+                                    {isMobile && (
+                                      <div className="text-right">
+                                        <div
+                                          className={`font-bold text-lg transition-colors ${
+                                            isSelected
+                                              ? "text-blue-700 dark:text-blue-300"
+                                              : "text-gray-900 dark:text-gray-100"
+                                          }`}
+                                        >
+                                          RM{serviceTotal.toFixed(2)}
+                                        </div>
+                                        {isSelected && (
+                                          <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                                            Added to total
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
-
-                                <div className="text-right">
-                                  <div
-                                    className={`font-bold text-lg transition-colors ${
-                                      isSelected
-                                        ? "text-blue-700 dark:text-blue-300"
-                                        : "text-gray-900 dark:text-gray-100"
-                                    }`}
-                                  >
-                                    RM{serviceTotal.toFixed(2)}
-                                  </div>
-                                  {isSelected && (
-                                    <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                                      Added to total
+                                {!isMobile && (
+                                  <div className="text-right">
+                                    <div
+                                      className={`font-bold text-lg transition-colors ${
+                                        isSelected
+                                          ? "text-blue-700 dark:text-blue-300"
+                                          : "text-gray-900 dark:text-gray-100"
+                                      }`}
+                                    >
+                                      RM{serviceTotal.toFixed(2)}
                                     </div>
-                                  )}
-                                </div>
+                                    {isSelected && (
+                                      <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                                        Added to total
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
                               </div>
 
                               {/* Service Index for visual appeal */}
