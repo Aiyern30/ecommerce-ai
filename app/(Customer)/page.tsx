@@ -25,19 +25,19 @@ export default function Home() {
             </h2>
             <div className="grid gap-8 md:grid-cols-3">
               <TestimonialCard
-                name="Sarah M."
+                name="Tan Construction Sdn Bhd"
                 rating={5}
-                text="The clothes are great quality and the customer service is amazing! I love my new wardrobe!"
+                text="YTL Concrete always delivers on time and the quality is top-notch. Our projects run smoother thanks to their reliable service."
               />
               <TestimonialCard
-                name="Alex K."
+                name="Lee Engineering"
                 rating={5}
-                text="Finding clothes that fit my style has never been easier. Great selection and fast shipping!"
+                text="The technical support and advice from YTL's team helped us choose the right mix for our industrial site. Highly recommended!"
               />
               <TestimonialCard
-                name="James L."
+                name="Maya Property Group"
                 rating={5}
-                text="The quality exceeds expectations. Definitely my go-to store for fashion needs!"
+                text="We trust YTL Concrete for all our developments. Their consistency and professionalism set them apart in the industry."
               />
             </div>
           </div>
