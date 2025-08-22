@@ -135,7 +135,9 @@ function OrderTableSkeletonEnhanced() {
               </TableHead>
               <TableHead className="min-w-[150px]">Customer</TableHead>
               <TableHead className="min-w-[100px]">Items</TableHead>
-              <TableHead className="min-w-[160px]">Additional Services</TableHead>
+              <TableHead className="min-w-[160px]">
+                Additional Services
+              </TableHead>
               <TableHead className="min-w-[120px]">Subtotal</TableHead>
               <TableHead className="min-w-[120px]">Shipping</TableHead>
               <TableHead className="min-w-[120px]">Tax</TableHead>
