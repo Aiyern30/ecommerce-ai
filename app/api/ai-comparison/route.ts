@@ -187,10 +187,7 @@ async function generateAIAnalysis(
       name: "gemini-1.5-pro",
       config: { ...generationConfig, maxOutputTokens: 8192 },
     },
-    {
-      name: "gemini-pro",
-      config: { ...generationConfig, maxOutputTokens: 2048 },
-    },
+    // Removed gemini-pro (not supported for generateContent in v1beta)
   ];
 
   for (const modelInfo of models) {
