@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { ShoppingCart, ZoomIn, SlidersHorizontal, Check } from "lucide-react";
@@ -31,7 +32,7 @@ interface ProductCardProps {
   href?: string;
   showCompare?: boolean;
   isCompared?: boolean;
-  onCompareToggle?: (id: string, add: boolean) => void;
+  onCompareToggle?: (id: string, add: boolean, deliveryOptions?: any) => void;
   compareCount?: number;
   // Add price fields
   normal_price?: number | null;
@@ -128,7 +129,8 @@ export function ProductCard({
       if (!isCompared && onPriceTypeChange) {
         onPriceTypeChange(id, compareDeliveryType);
       }
-      onCompareToggle(id, !isCompared);
+      // Pass deliveryOptions to parent for correct priceType selection
+      onCompareToggle(id, !isCompared, deliveryOptions);
     }
     toast[!isCompared ? "success" : "info"](
       `${name} ${!isCompared ? "added to" : "removed from"} comparison`
