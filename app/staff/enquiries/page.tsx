@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Plus, Search, FileText } from "lucide-react";
-import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import {
   Button,
@@ -90,13 +89,15 @@ export default function EnquiriesPage() {
 
   const fetchEnquiries = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("enquiries")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (!error) {
-      setEnquiries(data || []);
-    } else {
+    try {
+      const res = await fetch("/api/admin/enquiries/select");
+      const json = await res.json();
+      if (!res.ok) {
+        setEnquiries([]);
+      } else {
+        setEnquiries(json.enquiries || []);
+      }
+    } catch {
       setEnquiries([]);
     }
     setLoading(false);
