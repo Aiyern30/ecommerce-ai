@@ -88,6 +88,32 @@ function FaqTableSkeleton() {
   );
 }
 
+function NoFaqResultsState({ onClearFilters }: { onClearFilters: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-4">
+      <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
+        <FileText className="w-12 h-12 text-gray-400" />
+      </div>
+      <TypographyH2 className="mb-2">No matching FAQs</TypographyH2>
+      <TypographyP className="text-muted-foreground text-center mb-6 max-w-sm">
+        No FAQs match your current search criteria. Try adjusting your filters
+        or search terms.
+      </TypographyP>
+      <div className="flex items-center gap-2">
+        <Button variant="outline" onClick={onClearFilters}>
+          Clear Filters
+        </Button>
+        <Link href="/staff/faqs/new">
+          <Button>
+            <Plus className="w-4 h-4 mr-2" />
+            Add New FAQ
+          </Button>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export default function FaqsPage() {
   const router = useRouter();
   const [faqs, setFaqs] = useState<Faq[]>([]);
@@ -135,6 +161,11 @@ export default function FaqsPage() {
     if (!faqsBySection[section]) faqsBySection[section] = [];
     faqsBySection[section].push(faq);
   });
+
+  const clearAllFilters = () => {
+    setSearch("");
+    setStatus("all");
+  };
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
@@ -247,9 +278,7 @@ export default function FaqsPage() {
       ) : faqs.length === 0 ? (
         <EmptyFaqsState />
       ) : filteredFaqs.length === 0 ? (
-        <div className="py-16 text-center text-gray-500 dark:text-gray-400">
-          No matching FAQs found.
-        </div>
+        <NoFaqResultsState onClearFilters={clearAllFilters} />
       ) : (
         <Accordion
           type="multiple"
