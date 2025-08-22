@@ -1,8 +1,22 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
-import { Edit, Trash2, Package, ArrowLeft, Search } from "lucide-react";
+import {
+  Package,
+  ArrowLeft,
+  Search,
+  Shield,
+  Award,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Edit,
+  Trash2,
+  Star,
+  Calendar,
+} from "lucide-react";
 import Image from "next/image";
 
 import {
@@ -16,6 +30,8 @@ import {
   DialogTrigger,
   Skeleton,
   Badge,
+  Card,
+  CardContent,
 } from "@/components/ui";
 import { TypographyH1, TypographyP } from "@/components/ui/Typography";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
@@ -23,148 +39,58 @@ import { supabase } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import type { Product } from "@/type/product";
 
-// Product Detail Skeleton Component
+// Enhanced skeleton with modern design
 function ProductDetailSkeleton({ isStaffView }: { isStaffView: boolean }) {
   return (
-    <div className="flex flex-col gap-6 w-full max-w-full">
-      {/* Header with Breadcrumb and Actions Skeleton */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        {/* Breadcrumb Skeleton */}
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-4 w-20" />
-          <span className="text-gray-400">/</span>
-          <Skeleton className="h-4 w-16" />
-          <span className="text-gray-400">/</span>
-          <Skeleton className="h-4 w-32" />
+    <div className="min-h-screen ">
+      <div className="container mx-auto p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <Skeleton className="h-6 w-80" />
+          {isStaffView && (
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-9 w-16" />
+              <Skeleton className="h-9 w-20" />
+            </div>
+          )}
         </div>
 
-        {/* Action Buttons Skeleton - Only show for staff */}
-        {isStaffView && (
-          <div className="flex items-center gap-2">
-            <Skeleton className="h-9 w-16" />
-            <Skeleton className="h-9 w-20" />
-          </div>
-        )}
-      </div>
-
-      {/* Product Detail Skeleton */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Side - Product Information Skeleton */}
-        <div className="border rounded-lg p-6 h-fit">
-          {/* Header Skeleton */}
-          <div className="pb-6 border-b border-gray-200 dark:border-gray-700">
-            <div className="space-y-4">
-              {/* Product Name Skeleton */}
-              <div>
-                <Skeleton className="h-4 w-24 mb-1" />
-                <Skeleton className="h-8 w-3/4" />
-              </div>
-
-              {/* Description Skeleton */}
-              <div>
-                <Skeleton className="h-4 w-20 mb-1" />
-                <Skeleton className="h-4 w-full mb-1" />
-                <Skeleton className="h-4 w-5/6" />
-              </div>
-
-              {/* Category Skeleton */}
-              <div>
-                <Skeleton className="h-4 w-16 mb-1" />
-                <Skeleton className="h-6 w-20" />
-              </div>
-
-              {/* Status Skeleton - Only show for staff */}
-              {isStaffView && (
-                <div>
-                  <Skeleton className="h-4 w-12 mb-1" />
-                  <Skeleton className="h-6 w-16" />
-                </div>
-              )}
+        <div className="grid lg:grid-cols-2 gap-12">
+          {/* Image Section Skeleton */}
+          <div className="space-y-4">
+            <Skeleton className="w-full aspect-square rounded-2xl" />
+            <div className="flex gap-3">
+              {[...Array(4)].map((_, i) => (
+                <Skeleton key={i} className="w-20 h-20 rounded-xl" />
+              ))}
             </div>
           </div>
 
-          {/* Content Skeleton */}
-          <div className="pt-6 space-y-6">
-            {/* Pricing & Stock Skeleton */}
-            <div>
-              <Skeleton className="h-4 w-32 mb-3" />
-              <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div>
-                  <Skeleton className="h-3 w-12 mb-2" />
-                  <Skeleton className="h-6 w-20 mb-1" />
-                  <Skeleton className="h-3 w-16" />
-                </div>
-                <div>
-                  <Skeleton className="h-3 w-12 mb-2" />
-                  <Skeleton className="h-5 w-16 mb-1" />
-                  <div className="flex items-center gap-2">
-                    <Skeleton className="h-3 w-12" />
-                    <Skeleton className="h-5 w-16" />
-                  </div>
-                </div>
-              </div>
+          {/* Content Section Skeleton */}
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <Skeleton className="h-8 w-3/4" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
             </div>
 
-            {/* Grade Skeleton */}
-            <div>
-              <Skeleton className="h-4 w-16 mb-3" />
+            <div className="flex gap-2">
+              <Skeleton className="h-6 w-20" />
               <Skeleton className="h-6 w-24" />
             </div>
 
-            {/* Variants Skeleton */}
-            <div>
-              <Skeleton className="h-4 w-32 mb-3" />
-              <div className="space-y-2">
-                {Array.from({ length: 2 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                  >
+            <Skeleton className="h-12 w-32" />
+
+            <div className="space-y-4">
+              <Skeleton className="h-6 w-40" />
+              <div className="space-y-3">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="flex justify-between">
                     <Skeleton className="h-4 w-24" />
                     <Skeleton className="h-4 w-16" />
                   </div>
                 ))}
               </div>
             </div>
-
-            {/* Meta Information Skeleton */}
-            {!isStaffView && (
-              <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
-                <Skeleton className="h-3 w-32 mb-2" />
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Skeleton className="w-4 h-4" />
-                    <Skeleton className="h-3 w-32" />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Skeleton className="w-4 h-4" />
-                    <Skeleton className="h-3 w-36" />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right Side - Images Skeleton */}
-        <div className="space-y-4">
-          {/* Main Image Skeleton */}
-          <div>
-            <Skeleton className="h-4 w-20 mb-2" />
-            <Skeleton className="w-full aspect-[4/3] rounded-lg" />
-          </div>
-
-          {/* Thumbnails Skeleton */}
-          <div>
-            <Skeleton className="h-4 w-28 mb-2" />
-            <div className="flex gap-2 overflow-x-auto pb-2">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <Skeleton
-                  key={index}
-                  className="aspect-square w-16 flex-shrink-0 rounded-md"
-                />
-              ))}
-            </div>
           </div>
         </div>
       </div>
@@ -172,88 +98,67 @@ function ProductDetailSkeleton({ isStaffView }: { isStaffView: boolean }) {
   );
 }
 
-// Product Not Found Component
 function ProductNotFound({ isStaffView }: { isStaffView: boolean }) {
   const router = useRouter();
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-full">
-      {/* Header with Breadcrumb */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <BreadcrumbNav
-          customItems={[
-            {
-              label: isStaffView ? "Dashboard" : "Home",
-              href: isStaffView ? "/staff/dashboard" : "/",
-            },
-            {
-              label: "Products",
-              href: isStaffView ? "/staff/products" : "/products",
-            },
-            { label: "Not Found" },
-          ]}
-        />
-      </div>
+    <div className="min-h-screen  flex items-center justify-center">
+      <div className="container mx-auto px-4">
+        <div className="text-center max-w-md mx-auto">
+          <div className="w-24 h-24 mx-auto mb-8 rounded-full bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/20 dark:to-red-800/20 flex items-center justify-center">
+            <Package className="w-12 h-12 text-red-500" />
+          </div>
 
-      {/* Not Found Content */}
-      <div className="flex flex-col items-center justify-center py-16 px-4 min-h-[500px]">
-        <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
-          <Package className="w-12 h-12 text-gray-400" />
-        </div>
+          <TypographyH1 className="mb-4 text-gray-900 dark:text-white">
+            Product Not Found
+          </TypographyH1>
 
-        <TypographyH1 className="mb-2">Product Not Found</TypographyH1>
+          <TypographyP className="text-gray-600 dark:text-gray-400 mb-8">
+            The product you're looking for doesn't exist or may have been
+            removed. Please check the URL or try searching for the product
+            again.
+          </TypographyP>
 
-        <TypographyP className="text-muted-foreground text-center mb-2 max-w-md">
-          The product you&apos;re looking for doesn&apos;t exist or may have
-          been removed.
-        </TypographyP>
-
-        <TypographyP className="text-sm text-muted-foreground text-center mb-8 max-w-md">
-          Please check the URL or try searching for the product again.
-        </TypographyP>
-
-        <div className="flex flex-col sm:flex-row items-center gap-3">
-          <Button
-            variant="outline"
-            onClick={() => router.back()}
-            className="flex items-center gap-2 w-full sm:w-auto"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Go Back
-          </Button>
-
-          <Button
-            onClick={() =>
-              router.push(isStaffView ? "/staff/products" : "/products")
-            }
-            className="flex items-center gap-2 w-full sm:w-auto"
-          >
-            <Search className="w-4 h-4" />
-            Browse Products
-          </Button>
-        </div>
-
-        {isStaffView && (
-          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 w-full max-w-md">
-            <TypographyP className="text-center text-sm text-muted-foreground mb-4">
-              Need to add a new product?
-            </TypographyP>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button
-              variant="default"
-              onClick={() => router.push("/staff/products/new")}
-              className="w-full flex items-center gap-2"
+              variant="outline"
+              onClick={() => router.back()}
+              className="flex items-center gap-2"
             >
-              <Package className="w-4 h-4" />
-              Add New Product
+              <ArrowLeft className="w-4 h-4" />
+              Go Back
+            </Button>
+
+            <Button
+              onClick={() =>
+                router.push(isStaffView ? "/staff/products" : "/products")
+              }
+              className="flex items-center gap-2"
+            >
+              <Search className="w-4 h-4" />
+              Browse Products
             </Button>
           </div>
-        )}
+
+          {isStaffView && (
+            <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+              <Button
+                variant="default"
+                onClick={() => router.push("/staff/products/new")}
+                className="flex items-center gap-2"
+              >
+                <Package className="w-4 h-4" />
+                Add New Product
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-export default function ProductDetailClient() {
+export default function ProductDetailStaff() {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -264,6 +169,7 @@ export default function ProductDetailClient() {
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -328,36 +234,31 @@ export default function ProductDetailClient() {
     }
   };
 
-  // Check if current path is staff (for action buttons)
   const isStaffView = (pathname ?? "").includes("/staff/");
 
   if (loading) return <ProductDetailSkeleton isStaffView={isStaffView} />;
   if (!product) return <ProductNotFound isStaffView={isStaffView} />;
 
+  const images = product.product_images || [];
+  const currentImage = images[selectedImageIndex];
+  const inStock = (product.stock_quantity ?? 0) > 0;
+
   return (
-    <div className="flex flex-col gap-6 w-full max-w-full">
+    <div className="min-h-screen ">
       {/* Header with Breadcrumb and Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex flex-col gap-2">
-          <BreadcrumbNav
-            customItems={[
-              {
-                label: "Dashboard",
-                href: isStaffView ? "/staff/dashboard" : "/",
-              },
-              {
-                label: "Products",
-                href: isStaffView ? "/staff/products" : "/products",
-              },
-              { label: product.name },
-            ]}
-          />
-        </div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <BreadcrumbNav
+          customItems={[
+            { label: "Dashboard", href: "/staff/dashboard" },
+            { label: "Products", href: "/staff/products" },
+            { label: product.name },
+          ]}
+        />
+
         {isStaffView && (
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
-              size="sm"
               onClick={() => router.push(`/staff/products/${product.id}/edit`)}
               className="flex items-center gap-2"
             >
@@ -371,7 +272,6 @@ export default function ProductDetailClient() {
               <DialogTrigger asChild>
                 <Button
                   variant="destructive"
-                  size="sm"
                   className="flex items-center gap-2"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -408,145 +308,291 @@ export default function ProductDetailClient() {
         )}
       </div>
 
-      {/* Product Details */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Side - Product Info */}
-        <div className="border rounded-lg p-6 h-fit space-y-6">
-          <div>
-            <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
-            <p className="text-muted-foreground mb-2">
-              {product.description || "No description"}
-            </p>
-            <div className="flex flex-wrap gap-2 mb-2">
-              <Badge variant="secondary">
-                {product.category || "No Category"}
+      {/* Main Product Section */}
+      <div className="grid lg:grid-cols-2 gap-12">
+        {/* Image Gallery */}
+        <div className="space-y-4">
+          <div className="relative aspect-square rounded-2xl overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg sticky top-40">
+            {currentImage ? (
+              <Image
+                src={currentImage.image_url}
+                alt={product.name}
+                fill
+                className="object-cover"
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                priority
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-gray-400">
+                <Package className="w-24 h-24" />
+              </div>
+            )}
+          </div>
+
+          {/* Thumbnail Gallery */}
+          {images.length > 1 && (
+            <div className="flex gap-3 overflow-x-auto pb-2">
+              {images.map((img, index) => (
+                <button
+                  key={img.id}
+                  onClick={() => setSelectedImageIndex(index)}
+                  className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all duration-200 flex-shrink-0 ${
+                    selectedImageIndex === index
+                      ? "border-blue-500 shadow-md scale-105"
+                      : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
+                  }`}
+                >
+                  <Image
+                    src={img.image_url}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                    sizes="80px"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Product Information */}
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white leading-tight">
+                {product.name}
+              </h1>
+              <p className="text-lg text-gray-600 dark:text-gray-400">
+                {product.description || "High-quality construction material"}
+              </p>
+            </div>
+
+            {/* Badges */}
+            <div className="flex flex-wrap gap-2">
+              <Badge
+                variant="secondary"
+                className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+              >
+                <Award className="w-3 h-3 mr-1" />
+                {product.category || "Construction"}
               </Badge>
               <Badge
                 variant={
                   product.status === "published" ? "default" : "secondary"
                 }
               >
+                {product.status === "published" ? (
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                ) : (
+                  <Clock className="w-3 h-3 mr-1" />
+                )}
                 {product.status.charAt(0).toUpperCase() +
                   product.status.slice(1)}
               </Badge>
-              {product.is_featured && <Badge variant="default">Featured</Badge>}
-            </div>
-            <div className="text-xs text-gray-500">
-              Created: {new Date(product.created_at).toLocaleString()}
-              <br />
-              Updated: {new Date(product.updated_at).toLocaleString()}
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <div className="font-medium mb-1">Grade</div>
-              <div>{product.grade}</div>
-            </div>
-            <div>
-              <div className="font-medium mb-1">Product Type</div>
-              <div>{product.product_type}</div>
-            </div>
-            <div>
-              <div className="font-medium mb-1">Mortar Ratio</div>
-              <div>{product.mortar_ratio || "N/A"}</div>
-            </div>
-            <div>
-              <div className="font-medium mb-1">Unit</div>
-              <div>{product.unit || "N/A"}</div>
-            </div>
-            <div>
-              <div className="font-medium mb-1">Stock Quantity</div>
-              <div>{product.stock_quantity ?? "N/A"}</div>
-            </div>
-            <div>
-              <div className="font-medium mb-1">Is Featured</div>
-              <div>{product.is_featured ? "Yes" : "No"}</div>
-            </div>
-          </div>
-          <div>
-            <div className="font-medium mb-2">Pricing</div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              <div>
-                <span className="font-semibold">Normal Price:</span>{" "}
-                {product.normal_price !== null &&
-                product.normal_price !== undefined
-                  ? `RM ${Number(product.normal_price).toFixed(2)}`
-                  : "N/A"}
-              </div>
-              <div>
-                <span className="font-semibold">Pump Price:</span>{" "}
-                {product.pump_price !== null && product.pump_price !== undefined
-                  ? `RM ${Number(product.pump_price).toFixed(2)}`
-                  : "N/A"}
-              </div>
-              <div>
-                <span className="font-semibold">Tremie 1 Price:</span>{" "}
-                {product.tremie_1_price !== null &&
-                product.tremie_1_price !== undefined
-                  ? `RM ${Number(product.tremie_1_price).toFixed(2)}`
-                  : "N/A"}
-              </div>
-              <div>
-                <span className="font-semibold">Tremie 2 Price:</span>{" "}
-                {product.tremie_2_price !== null &&
-                product.tremie_2_price !== undefined
-                  ? `RM ${Number(product.tremie_2_price).toFixed(2)}`
-                  : "N/A"}
-              </div>
-              <div>
-                <span className="font-semibold">Tremie 3 Price:</span>{" "}
-                {product.tremie_3_price !== null &&
-                product.tremie_3_price !== undefined
-                  ? `RM ${Number(product.tremie_3_price).toFixed(2)}`
-                  : "N/A"}
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* Right Side - Images */}
-        <div className="space-y-4">
-          <div>
-            <div className="font-medium mb-2">Main Image</div>
-            {product.product_images && product.product_images.length > 0 ? (
-              <div className="relative w-full aspect-[4/3] rounded-lg border overflow-hidden">
-                <Image
-                  src={product.product_images[0].image_url}
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                  sizes="(min-width: 1024px) 512px, 100vw"
-                  priority
-                />
-              </div>
-            ) : (
-              <div className="w-full aspect-[4/3] bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
-                No Image
-              </div>
-            )}
-          </div>
-          <div>
-            <div className="font-medium mb-2">Additional Images</div>
-            <div className="flex gap-2 overflow-x-auto pb-2">
-              {product.product_images && product.product_images.length > 1 ? (
-                product.product_images.slice(1).map((img) => (
-                  <div
-                    key={img.id}
-                    className="relative w-24 h-24 rounded-md border overflow-hidden flex-shrink-0"
-                  >
-                    <Image
-                      src={img.image_url}
-                      alt={product.name}
-                      fill
-                      className="object-cover rounded-md"
-                      sizes="96px"
-                    />
-                  </div>
-                ))
-              ) : (
-                <div className="text-gray-400">No additional images</div>
+              {product.is_featured && (
+                <Badge
+                  variant="secondary"
+                  className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+                >
+                  <Star className="w-3 h-3 mr-1" />
+                  Featured
+                </Badge>
               )}
             </div>
           </div>
+
+          {/* Pricing Information */}
+          <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-2xl p-6 border border-green-200 dark:border-green-800">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Pricing Options
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {product.normal_price != null && (
+                <div className="space-y-1">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Normal Delivery
+                  </div>
+                  <div className="text-2xl font-bold text-green-700 dark:text-green-400">
+                    RM {Number(product.normal_price).toFixed(2)}
+                    <span className="text-sm font-normal text-gray-600 dark:text-gray-400 ml-1">
+                      per {product.unit || "unit"}
+                    </span>
+                  </div>
+                </div>
+              )}
+              {product.pump_price != null && (
+                <div className="space-y-1">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Pump Delivery
+                  </div>
+                  <div className="text-2xl font-bold text-green-700 dark:text-green-400">
+                    RM {Number(product.pump_price).toFixed(2)}
+                    <span className="text-sm font-normal text-gray-600 dark:text-gray-400 ml-1">
+                      per {product.unit || "unit"}
+                    </span>
+                  </div>
+                </div>
+              )}
+              {product.tremie_1_price != null && (
+                <div className="space-y-1">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Tremie 1
+                  </div>
+                  <div className="text-2xl font-bold text-green-700 dark:text-green-400">
+                    RM {Number(product.tremie_1_price).toFixed(2)}
+                    <span className="text-sm font-normal text-gray-600 dark:text-gray-400 ml-1">
+                      per {product.unit || "unit"}
+                    </span>
+                  </div>
+                </div>
+              )}
+              {product.tremie_2_price != null && (
+                <div className="space-y-1">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Tremie 2
+                  </div>
+                  <div className="text-2xl font-bold text-green-700 dark:text-green-400">
+                    RM {Number(product.tremie_2_price).toFixed(2)}
+                    <span className="text-sm font-normal text-gray-600 dark:text-gray-400 ml-1">
+                      per {product.unit || "unit"}
+                    </span>
+                  </div>
+                </div>
+              )}
+              {product.tremie_3_price != null && (
+                <div className="space-y-1">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Tremie 3
+                  </div>
+                  <div className="text-2xl font-bold text-green-700 dark:text-green-400">
+                    RM {Number(product.tremie_3_price).toFixed(2)}
+                    <span className="text-sm font-normal text-gray-600 dark:text-gray-400 ml-1">
+                      per {product.unit || "unit"}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Product Specifications */}
+          <Card className="space-y-4">
+            <CardContent>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <Shield className="w-5 h-5" />
+                Product Specifications
+              </h3>
+              <div className="grid grid-cols-2 gap-4 p-6 bg-gray-50 dark:bg-gray-800 rounded-2xl">
+                <div className="space-y-1">
+                  <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Grade
+                  </div>
+                  <div className="font-semibold text-gray-900 dark:text-white">
+                    {product.grade || "N/A"}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Type
+                  </div>
+                  <div className="font-semibold text-gray-900 dark:text-white">
+                    {product.product_type || "N/A"}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Mortar Ratio
+                  </div>
+                  <div className="font-semibold text-gray-900 dark:text-white">
+                    {product.mortar_ratio || "N/A"}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                    <Package className="w-3 h-3" />
+                    Stock
+                  </div>
+                  <div
+                    className={`font-semibold flex items-center gap-1 ${
+                      inStock
+                        ? "text-green-600 dark:text-green-400"
+                        : "text-red-600 dark:text-red-400"
+                    }`}
+                  >
+                    {inStock ? (
+                      <CheckCircle className="w-4 h-4" />
+                    ) : (
+                      <XCircle className="w-4 h-4" />
+                    )}
+                    {product.stock_quantity ?? "N/A"} units
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Administrative Information */}
+          <Card className="space-y-4">
+            <CardContent>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <Calendar className="w-5 h-5" />
+                Administrative Details
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                      Product ID
+                    </div>
+                    <div className="font-mono text-sm bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-lg">
+                      {product.id}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                      Created Date
+                    </div>
+                    <div className="text-gray-900 dark:text-white">
+                      {new Date(product.created_at).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                      Last Updated
+                    </div>
+                    <div className="text-gray-900 dark:text-white">
+                      {new Date(product.updated_at).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                      Total Images
+                    </div>
+                    <div className="text-gray-900 dark:text-white">
+                      {images.length} {images.length === 1 ? "image" : "images"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
