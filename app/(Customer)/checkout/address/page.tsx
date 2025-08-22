@@ -286,7 +286,6 @@ export default function CheckoutAddressPage() {
     <div className="container mx-auto px-4 pt-0 pb-4">
       <div className="flex items-center justify-between">
         <TypographyH1 className="my-8">SHIPPING ADDRESS</TypographyH1>
-
         <Link href="/cart">
           <Button variant="outline" size="sm">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -294,11 +293,9 @@ export default function CheckoutAddressPage() {
           </Button>
         </Link>
       </div>
-
       <div className="mb-8">
         <CheckoutStepper currentStep={2} />
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Address Selection */}
         <div className="lg:col-span-2 space-y-6">
@@ -378,9 +375,9 @@ export default function CheckoutAddressPage() {
             </div>
           )}
 
-          {/* Continue Button */}
+          {/* Continue Button (desktop only) */}
           {addresses.length > 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border hidden lg:block">
               <Button
                 onClick={handleContinueToPayment}
                 disabled={!selectedAddressId}
@@ -397,7 +394,6 @@ export default function CheckoutAddressPage() {
             </div>
           )}
         </div>
-
         {/* Order Summary */}
         <div className="lg:col-span-1">
           <div className="sticky top-6 z-10">
@@ -407,6 +403,24 @@ export default function CheckoutAddressPage() {
               additionalServices={additionalServices}
               freightCharges={freightCharges}
             />
+            {/* Continue Button (mobile only) */}
+            {addresses.length > 0 && (
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border mt-6 block lg:hidden">
+                <Button
+                  onClick={handleContinueToPayment}
+                  disabled={!selectedAddressId}
+                  className="w-full"
+                  size="lg"
+                >
+                  Continue to Payment
+                </Button>
+                {!selectedAddressId && (
+                  <TypographyP className="text-sm text-gray-500 text-center mt-2">
+                    Please select an address to continue
+                  </TypographyP>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
