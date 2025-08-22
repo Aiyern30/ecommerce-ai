@@ -59,5 +59,4 @@ export function clearPaymentSession() {
   sessionStorage.removeItem("stripe-client-secret");
   sessionStorage.removeItem("stripe-amount");
   sessionStorage.removeItem("stripe-payment-intent-id");
-  console.log("Payment session data cleared");
 }

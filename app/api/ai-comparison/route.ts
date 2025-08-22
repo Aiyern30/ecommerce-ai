@@ -178,7 +178,6 @@ async function generateAIAnalysis(
 ): Promise<AIComparisonResult> {
   const prompt = createComparisonPrompt(products);
 
-  // Model fallback chain - try different models if one fails
   const models = [
     {
       name: "gemini-1.5-flash",
@@ -194,8 +193,6 @@ async function generateAIAnalysis(
     },
   ];
 
-  let lastError: Error | null = null;
-
   for (const modelInfo of models) {
     try {
       console.log(`Attempting analysis with ${modelInfo.name}`);
@@ -206,11 +203,11 @@ async function generateAIAnalysis(
         safetySettings,
       });
 
-      // Add timeout to prevent hanging requests
+      // Reduce timeout to 8000ms (8 seconds)
       const result = await Promise.race([
         model.generateContent(prompt),
-        new Promise<never>(
-          (_, reject) => setTimeout(() => reject(new Error("timeout")), 30000) // 30 second timeout
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("timeout")), 8000)
         ),
       ]);
 
@@ -224,7 +221,6 @@ async function generateAIAnalysis(
       console.log(`Successfully generated response with ${modelInfo.name}`);
       return parseAIResponse(text, products);
     } catch (error) {
-      lastError = error as Error;
       console.warn(
         `${modelInfo.name} failed:`,
         error instanceof Error ? error.message : error
@@ -245,13 +241,8 @@ async function generateAIAnalysis(
     }
   }
 
-  // If all models failed, throw the last error or create a fallback
-  if (lastError) {
-    console.error("All AI models failed, creating fallback response");
-    return createFallbackResponse(products);
-  }
-
-  throw new Error("No AI models available");
+  // If all models failed or timed out, return fallback immediately
+  return createFallbackResponse(products);
 }
 
 function createComparisonPrompt(products: Product[]): string {
