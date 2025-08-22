@@ -229,7 +229,7 @@ export function ServicesShowcase() {
               Compare concrete grades, prices, and applications with intelligent
               recommendations tailored to your project.
             </TypographyP>
-            <Link href="/ai-comparison">
+            <Link href="/compare">
               <Button variant="default" className="w-full">
                 Compare Products
               </Button>
