@@ -130,12 +130,6 @@ export default function EnquiriesPage() {
     <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex items-center justify-between">
         <TypographyH2 className="border-none pb-0">Enquiries</TypographyH2>
-        <Link href="/staff/enquiries/new">
-          <Button size="sm">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Enquiry
-          </Button>
-        </Link>
       </div>
       <div className="flex flex-col sm:flex-row flex-wrap gap-2">
         <div className="relative flex-1 min-w-[200px]">
