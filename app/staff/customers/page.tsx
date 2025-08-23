@@ -90,15 +90,21 @@ interface Customer {
     reason?: string;
     banned_at?: string;
     banned_by?: string;
+    banned_by_email?: string;
+    banned_by_name?: string;
     banned_until?: string;
     previous_bans?: {
       reason?: string;
       banned_at?: string;
       banned_by?: string;
+      banned_by_email?: string;
+      banned_by_name?: string;
       banned_until?: string;
     }[];
     unbanned_at?: string;
     unbanned_by?: string;
+    unbanned_by_email?: string;
+    unbanned_by_name?: string;
   };
 }
 
@@ -626,9 +632,9 @@ function CustomerCard({
                 Reason: {customer.ban_info.reason}
               </div>
             )}
-            {customer.ban_info?.banned_by && (
+            {customer.ban_info?.banned_by_name && (
               <div className="text-xs text-muted-foreground mt-1">
-                By: {customer.ban_info.banned_by}
+                By: {customer.ban_info.banned_by_name}
               </div>
             )}
             {customer.ban_info?.banned_at && (

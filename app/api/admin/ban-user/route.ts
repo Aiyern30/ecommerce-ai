@@ -15,9 +15,60 @@ const supabaseAdmin = createClient(
   }
 );
 
+// Helper function to get admin user info for audit trail
+async function getAdminUserInfo(adminUserId?: string) {
+  if (!adminUserId) {
+    console.warn("No adminUserId provided, using 'system'");
+    return {
+      id: "system",
+      email: "system",
+      full_name: "System",
+    };
+  }
+
+  try {
+    const { data: adminUser, error } =
+      await supabaseAdmin.auth.admin.getUserById(adminUserId);
+
+    if (error || !adminUser?.user) {
+      console.warn("Could not fetch admin user info:", error?.message);
+      return {
+        id: adminUserId,
+        email: "unknown",
+        full_name: "Unknown Admin",
+      };
+    }
+
+    return {
+      id: adminUser.user.id,
+      email: adminUser.user.email || "unknown",
+      full_name:
+        adminUser.user.user_metadata?.full_name ||
+        adminUser.user.user_metadata?.name ||
+        adminUser.user.email ||
+        "Unknown Admin",
+    };
+  } catch (error) {
+    console.warn("Error fetching admin user info:", error);
+    return {
+      id: adminUserId,
+      email: "unknown",
+      full_name: "Unknown Admin",
+    };
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { userId, bannedUntil, reason, adminUserId } = await request.json();
+
+    console.log("Ban request received:", {
+      userId,
+      bannedUntil,
+      reason,
+      adminUserId,
+    });
+
     // Validation
     if (!userId || !bannedUntil) {
       return NextResponse.json(
@@ -35,6 +86,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get admin user info for audit trail
+    const adminInfo = await getAdminUserInfo(adminUserId);
+    console.log("Admin info for ban:", adminInfo);
+
     // Get current user data first to preserve app_metadata
     const { data: currentUser, error: getUserError } =
       await supabaseAdmin.auth.admin.getUserById(userId);
@@ -47,8 +102,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get the admin user making this request (for audit trail)
-    const bannedBy = adminUserId || "system";
+    // Prepare the ban info object
+    const banInfo = {
+      reason: reason || "No reason provided",
+      banned_at: new Date().toISOString(),
+      banned_by: adminInfo.id,
+      banned_by_email: adminInfo.email,
+      banned_by_name: adminInfo.full_name,
+      banned_until: bannedUntil,
+      previous_bans: [
+        ...(currentUser.user.app_metadata?.ban_info?.previous_bans || []),
+        // Add current ban to history if user was previously banned
+        ...(currentUser.user.app_metadata?.ban_info?.banned_until
+          ? [
+              {
+                reason:
+                  currentUser.user.app_metadata.ban_info.reason ||
+                  "Previous ban",
+                banned_at:
+                  currentUser.user.app_metadata.ban_info.banned_at ||
+                  new Date().toISOString(),
+                banned_by:
+                  currentUser.user.app_metadata.ban_info.banned_by || "unknown",
+                banned_by_email:
+                  currentUser.user.app_metadata.ban_info.banned_by_email ||
+                  "unknown",
+                banned_by_name:
+                  currentUser.user.app_metadata.ban_info.banned_by_name ||
+                  "Unknown",
+                banned_until:
+                  currentUser.user.app_metadata.ban_info.banned_until,
+              },
+            ]
+          : []),
+      ],
+    };
+
+    console.log("Ban info to be stored:", banInfo);
 
     // Update banned_until at user level and ban_info in app_metadata
     const { data: userData, error: userError } =
@@ -57,27 +147,7 @@ export async function POST(request: NextRequest) {
         banned_until: bannedUntil,
         app_metadata: {
           ...(currentUser.user.app_metadata || {}),
-          ban_info: {
-            reason: reason || "No reason provided",
-            banned_at: new Date().toISOString(),
-            banned_by: bannedBy,
-            banned_until: bannedUntil,
-            previous_bans: [
-              ...(currentUser.user.app_metadata?.ban_info?.previous_bans || []),
-              // @ts-expect-error banned_until exists in Supabase but not in types
-
-              ...(currentUser.user.banned_until
-                ? []
-                : [
-                    {
-                      banned_at: new Date().toISOString(),
-                      banned_until: bannedUntil,
-                      reason: reason || "No reason provided",
-                      banned_by: bannedBy,
-                    },
-                  ]),
-            ],
-          },
+          ban_info: banInfo,
         },
       });
 
@@ -89,7 +159,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Optional: Insert into ban_history table for audit trail
+    // Insert into ban_history table for audit trail
     const { error: historyError } = await supabaseAdmin
       .from("ban_history")
       .insert({
@@ -97,13 +167,22 @@ export async function POST(request: NextRequest) {
         banned_until: bannedUntil,
         reason: reason || "No reason provided",
         banned_at: new Date().toISOString(),
-        banned_by: bannedBy,
+        banned_by: adminInfo.id,
+        banned_by_email: adminInfo.email,
+        banned_by_name: adminInfo.full_name,
         action: "ban",
       });
 
     if (historyError) {
       console.warn("Failed to log ban history:", historyError);
+      // Don't fail the request if history logging fails
     }
+
+    console.log("User banned successfully:", {
+      userId: userData.user.id,
+      banned_until: (userData.user as any).banned_until,
+      banned_by: adminInfo,
+    });
 
     return NextResponse.json({
       success: true,
@@ -116,10 +195,7 @@ export async function POST(request: NextRequest) {
         banned_until: (userData.user as any).banned_until,
         ban_info: userData.user.app_metadata?.ban_info,
       },
-      debug: {
-        bannedUntil: (userData.user as any).banned_until,
-        banInfo: userData.user.app_metadata?.ban_info,
-      },
+      banned_by: adminInfo,
     });
   } catch (error) {
     console.error("Ban user API error:", error);
@@ -134,6 +210,11 @@ export async function DELETE(request: NextRequest) {
   try {
     const { userId, adminUserId } = await request.json();
 
+    console.log("Unban request received:", {
+      userId,
+      adminUserId,
+    });
+
     if (!userId) {
       return NextResponse.json(
         { error: "User ID is required" },
@@ -141,11 +222,15 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    // Get admin user info for audit trail
+    const adminInfo = await getAdminUserInfo(adminUserId);
+    console.log("Admin info for unban:", adminInfo);
+
     // Get current user data to preserve other app_metadata
     const { data: currentUser, error: getUserError } =
       await supabaseAdmin.auth.admin.getUserById(userId);
 
-    if (getUserError) {
+    if (getUserError || !currentUser?.user) {
       console.error("Error getting user:", getUserError);
       return NextResponse.json(
         { error: "Failed to get user data" },
@@ -153,8 +238,24 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Use adminUserId if provided, otherwise fallback to "system"
-    const unbannedBy = adminUserId || "system";
+    // Prepare updated ban info - keep history but clear current ban
+    const updatedBanInfo = {
+      ...(currentUser.user.app_metadata?.ban_info || {}),
+      // Clear current ban fields
+      reason: undefined,
+      banned_at: undefined,
+      banned_by: undefined,
+      banned_by_email: undefined,
+      banned_by_name: undefined,
+      banned_until: undefined,
+      // Set unban info
+      unbanned_at: new Date().toISOString(),
+      unbanned_by: adminInfo.id,
+      unbanned_by_email: adminInfo.email,
+      unbanned_by_name: adminInfo.full_name,
+    };
+
+    console.log("Updated ban info for unban:", updatedBanInfo);
 
     // Remove ban by setting banned_until to null at user level and update ban_info in app_metadata
     const { data, error } = await supabaseAdmin.auth.admin.updateUserById(
@@ -164,14 +265,7 @@ export async function DELETE(request: NextRequest) {
         banned_until: null,
         app_metadata: {
           ...(currentUser?.user?.app_metadata || {}),
-          ban_info: {
-            ...(currentUser.user.app_metadata?.ban_info || {}),
-            unbanned_at: new Date().toISOString(),
-            unbanned_by: unbannedBy,
-            reason: undefined,
-            banned_at: undefined,
-            banned_until: undefined,
-          },
+          ban_info: updatedBanInfo,
         },
       }
     );
@@ -184,7 +278,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Optional: Insert into ban_history table for audit trail
+    // Insert into ban_history table for audit trail
     const { error: historyError } = await supabaseAdmin
       .from("ban_history")
       .insert({
@@ -192,13 +286,21 @@ export async function DELETE(request: NextRequest) {
         banned_until: null,
         reason: "User unbanned",
         banned_at: new Date().toISOString(),
-        banned_by: unbannedBy,
+        banned_by: adminInfo.id,
+        banned_by_email: adminInfo.email,
+        banned_by_name: adminInfo.full_name,
         action: "unban",
       });
 
     if (historyError) {
       console.warn("Failed to log unban history:", historyError);
+      // Don't fail the request if history logging fails
     }
+
+    console.log("User unbanned successfully:", {
+      userId: data.user.id,
+      unbanned_by: adminInfo,
+    });
 
     return NextResponse.json({
       success: true,
@@ -209,10 +311,7 @@ export async function DELETE(request: NextRequest) {
         banned_until: (data.user as any).banned_until,
         ban_info: data.user.app_metadata?.ban_info,
       },
-      debug: {
-        bannedUntil: (data.user as any).banned_until,
-        banInfo: data.user.app_metadata?.ban_info,
-      },
+      unbanned_by: adminInfo,
     });
   } catch (error) {
     console.error("Unban user API error:", error);
