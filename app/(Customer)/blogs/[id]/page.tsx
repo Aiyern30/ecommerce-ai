@@ -93,16 +93,40 @@ export default function BlogPost() {
 
   if (loading || !blog) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="lg:w-3/4 mx-auto">
-          <Card>
-            <Skeleton className="w-full h-[300px] md:h-[400px] rounded-md mb-6" />
-            <div className="space-y-4 px-6 pb-8">
-              <Skeleton className="h-6 w-3/4" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-5/6" />
-              <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="h-4 w-3/4" />
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900">
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <Skeleton className="h-6 w-1/2 mb-2" />
+          </div>
+          <Card className="pt-0">
+            <div className="relative w-full h-[300px] md:h-[400px] mb-6">
+              <Skeleton className="w-full h-full rounded-md" />
+            </div>
+            <Skeleton className="h-8 w-3/4 mb-6 mx-6" />
+            <div className="space-y-6 text-gray-700 px-6 mb-12">
+              <Skeleton className="h-5 w-2/3 mb-2" />
+              <Skeleton className="h-4 w-full mb-2" />
+              <Skeleton className="h-4 w-5/6 mb-2" />
+              <Skeleton className="h-4 w-2/3 mb-2" />
+              <Skeleton className="h-4 w-3/4 mb-2" />
+              <Skeleton className="h-10 w-32 mt-4" />
+            </div>
+            <div className="w-full mb-6">
+              <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                <Skeleton className="w-full h-full" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                <Skeleton className="w-full h-full" />
+              </div>
+              <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                <Skeleton className="w-full h-full" />
+              </div>
+            </div>
+            <div className="border-t pt-6 flex justify-between items-center px-6">
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-5 w-24" />
             </div>
           </Card>
         </div>
@@ -111,166 +135,167 @@ export default function BlogPost() {
   }
 
   return (
-    <article className="container mx-auto px-4">
-      <div className="py-4">
-        <BreadcrumbNav
-          customItems={[
-            { label: "Home", href: "/" },
-            { label: "Blogs", href: "/blogs" },
-            { label: blog.title },
-          ]}
-        />
-      </div>
-
-      <Card className="pt-0">
-        {blog.blog_images && blog.blog_images.length === 1 && (
-          <div className="relative w-full h-[300px] md:h-[400px] mb-6">
-            <Image
-              src={blog.blog_images[0].image_url}
-              alt={blog.title}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 50vw"
-              className="object-cover rounded-md"
-              priority
-            />
-          </div>
-        )}
-        {blog.blog_images && blog.blog_images.length === 2 && (
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <BreadcrumbNav
+            customItems={[
+              { label: "Home", href: "/" },
+              { label: "Blogs", href: "/blogs" },
+              { label: blog.title },
+            ]}
+          />
+        </div>
+        <Card className="pt-0">
+          {blog.blog_images && blog.blog_images.length === 1 && (
+            <div className="relative w-full h-[300px] md:h-[400px] mb-6">
               <Image
                 src={blog.blog_images[0].image_url}
-                alt={blog.title + " 1"}
-                fill
-                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 40vw, 40vw"
-                className="object-cover"
-                priority
-              />
-            </div>
-            <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-              <Image
-                src={blog.blog_images[1].image_url}
-                alt={blog.title + " 2"}
-                fill
-                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 40vw, 40vw"
-                className="object-cover"
-                priority
-              />
-            </div>
-          </div>
-        )}
-
-        <TypographyH1 className="mb-6 px-6 text-blue-900">
-          {blog.title}
-        </TypographyH1>
-
-        <div className="space-y-6 text-gray-700 px-6 mb-12">
-          <TypographyP>{blog.description}</TypographyP>
-          {blog.content && (
-            <MarkdownPreview
-              source={blog.content}
-              style={{
-                background: "transparent",
-                fontSize: 16,
-                color: "#334155",
-                padding: 0,
-              }}
-              className="!bg-transparent"
-            />
-          )}
-          {blog.link && (
-            <div className="mt-4">
-              {blog.link.startsWith("http://") ||
-              blog.link.startsWith("https://") ? (
-                <a
-                  href={blog.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 transition"
-                >
-                  {blog.link_name || "Visit Link"}
-                </a>
-              ) : (
-                <Button
-                  variant={"default"}
-                  onClick={() => router.push(blog.link!)}
-                >
-                  {blog.link_name || "Go to Page"}
-                </Button>
-              )}
-            </div>
-          )}
-        </div>
-
-        {blog.blog_images && blog.blog_images.length >= 3 && (
-          <div className="w-full mb-6">
-            <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-              <Image
-                src={blog.blog_images[2].image_url}
-                alt={blog.title + " 3"}
+                alt={blog.title}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 50vw"
-                className="object-cover"
+                className="object-cover rounded-md"
                 priority
               />
             </div>
-          </div>
-        )}
-        {blog.blog_images && blog.blog_images.length === 4 && (
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-              <Image
-                src={blog.blog_images[2].image_url}
-                alt={blog.title + " 3"}
-                fill
-                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 40vw, 40vw"
-                className="object-cover"
-                priority
-              />
+          )}
+          {blog.blog_images && blog.blog_images.length === 2 && (
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                <Image
+                  src={blog.blog_images[0].image_url}
+                  alt={blog.title + " 1"}
+                  fill
+                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 40vw, 40vw"
+                  className="object-cover"
+                  priority
+                />
+              </div>
+              <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                <Image
+                  src={blog.blog_images[1].image_url}
+                  alt={blog.title + " 2"}
+                  fill
+                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 40vw, 40vw"
+                  className="object-cover"
+                  priority
+                />
+              </div>
             </div>
-            <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-              <Image
-                src={blog.blog_images[3].image_url}
-                alt={blog.title + " 4"}
-                fill
-                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 40vw, 40vw"
-                className="object-cover"
-                priority
-              />
-            </div>
-          </div>
-        )}
+          )}
 
-        {(prevBlog || nextBlog) && (
-          <div className="border-t pt-6 flex justify-between items-center px-6">
-            <div className="flex text-sm text-gray-500 w-full justify-between">
-              {prevBlog ? (
-                <Link
-                  href={`/blogs/${prevBlog.id}`}
-                  className="flex items-center text-blue-700"
-                >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  <span>Previous</span>
-                </Link>
-              ) : (
-                <span />
-              )}
+          <TypographyH1 className="mb-6 px-6 text-blue-900">
+            {blog.title}
+          </TypographyH1>
 
-              {nextBlog ? (
-                <Link
-                  href={`/blogs/${nextBlog.id}`}
-                  className="flex items-center text-blue-700"
-                >
-                  <span>Next</span>
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Link>
-              ) : (
-                <span />
-              )}
-            </div>
+          <div className="space-y-6 text-gray-700 px-6 mb-12">
+            <TypographyP>{blog.description}</TypographyP>
+            {blog.content && (
+              <MarkdownPreview
+                source={blog.content}
+                style={{
+                  background: "transparent",
+                  fontSize: 16,
+                  color: "#334155",
+                  padding: 0,
+                }}
+                className="!bg-transparent dark:!text-white dark:!prose-invert"
+              />
+            )}
+            {blog.link && (
+              <div className="mt-4">
+                {blog.link.startsWith("http://") ||
+                blog.link.startsWith("https://") ? (
+                  <a
+                    href={blog.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 transition"
+                  >
+                    {blog.link_name || "Visit Link"}
+                  </a>
+                ) : (
+                  <Button
+                    variant={"default"}
+                    onClick={() => router.push(blog.link!)}
+                  >
+                    {blog.link_name || "Go to Page"}
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
-        )}
-      </Card>
-    </article>
+
+          {blog.blog_images && blog.blog_images.length >= 3 && (
+            <div className="w-full mb-6">
+              <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                <Image
+                  src={blog.blog_images[2].image_url}
+                  alt={blog.title + " 3"}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 50vw"
+                  className="object-cover"
+                  priority
+                />
+              </div>
+            </div>
+          )}
+          {blog.blog_images && blog.blog_images.length === 4 && (
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                <Image
+                  src={blog.blog_images[2].image_url}
+                  alt={blog.title + " 3"}
+                  fill
+                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 40vw, 40vw"
+                  className="object-cover"
+                  priority
+                />
+              </div>
+              <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                <Image
+                  src={blog.blog_images[3].image_url}
+                  alt={blog.title + " 4"}
+                  fill
+                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 40vw, 40vw"
+                  className="object-cover"
+                  priority
+                />
+              </div>
+            </div>
+          )}
+
+          {(prevBlog || nextBlog) && (
+            <div className="border-t pt-6 flex justify-between items-center px-6">
+              <div className="flex text-sm text-gray-500 w-full justify-between">
+                {prevBlog ? (
+                  <Link
+                    href={`/blogs/${prevBlog.id}`}
+                    className="flex items-center text-blue-700"
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    <span>Previous</span>
+                  </Link>
+                ) : (
+                  <span />
+                )}
+
+                {nextBlog ? (
+                  <Link
+                    href={`/blogs/${nextBlog.id}`}
+                    className="flex items-center text-blue-700"
+                  >
+                    <span>Next</span>
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Link>
+                ) : (
+                  <span />
+                )}
+              </div>
+            </div>
+          )}
+        </Card>
+      </div>
+    </div>
   );
 }
