@@ -13,7 +13,7 @@ export default function CustomerProfileRedirect() {
         data: { user },
       } = await supabase.auth.getUser();
       if (user?.id) {
-        router.replace(`/customer/profile/${user.id}`);
+        router.replace(`/profile/${user.id}`);
       } else {
         router.replace("/login");
       }

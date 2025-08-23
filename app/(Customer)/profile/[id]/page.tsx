@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -60,7 +61,7 @@ export default function CustomerProfilePage() {
           <div className="flex flex-col items-center justify-center py-16">
             <TypographyH2 className="mb-2">Profile Not Found</TypographyH2>
             <TypographyP className="text-muted-foreground text-center mb-6 max-w-sm">
-              We couldn&rsquo;t find your profile. Please try again later.
+              We couldn't find your profile. Please try again later.
             </TypographyP>
             <Button
               variant="outline"
@@ -85,7 +86,7 @@ export default function CustomerProfilePage() {
                   <Skeleton className="h-20 w-full" />
                   <Skeleton className="h-8 w-1/3" />
                 </div>
-              ) : (
+              ) : customer ? (
                 <>
                   <div className="flex items-center gap-4 mb-6">
                     <Avatar className="h-16 w-16">
@@ -281,7 +282,7 @@ export default function CustomerProfilePage() {
                       </div>
                     )}
                 </>
-              )}
+              ) : null}
             </CardContent>
           </Card>
         )}
