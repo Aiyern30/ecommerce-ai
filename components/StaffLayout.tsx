@@ -46,7 +46,7 @@ export default function StaffLayout({ children }: LayoutProps) {
             `&banned_by_email=${encodeURIComponent(bannedByEmail)}` +
             `&banned_until=${encodeURIComponent(bannedUntil)}`
         );
-      } else if (user.user_metadata?.role !== "staff") {
+      } else if (user.app_metadata?.role !== "staff") {
         // Logged in but not staff
         router.replace("/403");
       } else {
