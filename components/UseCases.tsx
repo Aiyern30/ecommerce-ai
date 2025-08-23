@@ -9,6 +9,7 @@ import u1 from "@/public/UseCases/u1.jpeg";
 import u2 from "@/public/UseCases/u2.jpeg";
 import u3 from "@/public/UseCases/u5.webp";
 import u4 from "@/public/UseCases/u4.jpeg";
+import { useDeviceType } from "@/utils/useDeviceTypes";
 
 const useCases = [
   {
@@ -75,11 +76,16 @@ export function UseCases() {
     },
   };
 
+  const { isMobile } = useDeviceType();
+
   return (
-    <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-slate-800">
+    <section
+      className={`py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-slate-800 ${
+        isMobile ? "overflow-hidden" : ""
+      }`}
+    >
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-16">
-          {/* Left side - Features */}
           <motion.div
             className="w-full lg:w-1/2"
             initial="hidden"
@@ -131,7 +137,7 @@ export function UseCases() {
                     <CardContent className="p-6 lg:p-8">
                       <motion.div
                         className={`text-3xl lg:text-4xl font-bold ${useCase.color} dark:text-blue-400 mb-4`}
-                        initial={{ scale: 0 }}
+                        initial={isMobile ? { scale: 1 } : { scale: 0 }}
                         whileInView={{ scale: 1 }}
                         viewport={{ once: true }}
                         transition={{
@@ -164,7 +170,6 @@ export function UseCases() {
             </div>
           </motion.div>
 
-          {/* Right side - Images */}
           <motion.div
             className="w-full lg:w-1/2"
             initial="hidden"
@@ -172,12 +177,14 @@ export function UseCases() {
             viewport={{ once: true, amount: 0.3 }}
             variants={imageVariants}
           >
-            {/* Product Images Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-sm sm:max-w-md mx-auto lg:max-w-none lg:mx-0">
-              {/* First column */}
               <motion.div
                 className="space-y-3 sm:space-y-4"
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={
+                  isMobile
+                    ? { opacity: 0, scale: 1 }
+                    : { opacity: 0, scale: 0.8 }
+                }
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.3 }}
@@ -202,10 +209,13 @@ export function UseCases() {
                 </AspectRatio>
               </motion.div>
 
-              {/* Second column */}
               <motion.div
                 className="space-y-3 sm:space-y-4 sm:mt-4 lg:mt-8"
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={
+                  isMobile
+                    ? { opacity: 0, scale: 1 }
+                    : { opacity: 0, scale: 0.8 }
+                }
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.4 }}

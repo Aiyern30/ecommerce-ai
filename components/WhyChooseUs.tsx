@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/";
 import { Typography } from "@/components/ui/Typography";
 import { AspectRatio } from "@/components/ui/";
+import { useDeviceType } from "@/utils/useDeviceTypes";
 
 import c1 from "@/public/WhyChooseUs/c1.jpeg";
 import c2 from "@/public/WhyChooseUs/c2.jpeg";
@@ -30,7 +31,7 @@ const features = [
     number: "03",
     title: "Nation-Building Legacy",
     description:
-      "We have contributed to some of Malaysia’s most iconic projects, including the Petronas Twin Towers, Merdeka 118, and KLIA.",
+      "We have contributed to some of Malaysia's most iconic projects, including the Petronas Twin Towers, Merdeka 118, and KLIA.",
     color: "text-cyan-500",
   },
   {
@@ -77,6 +78,9 @@ export function WhyChooseUs() {
     },
   };
 
+  // Add device type hook
+  const { isMobile } = useDeviceType();
+
   return (
     <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-cyan-50 to-blue-100 dark:from-gray-900 dark:to-slate-800">
       <div className="container mx-auto px-4">
@@ -118,12 +122,14 @@ export function WhyChooseUs() {
               </Typography>
             </motion.div>
 
-            {/* Product Images Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-sm sm:max-w-md mx-auto lg:max-w-none lg:mx-0">
-              {/* First column */}
               <motion.div
                 className="space-y-3 sm:space-y-4"
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={
+                  isMobile
+                    ? { opacity: 0, scale: 1 }
+                    : { opacity: 0, scale: 0.8 }
+                }
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.3 }}
@@ -148,10 +154,13 @@ export function WhyChooseUs() {
                 </AspectRatio>
               </motion.div>
 
-              {/* Second column */}
               <motion.div
                 className="space-y-3 sm:space-y-4 sm:mt-4 lg:mt-8"
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={
+                  isMobile
+                    ? { opacity: 0, scale: 1 }
+                    : { opacity: 0, scale: 0.8 }
+                }
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.4 }}
@@ -178,7 +187,6 @@ export function WhyChooseUs() {
             </div>
           </motion.div>
 
-          {/* Right side - Features */}
           <motion.div
             className="w-full lg:w-1/2"
             initial="hidden"
