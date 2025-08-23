@@ -3,15 +3,16 @@
 import type React from "react";
 import Header from "./Header";
 import Footer from "./Footer";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Toaster } from "./ui";
 import { ThemeProvider } from "./ThemeProvider";
 import { CartProvider } from "./CartProvider";
 import { AuthGuard } from "./AuthGuard";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { WHATSAPP_CONFIG } from "@/lib/whatsapp/config";
 import GeminiChat from "./Chat/GeminiChat";
 import { MessageCircle, X } from "lucide-react";
+import { supabase } from "@/lib/supabase/browserClient";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -34,7 +35,23 @@ const requiresAuth = (pathname: string): boolean => {
 export function CustomerLayout({ children }: LayoutProps) {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const needsAuth = requiresAuth(pathname ?? "");
+
+  useEffect(() => {
+    const checkBan = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (
+        user?.user_metadata?.banned_at ||
+        user?.app_metadata?.ban_info?.banned_at
+      ) {
+        router.replace("/403");
+      }
+    };
+    checkBan();
+  }, [router]);
 
   const toggleChat = () => setIsChatOpen((open) => !open);
   const closeChat = () => setIsChatOpen(false);
