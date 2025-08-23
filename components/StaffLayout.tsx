@@ -30,8 +30,22 @@ export default function StaffLayout({ children }: LayoutProps) {
         user.user_metadata?.banned_at ||
         user.app_metadata?.ban_info?.banned_at
       ) {
-        // User is banned
-        router.replace("/403");
+        // User is banned, pass ban info via query string
+        const reason =
+          user.app_metadata?.ban_info?.reason ||
+          user.user_metadata?.ban_reason ||
+          "No reason provided";
+        const bannedByName = user.app_metadata?.ban_info?.banned_by_name || "";
+        const bannedByEmail =
+          user.app_metadata?.ban_info?.banned_by_email || "";
+        const bannedUntil = user.app_metadata?.ban_info?.banned_until || "";
+        router.replace(
+          `/403?banned=1` +
+            `&reason=${encodeURIComponent(reason)}` +
+            `&banned_by_name=${encodeURIComponent(bannedByName)}` +
+            `&banned_by_email=${encodeURIComponent(bannedByEmail)}` +
+            `&banned_until=${encodeURIComponent(bannedUntil)}`
+        );
       } else if (user.user_metadata?.role !== "staff") {
         // Logged in but not staff
         router.replace("/403");
