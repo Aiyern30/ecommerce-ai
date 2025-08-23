@@ -8,18 +8,7 @@ import React, {
   useImperativeHandle,
 } from "react";
 import { Loader } from "@googlemaps/js-api-loader";
-
-interface AddressComponents {
-  street_number?: string;
-  route?: string;
-  locality?: string;
-  administrative_area_level_1?: string;
-  postal_code?: string;
-  country?: string;
-  formatted_address?: string;
-  lat?: number;
-  lng?: number;
-}
+import { AddressComponents } from "@/lib/user/address";
 
 interface AddressAutocompleteProps {
   onAddressSelect: (address: AddressComponents) => void;
@@ -159,7 +148,6 @@ export const AddressAutocomplete = forwardRef<
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
 
-      // Reset validation when user types
       if (value === "") {
         onValidationChange(false);
       }
@@ -188,5 +176,4 @@ export const AddressAutocomplete = forwardRef<
 
 AddressAutocomplete.displayName = "AddressAutocomplete";
 
-// Export the AddressComponents type for use in other files
 export type { AddressComponents };

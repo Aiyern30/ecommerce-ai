@@ -18,12 +18,10 @@ export function ComparisonProductCard({
   showRemove = false,
 }: ComparisonProductCardProps) {
   const router = useRouter();
-  // Get main image from product_images (first or is_primary)
   const mainImage =
     product.product_images?.find((img) => img.is_primary) ||
     product.product_images?.[0];
 
-  // Delivery options for display
   const deliveryOptions = [
     product.normal_price != null
       ? { key: "normal", label: "Normal Delivery", price: product.normal_price }
@@ -42,7 +40,6 @@ export function ComparisonProductCard({
       : null,
   ].filter(Boolean) as { key: string; label: string; price: number }[];
 
-  // Find selected price type
   const selectedType = product.selectedPriceType || "normal";
   const selectedOption = deliveryOptions.find(
     (opt) => opt.key === selectedType
@@ -50,7 +47,6 @@ export function ComparisonProductCard({
 
   return (
     <Card className="relative flex flex-col h-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 p-0">
-      {/* Remove button */}
       {showRemove && (
         <Button
           variant="destructive"
@@ -62,7 +58,6 @@ export function ComparisonProductCard({
         </Button>
       )}
 
-      {/* Full-width Image - completely flush to card edges */}
       <div className="relative w-full h-96 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 overflow-hidden">
         <Image
           src={mainImage?.image_url || "/placeholder.svg"}
@@ -71,7 +66,6 @@ export function ComparisonProductCard({
           className="object-cover hover:scale-105 transition-transform duration-300"
         />
 
-        {/* Grade badge overlay */}
         {product.grade && (
           <div className="absolute bottom-3 right-3">
             <Badge className="bg-green-500 text-white border-0 font-semibold px-2 py-1 rounded-full shadow-md">
@@ -81,9 +75,7 @@ export function ComparisonProductCard({
         )}
       </div>
 
-      {/* Content with fixed heights for consistent alignment */}
       <div className="p-6 flex flex-col flex-grow">
-        {/* Product Header - Fixed height */}
         <div className="h-20 mb-4 flex flex-col justify-start">
           <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 line-clamp-2 mb-2 leading-tight">
             {product.name}
@@ -101,7 +93,6 @@ export function ComparisonProductCard({
           )}
         </div>
 
-        {/* Description - Fixed height */}
         <div className="h-16 mb-4 flex items-start">
           {product.description ? (
             <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3 leading-relaxed">
@@ -114,10 +105,8 @@ export function ComparisonProductCard({
           )}
         </div>
 
-        {/* Price Section - Fixed height */}
         <div className="h-48 mb-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-center">
           <div className="w-full flex flex-col items-center justify-center max-w-[180px] mx-auto">
-            {/* RM total */}
             <div>
               {selectedOption ? (
                 <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -129,7 +118,6 @@ export function ComparisonProductCard({
                 </span>
               )}
             </div>
-            {/* Type and unit */}
             <div className="mt-1 flex flex-col items-center w-full">
               {selectedOption && (
                 <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded w-full text-center">
@@ -141,7 +129,6 @@ export function ComparisonProductCard({
                   /{product.unit}
                 </span>
               )}
-              {/* Show available types if not selected */}
               {!selectedOption && deliveryOptions.length > 0 && (
                 <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded mt-1 w-full text-center">
                   Available:{" "}
@@ -150,7 +137,6 @@ export function ComparisonProductCard({
               )}
             </div>
 
-            {/* Rating stars */}
             <div className="flex items-center justify-center gap-1 mb-2 mt-2">
               {[...Array(5)].map((_, i) => (
                 <Star
@@ -178,7 +164,6 @@ export function ComparisonProductCard({
           </div>
         </div>
 
-        {/* Features - Grade, Product Type, Unit, Stock */}
         <div className="h-20 mb-6 flex flex-col">
           <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
             {product.grade && <span>Grade: {product.grade}</span>}
@@ -203,12 +188,9 @@ export function ComparisonProductCard({
           </div>
         </div>
 
-        {/* Spacer to push button to bottom */}
         <div className="flex-grow" />
 
-        {/* Enhanced Action Button - Fixed height */}
         <div className="h-16 flex flex-col justify-center">
-          {/* View Details Button */}
           <Button
             variant="default"
             className="w-full mt-2"

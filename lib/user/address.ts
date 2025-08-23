@@ -14,18 +14,6 @@ export interface Address {
   updated_at: string;
 }
 
-export interface CreateAddressData {
-  full_name: string;
-  phone: string;
-  address_line1: string;
-  address_line2?: string;
-  city: string;
-  state: string;
-  postal_code: string;
-  country: string;
-  is_default?: boolean;
-}
-
 export interface AddressComponents {
   street_number?: string;
   route?: string;
