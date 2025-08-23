@@ -59,7 +59,7 @@ export default function ProductCarousel() {
   }, [instanceRef, products]);
 
   return (
-    <section className="relative h-[calc(100vh-120px)] bg-gray-50 dark:bg-gray-900 flex flex-col justify-center">
+    <section className="relative min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center">
       <div className="container mx-auto px-4 flex flex-col flex-1 justify-center">
         <TypographyH1 className="text-center mb-8">Our Products</TypographyH1>
         <div className="relative">
