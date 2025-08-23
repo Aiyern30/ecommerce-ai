@@ -242,36 +242,42 @@ export default function CustomerProfilePage() {
                         <label className="block text-sm font-medium mb-2">
                           Ban History
                         </label>
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Reason</TableHead>
-                              <TableHead>Banned At</TableHead>
-                              <TableHead>Banned By</TableHead>
-                              <TableHead>Banned Until</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {customer.ban_info.previous_bans.map((ban, idx) => (
-                              <TableRow key={idx}>
-                                <TableCell>{ban.reason || "-"}</TableCell>
-                                <TableCell>
-                                  {ban.banned_at
-                                    ? formatDate(ban.banned_at)
-                                    : "-"}
-                                </TableCell>
-                                <TableCell>
-                                  {ban.banned_by_name || ban.banned_by || "-"}
-                                </TableCell>
-                                <TableCell>
-                                  {ban.banned_until
-                                    ? formatDate(ban.banned_until)
-                                    : "-"}
-                                </TableCell>
+                        <div className="overflow-x-auto">
+                          <Table className="min-w-[600px]">
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Reason</TableHead>
+                                <TableHead>Banned At</TableHead>
+                                <TableHead>Banned By</TableHead>
+                                <TableHead>Banned Until</TableHead>
                               </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
+                            </TableHeader>
+                            <TableBody>
+                              {customer.ban_info.previous_bans.map(
+                                (ban, idx) => (
+                                  <TableRow key={idx}>
+                                    <TableCell>{ban.reason || "-"}</TableCell>
+                                    <TableCell>
+                                      {ban.banned_at
+                                        ? formatDate(ban.banned_at)
+                                        : "-"}
+                                    </TableCell>
+                                    <TableCell>
+                                      {ban.banned_by_name ||
+                                        ban.banned_by ||
+                                        "-"}
+                                    </TableCell>
+                                    <TableCell>
+                                      {ban.banned_until
+                                        ? formatDate(ban.banned_until)
+                                        : "-"}
+                                    </TableCell>
+                                  </TableRow>
+                                )
+                              )}
+                            </TableBody>
+                          </Table>
+                        </div>
                       </div>
                     )}
                 </>
