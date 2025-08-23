@@ -62,13 +62,6 @@ export async function POST(request: NextRequest) {
   try {
     const { userId, bannedUntil, reason, adminUserId } = await request.json();
 
-    console.log("Ban request received:", {
-      userId,
-      bannedUntil,
-      reason,
-      adminUserId,
-    });
-
     // Validation
     if (!userId || !bannedUntil) {
       return NextResponse.json(
@@ -88,7 +81,6 @@ export async function POST(request: NextRequest) {
 
     // Get admin user info for audit trail
     const adminInfo = await getAdminUserInfo(adminUserId);
-    console.log("Admin info for ban:", adminInfo);
 
     // Get current user data first to preserve app_metadata
     const { data: currentUser, error: getUserError } =
@@ -138,8 +130,6 @@ export async function POST(request: NextRequest) {
       ],
     };
 
-    console.log("Ban info to be stored:", banInfo);
-
     // Update banned_until at user level and ban_info in app_metadata
     const { data: userData, error: userError } =
       await supabaseAdmin.auth.admin.updateUserById(userId, {
@@ -178,12 +168,6 @@ export async function POST(request: NextRequest) {
       // Don't fail the request if history logging fails
     }
 
-    console.log("User banned successfully:", {
-      userId: userData.user.id,
-      banned_until: (userData.user as any).banned_until,
-      banned_by: adminInfo,
-    });
-
     return NextResponse.json({
       success: true,
       message: `User banned until ${new Date(
@@ -210,11 +194,6 @@ export async function DELETE(request: NextRequest) {
   try {
     const { userId, adminUserId } = await request.json();
 
-    console.log("Unban request received:", {
-      userId,
-      adminUserId,
-    });
-
     if (!userId) {
       return NextResponse.json(
         { error: "User ID is required" },
@@ -224,7 +203,6 @@ export async function DELETE(request: NextRequest) {
 
     // Get admin user info for audit trail
     const adminInfo = await getAdminUserInfo(adminUserId);
-    console.log("Admin info for unban:", adminInfo);
 
     // Get current user data to preserve other app_metadata
     const { data: currentUser, error: getUserError } =
@@ -254,8 +232,6 @@ export async function DELETE(request: NextRequest) {
       unbanned_by_email: adminInfo.email,
       unbanned_by_name: adminInfo.full_name,
     };
-
-    console.log("Updated ban info for unban:", updatedBanInfo);
 
     // Remove ban by setting banned_until to null at user level and update ban_info in app_metadata
     const { data, error } = await supabaseAdmin.auth.admin.updateUserById(
@@ -296,11 +272,6 @@ export async function DELETE(request: NextRequest) {
       console.warn("Failed to log unban history:", historyError);
       // Don't fail the request if history logging fails
     }
-
-    console.log("User unbanned successfully:", {
-      userId: data.user.id,
-      unbanned_by: adminInfo,
-    });
 
     return NextResponse.json({
       success: true,

@@ -24,10 +24,8 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { Calendar } from "@/components/ui/";
-import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 import {
   Button,
@@ -71,6 +69,7 @@ import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import { formatDate } from "@/lib/utils/format";
 import { useDeviceType } from "@/utils/useDeviceTypes";
 import { format, addDays, addWeeks, addMonths, isBefore } from "date-fns";
+import { useUser } from "@supabase/auth-helpers-react";
 
 // Types
 interface Customer {
@@ -730,10 +729,11 @@ function CustomerCard({
 
 export default function CustomersPage() {
   const router = useRouter();
+  const user = useUser();
+
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
-  const [authUser, setAuthUser] = useState<SupabaseUser | null>(null);
-  console.log("Auth User:", authUser?.id);
+
   const [filters, setFilters] = useState<CustomerFilters>({
     search: "",
     sortBy: "date-new",
@@ -762,7 +762,7 @@ export default function CustomersPage() {
 
       // Get current user's role to determine filtering
       const currentUserRole =
-        authUser?.app_metadata?.role || authUser?.user_metadata?.role;
+        user?.app_metadata?.role || user?.user_metadata?.role;
 
       // Map Supabase Auth users to Customer type
       const mappedUsers = (data.users || []).map((user: any) => ({
@@ -815,51 +815,16 @@ export default function CustomersPage() {
       setCustomers([]);
     }
     setLoading(false);
-  }, [authUser]);
+  }, [user]);
 
   useEffect(() => {
     fetchCustomers();
   }, [fetchCustomers]);
 
-  useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (error) {
-        console.error("Error getting initial session:", error.message);
-        // Only show error for unexpected issues
-        if (
-          error.message !== "Auth session missing!" &&
-          error.message !== "JWT expired"
-        ) {
-          toast.error("Authentication error occurred");
-        }
-      }
-      setAuthUser(session?.user || null);
-    });
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log(
-        "Auth state change:",
-        event,
-        session?.user?.email || "no user"
-      );
-      // Always set authUser from session.user, even if null
-      setAuthUser(session?.user || null);
-
-      // Refetch customers when user signs in
-      if (event === "SIGNED_IN") {
-        fetchCustomers();
-      }
-    });
-
-    // Clean up subscription on unmount
-    return () => {
-      if (subscription) subscription.unsubscribe();
-    };
-  }, [fetchCustomers]);
+  // Remove supabase.auth.getSession and auth state change logic
+  // useEffect(() => {
+  //   fetchCustomers();
+  // }, [fetchCustomers]);
 
   const updateFilter = (key: keyof CustomerFilters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -951,7 +916,7 @@ export default function CustomersPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: customerId,
-          adminUserId: authUser?.id, // <-- pass current admin/staff user ID
+          adminUserId: user?.id, // <-- use user from useUser()
         }),
       });
 
@@ -984,7 +949,7 @@ export default function CustomersPage() {
           userId: customerToBan.id,
           bannedUntil: banData.banUntil.toISOString(),
           reason: banData.reason,
-          adminUserId: authUser?.id, // <-- pass current admin/staff user ID
+          adminUserId: user?.id, // <-- use user from useUser()
         }),
       });
 
