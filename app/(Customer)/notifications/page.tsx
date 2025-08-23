@@ -18,6 +18,7 @@ import {
   TypographyP,
 } from "@/components/ui/Typography";
 import Link from "next/link";
+import { useMediaQuery } from "react-responsive";
 
 import { Notification } from "@/type/notification";
 import {
@@ -40,6 +41,9 @@ export default function NotificationsPage() {
   >("all");
 
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Add mobile view detection
+  const isMobile = useMediaQuery({ maxWidth: 640 });
 
   const fetchNotifications = useCallback(async () => {
     if (!user?.id) return;
@@ -186,27 +190,32 @@ export default function NotificationsPage() {
 
   return (
     <div className="container mx-auto px-4 pt-0 pb-4">
-      <TypographyH1 className="my-8">NOTIFICATIONS</TypographyH1>
+      <TypographyH1 className="my-6 sm:my-8 text-lg sm:text-2xl">
+        NOTIFICATIONS
+      </TypographyH1>
 
       {/* Only show filters/search if there are notifications */}
       {notifications.length > 0 && (
         <>
           {/* Header Actions */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center mb-6">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Bell className="h-5 w-5 text-gray-600" />
-                <TypographyP className="!mt-0">
-                  {notifications.length} total, {unreadCount} unread
-                </TypographyP>
-              </div>
+          <div
+            className={`flex flex-col ${
+              isMobile ? "gap-2" : "sm:flex-row gap-4"
+            } justify-between items-start sm:items-center mb-4 sm:mb-6`}
+          >
+            <div className="flex items-center gap-2 sm:gap-4">
+              <Bell className="h-5 w-5 text-gray-600" />
+              <TypographyP className="!mt-0 text-sm sm:text-base">
+                {notifications.length} total, {unreadCount} unread
+              </TypographyP>
             </div>
-            <div className="flex gap-2">
+            <div className={`flex ${isMobile ? "flex-col w-full" : "gap-2"}`}>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleMarkAllAsRead}
                 disabled={unreadCount === 0}
+                className={isMobile ? "mb-2 w-full" : ""}
               >
                 <Check className="h-4 w-4 mr-2" />
                 Mark All Read
@@ -216,6 +225,7 @@ export default function NotificationsPage() {
                 size="sm"
                 onClick={handleClearAllNotifications}
                 disabled={notifications.length === 0}
+                className={isMobile ? "w-full" : ""}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Clear All
@@ -224,14 +234,18 @@ export default function NotificationsPage() {
           </div>
 
           {/* Filters and Search */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div
+            className={`flex ${
+              isMobile ? "flex-col gap-2" : "flex-row gap-4"
+            } mb-4 sm:mb-6`}
+          >
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-gray-600" />
               <Select
                 value={filter}
                 onValueChange={(value) => setFilter(value as typeof filter)}
               >
-                <SelectTrigger className="w-[200px]">
+                <SelectTrigger className="w-[160px] sm:w-[200px] text-xs sm:text-sm">
                   <SelectValue placeholder="Filter notifications" />
                 </SelectTrigger>
                 <SelectContent>
@@ -250,7 +264,7 @@ export default function NotificationsPage() {
                 placeholder="Search notifications..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-sm flex-1"
+                className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-xs sm:text-sm flex-1"
               />
             </div>
           </div>
@@ -258,7 +272,7 @@ export default function NotificationsPage() {
       )}
 
       {/* Notifications List */}
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {isLoading ? (
           <div className="flex justify-center items-center h-32">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
@@ -289,15 +303,19 @@ export default function NotificationsPage() {
           filteredNotifications.map((notification) => (
             <div
               key={notification.id}
-              className={`bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border ${
+              className={`bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm border ${
                 notification.read
                   ? "border-gray-200 dark:border-gray-700"
                   : "border-blue-200 dark:border-blue-800"
               }`}
             >
-              <div className="flex justify-between items-start">
+              <div
+                className={`flex ${
+                  isMobile ? "flex-col gap-2" : "justify-between items-start"
+                }`}
+              >
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
                     <span
                       className={`text-xs px-2 py-1 rounded ${getTypeColor(
                         notification.type
@@ -313,15 +331,15 @@ export default function NotificationsPage() {
                       {formatTime(notification.created_at)}
                     </span>
                   </div>
-                  <TypographyH3 className="text-gray-900 dark:text-white mb-2 !mt-0">
+                  <TypographyH3 className="text-gray-900 dark:text-white mb-1 sm:mb-2 !mt-0 text-base sm:text-lg">
                     {notification.title}
                   </TypographyH3>
-                  <TypographyP className="text-gray-600 dark:text-gray-300 !mt-0">
+                  <TypographyP className="text-gray-600 dark:text-gray-300 !mt-0 text-sm sm:text-base">
                     {notification.message}
                   </TypographyP>
                   {/* Show order details if present */}
                   {notification.order && (
-                    <div className="mt-4 rounded-xl border border-blue-100 dark:border-blue-900 bg-blue-50/40 dark:bg-blue-900/30 p-4 shadow-sm">
+                    <div className="mt-3 sm:mt-4 rounded-xl border border-blue-100 dark:border-blue-900 bg-blue-50/40 dark:bg-blue-900/30 p-3 sm:p-4 shadow-sm">
                       <div className="flex flex-wrap items-center gap-2 mb-2">
                         <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">
                           Order
@@ -362,7 +380,9 @@ export default function NotificationsPage() {
                           Total
                         </span>
                       </div>
-                      {notification.order.order_items &&
+                      {/* Hide table on mobile */}
+                      {!isMobile &&
+                        notification.order.order_items &&
                         notification.order.order_items.length > 0 && (
                           <div className="mt-2">
                             <div className="font-semibold text-xs mb-1">
@@ -421,7 +441,11 @@ export default function NotificationsPage() {
                     </div>
                   )}
                 </div>
-                <div className="flex items-center gap-2 ml-4">
+                <div
+                  className={`flex items-center gap-2 ${
+                    isMobile ? "mt-2" : "ml-4"
+                  }`}
+                >
                   {!notification.read && (
                     <Button
                       variant="ghost"
