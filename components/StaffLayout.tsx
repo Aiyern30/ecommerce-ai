@@ -26,6 +26,12 @@ export default function StaffLayout({ children }: LayoutProps) {
 
       if (error || !user) {
         router.replace("/401");
+      } else if (
+        user.user_metadata?.banned_at ||
+        user.app_metadata?.ban_info?.banned_at
+      ) {
+        // User is banned
+        router.replace("/403");
       } else if (user.user_metadata?.role !== "staff") {
         // Logged in but not staff
         router.replace("/403");
