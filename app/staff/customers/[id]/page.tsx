@@ -25,40 +25,7 @@ import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { ChevronLeft, FileText } from "lucide-react";
 import { formatDate } from "@/lib/utils/format";
-
-interface Customer {
-  id: string;
-  email: string;
-  full_name?: string;
-  avatar_url?: string;
-  phone?: string;
-  location?: string;
-  status: "active" | "inactive" | "banned";
-  role: "customer" | "admin" | "staff";
-  created_at: string;
-  updated_at: string;
-  last_sign_in_at?: string;
-  ban_info?: {
-    reason?: string;
-    banned_at?: string;
-    banned_by?: string;
-    banned_by_email?: string;
-    banned_by_name?: string;
-    banned_until?: string;
-    previous_bans?: {
-      reason?: string;
-      banned_at?: string;
-      banned_by?: string;
-      banned_by_email?: string;
-      banned_by_name?: string;
-      banned_until?: string;
-    }[];
-    unbanned_at?: string;
-    unbanned_by?: string;
-    unbanned_by_email?: string;
-    unbanned_by_name?: string;
-  };
-}
+import { Customer } from "@/type/customer";
 
 export default function CustomerDetailsPage() {
   const params = useParams();
