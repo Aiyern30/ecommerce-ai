@@ -30,6 +30,7 @@ import { TypographyH4, TypographyP } from "@/components/ui/Typography";
 import Image from "next/image";
 import Link from "next/link";
 import type { CartItem } from "@/type/cart";
+import { getVariantDisplayName } from "@/lib/utils/format";
 
 export default function Cart() {
   const { cartCount, cartItems, refreshCart, isLoading } = useCart();
@@ -72,25 +73,6 @@ export default function Cart() {
       refreshCart();
       setDeleteDialogOpen(false);
       setItemToDelete(null);
-    }
-  };
-
-  // Helper function to get variant display name
-  const getVariantDisplayName = (variantType: string | null | undefined) => {
-    switch (variantType) {
-      case "pump":
-        return "Pump Delivery";
-      case "tremie_1":
-        return "Tremie 1";
-      case "tremie_2":
-        return "Tremie 2";
-      case "tremie_3":
-        return "Tremie 3";
-      case "normal":
-      case null:
-      case undefined:
-      default:
-        return "Normal Delivery";
     }
   };
 
