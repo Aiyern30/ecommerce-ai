@@ -32,17 +32,26 @@ interface Customer {
   created_at: string;
   updated_at: string;
   last_sign_in_at?: string;
-  providers?: string[];
-  email_confirmed_at?: string;
-  phone_confirmed_at?: string;
-  is_super_admin?: boolean;
-  is_sso_user?: boolean;
-  is_anonymous?: boolean;
-  banned_until?: string | null;
-  deleted_at?: string | null;
-  email_verified?: boolean;
-  phone_verified?: boolean;
-  provider_id?: string;
+  ban_info?: {
+    reason?: string;
+    banned_at?: string;
+    banned_by?: string;
+    banned_by_email?: string;
+    banned_by_name?: string;
+    banned_until?: string;
+    previous_bans?: {
+      reason?: string;
+      banned_at?: string;
+      banned_by?: string;
+      banned_by_email?: string;
+      banned_by_name?: string;
+      banned_until?: string;
+    }[];
+    unbanned_at?: string;
+    unbanned_by?: string;
+    unbanned_by_email?: string;
+    unbanned_by_name?: string;
+  };
 }
 
 export default function CustomerDetailsPage() {
@@ -50,6 +59,7 @@ export default function CustomerDetailsPage() {
   const router = useRouter();
   const customerId = params?.id as string;
   const [customer, setCustomer] = useState<Customer | null>(null);
+  console.log(customer);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -140,7 +150,23 @@ export default function CustomerDetailsPage() {
                     {customer.full_name || "No name"}
                   </div>
                   <div className="text-muted-foreground">{customer.email}</div>
-                  <Badge className="mt-2 capitalize">{customer.status}</Badge>
+                  {/* Status Badge: show banned if ban_info.banned_until exists and is in future */}
+                  {customer.ban_info?.banned_until &&
+                  new Date(customer.ban_info.banned_until) > new Date() ? (
+                    <Badge className="mt-2 capitalize bg-orange-600 text-white">
+                      Banned
+                    </Badge>
+                  ) : (
+                    <Badge className="mt-2 capitalize">{customer.status}</Badge>
+                  )}
+                  {/* Show banned reason if banned */}
+                  {customer.ban_info?.banned_until &&
+                    new Date(customer.ban_info.banned_until) > new Date() &&
+                    customer.ban_info?.reason && (
+                      <div className="text-xs text-orange-600 mt-2">
+                        Reason: {customer.ban_info.reason}
+                      </div>
+                    )}
                 </div>
               </div>
               <div>
@@ -189,132 +215,105 @@ export default function CustomerDetailsPage() {
                   className="bg-muted"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Email Confirmed
-                </label>
-                <Input
-                  value={
-                    customer.email_confirmed_at
-                      ? formatDate(customer.email_confirmed_at)
-                      : "No"
-                  }
-                  disabled
-                  className="bg-muted"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Phone Confirmed
-                </label>
-                <Input
-                  value={
-                    customer.phone_confirmed_at
-                      ? formatDate(customer.phone_confirmed_at)
-                      : "No"
-                  }
-                  disabled
-                  className="bg-muted"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Email Verified
-                </label>
-                <Input
-                  value={customer.email_verified ? "Yes" : "No"}
-                  disabled
-                  className="bg-muted"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Phone Verified
-                </label>
-                <Input
-                  value={customer.phone_verified ? "Yes" : "No"}
-                  disabled
-                  className="bg-muted"
-                />
-              </div>
-              {customer.banned_until && (
-                <div>
+              {/* Ban Info Section */}
+              {customer.ban_info?.banned_until && (
+                <div className="space-y-2">
                   <label className="block text-sm font-medium mb-1">
-                    Banned Until
+                    Ban Information
                   </label>
                   <Input
-                    value={formatDate(customer.banned_until)}
+                    value={
+                      customer.ban_info.banned_until
+                        ? formatDate(customer.ban_info.banned_until)
+                        : "-"
+                    }
                     disabled
                     className="bg-muted"
                   />
+                  {customer.ban_info.reason && (
+                    <Input
+                      value={`Reason: ${customer.ban_info.reason}`}
+                      disabled
+                      className="bg-muted mt-1"
+                    />
+                  )}
+                  {customer.ban_info.banned_by_name && (
+                    <Input
+                      value={`Banned By: ${customer.ban_info.banned_by_name}`}
+                      disabled
+                      className="bg-muted mt-1"
+                    />
+                  )}
+                  {customer.ban_info.banned_at && (
+                    <Input
+                      value={`Banned At: ${formatDate(
+                        customer.ban_info.banned_at
+                      )}`}
+                      disabled
+                      className="bg-muted mt-1"
+                    />
+                  )}
+                  {customer.ban_info.unbanned_at && (
+                    <Input
+                      value={`Unbanned At: ${formatDate(
+                        customer.ban_info.unbanned_at
+                      )}`}
+                      disabled
+                      className="bg-muted mt-1"
+                    />
+                  )}
+                  {customer.ban_info.unbanned_by_name && (
+                    <Input
+                      value={`Unbanned By: ${customer.ban_info.unbanned_by_name}`}
+                      disabled
+                      className="bg-muted mt-1"
+                    />
+                  )}
                 </div>
               )}
-              {customer.deleted_at && (
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Deleted At
-                  </label>
-                  <Input
-                    value={formatDate(customer.deleted_at)}
-                    disabled
-                    className="bg-muted"
-                  />
-                </div>
-              )}
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Super Admin
-                </label>
-                <Input
-                  value={customer.is_super_admin ? "Yes" : "No"}
-                  disabled
-                  className="bg-muted"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  SSO User
-                </label>
-                <Input
-                  value={customer.is_sso_user ? "Yes" : "No"}
-                  disabled
-                  className="bg-muted"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Anonymous
-                </label>
-                <Input
-                  value={customer.is_anonymous ? "Yes" : "No"}
-                  disabled
-                  className="bg-muted"
-                />
-              </div>
-              {customer.providers && (
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Providers
-                  </label>
-                  <Input
-                    value={customer.providers.join(", ")}
-                    disabled
-                    className="bg-muted"
-                  />
-                </div>
-              )}
-              {customer.provider_id && (
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Provider ID
-                  </label>
-                  <Input
-                    value={customer.provider_id}
-                    disabled
-                    className="bg-muted"
-                  />
-                </div>
-              )}
+              {/* Ban History Table */}
+              {customer.ban_info?.previous_bans &&
+                customer.ban_info.previous_bans.length > 0 && (
+                  <div className="mt-6">
+                    <label className="block text-sm font-medium mb-2">
+                      Ban History
+                    </label>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full border rounded bg-muted">
+                        <thead>
+                          <tr>
+                            <th className="px-2 py-1 text-left">Reason</th>
+                            <th className="px-2 py-1 text-left">Banned At</th>
+                            <th className="px-2 py-1 text-left">Banned By</th>
+                            <th className="px-2 py-1 text-left">
+                              Banned Until
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {customer.ban_info.previous_bans.map((ban, idx) => (
+                            <tr key={idx}>
+                              <td className="px-2 py-1">{ban.reason || "-"}</td>
+                              <td className="px-2 py-1">
+                                {ban.banned_at
+                                  ? formatDate(ban.banned_at)
+                                  : "-"}
+                              </td>
+                              <td className="px-2 py-1">
+                                {ban.banned_by_name || ban.banned_by || "-"}
+                              </td>
+                              <td className="px-2 py-1">
+                                {ban.banned_until
+                                  ? formatDate(ban.banned_until)
+                                  : "-"}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
             </>
           ) : (
             <div className="text-center text-gray-500">Customer not found.</div>
