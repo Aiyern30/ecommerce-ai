@@ -14,6 +14,12 @@ import {
   AvatarImage,
   AvatarFallback,
   Input,
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
 } from "@/components/ui/";
 import { TypographyH2 } from "@/components/ui/Typography";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
@@ -103,17 +109,6 @@ export default function CustomerDetailsPage() {
             <ChevronLeft className="h-4 w-4" />
             Back
           </Button>
-          {/* Uncomment if you want an Edit button */}
-          {/* <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.push(`/staff/customers/${customer?.id}/edit`)}
-            className="flex items-center gap-2"
-            disabled={!customer}
-          >
-            <Edit className="h-4 w-4" />
-            Edit
-          </Button> */}
         </div>
       </div>
       <div className="flex items-center justify-between">
@@ -150,7 +145,6 @@ export default function CustomerDetailsPage() {
                     {customer.full_name || "No name"}
                   </div>
                   <div className="text-muted-foreground">{customer.email}</div>
-                  {/* Status Badge: show banned if ban_info.banned_until exists and is in future */}
                   {customer.ban_info?.banned_until &&
                   new Date(customer.ban_info.banned_until) > new Date() ? (
                     <Badge className="mt-2 capitalize bg-orange-600 text-white">
@@ -159,7 +153,6 @@ export default function CustomerDetailsPage() {
                   ) : (
                     <Badge className="mt-2 capitalize">{customer.status}</Badge>
                   )}
-                  {/* Show banned reason if banned */}
                   {customer.ban_info?.banned_until &&
                     new Date(customer.ban_info.banned_until) > new Date() &&
                     customer.ban_info?.reason && (
@@ -215,7 +208,6 @@ export default function CustomerDetailsPage() {
                   className="bg-muted"
                 />
               </div>
-              {/* Ban Info Section */}
               {customer.ban_info?.banned_until && (
                 <div className="space-y-2">
                   <label className="block text-sm font-medium mb-1">
@@ -271,47 +263,40 @@ export default function CustomerDetailsPage() {
                   )}
                 </div>
               )}
-              {/* Ban History Table */}
-              {customer.ban_info?.previous_bans &&
+              {customer?.ban_info?.previous_bans &&
                 customer.ban_info.previous_bans.length > 0 && (
-                  <div className="mt-6">
+                  <div className="mt-8">
                     <label className="block text-sm font-medium mb-2">
                       Ban History
                     </label>
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full border rounded bg-muted">
-                        <thead>
-                          <tr>
-                            <th className="px-2 py-1 text-left">Reason</th>
-                            <th className="px-2 py-1 text-left">Banned At</th>
-                            <th className="px-2 py-1 text-left">Banned By</th>
-                            <th className="px-2 py-1 text-left">
-                              Banned Until
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {customer.ban_info.previous_bans.map((ban, idx) => (
-                            <tr key={idx}>
-                              <td className="px-2 py-1">{ban.reason || "-"}</td>
-                              <td className="px-2 py-1">
-                                {ban.banned_at
-                                  ? formatDate(ban.banned_at)
-                                  : "-"}
-                              </td>
-                              <td className="px-2 py-1">
-                                {ban.banned_by_name || ban.banned_by || "-"}
-                              </td>
-                              <td className="px-2 py-1">
-                                {ban.banned_until
-                                  ? formatDate(ban.banned_until)
-                                  : "-"}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Reason</TableHead>
+                          <TableHead>Banned At</TableHead>
+                          <TableHead>Banned By</TableHead>
+                          <TableHead>Banned Until</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {customer.ban_info.previous_bans.map((ban, idx) => (
+                          <TableRow key={idx}>
+                            <TableCell>{ban.reason || "-"}</TableCell>
+                            <TableCell>
+                              {ban.banned_at ? formatDate(ban.banned_at) : "-"}
+                            </TableCell>
+                            <TableCell>
+                              {ban.banned_by_name || ban.banned_by || "-"}
+                            </TableCell>
+                            <TableCell>
+                              {ban.banned_until
+                                ? formatDate(ban.banned_until)
+                                : "-"}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </div>
                 )}
             </>
