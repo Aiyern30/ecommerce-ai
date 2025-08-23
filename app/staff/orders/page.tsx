@@ -1065,8 +1065,8 @@ export default function OrdersPage() {
                                       )}
                                     </div>
                                     <div className="text-xs text-gray-500">
-                                      Qty: {item.quantity} &nbsp;|&nbsp; RM
-                                      {item.price}
+                                      Qty: {item.quantity} &nbsp;|&nbsp;{" "}
+                                      {formatCurrency(item.price)}
                                     </div>
                                   </div>
                                 </div>
@@ -1091,10 +1091,11 @@ export default function OrdersPage() {
                               </span>
                               <span>
                                 {" "}
-                                × {service.quantity} @ RM{service.rate_per_m3}
+                                × {service.quantity} @{" "}
+                                {formatCurrency(service.rate_per_m3)}
                               </span>
                               <span className="ml-2 text-green-600 font-semibold">
-                                RM{service.total_price}
+                                {formatCurrency(service.total_price)}
                               </span>
                             </div>
                           ))}
@@ -1115,15 +1116,14 @@ export default function OrdersPage() {
                     <TableCell>
                       {order.additional_services &&
                       order.additional_services.length > 0
-                        ? "RM" +
-                          order.additional_services
-                            .reduce(
+                        ? formatCurrency(
+                            order.additional_services.reduce(
                               (sum: number, s) =>
                                 sum + Number(s.total_price || 0),
                               0
                             )
-                            .toFixed(2)
-                        : "RM0.00"}
+                          )
+                        : formatCurrency(0)}
                     </TableCell>
                     <TableCell>
                       {order.payment_intent_id ? (

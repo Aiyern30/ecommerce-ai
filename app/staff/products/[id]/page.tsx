@@ -38,6 +38,7 @@ import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import type { Product } from "@/type/product";
+import { formatCurrency } from "@/lib/utils/currency";
 
 // Enhanced skeleton with modern design
 function ProductDetailSkeleton({ isStaffView }: { isStaffView: boolean }) {
@@ -414,7 +415,7 @@ export default function ProductDetailStaff() {
                     Normal Delivery
                   </div>
                   <div className="text-2xl font-bold text-green-700 dark:text-green-400">
-                    RM {Number(product.normal_price).toFixed(2)}
+                    {formatCurrency(Number(product.normal_price))}
                     <span className="text-sm font-normal text-gray-600 dark:text-gray-400 ml-1">
                       per {product.unit || "unit"}
                     </span>
@@ -427,7 +428,7 @@ export default function ProductDetailStaff() {
                     Pump Delivery
                   </div>
                   <div className="text-2xl font-bold text-green-700 dark:text-green-400">
-                    RM {Number(product.pump_price).toFixed(2)}
+                    {formatCurrency(Number(product.pump_price))}
                     <span className="text-sm font-normal text-gray-600 dark:text-gray-400 ml-1">
                       per {product.unit || "unit"}
                     </span>
@@ -440,7 +441,7 @@ export default function ProductDetailStaff() {
                     Tremie 1
                   </div>
                   <div className="text-2xl font-bold text-green-700 dark:text-green-400">
-                    RM {Number(product.tremie_1_price).toFixed(2)}
+                    {formatCurrency(Number(product.tremie_1_price))}
                     <span className="text-sm font-normal text-gray-600 dark:text-gray-400 ml-1">
                       per {product.unit || "unit"}
                     </span>
@@ -453,7 +454,7 @@ export default function ProductDetailStaff() {
                     Tremie 2
                   </div>
                   <div className="text-2xl font-bold text-green-700 dark:text-green-400">
-                    RM {Number(product.tremie_2_price).toFixed(2)}
+                    {formatCurrency(Number(product.tremie_2_price))}
                     <span className="text-sm font-normal text-gray-600 dark:text-gray-400 ml-1">
                       per {product.unit || "unit"}
                     </span>
@@ -466,7 +467,7 @@ export default function ProductDetailStaff() {
                     Tremie 3
                   </div>
                   <div className="text-2xl font-bold text-green-700 dark:text-green-400">
-                    RM {Number(product.tremie_3_price).toFixed(2)}
+                    {formatCurrency(Number(product.tremie_3_price))}
                     <span className="text-sm font-normal text-gray-600 dark:text-gray-400 ml-1">
                       per {product.unit || "unit"}
                     </span>

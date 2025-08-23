@@ -59,6 +59,7 @@ import Image from "next/image";
 import type { Product } from "@/type/product";
 import { ProductFilters } from "@/type/Filter/ProductFilter";
 import { useDeviceType } from "@/utils/useDeviceTypes";
+import { formatCurrency } from "@/lib/utils/currency";
 
 function ProductTableSkeleton() {
   return (
@@ -907,43 +908,43 @@ export default function ProductsPage() {
                     </div>
                   </TableCell>
                   <TableCell className="font-medium">{product.name}</TableCell>
-                  <TableCell>{product.description || "N/A"}</TableCell>
-                  <TableCell>{product.category || "N/A"}</TableCell>
-                  <TableCell>{product.grade || "N/A"}</TableCell>
-                  <TableCell>{product.product_type || "N/A"}</TableCell>
-                  <TableCell>{product.mortar_ratio || "N/A"}</TableCell>
+                  <TableCell>{product.description || "-"}</TableCell>
+                  <TableCell>{product.category || "-"}</TableCell>
+                  <TableCell>{product.grade || "-"}</TableCell>
+                  <TableCell>{product.product_type || "-"}</TableCell>
+                  <TableCell>{product.mortar_ratio || "-"}</TableCell>
                   <TableCell>
                     {product.normal_price !== null &&
                     product.normal_price !== undefined
-                      ? `RM ${Number(product.normal_price).toFixed(2)}`
-                      : "N/A"}
+                      ? formatCurrency(Number(product.normal_price))
+                      : "-"}
                   </TableCell>
                   <TableCell>
                     {product.pump_price !== null &&
                     product.pump_price !== undefined
-                      ? `RM ${Number(product.pump_price).toFixed(2)}`
-                      : "N/A"}
+                      ? formatCurrency(Number(product.pump_price))
+                      : "-"}
                   </TableCell>
                   <TableCell>
                     {product.tremie_1_price !== null &&
                     product.tremie_1_price !== undefined
-                      ? `RM ${Number(product.tremie_1_price).toFixed(2)}`
-                      : "N/A"}
+                      ? formatCurrency(Number(product.tremie_1_price))
+                      : "-"}
                   </TableCell>
                   <TableCell>
                     {product.tremie_2_price !== null &&
                     product.tremie_2_price !== undefined
-                      ? `RM ${Number(product.tremie_2_price).toFixed(2)}`
-                      : "N/A"}
+                      ? formatCurrency(Number(product.tremie_2_price))
+                      : "-"}
                   </TableCell>
                   <TableCell>
                     {product.tremie_3_price !== null &&
                     product.tremie_3_price !== undefined
-                      ? `RM ${Number(product.tremie_3_price).toFixed(2)}`
-                      : "N/A"}
+                      ? formatCurrency(Number(product.tremie_3_price))
+                      : "-"}
                   </TableCell>
-                  <TableCell>{product.unit || "N/A"}</TableCell>
-                  <TableCell>{product.stock_quantity ?? "N/A"}</TableCell>
+                  <TableCell>{product.unit || "-"}</TableCell>
+                  <TableCell>{product.stock_quantity ?? "-"}</TableCell>
                   <TableCell>
                     <Badge
                       variant={

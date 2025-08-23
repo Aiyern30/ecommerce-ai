@@ -20,9 +20,11 @@ import {
 } from "@/components/ui";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import { formatDate } from "@/lib/utils/format";
+import { formatCurrency } from "@/lib/utils/currency";
 import Image from "next/image";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FileText } from "lucide-react";
 import { Order } from "@/type/order";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 function OrderDetailsSkeleton() {
   return (
@@ -78,15 +80,33 @@ export default function StaffOrderDetailsPage() {
 
   if (!order) {
     return (
-      <div className="max-w-2xl mx-auto py-16 text-center">
-        <TypographyH2>Order not found</TypographyH2>
-        <TypographyP className="mb-6">
-          Unable to find order with ID: {orderId}
-        </TypographyP>
-        <Button variant="outline" onClick={() => router.push("/staff/orders")}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Orders
-        </Button>
+      <div className="flex flex-col gap-6 w-full max-w-full">
+        {/* Header with Breadcrumb */}
+        <div className="flex flex-col gap-2">
+          <BreadcrumbNav
+            customItems={[
+              { label: "Dashboard", href: "/staff/dashboard" },
+              { label: "Orders", href: "/staff/orders" },
+              { label: "Not Found" },
+            ]}
+          />
+        </div>
+        <div className="flex flex-col items-center justify-center py-16 px-4 min-h-[500px]">
+          <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
+            <FileText className="w-12 h-12 text-gray-400" />
+          </div>
+          <TypographyH2>Order not found</TypographyH2>
+          <TypographyP className="mb-6 text-center">
+            Unable to find order with ID: {orderId}
+          </TypographyP>
+          <Button
+            variant="outline"
+            onClick={() => router.push("/staff/orders")}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Orders
+          </Button>
+        </div>
       </div>
     );
   }
@@ -258,22 +278,21 @@ export default function StaffOrderDetailsPage() {
                       <TableCell>{item.grade}</TableCell>
                       <TableCell>{item.variant_type || "-"}</TableCell>
                       <TableCell>{item.quantity}</TableCell>
-                      <TableCell>RM{item.price.toFixed(2)}</TableCell>
+                      <TableCell>{formatCurrency(item.price)}</TableCell>
                       <TableCell>
-                        RM{(item.price * item.quantity).toFixed(2)}
+                        {formatCurrency(item.price * item.quantity)}
                       </TableCell>
                     </TableRow>
                   ))}
                   <TableRow>
                     <TableCell colSpan={6}></TableCell>
                     <TableCell className="font-bold text-blue-700">
-                      RM
-                      {order.order_items
-                        .reduce(
+                      {formatCurrency(
+                        order.order_items.reduce(
                           (sum, item) => sum + item.price * item.quantity,
                           0
                         )
-                        .toFixed(2)}
+                      )}
                     </TableCell>
                   </TableRow>
                 </>
@@ -313,18 +332,24 @@ export default function StaffOrderDetailsPage() {
                   {order.additional_services.map((service) => (
                     <TableRow key={service.id}>
                       <TableCell>{service.service_name}</TableCell>
-                      <TableCell>RM{service.rate_per_m3}</TableCell>
+                      <TableCell>
+                        {formatCurrency(service.rate_per_m3)}
+                      </TableCell>
                       <TableCell>{service.quantity}</TableCell>
-                      <TableCell>RM{service.total_price}</TableCell>
+                      <TableCell>
+                        {formatCurrency(service.total_price)}
+                      </TableCell>
                     </TableRow>
                   ))}
                   <TableRow>
                     <TableCell colSpan={3}></TableCell>
                     <TableCell className="font-bold text-blue-700">
-                      RM
-                      {order.additional_services
-                        .reduce((sum, s) => sum + Number(s.total_price || 0), 0)
-                        .toFixed(2)}
+                      {formatCurrency(
+                        order.additional_services.reduce(
+                          (sum, s) => sum + Number(s.total_price || 0),
+                          0
+                        )
+                      )}
                     </TableCell>
                   </TableRow>
                 </>
