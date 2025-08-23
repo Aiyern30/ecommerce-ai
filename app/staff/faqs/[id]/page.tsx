@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
-import { Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, Edit, FileText, Trash2 } from "lucide-react";
 import { Faq } from "@/type/faqs";
 
 export default function FaqViewPage() {
@@ -219,7 +219,23 @@ export default function FaqViewPage() {
               </div>
             </>
           ) : (
-            <div className="text-center text-gray-500">FAQ not found.</div>
+            <div className="flex flex-col items-center justify-center py-16">
+              <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
+                <FileText className="w-12 h-12 text-gray-400" />
+              </div>
+              <TypographyH2 className="mb-2">FAQ Not Found</TypographyH2>
+              <TypographyP className="text-muted-foreground text-center mb-6 max-w-sm">
+                The FAQ you are looking for does not exist or has been deleted.
+              </TypographyP>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push("/staff/faqs")}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to FAQs
+              </Button>
+            </div>
           )}
         </CardContent>
       </Card>
