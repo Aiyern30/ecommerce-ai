@@ -78,14 +78,12 @@ export function WhyChooseUs() {
     },
   };
 
-  // Add device type hook
   const { isMobile } = useDeviceType();
 
   return (
     <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-cyan-50 to-blue-100 dark:from-gray-900 dark:to-slate-800">
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-16">
-          {/* Left side - Images and Title */}
           <motion.div
             className="w-full lg:w-1/2"
             initial="hidden"
