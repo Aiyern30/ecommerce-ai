@@ -103,7 +103,7 @@ export function ServicesShowcase() {
   const { openChat } = useChat();
 
   return (
-    <section className="relative overflow-hidden">
+    <section className="relative overflow-hidden min-h-screen">
       <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950"></div>
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-1000"></div>
