@@ -56,20 +56,13 @@ export default function CompareProductsContent() {
 
   useEffect(() => {
     async function fetchProducts() {
-      console.log("🔍 [CompareProducts] Starting fetchProducts");
       setLoading(true);
       const productIds = searchParams
         ? [...new Set(searchParams.getAll("products"))]
         : [];
       const priceTypes = searchParams ? searchParams.getAll("priceType") : [];
 
-      console.log("🔍 [CompareProducts] URL params:", {
-        productIds,
-        priceTypes,
-      });
-
       if (productIds.length === 0) {
-        console.log("🔍 [CompareProducts] No product IDs found");
         setLoading(false);
         return;
       }
@@ -106,10 +99,6 @@ export default function CompareProductsContent() {
             };
           });
 
-        console.log(
-          "✅ [CompareProducts] Selected products:",
-          selectedProducts
-        );
         setComparedProducts(selectedProducts);
       }
       setLoading(false);
@@ -155,7 +144,6 @@ export default function CompareProductsContent() {
   };
 
   const removeProductFromCompare = (id: string) => {
-    console.log("🗑️ [CompareProducts] removeProductFromCompare:", id);
     const newProducts = comparedProducts.filter((p) => p.id !== id);
     if (newProducts.length < 2) {
       router.push("/products");
@@ -166,21 +154,11 @@ export default function CompareProductsContent() {
   };
 
   const changeProductAtIndex = (index: number, newProductId: string) => {
-    console.log("🔄 [CompareProducts] changeProductAtIndex:", {
-      index,
-      newProductId,
-    });
-    console.log(
-      "🔄 [CompareProducts] Current comparedProducts:",
-      comparedProducts
-    );
-
     const currentIds = comparedProducts.map((p) => p.id);
     if (
       currentIds.includes(newProductId) &&
       currentIds[index] !== newProductId
     ) {
-      console.log("❌ [CompareProducts] Product already being compared");
       toast.error(
         "This product is already being compared. Please select a different product."
       );
@@ -195,7 +173,6 @@ export default function CompareProductsContent() {
         selectedPriceType: newProducts[index]?.selectedPriceType,
       };
 
-      console.log("✅ [CompareProducts] New products array:", newProducts);
       setComparedProducts(newProducts);
 
       const urlData = newProducts.map((p) => ({
@@ -206,20 +183,11 @@ export default function CompareProductsContent() {
         "🔄 [CompareProducts] URL data for changeProductAtIndex:",
         urlData
       );
-      updateURL(newProducts); // Pass full product objects
+      updateURL(newProducts);
     }
   };
 
   const handlePriceTypeChange = (productId: string, newPriceType: string) => {
-    console.log("💰 [CompareProducts] handlePriceTypeChange:", {
-      productId,
-      newPriceType,
-    });
-    console.log(
-      "💰 [CompareProducts] Current comparedProducts:",
-      comparedProducts
-    );
-
     const newProducts = comparedProducts.map((product) =>
       product.id === productId
         ? { ...product, selectedPriceType: newPriceType }
@@ -240,31 +208,19 @@ export default function CompareProductsContent() {
       "🔄 [CompareProducts] URL data for handlePriceTypeChange:",
       urlData
     );
-    updateURL(newProducts); // Pass full product objects
+    updateURL(newProducts);
   };
 
-  // Add the missing combined handler
   const handleProductAndPriceTypeChange = (
     index: number,
     newProductId: string,
     newPriceType: string
   ) => {
-    console.log("🔄💰 [CompareProducts] handleProductAndPriceTypeChange:", {
-      index,
-      newProductId,
-      newPriceType,
-    });
-    console.log(
-      "🔄💰 [CompareProducts] Current comparedProducts:",
-      comparedProducts
-    );
-
     const currentIds = comparedProducts.map((p) => p.id);
     if (
       currentIds.includes(newProductId) &&
       currentIds[index] !== newProductId
     ) {
-      console.log("❌ [CompareProducts] Product already being compared");
       toast.error(
         "This product is already being compared. Please select a different product."
       );
@@ -279,10 +235,6 @@ export default function CompareProductsContent() {
         selectedPriceType: newPriceType,
       };
 
-      console.log(
-        "✅ [CompareProducts] New products array (combined):",
-        newProducts
-      );
       setComparedProducts(newProducts);
 
       const urlData = newProducts.map((p) => ({
@@ -293,7 +245,7 @@ export default function CompareProductsContent() {
         "🔄 [CompareProducts] URL data for combined change:",
         urlData
       );
-      updateURL(newProducts); // Pass full product objects
+      updateURL(newProducts);
     }
   };
 
