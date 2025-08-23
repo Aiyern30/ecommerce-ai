@@ -9,7 +9,7 @@ export default function NotFoundPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-900 dark:text-white">
       <div className="max-w-3xl w-full text-center">
-        <div className="mb-8 relative h-40 w-full">
+        <div className="mb-8 relative h-96 w-full">
           <Image
             src="404.svg"
             alt="404 Not Found"

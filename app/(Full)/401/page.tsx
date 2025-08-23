@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ShieldOff } from "lucide-react";
 import { Button } from "@/components/ui/";
 
 export default function UnauthorizedPage() {
@@ -8,21 +7,14 @@ export default function UnauthorizedPage() {
     <div className="min-h-screen flex items-center justify-center dark:bg-gray-900 px-4">
       <div className="max-w-md w-full text-center space-y-6">
         {/* Top Image */}
-        <div className="relative w-full h-40 mx-auto">
+        <div className="relative w-full h-96 mx-auto">
           <Image
-            src="/401.png"
+            src="/401.svg"
             alt="Unauthorized"
             fill
             className="object-contain rounded-lg"
             priority
           />
-        </div>
-
-        {/* Icon */}
-        <div className="flex justify-center">
-          <div className="bg-[#ff7a5c] dark:bg-red-500 p-4 rounded-full">
-            <ShieldOff className="h-12 w-12 text-white" />
-          </div>
         </div>
 
         {/* Text Content */}
