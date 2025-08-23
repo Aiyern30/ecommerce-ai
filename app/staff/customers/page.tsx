@@ -85,8 +85,21 @@ interface Customer {
   created_at: string;
   updated_at: string;
   last_sign_in_at?: string;
-  banned_until?: string;
-  ban_reason?: string;
+  // Ban info from app_metadata
+  ban_info?: {
+    reason?: string;
+    banned_at?: string;
+    banned_by?: string;
+    banned_until?: string;
+    previous_bans?: {
+      reason?: string;
+      banned_at?: string;
+      banned_by?: string;
+      banned_until?: string;
+    }[];
+    unbanned_at?: string;
+    unbanned_by?: string;
+  };
 }
 
 interface CustomerFilters {
@@ -103,8 +116,8 @@ interface CustomerFilters {
 
 // Helper function to check if user is currently banned
 const isCurrentlyBanned = (customer: Customer): boolean => {
-  if (!customer.banned_until) return false;
-  return isBefore(new Date(), new Date(customer.banned_until));
+  if (!customer.ban_info?.banned_until) return false;
+  return isBefore(new Date(), new Date(customer.ban_info.banned_until));
 };
 
 // Empty State Component
@@ -309,7 +322,9 @@ function BanUserDialog({
                 <AlertTriangle className="h-3 w-3 text-orange-600" />
                 <span className="text-xs text-orange-600 font-medium">
                   Currently banned until{" "}
-                  {format(new Date(customer.banned_until!), "PPP")}
+                  {customer.ban_info?.banned_until
+                    ? format(new Date(customer.ban_info.banned_until), "PPP")
+                    : "-"}
                 </span>
               </div>
             )}
@@ -592,18 +607,39 @@ function CustomerCard({
         )}
 
         {/* Ban Information */}
-        {isBanned && customer.banned_until && (
+        {isBanned && customer.ban_info?.banned_until && (
           <div className="p-2 rounded bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800">
             <div className="flex items-center gap-2 text-orange-700 dark:text-orange-300">
               <Ban className="h-4 w-4 flex-shrink-0" />
               <span className="text-xs font-medium">
                 Banned until{" "}
-                {format(new Date(customer.banned_until), "MMM dd, yyyy")}
+                {customer.ban_info?.banned_until
+                  ? format(new Date(customer.ban_info.banned_until), "MMM dd, yyyy")
+                  : "-"}
               </span>
             </div>
-            {customer.ban_reason && (
+            {customer.ban_info?.reason && (
               <div className="text-xs text-orange-600 dark:text-orange-400 mt-1">
-                Reason: {customer.ban_reason}
+                Reason: {customer.ban_info.reason}
+              </div>
+            )}
+            {customer.ban_info?.banned_by && (
+              <div className="text-xs text-muted-foreground mt-1">
+                By: {customer.ban_info.banned_by}
+              </div>
+            )}
+            {customer.ban_info?.banned_at && (
+              <div className="text-xs text-muted-foreground mt-1">
+                Banned at: {customer.ban_info?.banned_at
+                  ? format(new Date(customer.ban_info.banned_at), "PPP p")
+                  : "-"}
+              </div>
+            )}
+            {customer.ban_info?.unbanned_at && (
+              <div className="text-xs text-green-600 mt-1">
+                Unbanned at: {customer.ban_info?.unbanned_at
+                  ? format(new Date(customer.ban_info.unbanned_at), "PPP p")
+                  : "-"}
               </div>
             )}
           </div>
@@ -734,10 +770,10 @@ export default function CustomersPage() {
         created_at: user.created_at,
         updated_at: user.updated_at,
         last_sign_in_at: user.last_sign_in_at,
-        banned_until: user.banned_until,
-        ban_reason: user.user_metadata?.ban_reason,
+        ban_info: user.app_metadata?.ban_info, // <-- get ban_info from app_metadata
         status:
-          user.banned_until && new Date(user.banned_until) > new Date()
+          user.app_metadata?.ban_info?.banned_until &&
+          new Date(user.app_metadata?.ban_info?.banned_until) > new Date()
             ? "banned"
             : "active",
       }));
