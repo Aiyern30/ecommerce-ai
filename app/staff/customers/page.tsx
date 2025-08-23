@@ -10,7 +10,7 @@ import {
   Trash2,
   Users,
   Mail,
-  Calendar as CalendarIcon, // <-- rename if you need the icon
+  Calendar as CalendarIcon,
   MapPin,
   Phone,
   Shield,
@@ -18,6 +18,10 @@ import {
   Eye,
   UserX,
   MoreVertical,
+  AlertTriangle,
+  Clock,
+  Ban,
+  CheckCircle,
 } from "lucide-react";
 import { Calendar } from "@/components/ui/";
 import { supabase } from "@/lib/supabase/client";
@@ -55,11 +59,18 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  Textarea,
+  Badge,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import { formatDate } from "@/lib/utils/format";
 import { useDeviceType } from "@/utils/useDeviceTypes";
-import { format } from "date-fns";
+import { format, addDays, addWeeks, addMonths, isBefore } from "date-fns";
 
 // Types
 interface Customer {
@@ -74,6 +85,8 @@ interface Customer {
   created_at: string;
   updated_at: string;
   last_sign_in_at?: string;
+  banned_until?: string;
+  ban_reason?: string;
 }
 
 interface CustomerFilters {
@@ -87,6 +100,12 @@ interface CustomerFilters {
     | "email-desc";
   status: "all" | "active" | "inactive" | "banned";
 }
+
+// Helper function to check if user is currently banned
+const isCurrentlyBanned = (customer: Customer): boolean => {
+  if (!customer.banned_until) return false;
+  return isBefore(new Date(), new Date(customer.banned_until));
+};
 
 // Empty State Component
 function EmptyCustomersState() {
@@ -160,7 +179,6 @@ function CustomerGridSkeleton() {
               <Skeleton className="h-3 w-1/2" />
             </div>
           </div>
-          {/* Button row layout */}
           <div className="grid grid-cols-4 gap-2 pt-4 mt-4 border-t border-border">
             <div className="col-span-3">
               <Skeleton className="h-9 w-full rounded" />
@@ -169,13 +187,257 @@ function CustomerGridSkeleton() {
               <Skeleton className="h-9 w-10 rounded" />
             </div>
           </div>
-          {/* Badge skeleton at top-right */}
           <div className="absolute top-4 right-4">
             <Skeleton className="h-6 w-20 rounded" />
           </div>
         </Card>
       ))}
     </div>
+  );
+}
+
+// Enhanced Ban Dialog Component
+function BanUserDialog({
+  customer,
+  isOpen,
+  onClose,
+  onConfirm,
+}: {
+  customer: Customer | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: (banData: {
+    banUntil: Date;
+    reason: string;
+    duration: string;
+  }) => void;
+}) {
+  const [banUntil, setBanUntil] = useState<Date | null>(null);
+  const [reason, setReason] = useState("");
+  const [selectedDuration, setSelectedDuration] = useState<string>("");
+  const [customDate, setCustomDate] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setBanUntil(null);
+      setReason("");
+      setSelectedDuration("");
+      setCustomDate(false);
+    }
+  }, [isOpen]);
+
+  const handleDurationSelect = (duration: string) => {
+    setSelectedDuration(duration);
+    const now = new Date();
+
+    switch (duration) {
+      case "1-day":
+        setBanUntil(addDays(now, 1));
+        setCustomDate(false);
+        break;
+      case "3-days":
+        setBanUntil(addDays(now, 3));
+        setCustomDate(false);
+        break;
+      case "1-week":
+        setBanUntil(addWeeks(now, 1));
+        setCustomDate(false);
+        break;
+      case "1-month":
+        setBanUntil(addMonths(now, 1));
+        setCustomDate(false);
+        break;
+      case "3-months":
+        setBanUntil(addMonths(now, 3));
+        setCustomDate(false);
+        break;
+      case "custom":
+        setBanUntil(addDays(now, 1)); // Default to tomorrow
+        setCustomDate(true);
+        break;
+      default:
+        setBanUntil(null);
+    }
+  };
+
+  const handleConfirm = () => {
+    if (!banUntil || !reason.trim()) return;
+
+    onConfirm({
+      banUntil,
+      reason: reason.trim(),
+      duration: selectedDuration,
+    });
+  };
+
+  if (!customer) return null;
+
+  const isCurrentBan = isCurrentlyBanned(customer);
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="bg-card border-border max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="space-y-3">
+          <DialogTitle className="text-foreground flex items-center gap-2">
+            <Ban className="h-5 w-5 text-orange-600" />
+            {isCurrentBan ? "Extend Ban" : "Ban User"}
+          </DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            {isCurrentBan
+              ? "This user is currently banned. You can extend or modify the ban."
+              : "Select how long this user should be banned from accessing the platform."}
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* User Info Card */}
+        <div className="flex items-center gap-4 p-4 border border-border rounded-lg bg-muted/30">
+          <Avatar className="h-12 w-12 border-2 border-border">
+            <AvatarImage src={customer.avatar_url || "/placeholder.svg"} />
+            <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
+              {customer.full_name?.charAt(0) || customer.email.charAt(0)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1">
+            <div className="font-semibold text-foreground">
+              {customer.full_name || "No name"}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {customer.email}
+            </div>
+            {isCurrentBan && (
+              <div className="flex items-center gap-1 mt-1">
+                <AlertTriangle className="h-3 w-3 text-orange-600" />
+                <span className="text-xs text-orange-600 font-medium">
+                  Currently banned until{" "}
+                  {format(new Date(customer.banned_until!), "PPP")}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          {/* Ban Duration Selection */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-foreground">
+              Ban Duration
+            </label>
+            <Select
+              value={selectedDuration}
+              onValueChange={handleDurationSelect}
+            >
+              <SelectTrigger className="w-full border-border bg-background">
+                <SelectValue placeholder="Select ban duration" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1-day">1 Day</SelectItem>
+                <SelectItem value="3-days">3 Days</SelectItem>
+                <SelectItem value="1-week">1 Week</SelectItem>
+                <SelectItem value="1-month">1 Month</SelectItem>
+                <SelectItem value="3-months">3 Months</SelectItem>
+                <SelectItem value="custom">Custom Date</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Custom Date Picker */}
+          {customDate && (
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-foreground">
+                Custom Ban End Date
+              </label>
+              <div className="rounded-lg border border-border bg-background p-4">
+                <Calendar
+                  mode="single"
+                  selected={banUntil ?? undefined}
+                  onSelect={(date) => setBanUntil(date ?? null)}
+                  className="w-full"
+                  disabled={(date) => isBefore(date, new Date())}
+                  fromDate={new Date()}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Selected Date Display */}
+          {banUntil && (
+            <div className="p-4 rounded-lg bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="h-4 w-4 text-orange-600" />
+                <span className="text-sm font-medium text-orange-800 dark:text-orange-200">
+                  Ban Details
+                </span>
+              </div>
+              <div className="text-sm text-orange-700 dark:text-orange-300">
+                User will be banned until:{" "}
+                <strong>{format(banUntil, "PPP 'at' p")}</strong>
+              </div>
+              <div className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                Duration: ~
+                {Math.ceil(
+                  (banUntil.getTime() - new Date().getTime()) /
+                    (1000 * 60 * 60 * 24)
+                )}{" "}
+                days
+              </div>
+            </div>
+          )}
+
+          {/* Ban Reason */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-foreground">
+              Reason for Ban <span className="text-red-500">*</span>
+            </label>
+            <Textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Enter the reason for banning this user..."
+              className="min-h-[100px] border-border bg-background resize-none"
+              maxLength={500}
+            />
+            <div className="text-xs text-muted-foreground text-right">
+              {reason.length}/500 characters
+            </div>
+          </div>
+
+          {/* Warning Message */}
+          <div className="p-4 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm">
+                <div className="font-medium text-red-800 dark:text-red-200 mb-1">
+                  Important Notice
+                </div>
+                <div className="text-red-700 dark:text-red-300">
+                  The banned user will be immediately signed out and unable to
+                  access their account until the ban expires. This action will
+                  be logged for audit purposes.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter className="flex gap-2 pt-4">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="border-border hover:bg-accent"
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleConfirm}
+            disabled={!banUntil || !reason.trim()}
+            className="bg-orange-600 hover:bg-orange-700 text-white"
+          >
+            <Ban className="h-4 w-4 mr-2" />
+            {isCurrentBan ? "Update Ban" : "Ban User"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -186,12 +448,14 @@ function CustomerCard({
   onSelect,
   onViewDetails,
   onBanUser,
+  onUnbanUser,
 }: {
   customer: Customer;
   isSelected: boolean;
   onSelect: (id: string) => void;
   onViewDetails: (id: string) => void;
   onBanUser: (id: string) => void;
+  onUnbanUser: (id: string) => void;
 }) {
   const getRoleIcon = (role: string) => {
     switch (role) {
@@ -216,12 +480,37 @@ function CustomerCard({
     return email?.slice(0, 2).toUpperCase() || "U";
   };
 
+  const isBanned = isCurrentlyBanned(customer);
+
   return (
     <Card
-      className="p-6 min-h-[300px] flex flex-col justify-between hover:shadow-md dark:hover:shadow-lg transition-all duration-200 cursor-pointer relative border-border bg-card hover:bg-accent/50"
+      className={`p-6 min-h-[300px] flex flex-col justify-between hover:shadow-md dark:hover:shadow-lg transition-all duration-200 cursor-pointer relative border-border bg-card hover:bg-accent/50 ${
+        isBanned ? "ring-2 ring-orange-200 dark:ring-orange-800" : ""
+      }`}
       onClick={() => onViewDetails(customer.id)}
     >
-      {/* Checkbox remains top-left */}
+      {/* Status Badge */}
+      <div className="absolute top-4 right-4">
+        {isBanned ? (
+          <Badge
+            variant="destructive"
+            className="bg-orange-600 hover:bg-orange-700"
+          >
+            <Ban className="h-3 w-3 mr-1" />
+            Banned
+          </Badge>
+        ) : (
+          <Badge
+            variant="secondary"
+            className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+          >
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Active
+          </Badge>
+        )}
+      </div>
+
+      {/* Checkbox */}
       <div
         className="absolute top-4 left-4 z-10"
         onClick={(e) => e.stopPropagation()}
@@ -235,14 +524,26 @@ function CustomerCard({
       </div>
 
       <div className="flex items-center space-x-4 mb-4">
-        <Avatar className="h-12 w-12 border-2 border-border">
+        <Avatar
+          className={`h-12 w-12 border-2 ${
+            isBanned
+              ? "border-orange-300 dark:border-orange-700"
+              : "border-border"
+          }`}
+        >
           <AvatarImage src={customer.avatar_url || "/placeholder.svg"} />
           <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
             {getInitials(customer.full_name, customer.email)}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold truncate text-foreground">
+          <h3
+            className={`font-semibold truncate ${
+              isBanned
+                ? "text-orange-700 dark:text-orange-300"
+                : "text-foreground"
+            }`}
+          >
             {customer.full_name || "No name"}
           </h3>
           <div className="flex items-center gap-2">
@@ -289,9 +590,27 @@ function CustomerCard({
             <span>Last seen {formatDate(customer.last_sign_in_at)}</span>
           </div>
         )}
+
+        {/* Ban Information */}
+        {isBanned && customer.banned_until && (
+          <div className="p-2 rounded bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800">
+            <div className="flex items-center gap-2 text-orange-700 dark:text-orange-300">
+              <Ban className="h-4 w-4 flex-shrink-0" />
+              <span className="text-xs font-medium">
+                Banned until{" "}
+                {format(new Date(customer.banned_until), "MMM dd, yyyy")}
+              </span>
+            </div>
+            {customer.ban_reason && (
+              <div className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                Reason: {customer.ban_reason}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Button row: View (3/4), Dots (1/4) */}
+      {/* Button row */}
       <div className="grid grid-cols-4 gap-2 pt-4 mt-4 border-t border-border">
         <div className="col-span-3 flex">
           <Button
@@ -331,17 +650,29 @@ function CustomerCard({
                 View Details
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onBanUser(customer.id);
-                }}
-                className="cursor-pointer text-orange-600 dark:text-orange-400 focus:text-orange-600 dark:focus:text-orange-400"
-                disabled={customer.status === "banned"}
-              >
-                <UserX className="h-4 w-4 mr-2" />
-                {customer.status === "banned" ? "Already Banned" : "Ban User"}
-              </DropdownMenuItem>
+              {isBanned ? (
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onUnbanUser(customer.id);
+                  }}
+                  className="cursor-pointer text-green-600 dark:text-green-400 focus:text-green-600 dark:focus:text-green-400"
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Unban User
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onBanUser(customer.id);
+                  }}
+                  className="cursor-pointer text-orange-600 dark:text-orange-400 focus:text-orange-600 dark:focus:text-orange-400"
+                >
+                  <UserX className="h-4 w-4 mr-2" />
+                  Ban User
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -367,7 +698,6 @@ export default function CustomersPage() {
   const [customersToDelete, setCustomersToDelete] = useState<Customer[]>([]);
   const [isBanDialogOpen, setIsBanDialogOpen] = useState(false);
   const [customerToBan, setCustomerToBan] = useState<Customer | null>(null);
-  const [banUntil, setBanUntil] = useState<Date | null>(null);
   const { isMobile } = useDeviceType();
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
@@ -404,6 +734,12 @@ export default function CustomersPage() {
         created_at: user.created_at,
         updated_at: user.updated_at,
         last_sign_in_at: user.last_sign_in_at,
+        banned_until: user.banned_until,
+        ban_reason: user.user_metadata?.ban_reason,
+        status:
+          user.banned_until && new Date(user.banned_until) > new Date()
+            ? "banned"
+            : "active",
       }));
 
       // Filter based on current user's role
@@ -551,30 +887,60 @@ export default function CustomersPage() {
     if (!customer) return;
 
     setCustomerToBan(customer);
-    setBanUntil(null);
     setIsBanDialogOpen(true);
   };
 
-  const confirmBanUser = async () => {
-    if (!customerToBan || !banUntil) return;
+  const handleUnbanUser = async (customerId: string) => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/admin/ban-user", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: customerId }),
+      });
+
+      if (!response.ok) throw new Error("Failed to unban user");
+
+      toast.success("User has been unbanned successfully");
+      fetchCustomers();
+    } catch (error) {
+      console.error("Error unbanning user:", error);
+      toast.error("Failed to unban user");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const confirmBanUser = async (banData: {
+    banUntil: Date;
+    reason: string;
+    duration: string;
+  }) => {
+    if (!customerToBan) return;
 
     try {
-      // Call API to ban user until banUntil date
-      await fetch("/api/admin/customers/ban", {
+      setLoading(true);
+      const response = await fetch("/api/admin/ban-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: customerToBan.id,
-          banned_until: banUntil.toISOString(),
+          userId: customerToBan.id,
+          bannedUntil: banData.banUntil.toISOString(),
+          reason: banData.reason,
         }),
       });
-      toast.success("User banned until " + format(banUntil, "yyyy-MM-dd"));
+
+      if (!response.ok) throw new Error("Failed to ban user");
+
+      toast.success(`User banned until ${format(banData.banUntil, "PPP")}`);
       setIsBanDialogOpen(false);
       setCustomerToBan(null);
-      setBanUntil(null);
       fetchCustomers();
-    } catch {
+    } catch (error) {
+      console.error("Error banning user:", error);
       toast.error("Failed to ban user");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -589,6 +955,16 @@ export default function CustomersPage() {
       !customer.email.toLowerCase().includes(filters.search.toLowerCase())
     ) {
       return false;
+    }
+
+    // Status filter
+    if (filters.status !== "all") {
+      if (filters.status === "banned" && !isCurrentlyBanned(customer)) {
+        return false;
+      }
+      if (filters.status === "active" && isCurrentlyBanned(customer)) {
+        return false;
+      }
     }
 
     return true;
@@ -658,6 +1034,19 @@ export default function CustomersPage() {
                   onChange={(e) => updateFilter("search", e.target.value)}
                   className="border-border bg-background text-foreground placeholder:text-muted-foreground"
                 />
+                <Select
+                  value={filters.status}
+                  onValueChange={(value) => updateFilter("status", value)}
+                >
+                  <SelectTrigger className="border-border bg-background">
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Users</SelectItem>
+                    <SelectItem value="active">Active Users</SelectItem>
+                    <SelectItem value="banned">Banned Users</SelectItem>
+                  </SelectContent>
+                </Select>
                 <div className="flex gap-2 mt-2">
                   <Button
                     variant="outline"
@@ -696,6 +1085,19 @@ export default function CustomersPage() {
             />
           </div>
           <div className="flex flex-wrap gap-2">
+            <Select
+              value={filters.status}
+              onValueChange={(value) => updateFilter("status", value)}
+            >
+              <SelectTrigger className="w-[140px] border-border bg-background">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Users</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="banned">Banned</SelectItem>
+              </SelectContent>
+            </Select>
             <Button
               variant="outline"
               size="sm"
@@ -850,94 +1252,22 @@ export default function CustomersPage() {
               onSelect={toggleCustomerSelection}
               onViewDetails={(id) => router.push(`/staff/customers/${id}`)}
               onBanUser={handleBanUser}
+              onUnbanUser={handleUnbanUser}
             />
           ))}
         </div>
       )}
 
-      {/* Ban user dialog */}
-      <Dialog open={isBanDialogOpen} onOpenChange={setIsBanDialogOpen}>
-        <DialogContent className="bg-card border-border max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-foreground">Ban User</DialogTitle>
-            <DialogDescription className="text-muted-foreground">
-              Select a date until when this user will be banned. They will not
-              be able to access the platform until then.
-            </DialogDescription>
-          </DialogHeader>
-          {customerToBan && (
-            <div className="flex items-center gap-3 p-3 border border-border rounded-md bg-muted/50 mb-4">
-              <Avatar className="h-10 w-10">
-                <AvatarImage
-                  src={customerToBan.avatar_url || "/placeholder.svg"}
-                />
-                <AvatarFallback className="bg-muted text-muted-foreground">
-                  {customerToBan.full_name?.charAt(0) ||
-                    customerToBan.email.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <span className="font-medium text-foreground">
-                  {customerToBan.full_name || "No name"}
-                </span>
-                <div className="text-sm text-muted-foreground">
-                  {customerToBan.email}
-                </div>
-              </div>
-            </div>
-          )}
-          <div className="mt-2">
-            <label className="block text-sm font-medium mb-2 text-foreground">
-              Ban Until
-            </label>
-            <div className="rounded-lg border bg-background p-4 flex flex-col gap-4">
-              <div className="flex flex-col md:flex-row md:items-start gap-6">
-                <div className="bg-muted/40 rounded-lg p-4 shadow-sm w-full md:w-auto">
-                  <Calendar
-                    mode="single"
-                    selected={banUntil ?? undefined}
-                    onSelect={(date) => setBanUntil(date ?? null)}
-                    className="rounded-md border bg-background text-foreground w-full"
-                    captionLayout="dropdown"
-                    fromYear={new Date().getFullYear()}
-                    toYear={new Date().getFullYear() + 2}
-                  />
-                </div>
-                <div className="flex flex-col justify-center items-start min-w-[180px] px-2">
-                  <span className="text-sm text-muted-foreground mb-1">
-                    Selected Date:
-                  </span>
-                  <span className="font-semibold text-base text-foreground">
-                    {banUntil
-                      ? format(banUntil, "yyyy-MM-dd")
-                      : "No date selected"}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <TypographyP className="mt-6 text-xs text-muted-foreground">
-              The user will be automatically unbanned after this date.
-            </TypographyP>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsBanDialogOpen(false)}
-              className="border-border hover:bg-accent"
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={confirmBanUser}
-              className="bg-orange-600 hover:bg-orange-700 text-white"
-              disabled={!banUntil}
-            >
-              Ban User
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Enhanced Ban User Dialog */}
+      <BanUserDialog
+        customer={customerToBan}
+        isOpen={isBanDialogOpen}
+        onClose={() => {
+          setIsBanDialogOpen(false);
+          setCustomerToBan(null);
+        }}
+        onConfirm={confirmBanUser}
+      />
 
       {/* Pagination */}
       {totalPages > 1 && (
