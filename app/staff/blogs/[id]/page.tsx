@@ -554,7 +554,13 @@ export default function BlogDetailPage() {
                   <div className="p-0">
                     <MarkdownPreview
                       source={blog.content}
-                      style={{ background: "transparent" }}
+                      style={{
+                        background: "transparent",
+                        fontSize: 16,
+                        color: "#334155",
+                        padding: 0,
+                      }}
+                      className="!bg-transparent dark:!text-white dark:!prose-invert"
                     />
                   </div>
                 </div>
