@@ -26,7 +26,7 @@ import {
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FileText } from "lucide-react";
 import { Combobox } from "@/components/ui/Combobox";
 import { Faq } from "@/type/faqs";
 
@@ -218,16 +218,34 @@ export default function EditFaqPage() {
             { label: "Edit FAQ" },
           ]}
         />
-        <div className="flex items-center justify-center p-8">
-          <div className="text-center">
-            <p className="text-red-500 mb-4">FAQ not found</p>
-            <Link href="/staff/faqs">
-              <Button variant="outline">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to FAQs
-              </Button>
-            </Link>
+        <div className="flex items-center justify-between">
+          <TypographyH2 className="border-none pb-0">
+            FAQs Not Found
+          </TypographyH2>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push("/staff/faqs")}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to FAQs
+            </Button>
           </div>
+        </div>
+        <div className="flex flex-col items-center justify-center py-16">
+          <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
+            <FileText className="w-12 h-12 text-gray-400" />
+          </div>
+          <TypographyP className="text-muted-foreground text-center mb-6 max-w-sm">
+            The FAQ you are looking for does not exist or has been deleted.
+          </TypographyP>
+          <Link href="/staff/faqs">
+            <Button>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to FAQs
+            </Button>
+          </Link>
         </div>
       </div>
     );
