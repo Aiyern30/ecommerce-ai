@@ -188,7 +188,7 @@ export default function BlogPost() {
             {blog.title}
           </TypographyH1>
 
-          <div className="space-y-6 text-gray-700 px-6 mb-12">
+          <div className="space-y-6 px-6 mb-12">
             <TypographyP>{blog.description}</TypographyP>
             {blog.content && (
               <MarkdownPreview

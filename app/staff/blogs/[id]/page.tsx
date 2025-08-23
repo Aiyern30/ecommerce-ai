@@ -29,6 +29,7 @@ import {
   TypographySmall,
   TypographyInlineCode,
   TypographyH1,
+  TypographyH3,
 } from "@/components/ui/Typography";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
@@ -374,19 +375,20 @@ export default function BlogDetailPage() {
                     width={48}
                     height={48}
                     className="rounded-md object-cover flex-shrink-0"
+                    priority
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                    <TypographyH3 className="font-medium text-gray-900 dark:text-gray-100">
                       {blog.title}
-                    </p>
+                    </TypographyH3>
                     {blog.description && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <TypographyP className="text-sm text-gray-600 dark:text-gray-400">
                         {blog.description}
-                      </p>
+                      </TypographyP>
                     )}
-                    <p className="text-xs text-gray-500 dark:text-gray-500">
+                    <TypographyP className="text-xs text-gray-500 dark:text-gray-500">
                       Created: {formatDate(blog.created_at)}
-                    </p>
+                    </TypographyP>
                   </div>
                 </div>
               </div>
@@ -621,6 +623,7 @@ export default function BlogDetailPage() {
                         alt={`${blog.title} - Image ${index + 2}`}
                         className="w-full h-full rounded-md object-cover"
                         fill
+                        priority
                       />
                     </AspectRatio>
                   ))}
