@@ -1,12 +1,42 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse, type NextRequest } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-
+interface Customer {
+  id: string;
+  email: string;
+  full_name?: string;
+  avatar_url?: string;
+  phone?: string;
+  location?: string;
+  status: "active" | "inactive" | "banned";
+  role: "customer" | "admin" | "staff";
+  created_at: string;
+  updated_at: string;
+  last_sign_in_at?: string;
+  ban_info?: {
+    reason?: string;
+    banned_at?: string;
+    banned_by?: string;
+    banned_by_email?: string;
+    banned_by_name?: string;
+    banned_until?: string;
+    previous_bans?: {
+      reason?: string;
+      banned_at?: string;
+      banned_by?: string;
+      banned_by_email?: string;
+      banned_by_name?: string;
+      banned_until?: string;
+    }[];
+    unbanned_at?: string;
+    unbanned_by?: string;
+    unbanned_by_email?: string;
+    unbanned_by_name?: string;
+  };
+}
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // Correct approach: await the params promise
   const { id: userId } = await params;
 
   if (!userId) {
@@ -25,33 +55,41 @@ export async function GET(
 
     const user = data.user;
 
-    // Type assertion for properties that might exist but aren't typed
-    const userWithExtendedProps = user as any;
+    const banInfo = user.app_metadata?.ban_info
+      ? {
+          reason: user.app_metadata.ban_info.reason,
+          banned_at: user.app_metadata.ban_info.banned_at,
+          banned_by: user.app_metadata.ban_info.banned_by,
+          banned_by_email: user.app_metadata.ban_info.banned_by_email,
+          banned_by_name: user.app_metadata.ban_info.banned_by_name,
+          banned_until: user.app_metadata.ban_info.banned_until,
+          previous_bans: user.app_metadata.ban_info.previous_bans || [],
+          unbanned_at: user.app_metadata.ban_info.unbanned_at,
+          unbanned_by: user.app_metadata.ban_info.unbanned_by,
+          unbanned_by_email: user.app_metadata.ban_info.unbanned_by_email,
+          unbanned_by_name: user.app_metadata.ban_info.unbanned_by_name,
+        }
+      : undefined;
 
-    const customer = {
+    const customer: Customer = {
       id: user.id,
-      email: user.email,
+      email: user.email ?? "",
       full_name:
         user.user_metadata?.full_name || user.user_metadata?.name || "",
       avatar_url: user.user_metadata?.avatar_url || "",
       phone: user.phone || "",
       location: user.user_metadata?.location || "",
-      status: user.user_metadata?.status || "active",
+      status:
+        banInfo?.banned_until && new Date(banInfo.banned_until) > new Date()
+          ? "banned"
+          : user.user_metadata?.status === "inactive"
+          ? "inactive"
+          : "active",
       role: user.app_metadata?.role || user.user_metadata?.role || "customer",
-      created_at: user.created_at,
-      updated_at: user.updated_at,
-      last_sign_in_at: user.last_sign_in_at,
-      providers: user.app_metadata?.providers || [],
-      email_confirmed_at: user.email_confirmed_at,
-      phone_confirmed_at: user.phone_confirmed_at,
-      is_super_admin: userWithExtendedProps.is_super_admin ?? false,
-      is_sso_user: user.is_sso_user ?? false,
-      is_anonymous: user.is_anonymous ?? false,
-      banned_until: userWithExtendedProps.banned_until || null,
-      deleted_at: userWithExtendedProps.deleted_at || null,
-      email_verified: user.user_metadata?.email_verified ?? false,
-      phone_verified: user.user_metadata?.phone_verified ?? false,
-      provider_id: user.user_metadata?.provider_id || "",
+      created_at: user.created_at ?? "",
+      updated_at: user.updated_at ?? "",
+      last_sign_in_at: user.last_sign_in_at ?? undefined,
+      ban_info: banInfo,
     };
 
     return NextResponse.json({ customer });
