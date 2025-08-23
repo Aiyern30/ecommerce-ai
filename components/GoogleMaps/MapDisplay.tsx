@@ -2,19 +2,7 @@
 
 import { Loader } from "@googlemaps/js-api-loader";
 import { useRef, useEffect } from "react";
-
-// Import the AddressComponents type from AddressAutocomplete
-interface AddressComponents {
-  street_number?: string;
-  route?: string;
-  locality?: string;
-  administrative_area_level_1?: string;
-  postal_code?: string;
-  country?: string;
-  formatted_address?: string;
-  lat?: number;
-  lng?: number;
-}
+import { AddressComponents } from "./AddressAutocomplete";
 
 interface MapDisplayProps {
   address?: AddressComponents;
@@ -64,7 +52,6 @@ export const MapDisplay: React.FC<MapDisplayProps> = ({
 
             markerRef.current = marker;
 
-            // Add info window
             const infoWindow = new google.maps.InfoWindow({
               content: `<div style="padding: 8px;">
                 <strong>Selected Address:</strong><br/>
@@ -85,20 +72,16 @@ export const MapDisplay: React.FC<MapDisplayProps> = ({
     initializeMap();
   }, [address, zoom]);
 
-  // Update map when address changes
   useEffect(() => {
     if (mapInstanceRef.current && address && address.lat && address.lng) {
       const newPosition = { lat: address.lat, lng: address.lng };
 
-      // Update map center
       mapInstanceRef.current.setCenter(newPosition);
 
-      // Remove old marker
       if (markerRef.current) {
         markerRef.current.setMap(null);
       }
 
-      // Add new marker
       const marker = new google.maps.Marker({
         position: newPosition,
         map: mapInstanceRef.current,
@@ -107,7 +90,6 @@ export const MapDisplay: React.FC<MapDisplayProps> = ({
 
       markerRef.current = marker;
 
-      // Add info window
       const infoWindow = new google.maps.InfoWindow({
         content: `<div style="padding: 8px;">
           <strong>Selected Address:</strong><br/>
