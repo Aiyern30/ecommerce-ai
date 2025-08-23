@@ -325,7 +325,7 @@ export default function CartPage() {
 
                 {/* Order Summary Skeleton - Mobile */}
                 <div className="w-full">
-                  <Card className="overflow-hidden shadow-sm">
+                  <Card className="overflow-hidden shadow-sm p-0">
                     <CardHeader className="p-4">
                       <Skeleton className="h-6 w-32" />
                     </CardHeader>
@@ -359,7 +359,7 @@ export default function CartPage() {
               <div className="grid gap-8 lg:grid-cols-3">
                 {/* Cart Items Skeleton - Desktop */}
                 <div className="lg:col-span-2">
-                  <Card className="overflow-hidden shadow-sm">
+                  <Card className="overflow-hidden shadow-sm p-0">
                     <CardHeader className="p-6 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
                       <div className="flex items-center gap-3">
                         <Skeleton className="h-5 w-5 rounded" />

@@ -494,7 +494,7 @@ export default function ProductDetailClient() {
               </h3>
 
               {/* Delivery Options */}
-              {deliveryOptions.length > 1 && (
+              {deliveryOptions.length >= 1 && (
                 <div className="mb-4">
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                     Delivery Method

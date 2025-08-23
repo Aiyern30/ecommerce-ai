@@ -11,13 +11,11 @@ import { Skeleton } from "@/components/ui/";
 import { TypographyH1 } from "@/components/ui/Typography";
 import { Product } from "@/type/product";
 
-// Update ProductSelection to include deliveryOptions for correct priceType selection
 interface ProductSelection {
   id: string;
   priceType: string;
 }
 
-// Helper to get delivery options for a product
 function getDeliveryOptions(product: Product) {
   return [
     product.normal_price != null
@@ -38,7 +36,6 @@ function getDeliveryOptions(product: Product) {
 
 export default function ProductListPage() {
   const [products, setProducts] = useState<Product[]>([]);
-  console.log("products", products);
   const [selectedProducts, setSelectedProducts] = useState<ProductSelection[]>(
     []
   );
@@ -91,7 +88,6 @@ export default function ProductListPage() {
           toast.warning("You can only compare up to 4 products");
           return prev;
         }
-        // Use the only available delivery type if only one, otherwise default to "normal"
         let priceType = "normal";
         if (deliveryOptions && deliveryOptions.length === 1) {
           priceType = deliveryOptions[0].key;
@@ -115,7 +111,6 @@ export default function ProductListPage() {
     if (selectedProducts.length >= 2) {
       const params = new URLSearchParams();
 
-      // Add product IDs and their price types together
       selectedProducts.forEach((product) => {
         params.append("products", product.id);
         params.append("priceType", product.priceType);
