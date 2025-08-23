@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/";
 import { ShoppingBag, Package, Users, DollarSign } from "lucide-react";
 import { useState, useEffect } from "react";
 import { StatsCards } from "../StatsCards";
+import { formatCurrency } from "@/lib/utils/currency";
 
 interface KpiData {
   totalRevenue: number;
@@ -36,14 +37,6 @@ export function KpiCards() {
 
     fetchKpiData();
   }, []);
-
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("en-MY", {
-      style: "currency",
-      currency: "MYR",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
 
   const formatNumber = (num: number) => new Intl.NumberFormat().format(num);
 

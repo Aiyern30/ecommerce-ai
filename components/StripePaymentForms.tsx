@@ -16,12 +16,12 @@ import { useUser } from "@supabase/auth-helpers-react";
 import { useCart } from "@/components/CartProvider";
 import type { Address } from "@/lib/user/address";
 import { clearPaymentSession } from "./StripeProvider";
-import { formatCurrency } from "@/lib/cart/calculations";
 import { getCountryCode } from "@/utils/country-codes";
 import { getProductPrice } from "@/lib/cart/utils";
 import { SelectedServiceDetails } from "@/type/selectedServiceDetails";
 import { AdditionalService } from "@/type/additionalService";
 import { FreightCharge } from "@/type/freightCharges";
+import { formatCurrency } from "@/lib/utils/currency";
 
 interface BillingDetails {
   name: string;

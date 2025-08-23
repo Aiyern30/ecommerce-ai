@@ -28,6 +28,7 @@ import {
   YAxis,
 } from "recharts";
 import { useDeviceType } from "@/utils/useDeviceTypes";
+import { formatCurrency } from "@/lib/utils/currency";
 
 interface RevenueData {
   period: string;
@@ -289,14 +290,6 @@ export function RevenueOverTime() {
 
   const currentFilterLabel =
     filterOptions.find((opt) => opt.value === filter)?.label || "Today";
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-MY", {
-      style: "currency",
-      currency: "MYR",
-      minimumFractionDigits: 2,
-    }).format(amount);
-  };
 
   const revenueChange =
     previousPeriodRevenue > 0
