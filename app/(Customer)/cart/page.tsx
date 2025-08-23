@@ -44,6 +44,7 @@ import { supabase } from "@/lib/supabase/browserClient";
 import { SelectedServiceDetails } from "@/type/selectedServiceDetails";
 import { AdditionalService } from "@/type/additionalService";
 import { FreightCharge } from "@/type/freightCharges";
+import { getVariantDisplayName } from "@/lib/utils/format";
 
 export default function CartPage() {
   const { cartItems, refreshCart, isLoading } = useCart();
@@ -54,7 +55,6 @@ export default function CartPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<CartItem | null>(null);
 
-  // Additional services and freight charges state
   const [additionalServices, setAdditionalServices] = useState<
     AdditionalService[]
   >([]);
@@ -64,31 +64,26 @@ export default function CartPage() {
   }>({});
   const [servicesLoading, setServicesLoading] = useState(true);
 
-  // Calculate select all state from database
   const selectAll =
     cartItems.length > 0 && cartItems.every((item) => item.selected);
   const selectedItems = cartItems.filter((item) => item.selected);
 
-  // Calculate total volume of selected items
   const totalVolume = selectedItems.reduce(
     (sum, item) => sum + item.quantity,
     0
   );
 
-  // Fetch additional services and freight charges
   useEffect(() => {
     const fetchServicesAndCharges = async () => {
       try {
         setServicesLoading(true);
 
-        // Fetch additional services
         const { data: services, error: servicesError } = await supabase
           .from("additional_services")
           .select("*")
           .eq("is_active", true)
           .order("service_name");
 
-        // Fetch freight charges
         const { data: charges, error: chargesError } = await supabase
           .from("freight_charges")
           .select("*")
@@ -108,7 +103,6 @@ export default function CartPage() {
           setFreightCharges(charges || []);
         }
 
-        // Load selected services from localStorage
         const savedServices = localStorage.getItem("selectedServices");
         if (savedServices) {
           try {
@@ -129,7 +123,6 @@ export default function CartPage() {
     fetchServicesAndCharges();
   }, []);
 
-  // Clear selected services if cart is empty
   useEffect(() => {
     if (!isLoading && cartItems.length === 0) {
       localStorage.removeItem("selectedServices");
@@ -137,7 +130,6 @@ export default function CartPage() {
     }
   }, [cartItems.length, isLoading]);
 
-  // Update service prices when total volume changes
   useEffect(() => {
     if (totalVolume > 0) {
       const updatedServices = { ...selectedServices };
@@ -166,25 +158,6 @@ export default function CartPage() {
       }
     }
   }, [totalVolume, selectedServices]);
-
-  // Helper function to get variant display name
-  const getVariantDisplayName = (variantType: string | null | undefined) => {
-    switch (variantType) {
-      case "pump":
-        return "Pump Delivery";
-      case "tremie_1":
-        return "Tremie 1";
-      case "tremie_2":
-        return "Tremie 2";
-      case "tremie_3":
-        return "Tremie 3";
-      case "normal":
-      case null:
-      case undefined:
-      default:
-        return "Normal Delivery";
-    }
-  };
 
   // Handle individual item selection
   const handleItemSelect = async (itemId: string, checked: boolean) => {

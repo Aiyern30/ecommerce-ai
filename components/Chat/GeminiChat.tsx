@@ -41,13 +41,14 @@ import {
 import TypingIndicator from "./TypingIndicator";
 import { Product } from "@/type/product";
 import { toast } from "sonner";
-import { addToCart } from "@/lib/cart/utils";
+import { addToCart, getProductPrice } from "@/lib/cart/utils";
 import { useUser } from "@supabase/auth-helpers-react";
 import ReactMarkdown from "react-markdown";
 import Image from "next/image";
 import type { CartItem } from "@/type/cart";
 import Link from "next/link";
 import { getFaqs } from "@/lib/faq/getFaqs";
+import { getVariantDisplayName } from "@/lib/utils/format";
 
 interface Message {
   id: string;
@@ -374,47 +375,7 @@ export default function GeminiChat({
 
     if (message.type === "cart" && message.metadata?.cart) {
       const cartItems = message.metadata.cart;
-      // Helper function for variant display name
-      const getVariantDisplayName = (
-        variantType: string | null | undefined
-      ) => {
-        switch (variantType) {
-          case "pump":
-            return "Pump Delivery";
-          case "tremie_1":
-            return "Tremie 1";
-          case "tremie_2":
-            return "Tremie 2";
-          case "tremie_3":
-            return "Tremie 3";
-          case "normal":
-          case null:
-          case undefined:
-          default:
-            return "Normal Delivery";
-        }
-      };
-      // Helper function for price (fallback to normal_price)
-      const getProductPrice = (
-        product: any,
-        variantType: string | null | undefined
-      ) => {
-        switch (variantType) {
-          case "pump":
-            return product.pump_price || product.normal_price || 0;
-          case "tremie_1":
-            return product.tremie_1_price || product.normal_price || 0;
-          case "tremie_2":
-            return product.tremie_2_price || product.normal_price || 0;
-          case "tremie_3":
-            return product.tremie_3_price || product.normal_price || 0;
-          case "normal":
-          case null:
-          case undefined:
-          default:
-            return product.normal_price || 0;
-        }
-      };
+
       return (
         <div className="mb-4">
           <div className="font-semibold mb-2">{message.content}</div>
