@@ -122,7 +122,6 @@ export default function GeminiChat({
     }
   }, [isOpen]);
 
-  // Add a simple string similarity function (can be improved)
   function stringSimilarity(a: string, b: string): number {
     a = a.toLowerCase();
     b = b.toLowerCase();
@@ -133,13 +132,12 @@ export default function GeminiChat({
     return common.length / Math.max(aWords.length, bWords.length);
   }
 
-  // Find best matching FAQ (returns answer if similarity > 0.5)
   async function findMatchingFaq(
     userQuestion: string
   ): Promise<{ question: string; answer: string } | null> {
     const faqs = await getFaqs();
     let bestMatch = null;
-    let bestScore = 0.5; // Threshold
+    let bestScore = 0.5;
     for (const faq of faqs) {
       const score = stringSimilarity(userQuestion, faq.question);
       if (score > bestScore) {
@@ -155,7 +153,6 @@ export default function GeminiChat({
   const sendMessage = async (message: string, { system = false } = {}) => {
     if (!message.trim() || isLoading) return;
 
-    // Only add to chat history if not a system command
     if (!system) {
       const userMessage: Message = {
         id: Date.now().toString(),
@@ -208,7 +205,6 @@ export default function GeminiChat({
 
       const data = await response.json();
 
-      // If cartUpdated flag is present, dispatch event
       if (data.cartUpdated) {
         window.dispatchEvent(new CustomEvent("cartUpdated"));
       }
@@ -320,12 +316,10 @@ export default function GeminiChat({
     }
   };
 
-  // Handler for quantity change
   const handleQtyInputChange = (itemId: string, value: string) => {
     setQtyInputs((prev) => ({ ...prev, [itemId]: value }));
   };
 
-  // Handler for updating quantity
   const handleQtyUpdate = (item: CartItem) => {
     const newQty = Number(qtyInputs[item.id] ?? item.quantity);
     if (!isNaN(newQty) && newQty > 0 && newQty !== item.quantity) {
@@ -333,18 +327,15 @@ export default function GeminiChat({
     }
   };
 
-  // Handler for plus/minus (remove if quantity < 1)
   const handleQtyStep = (item: CartItem, step: number) => {
     const newQty = item.quantity + step;
     if (newQty < 1) {
-      // Use message format that works with backend
       sendMessage(`remove ${item.product?.name} from carts`, { system: true });
     } else {
       sendMessage(`update quantity of ${item.product?.name} to ${newQty}`);
     }
   };
 
-  // Handler for remove button (open dialog)
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
   const [itemToRemove, setItemToRemove] = useState<CartItem | null>(null);
 
@@ -353,7 +344,6 @@ export default function GeminiChat({
     setRemoveDialogOpen(true);
   };
 
-  // Handler for confirm remove (use working format)
   const confirmRemove = () => {
     if (itemToRemove) {
       sendMessage(`remove ${itemToRemove.product?.name} from carts`, {
@@ -437,7 +427,6 @@ export default function GeminiChat({
                         </span>
                       </div>
                       <div className="flex items-center gap-3">
-                        {/* Quantity controls */}
                         <div className="flex items-center border rounded-lg px-1">
                           <Button
                             variant="ghost"
@@ -478,7 +467,6 @@ export default function GeminiChat({
                             ✓
                           </Button>
                         </div>
-                        {/* Remove button - now opens dialog */}
                         <Button
                           variant="ghost"
                           size="sm"
@@ -506,7 +494,6 @@ export default function GeminiChat({
       );
     }
 
-    // Conversational Order Tracking UI
     if (message.type === "order" && message.metadata?.orders) {
       const orders = message.metadata.orders;
       return (
@@ -600,7 +587,6 @@ export default function GeminiChat({
             isBot ? "flex-row" : "flex-row-reverse"
           }`}
         >
-          {/* Avatar */}
           <div className={`flex-shrink-0 ${isBot ? "mr-2" : "ml-2"}`}>
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center ${
@@ -613,7 +599,6 @@ export default function GeminiChat({
             </div>
           </div>
 
-          {/* Message Content */}
           <div
             className={`flex flex-col ${isBot ? "items-start" : "items-end"}`}
           >
@@ -633,7 +618,6 @@ export default function GeminiChat({
               )}
             </div>
 
-            {/* Intent Indicator for Development/Debugging */}
             {isBot &&
               message.metadata?.intent &&
               process.env.NODE_ENV === "development" && (
@@ -648,7 +632,6 @@ export default function GeminiChat({
                 </div>
               )}
 
-            {/* Enhanced Product Cards */}
             {message.metadata?.products &&
               message.metadata.products.length > 0 && (
                 <div className="mt-2 space-y-2 w-full">
@@ -658,15 +641,10 @@ export default function GeminiChat({
                       message.metadata.products.map((p) => [p.id, p])
                     ).values()
                   ).map((product: Product, idx: number) => {
-                    console.log(
-                      "Rendering product:",
-                      JSON.stringify(product, null, 2)
-                    );
                     const isRecommended =
                       message.metadata?.intent === "recommendation" &&
                       idx === 0;
 
-                    // Get available delivery types and prices (show only those that exist)
                     const deliveryOptions = [
                       product.normal_price
                         ? {
@@ -719,14 +697,12 @@ export default function GeminiChat({
                         key={`${product.id}-${idx}`}
                         className="p-3 max-w-sm relative"
                       >
-                        {/* Recommended badge */}
                         {isRecommended && (
                           <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded shadow">
                             Recommended
                           </div>
                         )}
                         <div className="flex items-start gap-3">
-                          {/* Show product image if available, else icon */}
                           <div className="w-12 h-12 bg-gradient-to-br from-gray-200 to-gray-300 rounded-md flex items-center justify-center flex-shrink-0 overflow-hidden">
                             {product.product_images &&
                             product.product_images.length > 0 &&
@@ -765,7 +741,6 @@ export default function GeminiChat({
                               </p>
                             )}
 
-                            {/* Price Display - show only available price types */}
                             <div className="mt-2 space-y-1">
                               {deliveryOptions.map((opt) => (
                                 <div
@@ -782,7 +757,6 @@ export default function GeminiChat({
                               ))}
                             </div>
 
-                            {/* Delivery Type Selector */}
                             {deliveryOptions.length > 1 && (
                               <div className="mt-2 flex items-center gap-2">
                                 <span className="text-xs text-gray-500">
@@ -814,7 +788,6 @@ export default function GeminiChat({
                               </div>
                             )}
 
-                            {/* Stock Status */}
                             <div className="mt-1 flex items-center justify-between">
                               <span className="text-xs text-gray-500">
                                 Stock:
@@ -870,9 +843,7 @@ export default function GeminiChat({
     );
   };
 
-  // Get personalized quick actions from last bot message
   const getQuickActions = () => {
-    // Find the last bot message with suggestions
     const lastBotMsg = [...messages]
       .reverse()
       .find(
@@ -889,7 +860,6 @@ export default function GeminiChat({
 
   return (
     <Card className="fixed bottom-20 right-4 w-[420px] h-[650px] shadow-xl p-0 z-50 flex flex-col">
-      {/* Header */}
       <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 rounded-t-lg">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
@@ -915,7 +885,6 @@ export default function GeminiChat({
         </Button>
       </div>
 
-      {/* Messages */}
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto p-4">
           <div className="space-y-4">
@@ -946,7 +915,6 @@ export default function GeminiChat({
         </div>
       </div>
 
-      {/* Input */}
       <div className="p-4 border-t bg-gray-50 dark:bg-gray-900">
         <form onSubmit={handleSubmit} className="flex gap-2">
           <Input
@@ -968,7 +936,6 @@ export default function GeminiChat({
           </Button>
         </form>
 
-        {/* Personalized Quick Actions */}
         <div className="mt-2 flex flex-wrap gap-1">
           {getQuickActions().map((suggestion, idx) => (
             <button
@@ -982,7 +949,6 @@ export default function GeminiChat({
         </div>
       </div>
 
-      {/* Remove confirmation dialog */}
       <AlertDialog open={removeDialogOpen} onOpenChange={setRemoveDialogOpen}>
         <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
