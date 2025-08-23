@@ -2,7 +2,6 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -18,21 +17,14 @@ function ForbiddenContent() {
   return (
     <div className="max-w-md w-full text-center space-y-6">
       {/* Top Image */}
-      <div className="relative w-full h-40 mx-auto">
+      <div className="relative w-full h-96 mx-auto">
         <Image
-          src="/403.png"
+          src="/403.svg"
           alt="Forbidden"
           fill
           className="object-contain rounded-lg"
           priority
         />
-      </div>
-
-      {/* Icon */}
-      <div className="flex justify-center">
-        <div className="bg-[#ff7a5c] dark:bg-yellow-600 p-4 rounded-full">
-          <Lock className="h-12 w-12 text-white" />
-        </div>
       </div>
 
       {/* Text Content */}
