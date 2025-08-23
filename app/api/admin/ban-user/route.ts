@@ -3,7 +3,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
-// Create admin client with service role key
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -15,7 +14,6 @@ const supabaseAdmin = createClient(
   }
 );
 
-// Helper function to get admin user info for audit trail
 async function getAdminUserInfo(adminUserId?: string) {
   if (!adminUserId) {
     console.warn("No adminUserId provided, using 'system'");
@@ -62,7 +60,6 @@ export async function POST(request: NextRequest) {
   try {
     const { userId, bannedUntil, reason, adminUserId } = await request.json();
 
-    // Validation
     if (!userId || !bannedUntil) {
       return NextResponse.json(
         { error: "User ID and banned until date are required" },
@@ -70,7 +67,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate bannedUntil is a future date
     const banDate = new Date(bannedUntil);
     if (banDate <= new Date()) {
       return NextResponse.json(
@@ -79,10 +75,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get admin user info for audit trail
     const adminInfo = await getAdminUserInfo(adminUserId);
 
-    // Get current user data first to preserve app_metadata
     const { data: currentUser, error: getUserError } =
       await supabaseAdmin.auth.admin.getUserById(userId);
 
@@ -94,7 +88,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Prepare the ban info object
+    let previousBans: any[] = [];
+    const currentBanInfo = currentUser.user.app_metadata?.ban_info;
+
+    if (Array.isArray(currentBanInfo?.previous_bans)) {
+      previousBans = [...currentBanInfo.previous_bans];
+    }
+
+    if (
+      currentBanInfo?.banned_until &&
+      new Date(currentBanInfo.banned_until) > new Date()
+    ) {
+      previousBans = [
+        ...previousBans,
+        {
+          reason: currentBanInfo.reason || "Previous ban",
+          banned_at: currentBanInfo.banned_at || new Date().toISOString(),
+          banned_by: currentBanInfo.banned_by || "unknown",
+          banned_by_email: currentBanInfo.banned_by_email || "unknown",
+          banned_by_name: currentBanInfo.banned_by_name || "Unknown",
+          banned_until: currentBanInfo.banned_until || undefined,
+        },
+      ];
+    }
+
     const banInfo = {
       reason: reason || "No reason provided",
       banned_at: new Date().toISOString(),
@@ -102,35 +119,9 @@ export async function POST(request: NextRequest) {
       banned_by_email: adminInfo.email,
       banned_by_name: adminInfo.full_name,
       banned_until: bannedUntil,
-      previous_bans: [
-        ...(currentUser.user.app_metadata?.ban_info?.previous_bans || []),
-        // Add current ban to history if user was previously banned
-        ...(currentUser.user.app_metadata?.ban_info?.banned_until
-          ? [
-              {
-                reason:
-                  currentUser.user.app_metadata.ban_info.reason ||
-                  "Previous ban",
-                banned_at:
-                  currentUser.user.app_metadata.ban_info.banned_at ||
-                  new Date().toISOString(),
-                banned_by:
-                  currentUser.user.app_metadata.ban_info.banned_by || "unknown",
-                banned_by_email:
-                  currentUser.user.app_metadata.ban_info.banned_by_email ||
-                  "unknown",
-                banned_by_name:
-                  currentUser.user.app_metadata.ban_info.banned_by_name ||
-                  "Unknown",
-                banned_until:
-                  currentUser.user.app_metadata.ban_info.banned_until,
-              },
-            ]
-          : []),
-      ],
+      previous_bans: previousBans,
     };
 
-    // Update banned_until at user level and ban_info in app_metadata
     const { data: userData, error: userError } =
       await supabaseAdmin.auth.admin.updateUserById(userId, {
         // @ts-expect-error: banned_until is a valid Supabase user field but not in types
@@ -149,7 +140,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Insert into ban_history table for audit trail
     const { error: historyError } = await supabaseAdmin
       .from("ban_history")
       .insert({
@@ -165,7 +155,6 @@ export async function POST(request: NextRequest) {
 
     if (historyError) {
       console.warn("Failed to log ban history:", historyError);
-      // Don't fail the request if history logging fails
     }
 
     return NextResponse.json({
@@ -201,10 +190,8 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Get admin user info for audit trail
     const adminInfo = await getAdminUserInfo(adminUserId);
 
-    // Get current user data to preserve other app_metadata
     const { data: currentUser, error: getUserError } =
       await supabaseAdmin.auth.admin.getUserById(userId);
 
@@ -216,24 +203,45 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Prepare updated ban info - keep history but clear current ban
+    let previousBans: any[] = [];
+    const currentBanInfo = currentUser.user.app_metadata?.ban_info;
+
+    if (Array.isArray(currentBanInfo?.previous_bans)) {
+      previousBans = [...currentBanInfo.previous_bans];
+    }
+
+    if (
+      currentBanInfo?.banned_until &&
+      new Date(currentBanInfo.banned_until) > new Date()
+    ) {
+      previousBans = [
+        ...previousBans,
+        {
+          reason: currentBanInfo.reason || "Previous ban",
+          banned_at: currentBanInfo.banned_at || new Date().toISOString(),
+          banned_by: currentBanInfo.banned_by || "unknown",
+          banned_by_email: currentBanInfo.banned_by_email || "unknown",
+          banned_by_name: currentBanInfo.banned_by_name || "Unknown",
+          banned_until: currentBanInfo.banned_until || undefined,
+        },
+      ];
+    }
+
     const updatedBanInfo = {
-      ...(currentUser.user.app_metadata?.ban_info || {}),
-      // Clear current ban fields
+      ...currentBanInfo,
       reason: undefined,
       banned_at: undefined,
       banned_by: undefined,
       banned_by_email: undefined,
       banned_by_name: undefined,
       banned_until: undefined,
-      // Set unban info
+      previous_bans: previousBans,
       unbanned_at: new Date().toISOString(),
       unbanned_by: adminInfo.id,
       unbanned_by_email: adminInfo.email,
       unbanned_by_name: adminInfo.full_name,
     };
 
-    // Remove ban by setting banned_until to null at user level and update ban_info in app_metadata
     const { data, error } = await supabaseAdmin.auth.admin.updateUserById(
       userId,
       {
@@ -270,7 +278,6 @@ export async function DELETE(request: NextRequest) {
 
     if (historyError) {
       console.warn("Failed to log unban history:", historyError);
-      // Don't fail the request if history logging fails
     }
 
     return NextResponse.json({
