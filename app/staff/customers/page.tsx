@@ -614,7 +614,10 @@ function CustomerCard({
               <span className="text-xs font-medium">
                 Banned until{" "}
                 {customer.ban_info?.banned_until
-                  ? format(new Date(customer.ban_info.banned_until), "MMM dd, yyyy")
+                  ? format(
+                      new Date(customer.ban_info.banned_until),
+                      "MMM dd, yyyy"
+                    )
                   : "-"}
               </span>
             </div>
@@ -630,14 +633,16 @@ function CustomerCard({
             )}
             {customer.ban_info?.banned_at && (
               <div className="text-xs text-muted-foreground mt-1">
-                Banned at: {customer.ban_info?.banned_at
+                Banned at:{" "}
+                {customer.ban_info?.banned_at
                   ? format(new Date(customer.ban_info.banned_at), "PPP p")
                   : "-"}
               </div>
             )}
             {customer.ban_info?.unbanned_at && (
               <div className="text-xs text-green-600 mt-1">
-                Unbanned at: {customer.ban_info?.unbanned_at
+                Unbanned at:{" "}
+                {customer.ban_info?.unbanned_at
                   ? format(new Date(customer.ban_info.unbanned_at), "PPP p")
                   : "-"}
               </div>
@@ -722,6 +727,7 @@ export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [authUser, setAuthUser] = useState<SupabaseUser | null>(null);
+  console.log("Auth User:", authUser?.id);
   const [filters, setFilters] = useState<CustomerFilters>({
     search: "",
     sortBy: "date-new",
@@ -834,6 +840,7 @@ export default function CustomersPage() {
         event,
         session?.user?.email || "no user"
       );
+      // Always set authUser from session.user, even if null
       setAuthUser(session?.user || null);
 
       // Refetch customers when user signs in
@@ -842,7 +849,10 @@ export default function CustomersPage() {
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Clean up subscription on unmount
+    return () => {
+      if (subscription) subscription.unsubscribe();
+    };
   }, [fetchCustomers]);
 
   const updateFilter = (key: keyof CustomerFilters, value: string) => {
@@ -929,10 +939,14 @@ export default function CustomersPage() {
   const handleUnbanUser = async (customerId: string) => {
     try {
       setLoading(true);
+      // Pass current user ID as adminUserId
       const response = await fetch("/api/admin/ban-user", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: customerId }),
+        body: JSON.stringify({
+          userId: customerId,
+          adminUserId: authUser?.id, // <-- pass current admin/staff user ID
+        }),
       });
 
       if (!response.ok) throw new Error("Failed to unban user");
@@ -956,6 +970,7 @@ export default function CustomersPage() {
 
     try {
       setLoading(true);
+      // Pass current user ID as adminUserId
       const response = await fetch("/api/admin/ban-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -963,6 +978,7 @@ export default function CustomersPage() {
           userId: customerToBan.id,
           bannedUntil: banData.banUntil.toISOString(),
           reason: banData.reason,
+          adminUserId: authUser?.id, // <-- pass current admin/staff user ID
         }),
       });
 

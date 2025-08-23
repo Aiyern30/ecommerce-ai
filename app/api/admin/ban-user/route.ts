@@ -17,8 +17,7 @@ const supabaseAdmin = createClient(
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, bannedUntil, reason } = await request.json();
-
+    const { userId, bannedUntil, reason, adminUserId } = await request.json();
     // Validation
     if (!userId || !bannedUntil) {
       return NextResponse.json(
@@ -49,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the admin user making this request (for audit trail)
-    const bannedBy = "system"; // Replace with actual admin user ID/email
+    const bannedBy = adminUserId || "system";
 
     // Update banned_until at user level and ban_info in app_metadata
     const { data: userData, error: userError } =
@@ -133,7 +132,7 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const { userId } = await request.json();
+    const { userId, adminUserId } = await request.json();
 
     if (!userId) {
       return NextResponse.json(
@@ -154,7 +153,8 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const unbannedBy = "system"; // Replace with actual admin user ID/email
+    // Use adminUserId if provided, otherwise fallback to "system"
+    const unbannedBy = adminUserId || "system";
 
     // Remove ban by setting banned_until to null at user level and update ban_info in app_metadata
     const { data, error } = await supabaseAdmin.auth.admin.updateUserById(
