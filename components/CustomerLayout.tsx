@@ -47,7 +47,21 @@ export function CustomerLayout({ children }: LayoutProps) {
         user?.user_metadata?.banned_at ||
         user?.app_metadata?.ban_info?.banned_at
       ) {
-        router.replace("/403");
+        const reason =
+          user?.app_metadata?.ban_info?.reason ||
+          user?.user_metadata?.ban_reason ||
+          "No reason provided";
+        const bannedByName = user?.app_metadata?.ban_info?.banned_by_name || "";
+        const bannedByEmail =
+          user?.app_metadata?.ban_info?.banned_by_email || "";
+        const bannedUntil = user?.app_metadata?.ban_info?.banned_until || "";
+        router.replace(
+          `/403?banned=1` +
+            `&reason=${encodeURIComponent(reason)}` +
+            `&banned_by_name=${encodeURIComponent(bannedByName)}` +
+            `&banned_by_email=${encodeURIComponent(bannedByEmail)}` +
+            `&banned_until=${encodeURIComponent(bannedUntil)}`
+        );
       }
     };
     checkBan();

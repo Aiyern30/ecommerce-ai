@@ -1,10 +1,19 @@
 /* eslint-disable react/no-unescaped-entities */
+"use client";
 import Link from "next/link";
 import Image from "next/image";
 import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/";
+import { useSearchParams } from "next/navigation";
 
 export default function ForbiddenPage() {
+  const searchParams = useSearchParams();
+  const isBanned = searchParams?.get("banned") === "1";
+  const banReason = searchParams?.get("reason");
+  const bannedBy = searchParams?.get("banned_by_name");
+  const bannedByEmail = searchParams?.get("banned_by_email");
+  const bannedUntil = searchParams?.get("banned_until");
+
   return (
     <div className="min-h-screen flex items-center justify-center dark:bg-gray-900 px-4">
       <div className="max-w-md w-full text-center space-y-6">
@@ -27,13 +36,50 @@ export default function ForbiddenPage() {
         </div>
 
         {/* Text Content */}
-        <h1 className="text-4xl font-bold text-gray-800 dark:text-white">
-          403 - Forbidden
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          You don't have access to this page. Please check your permissions or
-          return to the homepage.
-        </p>
+        {isBanned ? (
+          <>
+            <h1 className="text-4xl font-bold text-gray-800 dark:text-white">
+              You have been banned
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              <span className="font-semibold">Reason:</span> {banReason}
+            </p>
+            {bannedUntil && (
+              <p className="text-gray-600 dark:text-gray-400">
+                <span className="font-semibold">Banned Until:</span>{" "}
+                {new Date(bannedUntil).toLocaleString()}
+              </p>
+            )}
+            {bannedBy && (
+              <p className="text-gray-600 dark:text-gray-400">
+                <span className="font-semibold">Banned By:</span> {bannedBy}
+                {bannedByEmail && (
+                  <span>
+                    {" "}
+                    (
+                    <a href={`mailto:${bannedByEmail}`} className="underline">
+                      {bannedByEmail}
+                    </a>
+                    )
+                  </span>
+                )}
+              </p>
+            )}
+            <p className="text-gray-600 dark:text-gray-400">
+              If you believe this is a mistake, please contact support.
+            </p>
+          </>
+        ) : (
+          <>
+            <h1 className="text-4xl font-bold text-gray-800 dark:text-white">
+              403 - Forbidden
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              You don't have access to this page. Please check your permissions
+              or return to the homepage.
+            </p>
+          </>
+        )}
 
         {/* Button */}
         <Link href="/">
