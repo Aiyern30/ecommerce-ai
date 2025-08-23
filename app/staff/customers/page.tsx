@@ -716,7 +716,6 @@ export default function CustomersPage() {
 
   const itemsPerPage = 12;
 
-  // Fetch customers from custom API route
   const fetchCustomers = useCallback(async () => {
     setLoading(true);
 
@@ -725,11 +724,9 @@ export default function CustomersPage() {
       if (!res.ok) throw new Error("Failed to fetch users");
       const data = await res.json();
 
-      // Get current user's role to determine filtering
       const currentUserRole =
         user?.app_metadata?.role || user?.user_metadata?.role;
 
-      // Map Supabase Auth users to Customer type
       const mappedUsers = (data.users || []).map((user: any) => ({
         id: user.id,
         email: user.email,
@@ -738,16 +735,15 @@ export default function CustomersPage() {
         avatar_url: user.user_metadata?.avatar_url || "",
         phone: user.phone || "",
         location: user.user_metadata?.location || "",
-        // Use app_metadata.role if present, fallback to user_metadata.role
         role:
           user.app_metadata?.role ||
           user.user_metadata?.role ||
-          user.raw_app_meta_data?.role || // fallback for legacy data
+          user.raw_app_meta_data?.role ||
           "customer",
         created_at: user.created_at,
         updated_at: user.updated_at,
         last_sign_in_at: user.last_sign_in_at,
-        ban_info: user.app_metadata?.ban_info, // <-- get ban_info from app_metadata
+        ban_info: user.app_metadata?.ban_info,
         status:
           user.app_metadata?.ban_info?.banned_until &&
           new Date(user.app_metadata?.ban_info?.banned_until) > new Date()
@@ -755,19 +751,15 @@ export default function CustomersPage() {
             : "active",
       }));
 
-      // Filter based on current user's role
       let filteredUsers = mappedUsers;
 
       if (currentUserRole === "staff") {
-        // Staff users should only see customers (not other staff or admins)
         filteredUsers = mappedUsers.filter(
           (user: { role: string }) => user.role === "customer"
         );
       } else if (currentUserRole === "admin") {
-        // Admins can see everyone (no filtering needed)
         filteredUsers = mappedUsers;
       } else {
-        // Regular customers shouldn't see this page, but if they do, show only customers
         filteredUsers = mappedUsers.filter(
           (user: { role: string }) => user.role === "customer"
         );
@@ -785,11 +777,6 @@ export default function CustomersPage() {
   useEffect(() => {
     fetchCustomers();
   }, [fetchCustomers]);
-
-  // Remove supabase.auth.getSession and auth state change logic
-  // useEffect(() => {
-  //   fetchCustomers();
-  // }, [fetchCustomers]);
 
   const updateFilter = (key: keyof CustomerFilters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -845,9 +832,6 @@ export default function CustomersPage() {
 
     setLoading(true);
     try {
-      // You cannot delete Supabase Auth users from the client.
-      // You need to call an admin API route to delete users.
-      // For now, just show a toast and clear selection.
       toast.info("User deletion requires admin API. Not implemented.");
       clearCustomerSelection();
       fetchCustomers();
@@ -881,7 +865,7 @@ export default function CustomersPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: customerId,
-          adminUserId: user?.id, // <-- use user from useUser()
+          adminUserId: user?.id,
         }),
       });
 
@@ -906,7 +890,6 @@ export default function CustomersPage() {
 
     try {
       setLoading(true);
-      // Pass current user ID as adminUserId
       const response = await fetch("/api/admin/ban-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -914,7 +897,7 @@ export default function CustomersPage() {
           userId: customerToBan.id,
           bannedUntil: banData.banUntil.toISOString(),
           reason: banData.reason,
-          adminUserId: user?.id, // <-- use user from useUser()
+          adminUserId: user?.id,
         }),
       });
 
@@ -932,9 +915,7 @@ export default function CustomersPage() {
     }
   };
 
-  // Filter and sort customers
   const filteredCustomers = customers.filter((customer) => {
-    // Search filter
     if (
       filters.search &&
       !customer.full_name
@@ -945,7 +926,6 @@ export default function CustomersPage() {
       return false;
     }
 
-    // Status filter
     if (filters.status !== "all") {
       if (filters.status === "banned" && !isCurrentlyBanned(customer)) {
         return false;
@@ -997,7 +977,6 @@ export default function CustomersPage() {
         </div>
       </div>
 
-      {/* Filter Controls */}
       {isMobile ? (
         <>
           <Button
@@ -1223,7 +1202,6 @@ export default function CustomersPage() {
         </div>
       </div>
 
-      {/* Main Content */}
       {loading ? (
         <CustomerGridSkeleton />
       ) : customers.length === 0 ? (
@@ -1246,7 +1224,6 @@ export default function CustomersPage() {
         </div>
       )}
 
-      {/* Enhanced Ban User Dialog */}
       <BanUserDialog
         customer={customerToBan}
         isOpen={isBanDialogOpen}
@@ -1257,7 +1234,6 @@ export default function CustomersPage() {
         onConfirm={confirmBanUser}
       />
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center space-x-2 py-4">
           <Button
