@@ -8,6 +8,7 @@ import {
   TypographyH4,
   TypographyP,
 } from "@/components/ui/Typography";
+import { useChat } from "./ChatContext";
 
 // Enhanced Card component with hover effects and gradient backgrounds
 function Card({
@@ -99,6 +100,8 @@ function AIIcon() {
 }
 
 export function ServicesShowcase() {
+  const { openChat } = useChat();
+
   return (
     <section className="relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950"></div>
@@ -213,11 +216,10 @@ export function ServicesShowcase() {
               Get instant answers to your concrete and construction questions,
               24/7. Smart assistance whenever you need it.
             </TypographyP>
-            <Link href="/ai-chatbot">
-              <Button variant="default" className="w-full">
-                Try AI Chatbot
-              </Button>
-            </Link>
+            {/* Replace Link with button */}
+            <Button variant="default" className="w-full" onClick={openChat}>
+              Try AI Chatbot
+            </Button>
           </Card>
 
           <Card>
