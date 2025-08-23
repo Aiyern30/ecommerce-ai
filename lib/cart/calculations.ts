@@ -48,10 +48,6 @@ export function calculateCartTotals(cartItems: CartItem[]): CartTotals {
   };
 }
 
-export function formatCurrency(amount: number): string {
-  return `RM${amount.toFixed(2)}`;
-}
-
 export function convertToStripeAmount(amount: number): number {
   // Convert RM to cents for Stripe (multiply by 100)
   return Math.round(amount * 100);

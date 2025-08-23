@@ -59,6 +59,7 @@ import { formatDate } from "@/lib/utils/format";
 import { useDeviceType } from "@/utils/useDeviceTypes";
 import { Order } from "@/type/order";
 import Image from "next/image";
+import { formatCurrency } from "@/lib/utils/currency";
 
 interface OrderFilters {
   search: string;
@@ -483,13 +484,6 @@ export default function OrdersPage() {
         {paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1)}
       </Badge>
     );
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-MY", {
-      style: "currency",
-      currency: "MYR",
-    }).format(amount);
   };
 
   // Export orders to Excel
