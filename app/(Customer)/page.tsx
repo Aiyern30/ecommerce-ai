@@ -23,7 +23,7 @@ export default function Home() {
         <section className="py-16">
           <div className="container mx-auto px-4">
             <h2 className="mb-8 text-center text-3xl font-bold">
-              OUR HAPPY CUSTOMERS
+              Customer Testimonials
             </h2>
             <div className="grid gap-8 md:grid-cols-3">
               <TestimonialCard
