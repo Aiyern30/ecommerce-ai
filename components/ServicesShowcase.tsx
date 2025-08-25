@@ -1,11 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@/components/ui";
 import {
   TypographyH1,
   TypographyH3,
-  TypographyH4,
   TypographyP,
 } from "@/components/ui/Typography";
 import { useChat } from "./ChatContext";
@@ -87,6 +85,14 @@ function AIIcon() {
 export function ServicesShowcase() {
   const { openChat } = useChat();
 
+  // Scroll to AI Tools section
+  const handleAIServicesClick = () => {
+    const el = document.getElementById("ai-tools");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <section className="relative overflow-hidden min-h-screen">
       <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950"></div>
@@ -133,31 +139,44 @@ export function ServicesShowcase() {
             </Card>
           </Link>
 
-          <Card variant="gradient">
-            <AIIcon />
-            <TypographyH3 className="mb-3 text-gray-800 dark:text-gray-100 font-bold">
-              AI Services
-            </TypographyH3>
-            <TypographyP className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
-              Enhance your construction experience with our AI-powered tools:
-              Chatbot for instant answers, Smart Comparison for product
-              selection, and Recommended Products tailored to your needs.
-            </TypographyP>
-            <div className="inline-flex items-center text-purple-600 dark:text-purple-400 font-medium">
-              <span>Explore AI Tools</span>
-              <svg
-                className="w-4 h-4 ml-1"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                ></path>
-              </svg>
-            </div>
-          </Card>
+          {/* Make AI Services card clickable and scroll to AI Tools section */}
+          <button
+            type="button"
+            className="text-left w-full"
+            onClick={handleAIServicesClick}
+            style={{
+              background: "none",
+              border: "none",
+              padding: 0,
+              cursor: "pointer",
+            }}
+          >
+            <Card variant="gradient">
+              <AIIcon />
+              <TypographyH3 className="mb-3 text-gray-800 dark:text-gray-100 font-bold">
+                AI Services
+              </TypographyH3>
+              <TypographyP className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
+                Enhance your construction experience with our AI-powered tools:
+                Chatbot for instant answers, Smart Comparison for product
+                selection, and Recommended Products tailored to your needs.
+              </TypographyP>
+              <div className="inline-flex items-center text-purple-600 dark:text-purple-400 font-medium">
+                <span>Explore AI Tools</span>
+                <svg
+                  className="w-4 h-4 ml-1"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+              </div>
+            </Card>
+          </button>
 
           <Link href="/contact">
             <Card variant="gradient">
@@ -188,7 +207,7 @@ export function ServicesShowcase() {
         </div>
 
         {/* AI Tools Section */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-12" id="ai-tools">
           <TypographyH1>AI Tools for Smarter Construction</TypographyH1>
           <TypographyP className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             Harness the power of artificial intelligence to optimize your
@@ -196,52 +215,91 @@ export function ServicesShowcase() {
           </TypographyP>
         </div>
 
-        {/* Use same card design as Our Services for AI Tools */}
-        <div className="grid gap-8 md:grid-cols-3 mb-12">
-          <Card>
+        {/* AI Tools Grid - same layout as Our Services */}
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-12">
+          <Card variant="gradient">
             <AIIcon />
-            <TypographyH4 className="mb-3 text-gray-800 dark:text-gray-100 font-bold">
+            <TypographyH3 className="mb-3 text-gray-800 dark:text-gray-100 font-bold">
               AI Chatbot
-            </TypographyH4>
-            <TypographyP className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
+            </TypographyH3>
+            <TypographyP className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
               Get instant answers to your concrete and construction questions,
               24/7. Smart assistance whenever you need it.
             </TypographyP>
-            {/* Replace Link with button */}
-            <Button variant="default" className="w-full" onClick={openChat}>
-              Try AI Chatbot
-            </Button>
+            <button
+              type="button"
+              className="w-full"
+              onClick={openChat}
+              style={{ background: "none", border: "none", padding: 0 }}
+            >
+              <div className="inline-flex items-center justify-center text-blue-600 dark:text-blue-400 font-medium w-full py-3 rounded-lg bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors">
+                <span>Try AI Chatbot</span>
+                <svg
+                  className="w-4 h-4 ml-1"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+              </div>
+            </button>
           </Card>
 
-          <Card>
+          <Card variant="gradient">
             <AIIcon />
-            <TypographyH4 className="mb-3 text-gray-800 dark:text-gray-100 font-bold">
+            <TypographyH3 className="mb-3 text-gray-800 dark:text-gray-100 font-bold">
               AI Smart Comparison
-            </TypographyH4>
-            <TypographyP className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
+            </TypographyH3>
+            <TypographyP className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
               Compare concrete grades, prices, and applications with intelligent
               recommendations tailored to your project.
             </TypographyP>
-            <Link href="/compare">
-              <Button variant="default" className="w-full">
-                Compare Products
-              </Button>
+            <Link href="/compare" className="w-full">
+              <div className="inline-flex items-center justify-center text-blue-600 dark:text-blue-400 font-medium w-full py-3 rounded-lg bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors">
+                <span>Compare Products</span>
+                <svg
+                  className="w-4 h-4 ml-1"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+              </div>
             </Link>
           </Card>
 
-          <Card>
+          <Card variant="gradient">
             <AIIcon />
-            <TypographyH4 className="mb-3 text-gray-800 dark:text-gray-100 font-bold">
+            <TypographyH3 className="mb-3 text-gray-800 dark:text-gray-100 font-bold">
               AI Search
-            </TypographyH4>
-            <TypographyP className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
+            </TypographyH3>
+            <TypographyP className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
               Find products, services, and technical info quickly using our
               smart search engine powered by advanced AI.
             </TypographyP>
-            <Link href="/search">
-              <Button variant="default" className="w-full">
-                AI Search
-              </Button>
+            <Link href="/search" className="w-full">
+              <div className="inline-flex items-center justify-center text-blue-600 dark:text-blue-400 font-medium w-full py-3 rounded-lg bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors">
+                <span>AI Search</span>
+                <svg
+                  className="w-4 h-4 ml-1"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+              </div>
             </Link>
           </Card>
         </div>
