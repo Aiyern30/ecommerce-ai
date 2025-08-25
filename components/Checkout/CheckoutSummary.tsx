@@ -154,34 +154,37 @@ export function CheckoutSummary({
             {selectedItems.map((item) => (
               <div
                 key={item.id}
-                className="flex gap-3 py-2 border-l-2 border-blue-200 dark:border-blue-700 pl-3"
+                className="border-l-2 border-blue-200 dark:border-blue-700 pl-3 py-2"
               >
-                <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
-                  <Image
-                    src={item.product?.image_url || "/placeholder.svg"}
-                    alt={item.product?.name || "Product"}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-medium line-clamp-1 text-gray-900 dark:text-gray-100">
-                    {item.product?.name}
-                  </h4>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs bg-blue-100 dark:bg-blue-800 px-2 py-0.5 rounded text-blue-700 dark:text-blue-300 font-medium">
-                      Qty: {item.quantity}
-                    </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      @{" "}
-                      {formatCurrency(
-                        getProductPrice(item.product, item.variant_type)
-                      )}
-                    </span>
+                <div className="flex gap-3">
+                  <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
+                    <Image
+                      src={item.product?.image_url || "/placeholder.svg"}
+                      alt={item.product?.name || "Product"}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-medium line-clamp-1 text-gray-900 dark:text-gray-100">
+                      {item.product?.name}
+                    </h4>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs bg-blue-100 dark:bg-blue-800 px-2 py-0.5 rounded text-blue-700 dark:text-blue-300 font-medium">
+                        Qty: {item.quantity}
+                      </span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        @{" "}
+                        {formatCurrency(
+                          getProductPrice(item.product, item.variant_type)
+                        )}
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <span className="font-bold text-gray-900 dark:text-gray-100 text-sm">
+                {/* Price moved to separate row for mobile responsiveness */}
+                <div className="mt-2 flex justify-end">
+                  <span className="font-bold text-gray-900 dark:text-gray-100 text-sm bg-gray-50 dark:bg-gray-800 px-3 py-1 rounded-lg">
                     {formatCurrency(
                       getProductPrice(item.product, item.variant_type) *
                         item.quantity
@@ -204,26 +207,29 @@ export function CheckoutSummary({
                 return (
                   <div
                     key={service.id}
-                    className="flex gap-3 py-2 border-l-2 border-green-200 dark:border-green-700 pl-3 bg-green-50/50 dark:bg-green-900/10 rounded-r-lg"
+                    className="border-l-2 border-green-200 dark:border-green-700 pl-3 py-2 bg-green-50/50 dark:bg-green-900/10 rounded-r-lg"
                   >
-                    <div className="p-2 bg-green-100 dark:bg-green-800 rounded-lg flex-shrink-0">
-                      <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-                    </div>
-                    <div className="flex-1">
-                      <h5 className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {service.service_name}
-                      </h5>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs bg-green-100 dark:bg-green-800 px-2 py-0.5 rounded text-green-700 dark:text-green-300 font-medium">
-                          RM{service.rate_per_m3.toFixed(2)}/m³
-                        </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          × {totalVolume.toFixed(2)} m³
-                        </span>
+                    <div className="flex gap-3">
+                      <div className="p-2 bg-green-100 dark:bg-green-800 rounded-lg flex-shrink-0">
+                        <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h5 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          {service.service_name}
+                        </h5>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs bg-green-100 dark:bg-green-800 px-2 py-0.5 rounded text-green-700 dark:text-green-300 font-medium">
+                            RM{service.rate_per_m3.toFixed(2)}/m³
+                          </span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            × {totalVolume.toFixed(2)} m³
+                          </span>
+                        </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <span className="font-bold text-green-700 dark:text-green-300 text-sm">
+                    {/* Service price moved to separate row for mobile responsiveness */}
+                    <div className="mt-2 flex justify-end">
+                      <span className="font-bold text-green-700 dark:text-green-300 text-sm bg-green-100 dark:bg-green-800 px-3 py-1 rounded-lg">
                         {formatCurrency(serviceTotal)}
                       </span>
                     </div>
@@ -261,16 +267,18 @@ export function CheckoutSummary({
             )}
 
             {/* Freight Charges */}
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-600 dark:text-gray-400">
-                Delivery Fee
+            <div className="flex justify-between items-start text-sm">
+              <div className="flex-1 pr-2">
+                <span className="text-gray-600 dark:text-gray-400">
+                  Delivery Fee
+                </span>
                 {applicableFreightCharge && (
-                  <span className="text-xs block text-gray-500">
+                  <span className="text-xs block text-gray-500 mt-1">
                     ({applicableFreightCharge.description})
                   </span>
                 )}
-              </span>
-              <span className="font-medium text-gray-900 dark:text-gray-100">
+              </div>
+              <span className="font-medium text-gray-900 dark:text-gray-100 flex-shrink-0">
                 {formatCurrency(freightCost)}
               </span>
             </div>
@@ -287,27 +295,29 @@ export function CheckoutSummary({
             {/* Free shipping message */}
             {freightCost === 0 && totalVolume >= 4.5 && (
               <div className="text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-700 flex items-center gap-2">
-                <CheckCircle className="h-4 w-4" />
-                🎉 Free delivery for orders 4.5m³ and above!
+                <CheckCircle className="h-4 w-4 flex-shrink-0" />
+                <span>🎉 Free delivery for orders 4.5m³ and above!</span>
               </div>
             )}
 
             {/* Services benefit message */}
             {selectedServicesList.length > 0 && (
               <div className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-700 flex items-center gap-2">
-                <Info className="h-4 w-4" />
-                {selectedServicesList.length} additional service
-                {selectedServicesList.length !== 1 ? "s" : ""} added to enhance
-                your concrete
+                <Info className="h-4 w-4 flex-shrink-0" />
+                <span>
+                  {selectedServicesList.length} additional service
+                  {selectedServicesList.length !== 1 ? "s" : ""} added to
+                  enhance your concrete
+                </span>
               </div>
             )}
 
             <div className="border-t-2 border-gray-300 dark:border-gray-600 pt-4 mt-4">
               <div className="flex justify-between items-center">
-                <span className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                <span className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">
                   Total
                 </span>
-                <span className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                <span className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
                   {formatCurrency(total)}
                 </span>
               </div>
@@ -361,7 +371,11 @@ export function CheckoutSummary({
 
           {/* Security Badge */}
           <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+            <svg
+              className="h-4 w-4 flex-shrink-0"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
               <path
                 fillRule="evenodd"
                 d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
