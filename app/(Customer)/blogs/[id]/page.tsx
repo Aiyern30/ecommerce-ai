@@ -135,7 +135,7 @@ export default function BlogPost() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900">
+    <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <BreadcrumbNav
@@ -184,9 +184,7 @@ export default function BlogPost() {
             </div>
           )}
 
-          <TypographyH1 className="mb-6 px-6 text-blue-900">
-            {blog.title}
-          </TypographyH1>
+          <TypographyH1 className="mb-6 px-6">{blog.title}</TypographyH1>
 
           <div className="space-y-6 px-6 mb-12">
             <TypographyP>{blog.description}</TypographyP>
