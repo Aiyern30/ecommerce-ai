@@ -248,13 +248,11 @@ export default function OrdersPage() {
       <div className="min-h-screen py-8">
         <div className="container mx-auto px-4 flex flex-col gap-8">
           <div className="space-y-6">
-            {/* Header skeleton */}
             <div className="flex items-center gap-4">
               <Skeleton className="h-10 w-20" />
               <Skeleton className="h-8 w-48" />
             </div>
 
-            {/* Stats skeleton */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {Array.from({ length: 3 }).map((_, i) => (
                 <Card key={i} className="animate-pulse">
@@ -271,7 +269,6 @@ export default function OrdersPage() {
               ))}
             </div>
 
-            {/* Orders skeleton */}
             <div className="space-y-4">
               {Array.from({ length: 3 }).map((_, i) => (
                 <OrderSkeleton key={i} />
@@ -286,10 +283,8 @@ export default function OrdersPage() {
   return (
     <div className="min-h-screen py-8">
       <div className="container mx-auto px-4 flex flex-col gap-8">
-        {/* Header */}
         <TypographyH1>YOUR ORDERS</TypographyH1>
 
-        {/* Stats Cards */}
         {orders.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatsCards
@@ -310,7 +305,6 @@ export default function OrdersPage() {
           </div>
         )}
 
-        {/* Filter/Search Controls (like staff product page) */}
         <div className="flex flex-col sm:flex-row flex-wrap gap-2">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
@@ -322,7 +316,10 @@ export default function OrdersPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div
+            className="flex flex-wrap gap-2 sm:overflow-visible max-h-none
+            overflow-y-auto max-h-[60vh] w-full sm:w-auto"
+          >
             <Button
               variant="outline"
               size="sm"
@@ -376,18 +373,15 @@ export default function OrdersPage() {
           </div>
         </div>
 
-        {/* Advanced Filters (collapsible) */}
         {showFilters && (
           <Card className="p-4">
             <CardHeader className="p-0 pb-4">
               <CardTitle className="text-lg">Advanced Filters</CardTitle>
               <CardDescription>Refine your order search.</CardDescription>
             </CardHeader>
-            {/* Add more advanced filters here if needed */}
           </Card>
         )}
 
-        {/* Results Summary */}
         {orders.length > 0 && (
           <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-300 pt-2 border-t">
             <span className="font-medium">
@@ -399,7 +393,6 @@ export default function OrdersPage() {
           </div>
         )}
 
-        {/* Orders Content */}
         <div className="flex flex-col gap-8">
           {orders.length === 0 ? (
             <Card className="border-0 shadow-sm">
@@ -663,7 +656,6 @@ export default function OrdersPage() {
             </div>
           )}
 
-          {/* Action Buttons */}
           <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/products">
               <Button
