@@ -165,7 +165,7 @@ export default function ProductDetailClient() {
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const user = useUser();
-  const [selectedDelivery, setSelectedDelivery] = useState<string>("normal");
+  const [selectedDelivery, setSelectedDelivery] = useState<string>("");
   const [quantity, setQuantity] = useState<number>(1);
   const [isAdding, setIsAdding] = useState(false);
   const router = useRouter();
@@ -201,59 +201,70 @@ export default function ProductDetailClient() {
     if (productId) fetchProduct();
   }, [productId]);
 
+  // Create delivery options and set default selection
+  const deliveryOptions = useMemo(() => {
+    if (!product) return [];
+
+    return [
+      product.normal_price != null
+        ? {
+            key: "normal",
+            label: "Normal Delivery",
+            price: product.normal_price,
+            icon: Truck,
+          }
+        : null,
+      product.pump_price != null
+        ? {
+            key: "pump",
+            label: "Pump Delivery",
+            price: product.pump_price,
+            icon: Truck,
+          }
+        : null,
+      product.tremie_1_price != null
+        ? {
+            key: "tremie_1",
+            label: "Tremie 1",
+            price: product.tremie_1_price,
+            icon: Truck,
+          }
+        : null,
+      product.tremie_2_price != null
+        ? {
+            key: "tremie_2",
+            label: "Tremie 2",
+            price: product.tremie_2_price,
+            icon: Truck,
+          }
+        : null,
+      product.tremie_3_price != null
+        ? {
+            key: "tremie_3",
+            label: "Tremie 3",
+            price: product.tremie_3_price,
+            icon: Truck,
+          }
+        : null,
+    ].filter(Boolean) as {
+      key: string;
+      label: string;
+      price: number;
+      icon: any;
+    }[];
+  }, [product]);
+
+  // Set default delivery option when product loads or delivery options change
+  useEffect(() => {
+    if (deliveryOptions.length > 0 && !selectedDelivery) {
+      setSelectedDelivery(deliveryOptions[0].key);
+    }
+  }, [deliveryOptions, selectedDelivery]);
+
   const isStaffView = (pathname ?? "").includes("/staff/");
 
   if (loading) return <ProductDetailSkeleton isStaffView={isStaffView} />;
   if (!product) return <ProductNotFound isStaffView={isStaffView} />;
-
-  // Delivery options
-  const deliveryOptions = [
-    product.normal_price != null
-      ? {
-          key: "normal",
-          label: "Normal Delivery",
-          price: product.normal_price,
-          icon: Truck,
-        }
-      : null,
-    product.pump_price != null
-      ? {
-          key: "pump",
-          label: "Pump Delivery",
-          price: product.pump_price,
-          icon: Truck,
-        }
-      : null,
-    product.tremie_1_price != null
-      ? {
-          key: "tremie_1",
-          label: "Tremie 1",
-          price: product.tremie_1_price,
-          icon: Truck,
-        }
-      : null,
-    product.tremie_2_price != null
-      ? {
-          key: "tremie_2",
-          label: "Tremie 2",
-          price: product.tremie_2_price,
-          icon: Truck,
-        }
-      : null,
-    product.tremie_3_price != null
-      ? {
-          key: "tremie_3",
-          label: "Tremie 3",
-          price: product.tremie_3_price,
-          icon: Truck,
-        }
-      : null,
-  ].filter(Boolean) as {
-    key: string;
-    label: string;
-    price: number;
-    icon: any;
-  }[];
 
   const selectedOption =
     deliveryOptions.find((opt) => opt.key === selectedDelivery) ||
@@ -283,7 +294,7 @@ export default function ProductDetailClient() {
     setIsAdding(false);
     if (result.success) {
       toast.success("Added to cart!", {
-        description: `${product.name} (${selectedOption.label}) x${quantity} has been added to your cart.`,
+        description: `${product.name} (${selectedOption?.label}) x${quantity} has been added to your cart.`,
       });
       window.dispatchEvent(new CustomEvent("cartUpdated"));
     } else {
