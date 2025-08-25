@@ -52,21 +52,6 @@ function ConcreteIcon() {
   );
 }
 
-function DeliveryIcon() {
-  return (
-    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center">
-      <svg
-        className="w-8 h-8 text-white"
-        fill="currentColor"
-        viewBox="0 0 20 20"
-      >
-        <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path>
-        <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707L16 7.586A1 1 0 0015.414 7H14z"></path>
-      </svg>
-    </div>
-  );
-}
-
 function SupportIcon() {
   return (
     <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
@@ -120,17 +105,46 @@ export function ServicesShowcase() {
         </div>
 
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-20">
+          <Link href="/products">
+            <Card variant="gradient">
+              <ConcreteIcon />
+              <TypographyH3 className="mb-3 text-gray-800 dark:text-gray-100 font-bold">
+                Ready-Mix Concrete
+              </TypographyH3>
+              <TypographyP className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
+                Durable and consistent concrete mixes for foundations, slabs,
+                columns, and more. Quality guaranteed with every batch. Browse
+                all products.
+              </TypographyP>
+              <div className="inline-flex items-center text-blue-600 dark:text-blue-400 font-medium">
+                <span>View Products</span>
+                <svg
+                  className="w-4 h-4 ml-1"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+              </div>
+            </Card>
+          </Link>
+
           <Card variant="gradient">
-            <ConcreteIcon />
+            <AIIcon />
             <TypographyH3 className="mb-3 text-gray-800 dark:text-gray-100 font-bold">
-              Ready-Mix Concrete
+              AI Services
             </TypographyH3>
             <TypographyP className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
-              Durable and consistent concrete mixes for foundations, slabs,
-              columns, and more. Quality guaranteed with every batch.
+              Enhance your construction experience with our AI-powered tools:
+              Chatbot for instant answers, Smart Comparison for product
+              selection, and Recommended Products tailored to your needs.
             </TypographyP>
-            <div className="inline-flex items-center text-blue-600 dark:text-blue-400 font-medium">
-              <span>Premium Quality</span>
+            <div className="inline-flex items-center text-purple-600 dark:text-purple-400 font-medium">
+              <span>Explore AI Tools</span>
               <svg
                 className="w-4 h-4 ml-1"
                 fill="currentColor"
@@ -145,55 +159,32 @@ export function ServicesShowcase() {
             </div>
           </Card>
 
-          <Card variant="gradient">
-            <DeliveryIcon />
-            <TypographyH3 className="mb-3 text-gray-800 dark:text-gray-100 font-bold">
-              On-Time Delivery
-            </TypographyH3>
-            <TypographyP className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
-              Reliable logistics and scheduling to keep your project on track.
-              Never miss a deadline again.
-            </TypographyP>
-            <div className="inline-flex items-center text-green-600 dark:text-green-400 font-medium">
-              <span>Always Reliable</span>
-              <svg
-                className="w-4 h-4 ml-1"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                ></path>
-              </svg>
-            </div>
-          </Card>
-
-          <Card variant="gradient">
-            <SupportIcon />
-            <TypographyH3 className="mb-3 text-gray-800 dark:text-gray-100 font-bold">
-              Technical Support
-            </TypographyH3>
-            <TypographyP className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
-              Expert advice on mix selection, application, and compliance with
-              Malaysian standards. Professional guidance at every step.
-            </TypographyP>
-            <div className="inline-flex items-center text-blue-600 dark:text-blue-400 font-medium">
-              <span>Expert Guidance</span>
-              <svg
-                className="w-4 h-4 ml-1"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                ></path>
-              </svg>
-            </div>
-          </Card>
+          <Link href="/contact">
+            <Card variant="gradient">
+              <SupportIcon />
+              <TypographyH3 className="mb-3 text-gray-800 dark:text-gray-100 font-bold">
+                Technical Support
+              </TypographyH3>
+              <TypographyP className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
+                Expert advice on mix selection, application, and compliance with
+                Malaysian standards. Professional guidance at every step.
+              </TypographyP>
+              <div className="inline-flex items-center text-blue-600 dark:text-blue-400 font-medium">
+                <span>Contact Us</span>
+                <svg
+                  className="w-4 h-4 ml-1"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+              </div>
+            </Card>
+          </Link>
         </div>
 
         {/* AI Tools Section */}
