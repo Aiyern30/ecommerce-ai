@@ -3,6 +3,7 @@
 
 import { Card, CardContent } from "@/components/ui/";
 import { ArrowUpRight, ArrowDownRight, Activity } from "lucide-react";
+import { TypographyH6, TypographyP } from "./ui/Typography";
 
 interface StatsCardsProps {
   title: string;
@@ -72,16 +73,17 @@ export function StatsCards({
         <div className="flex flex-col gap-4">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                {title}
-              </p>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white leading-tight">
+              <TypographyH6>{title}</TypographyH6>
+              <TypographyP
+                className="text-2xl font-bold text-gray-900 dark:text-white leading-tight
+                  max-w-[8rem] sm:max-w-[10rem] md:max-w-none truncate overflow-ellipsis"
+              >
                 {value}
-              </h3>
+              </TypographyP>
               {description && (
-                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                <TypographyP className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                   {description}
-                </p>
+                </TypographyP>
               )}
             </div>
             <div
