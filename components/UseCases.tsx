@@ -9,35 +9,43 @@ import u1 from "@/public/UseCases/u1.jpeg";
 import u2 from "@/public/UseCases/u2.jpeg";
 import u3 from "@/public/UseCases/u5.webp";
 import u4 from "@/public/UseCases/u4.jpeg";
-import { useDeviceType } from "@/utils/useDeviceTypes";
 
 const useCases = [
   {
     number: "01",
     title: "Home Renovation",
-    description: "Ideal for tiling, wall plastering, and small-scale repairs.",
+    description:
+      "Perfect for residential projects including tiling, wall plastering, foundation work, and small-scale repairs. Our premium cement ensures long-lasting results for your dream home.",
     color: "text-blue-500",
+    image: u1,
+    stats: "50k+ Homes Built",
   },
   {
     number: "02",
     title: "Commercial Buildings",
     description:
-      "Reliable choice for office towers, malls, and high-rise projects.",
+      "Trusted by developers for office towers, shopping malls, and high-rise projects. Engineered for superior strength and durability in demanding commercial environments.",
     color: "text-blue-500",
+    image: u2,
+    stats: "200+ Projects",
   },
   {
     number: "03",
     title: "Infrastructure",
     description:
-      "Used in bridges, tunnels, and other public infrastructure projects.",
+      "Essential for bridges, tunnels, highways, and public infrastructure projects. Meeting the highest standards for safety and structural integrity across Malaysia.",
     color: "text-blue-500",
+    image: u3,
+    stats: "Major Landmarks",
   },
   {
     number: "04",
     title: "Retail Supply",
     description:
-      "Resell premium cement in your local hardware or construction store.",
+      "Partner with us to supply premium cement through your hardware store or construction supply business. Competitive pricing with reliable delivery schedules.",
     color: "text-blue-500",
+    image: u4,
+    stats: "1000+ Partners",
   },
 ];
 
@@ -47,201 +55,129 @@ export function UseCases() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2,
+        staggerChildren: 0.15,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
+    hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.6,
+        duration: 0.5,
         ease: easeOut,
       },
     },
   };
-
-  const imageVariants = {
-    hidden: { opacity: 0, x: 50 },
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: {
-        duration: 0.8,
-        ease: easeOut,
-      },
-    },
-  };
-
-  const { isMobile } = useDeviceType();
 
   return (
-    <section
-      className={`py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-slate-800 ${
-        isMobile ? "overflow-hidden" : ""
-      }`}
-    >
+    <section className="py-16 lg:py-24 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-slate-800">
       <div className="container mx-auto px-4">
-        <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-16">
-          <motion.div
-            className="w-full lg:w-1/2"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={containerVariants}
+        {/* Header Section */}
+        <motion.div
+          className="text-center mb-12 lg:mb-16"
+          initial={{ opacity: 0, y: -30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <Typography
+            variant="h1"
+            className="text-gray-800 dark:text-white mb-4 text-3xl lg:text-4xl xl:text-5xl"
           >
+            Common Use Cases
+          </Typography>
+          <Typography
+            variant="lead"
+            className="text-gray-600 dark:text-gray-200 max-w-2xl mx-auto text-lg lg:text-xl"
+          >
+            Discover the versatile applications of our premium cement across
+            various construction projects and industries.
+          </Typography>
+        </motion.div>
+
+        {/* Use Cases Grid */}
+        <motion.div
+          className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+          variants={containerVariants}
+        >
+          {useCases.map((useCase, index) => (
             <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
+              key={index}
+              variants={itemVariants}
+              whileHover={{
+                y: -8,
+                transition: { duration: 0.3 },
+              }}
+              className="group"
             >
-              <Typography
-                variant="h1"
-                className="text-gray-800 dark:text-white mb-6 lg:mb-8 text-center lg:text-left"
-              >
-                Common Use Cases
-              </Typography>
-            </motion.div>
+              <Card className="p-0">
+                <CardContent className="p-0">
+                  <div className="flex flex-col sm:flex-row">
+                    {/* Image Section */}
+                    <div className="w-full sm:w-2/5 relative">
+                      <AspectRatio ratio={4 / 3}>
+                        <Image
+                          src={useCase.image}
+                          alt={useCase.title}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500 rounded-xl"
+                        />
+                      </AspectRatio>
+                      {/* Number overlay */}
+                      <div className="absolute top-4 left-4">
+                        <motion.div
+                          className="text-4xl font-bold text-blue-600 dark:text-blue-400 bg-white/90 dark:bg-gray-900/90 rounded-lg px-3 py-2 backdrop-blur-sm"
+                          initial={{ scale: 0, rotate: -10 }}
+                          whileInView={{ scale: 1, rotate: 0 }}
+                          viewport={{ once: true }}
+                          transition={{
+                            duration: 0.5,
+                            delay: 0.1 + index * 0.1,
+                            type: "spring",
+                            stiffness: 150,
+                          }}
+                        >
+                          {useCase.number}
+                        </motion.div>
+                      </div>
+                    </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <Typography
-                variant="lead"
-                className="text-gray-600 dark:text-gray-200 mb-8 lg:mb-12 text-center lg:text-left"
-              >
-                Discover the versatile applications of our premium cement across
-                various construction projects and industries.
-              </Typography>
-            </motion.div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
-              {useCases.map((useCase, index) => (
-                <motion.div
-                  key={index}
-                  variants={itemVariants}
-                  whileHover={{
-                    y: -5,
-                    transition: { duration: 0.2 },
-                  }}
-                  className="group"
-                >
-                  <Card className="bg-white/80 dark:bg-gray-800/90 backdrop-blur-sm h-full shadow-lg hover:shadow-xl transition-all duration-300 border border-white/20 dark:border-gray-700/50">
-                    <CardContent className="p-6 lg:p-8">
-                      <motion.div
-                        className={`text-3xl lg:text-4xl font-bold ${useCase.color} dark:text-blue-400 mb-4`}
-                        initial={isMobile ? { scale: 1 } : { scale: 0 }}
-                        whileInView={{ scale: 1 }}
-                        viewport={{ once: true }}
-                        transition={{
-                          duration: 0.5,
-                          delay: 0.2 + index * 0.1,
-                          type: "spring",
-                          stiffness: 200,
-                        }}
-                      >
-                        {useCase.number}
-                      </motion.div>
-
+                    {/* Content Section */}
+                    <div className="w-full sm:w-3/5 p-6 lg:p-8 flex flex-col justify-center">
                       <Typography
                         variant="h3"
-                        className="text-gray-800 dark:text-white mb-3 lg:mb-4 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300"
+                        className="text-gray-800 dark:text-white mb-3 text-xl lg:text-2xl group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300"
                       >
                         {useCase.title}
                       </Typography>
 
                       <Typography
                         variant="muted"
-                        className="text-gray-600 dark:text-gray-200 leading-relaxed"
+                        className="text-gray-600 dark:text-gray-200 leading-relaxed text-base"
                       >
                         {useCase.description}
                       </Typography>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-
-          <motion.div
-            className="w-full lg:w-1/2"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={imageVariants}
-          >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-sm sm:max-w-md mx-auto lg:max-w-none lg:mx-0">
-              <motion.div
-                className="space-y-3 sm:space-y-4"
-                initial={
-                  isMobile
-                    ? { opacity: 0, scale: 1 }
-                    : { opacity: 0, scale: 0.8 }
-                }
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-              >
-                <AspectRatio ratio={4 / 3}>
-                  <Image
-                    src={u1}
-                    alt="Construction Project 1"
-                    fill
-                    className="object-contain rounded-lg"
-                    style={{ objectFit: "contain" }}
-                  />
-                </AspectRatio>
-                <AspectRatio ratio={4 / 3}>
-                  <Image
-                    src={u2}
-                    alt="Construction Project 2"
-                    fill
-                    className="object-contain rounded-lg"
-                    style={{ objectFit: "contain" }}
-                  />
-                </AspectRatio>
-              </motion.div>
-
-              <motion.div
-                className="space-y-3 sm:space-y-4 sm:mt-4 lg:mt-8"
-                initial={
-                  isMobile
-                    ? { opacity: 0, scale: 1 }
-                    : { opacity: 0, scale: 0.8 }
-                }
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-              >
-                <AspectRatio ratio={4 / 3}>
-                  <Image
-                    src={u3}
-                    alt="Construction Project 3"
-                    fill
-                    className="object-contain rounded-lg"
-                    style={{ objectFit: "contain" }}
-                  />
-                </AspectRatio>
-                <AspectRatio ratio={4 / 3}>
-                  <Image
-                    src={u4}
-                    alt="Construction Project 4"
-                    fill
-                    className="object-contain rounded-lg"
-                    style={{ objectFit: "contain" }}
-                  />
-                </AspectRatio>
-              </motion.div>
-            </div>
-          </motion.div>
-        </div>
+                      <div className="mt-4">
+                        <Typography
+                          variant="small"
+                          className="text-blue-600 dark:text-blue-400 font-semibold"
+                        >
+                          {useCase.stats}
+                        </Typography>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </motion.div>
       </div>
     </section>
   );
