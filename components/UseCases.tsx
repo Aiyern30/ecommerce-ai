@@ -114,11 +114,11 @@ export function UseCases() {
                 y: -8,
                 transition: { duration: 0.3 },
               }}
-              className="group"
+              className="group h-full"
             >
-              <Card className="p-0">
-                <CardContent className="p-0">
-                  <div className="flex flex-col sm:flex-row">
+              <Card className="p-0 h-full flex flex-col">
+                <CardContent className="p-0 h-full flex flex-col">
+                  <div className="flex flex-col sm:flex-row h-full">
                     {/* Image Section */}
                     <div className="w-full sm:w-2/5 relative">
                       <AspectRatio ratio={4 / 3}>
@@ -149,7 +149,7 @@ export function UseCases() {
                     </div>
 
                     {/* Content Section */}
-                    <div className="w-full sm:w-3/5 p-6 lg:p-8 flex flex-col justify-center">
+                    <div className="w-full sm:w-3/5 p-6 lg:p-8 flex flex-col justify-center h-full min-h-[220px]">
                       <Typography
                         variant="h3"
                         className="text-gray-800 dark:text-white mb-3 text-xl lg:text-2xl group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300"

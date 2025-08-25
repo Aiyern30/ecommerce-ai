@@ -83,7 +83,6 @@ export default function CustomerDetailsPage() {
           Customer Details
         </TypographyH2>
       </div>
-      {/* Customer Not Found UI */}
       {!loading && !customer && (
         <div className="flex flex-col items-center justify-center py-16">
           <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
