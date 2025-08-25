@@ -222,16 +222,27 @@ const Header = () => {
   const user = useUser();
   const [isStaff, setIsStaff] = useState(false);
 
-  const isActive = (path: string) => pathname?.startsWith(path);
+  const isActive = (path: string) => {
+    if (path === "/") {
+      return pathname === "/";
+    }
+    return pathname?.startsWith(path);
+  };
 
-  const primaryNavItems = [
-    { name: "Products", path: "/products" },
-    { name: "Blog", path: "/blogs" },
-    { name: "Cart", path: "/cart" },
-    { name: "Orders", path: "/profile/orders" },
-  ];
+  const filteredPrimaryNavItems = user
+    ? [
+        { name: "Home", path: "/" },
+        { name: "Products", path: "/products" },
+        { name: "Blog", path: "/blogs" },
+        { name: "Cart", path: "/cart" },
+        { name: "Orders", path: "/profile/orders" },
+      ]
+    : [
+        { name: "Home", path: "/" },
+        { name: "Products", path: "/products" },
+        { name: "Blog", path: "/blogs" },
+      ];
 
-  // Add staff dashboard nav if user is staff
   const secondaryNavItems = [
     { name: "FAQ", path: "/faq" },
     { name: "Contact", path: "/contact" },
@@ -267,7 +278,6 @@ const Header = () => {
   };
 
   useEffect(() => {
-    // If user is logged in but missing avatar_url, force a reload to get fresh user data
     if (user && !user.user_metadata?.avatar_url) {
       supabase.auth.getUser().then(() => {
         window.location.reload();
@@ -275,7 +285,6 @@ const Header = () => {
     }
   }, [user]);
 
-  // Staff check logic
   useEffect(() => {
     const checkUser = async () => {
       const {
@@ -295,10 +304,8 @@ const Header = () => {
   return (
     <div>
       <header className="fixed top-0 left-0 w-full bg-white dark:bg-gray-900 shadow-md border-b z-50 dark:border-gray-800">
-        {/* Top Row - Logo and Icons */}
         <div className="border-b dark:border-gray-800 md:border-b-0">
           <div className="container mx-auto flex items-center justify-between p-4">
-            {/* Logo */}
             <Link
               href="/"
               className="flex items-center gap-3 text-xl font-bold dark:text-white hover:opacity-80 transition-opacity"
@@ -318,9 +325,7 @@ const Header = () => {
               <ProductSearchBox />
             </div>
 
-            {/* Right Icons */}
             <div className="flex items-center gap-3">
-              {/* Theme Toggle */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -335,7 +340,6 @@ const Header = () => {
                 )}
               </Button>
 
-              {/* User-specific icons */}
               {user && (
                 <>
                   <NotificationSheet />
@@ -343,10 +347,8 @@ const Header = () => {
                 </>
               )}
 
-              {/* Cart for non-users */}
               {!user && <CartSheet />}
 
-              {/* Avatar/Profile */}
               {user && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -380,7 +382,6 @@ const Header = () => {
                 </DropdownMenu>
               )}
 
-              {/* Mobile Menu Button */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -402,7 +403,6 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Mobile Search Row */}
         <div className="block md:hidden border-b dark:border-gray-800">
           <div className="container mx-auto p-4">
             <ProductSearchBox
@@ -418,7 +418,7 @@ const Header = () => {
             {/* Navigation */}
             <nav className="flex items-center flex-1">
               <ul className="flex gap-8 items-center">
-                {primaryNavItems.map(({ name, path }) => (
+                {filteredPrimaryNavItems.map(({ name, path }) => (
                   <li key={path} className="relative">
                     <Link
                       href={path}
@@ -565,7 +565,7 @@ const Header = () => {
                       </Link>
                     </motion.div>
                   )}
-                  {primaryNavItems.map(({ name, path }, index) => (
+                  {filteredPrimaryNavItems.map(({ name, path }, index) => (
                     <motion.div
                       key={path}
                       initial={{ opacity: 0, x: -20 }}
