@@ -64,30 +64,18 @@ export default function BlogsPage() {
       <div className="container mx-auto px-4">
         <h2 className="mb-8 text-center text-3xl font-bold">All Blogs</h2>
 
-        <div
-          className={`grid gap-6
-            grid-cols-1
-            sm:grid-cols-2
-            md:grid-cols-${blogs.length > 3 ? 3 : blogs.length}
-            lg:grid-cols-${blogs.length}
-          `}
-        >
+        {/* Fixed responsive grid - consistent layout regardless of blog count */}
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {blogs.map((post) => (
             <BlogCard key={post.id} post={post} />
           ))}
         </div>
 
+        {/* Loading skeletons with same grid layout */}
         {loading && (
-          <div
-            className={`grid gap-6
-              grid-cols-1
-              sm:grid-cols-2
-              md:grid-cols-4
-              lg:grid-cols-4
-            `}
-          >
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-6">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i} className="overflow-hidden">
+              <Card key={i} className="overflow-hidden p-0">
                 <CardHeader className="p-0 relative h-52">
                   <Skeleton className="absolute inset-0 w-full h-full rounded-t-lg" />
                 </CardHeader>
