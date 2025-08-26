@@ -9,6 +9,7 @@ export async function GET() {
     );
 
     const { data, error } = await supabase.rpc("get_product_performance");
+    console.log("get_product_performance", data);
 
     if (error) console.error("Error fetching product performance:", error);
 
