@@ -61,7 +61,6 @@ export function CartAnalytics() {
 
   return (
     <div className="space-y-6">
-      {/* KPI Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card className="bg-gradient-to-br from-white to-red-50/30 dark:from-gray-900 dark:to-red-900/10 border-0 shadow-xl">
           <CardContent className="p-6">
@@ -145,9 +144,7 @@ export function CartAnalytics() {
         </Card>
       </div>
 
-      {/* Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Cart Activity by Hour */}
         <Card className="bg-white dark:bg-gray-800 shadow-xl border-0">
           <CardHeader>
             <CardTitle className="text-gray-900 dark:text-white">
@@ -207,7 +204,6 @@ export function CartAnalytics() {
           </CardContent>
         </Card>
 
-        {/* Cart Age Distribution */}
         <Card className="bg-white dark:bg-gray-800 shadow-xl border-0">
           <CardHeader>
             <CardTitle className="text-gray-900 dark:text-white">
@@ -215,14 +211,14 @@ export function CartAnalytics() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="h-[300px] flex flex-col gap-4">
+              <ResponsiveContainer width="100%" height="80%">
                 <PieChart>
                   <Pie
                     data={data?.cartAgeDistribution}
                     cx="50%"
                     cy="50%"
-                    outerRadius={100}
+                    outerRadius={90}
                     dataKey="count"
                     label={({ ageRange, count }) => `${ageRange}: ${count}`}
                   >
@@ -230,9 +226,39 @@ export function CartAnalytics() {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip
+                    content={({ active, payload }) =>
+                      active && payload && payload.length ? (
+                        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-xl shadow-xl">
+                          <div className="font-semibold text-gray-900 dark:text-white text-lg">
+                            {payload[0].payload.ageRange}
+                          </div>
+                          <div className="text-purple-600 dark:text-purple-400 font-bold text-lg">
+                            {payload[0].value} carts
+                          </div>
+                        </div>
+                      ) : null
+                    }
+                  />
                 </PieChart>
               </ResponsiveContainer>
+              {/* Enhanced legend */}
+              <div className="flex flex-wrap gap-4 justify-center mt-2">
+                {data?.cartAgeDistribution.map((entry, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <span
+                      className="inline-block w-3 h-3 rounded-full"
+                      style={{ background: entry.color }}
+                    />
+                    <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">
+                      {entry.ageRange}
+                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      ({entry.count})
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>
