@@ -18,13 +18,13 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { getUserOrders } from "@/lib/order/api";
 import {
   TypographyH1,
   TypographyH3,
   TypographyP,
 } from "@/components/ui/Typography";
 import { Order } from "@/type/order";
+import { getOrderById } from "@/lib/order/api";
 
 export default function OrderSuccessPage() {
   const searchParams = useSearchParams();
@@ -42,9 +42,7 @@ export default function OrderSuccessPage() {
       }
 
       try {
-        const orders = await getUserOrders(user.id);
-        const foundOrder = orders.find((o: Order) => o.id === orderId);
-
+        const foundOrder = await getOrderById(orderId, user.id);
         if (foundOrder) {
           console.log("Found order:", foundOrder);
           setOrder(foundOrder);
