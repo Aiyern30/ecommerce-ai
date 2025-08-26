@@ -35,6 +35,13 @@ interface ProductPerformanceData {
     stock: number;
     category: string;
   }>;
+  topSellingProducts: Array<{
+    name: string;
+    category: string;
+    productId: string;
+    totalSold: number;
+    totalRevenue: number;
+  }>;
 }
 
 export function ProductPerformance() {
@@ -161,6 +168,40 @@ export function ProductPerformance() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Top Selling Products */}
+      <Card className="bg-white dark:bg-gray-800 shadow-xl border-0">
+        <CardHeader>
+          <CardTitle className="text-gray-900 dark:text-white">
+            Top Selling Products
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2">
+            {data?.topSellingProducts.slice(0, 5).map((product) => (
+              <div
+                key={product.productId}
+                className="p-4 bg-white dark:bg-gray-800 rounded-xl border border-blue-200 dark:border-blue-800"
+              >
+                <h4 className="font-semibold text-gray-900 dark:text-white">
+                  {product.name}
+                </h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {product.category}
+                </p>
+                <div className="mt-2 flex flex-col gap-1">
+                  <span className="text-blue-600 dark:text-blue-400 font-bold">
+                    Total Sold: {product.totalSold}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    Revenue: RM{product.totalRevenue.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Low Stock Alert */}
       <Card className="bg-gradient-to-br from-white to-red-50/30 dark:from-gray-900 dark:to-red-900/10 border-0 shadow-xl">
