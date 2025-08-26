@@ -6,6 +6,7 @@ import { Package, AlertCircle } from "lucide-react";
 import {
   Bar,
   BarChart,
+  Cell,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -107,6 +108,22 @@ export function ProductPerformance() {
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data?.priceAnalysis}>
+                  <defs>
+                    <linearGradient
+                      id="priceRangeBar"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.9} />
+                      <stop
+                        offset="100%"
+                        stopColor="#6366f1"
+                        stopOpacity={0.7}
+                      />
+                    </linearGradient>
+                  </defs>
                   <XAxis
                     dataKey="priceRange"
                     label={{
@@ -115,6 +132,9 @@ export function ProductPerformance() {
                       offset: -5,
                       style: { fill: "#3b82f6", fontSize: 13 },
                     }}
+                    tick={{ fontSize: 12, fill: "#3b82f6" }}
+                    axisLine={false}
+                    tickLine={false}
                   />
                   <YAxis
                     label={{
@@ -122,11 +142,43 @@ export function ProductPerformance() {
                       angle: -90,
                       position: "insideLeft",
                       offset: 10,
-                      style: { fill: "#3b82f6", fontSize: 13 },
+                      style: { fill: "#6366f1", fontSize: 13 },
                     }}
+                    tick={{ fontSize: 12, fill: "#6366f1" }}
+                    axisLine={false}
+                    tickLine={false}
                   />
-                  <Tooltip />
-                  <Bar dataKey="products" fill="#3b82f6" />
+                  <Tooltip
+                    cursor={{ fill: "rgba(59, 130, 246, 0.12)" }}
+                    content={({ active, payload, label }) =>
+                      active && payload && payload.length ? (
+                        <div className="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 px-4 py-3 rounded-xl shadow-xl backdrop-blur-sm">
+                          <div className="font-semibold text-blue-700 dark:text-blue-200 text-lg">
+                            {payload[0].value} products
+                          </div>
+                          <div className="text-blue-600 dark:text-blue-400 text-sm font-medium">
+                            {label}
+                          </div>
+                        </div>
+                      ) : null
+                    }
+                  />
+                  <Bar
+                    dataKey="products"
+                    fill="url(#priceRangeBar)"
+                    radius={[8, 8, 0, 0]}
+                    barSize={32}
+                    className="transition-all duration-200"
+                  >
+                    {data?.priceAnalysis.map((entry, idx) => (
+                      <Cell
+                        key={`cell-${idx}`}
+                        cursor="pointer"
+                        fill="url(#priceRangeBar)"
+                        className="hover:opacity-80"
+                      />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
