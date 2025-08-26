@@ -17,6 +17,9 @@ import {
   Sparkles,
   ArrowRight,
   Clock,
+  Calculator,
+  DollarSign,
+  Ruler,
 } from "lucide-react";
 import Image from "next/image";
 import {
@@ -30,6 +33,33 @@ import {
 import { Button } from "@/components/ui/";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/";
 import { Badge } from "@/components/ui/";
+
+interface QuantityEstimation {
+  estimatedVolume: number;
+  confidenceLevel: "low" | "medium" | "high";
+  reasoning: string;
+  range: {
+    min: number;
+    max: number;
+  };
+}
+
+interface CostEstimation {
+  normal: {
+    total: number;
+    range: {
+      min: number;
+      max: number;
+    };
+  };
+  pump?: {
+    total: number;
+    range: {
+      min: number;
+      max: number;
+    };
+  };
+}
 
 interface DetectionResult {
   success: boolean;
@@ -51,6 +81,8 @@ interface DetectionResult {
   confidence: number;
   message: string;
   totalProducts?: number;
+  quantityEstimation?: QuantityEstimation;
+  costEstimation?: CostEstimation;
 }
 
 const concreteProducts = [
@@ -211,6 +243,17 @@ export default function ConcreteDetectorPage() {
   const getProductStyle = (grade: string) => {
     const product = concreteProducts.find((p) => p.grade === grade);
     return product || concreteProducts[2];
+  };
+
+  const getConfidenceBadge = (level: string) => {
+    switch (level) {
+      case "high":
+        return "bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 border-green-200 dark:border-green-600";
+      case "medium":
+        return "bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-600";
+      default:
+        return "bg-orange-100 dark:bg-orange-800 text-orange-800 dark:text-orange-200 border-orange-200 dark:border-orange-600";
+    }
   };
 
   // Fixed click handler for upload area
@@ -481,9 +524,9 @@ export default function ConcreteDetectorPage() {
           </Card>
         ) : (
           /* Enhanced Results State */
-          <div className="space-y-6">
+          <div className="space-y-6 mt-6">
             {/* Success Header */}
-            <Card className="overflow-hidden border-0 shadow-2xl">
+            <Card className="overflow-hidden border-0 shadow-2xl py-0">
               <CardContent className="p-0">
                 <div className="bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 dark:from-green-400 dark:via-emerald-400 dark:to-teal-400 p-8 text-white relative overflow-hidden">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(255,255,255,0.1),transparent_50%)]"></div>
@@ -513,8 +556,8 @@ export default function ConcreteDetectorPage() {
 
             {/* Product Recommendation */}
             {result.matchedProduct && (
-              <Card className="border-0 shadow-2xl overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 border-b border-blue-100 dark:border-blue-800 pb-6">
+              <Card className="border-0 shadow-2xl overflow-hidden py-0">
+                <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 border-b border-blue-100 dark:border-blue-800 py-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <CardTitle className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
@@ -535,31 +578,133 @@ export default function ConcreteDetectorPage() {
                 </CardHeader>
 
                 <CardContent className="p-8">
-                  {/* Enhanced Pricing Cards */}
-                  <div className="grid md:grid-cols-3 gap-6 mb-8">
-                    <Card className="relative overflow-hidden border-2 border-green-200 dark:border-green-700 hover:border-green-300 dark:hover:border-green-600 transition-colors group">
-                      <CardContent className="p-6 text-center bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/50 dark:to-emerald-950/50 group-hover:from-green-100 group-hover:to-emerald-100 dark:group-hover:from-green-950/70 dark:group-hover:to-emerald-950/70 transition-colors">
-                        <Badge className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 border-green-200 dark:border-green-600 mb-3">
+                  {/* Quantity Estimation Section */}
+                  {result.quantityEstimation && (
+                    <Card className="mb-8 border-2 border-purple-200 dark:border-purple-700 bg-gradient-to-r from-purple-50/50 to-pink-50/50 dark:from-purple-950/30 dark:to-pink-950/30">
+                      <CardContent className="p-6">
+                        <div className="flex items-start space-x-4">
+                          <div className="p-3 bg-purple-100 dark:bg-purple-800 rounded-xl">
+                            <Calculator className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-4">
+                              <TypographyH5 className="font-bold text-gray-900 dark:text-white">
+                                AI Quantity Estimation
+                              </TypographyH5>
+                              <Badge
+                                className={getConfidenceBadge(
+                                  result.quantityEstimation.confidenceLevel
+                                )}
+                              >
+                                {result.quantityEstimation.confidenceLevel}{" "}
+                                confidence
+                              </Badge>
+                            </div>
+
+                            <div className="grid md:grid-cols-2 gap-6 mb-4">
+                              <div className="space-y-2">
+                                <TypographySmall className="text-gray-600 dark:text-gray-400 font-medium">
+                                  ESTIMATED VOLUME
+                                </TypographySmall>
+                                <div className="flex items-baseline space-x-2">
+                                  <span className="text-4xl font-bold text-purple-700 dark:text-purple-300">
+                                    {result.quantityEstimation.estimatedVolume}
+                                  </span>
+                                  <span className="text-lg text-purple-600 dark:text-purple-400 font-medium">
+                                    m³
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="space-y-2">
+                                <TypographySmall className="text-gray-600 dark:text-gray-400 font-medium">
+                                  VOLUME RANGE
+                                </TypographySmall>
+                                <div className="flex items-center space-x-2 text-purple-700 dark:text-purple-300 font-semibold">
+                                  <span>
+                                    {result.quantityEstimation.range.min} m³
+                                  </span>
+                                  <span className="text-gray-400">-</span>
+                                  <span>
+                                    {result.quantityEstimation.range.max} m³
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg p-4 border border-purple-200 dark:border-purple-700">
+                              <div className="flex items-start space-x-2">
+                                <Ruler className="h-4 w-4 text-purple-600 dark:text-purple-400 mt-0.5" />
+                                <TypographySmall className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                                  {result.quantityEstimation.reasoning}
+                                </TypographySmall>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Enhanced Pricing Cards with Cost Estimation */}
+                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    {/* Normal Price */}
+                    <Card
+                      className="relative overflow-hidden border-2 border-green-200 dark:border-green-700 
+    hover:border-green-400 dark:hover:border-green-500 
+    transition-all duration-300 group hover:-translate-y-1 hover:shadow-xl rounded-2xl !py-0"
+                    >
+                      <CardContent
+                        className="!p-6 py-0 flex flex-col items-center justify-center text-center 
+      bg-gradient-to-br from-green-50 to-emerald-50 
+      dark:from-green-950/50 dark:to-emerald-950/50 
+      group-hover:from-green-100 group-hover:to-emerald-100 
+      dark:group-hover:from-green-950/70 dark:group-hover:to-emerald-950/70 transition-colors"
+                      >
+                        <Badge
+                          className="mb-4 px-3 py-1 rounded-full text-sm font-medium
+        bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 
+        border border-green-200 dark:border-green-600"
+                        >
                           Normal Price
                         </Badge>
-                        <TypographyH3 className="text-4xl font-bold text-green-800 dark:text-green-300 mb-2">
+
+                        <TypographyH3 className="text-4xl font-extrabold text-green-800 dark:text-green-300 mb-2">
                           ${result.matchedProduct.normal_price}
                         </TypographyH3>
+
                         <TypographyMuted className="text-green-600 dark:text-green-400 font-medium">
                           per {result.matchedProduct.unit}
                         </TypographyMuted>
                       </CardContent>
                     </Card>
 
+                    {/* Pump Price */}
                     {result.matchedProduct.pump_price && (
-                      <Card className="relative overflow-hidden border-2 border-blue-200 dark:border-blue-700 hover:border-blue-300 dark:hover:border-blue-600 transition-colors group">
-                        <CardContent className="p-6 text-center bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 group-hover:from-blue-100 group-hover:to-indigo-100 dark:group-hover:from-blue-950/70 dark:group-hover:to-indigo-950/70 transition-colors">
-                          <Badge className="bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-600 mb-3">
+                      <Card
+                        className="relative overflow-hidden border-2 border-blue-200 dark:border-blue-700 
+      hover:border-blue-400 dark:hover:border-blue-500 
+      transition-all duration-300 group hover:-translate-y-1 hover:shadow-xl rounded-2xl !py-0"
+                      >
+                        <CardContent
+                          className="!p-6 py-0 flex flex-col items-center justify-center text-center 
+        bg-gradient-to-br from-blue-50 to-indigo-50 
+        dark:from-blue-950/50 dark:to-indigo-950/50 
+        group-hover:from-blue-100 group-hover:to-indigo-100 
+        dark:group-hover:from-blue-950/70 dark:group-hover:to-indigo-950/70 transition-colors"
+                        >
+                          <Badge
+                            className="mb-4 px-3 py-1 rounded-full text-sm font-medium
+          bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 
+          border border-blue-200 dark:border-blue-600"
+                          >
                             Pump Price
                           </Badge>
-                          <TypographyH3 className="text-4xl font-bold text-blue-800 dark:text-blue-300 mb-2">
+
+                          <TypographyH3 className="text-4xl font-extrabold text-blue-800 dark:text-blue-300 mb-2">
                             ${result.matchedProduct.pump_price}
                           </TypographyH3>
+
                           <TypographyMuted className="text-blue-600 dark:text-blue-400 font-medium">
                             per {result.matchedProduct.unit}
                           </TypographyMuted>
@@ -567,20 +712,143 @@ export default function ConcreteDetectorPage() {
                       </Card>
                     )}
 
-                    <Card className="relative overflow-hidden border-2 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors group">
-                      <CardContent className="p-6 text-center bg-gradient-to-br from-gray-50 to-slate-50 dark:from-gray-950/50 dark:to-slate-950/50 group-hover:from-gray-100 group-hover:to-slate-100 dark:group-hover:from-gray-950/70 dark:group-hover:to-slate-950/70 transition-colors">
-                        <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-600 mb-3">
+                    {/* Stock */}
+                    <Card
+                      className="relative overflow-hidden border-2 border-gray-200 dark:border-gray-700 
+    hover:border-gray-400 dark:hover:border-gray-500 
+    transition-all duration-300 group hover:-translate-y-1 hover:shadow-xl rounded-2xl !py-0"
+                    >
+                      <CardContent
+                        className="!p-6 py-0 flex flex-col items-center justify-center text-center 
+      bg-gradient-to-br from-gray-50 to-slate-50 
+      dark:from-gray-950/50 dark:to-slate-950/50 
+      group-hover:from-gray-100 group-hover:to-slate-100 
+      dark:group-hover:from-gray-950/70 dark:group-hover:to-slate-950/70 transition-colors"
+                      >
+                        <Badge
+                          className="mb-4 px-3 py-1 rounded-full text-sm font-medium
+        bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 
+        border border-gray-200 dark:border-gray-600"
+                        >
                           Available Stock
                         </Badge>
-                        <TypographyH3 className="text-4xl font-bold text-gray-800 dark:text-gray-300 mb-2">
+
+                        <TypographyH3 className="text-4xl font-extrabold text-gray-800 dark:text-gray-300 mb-2">
                           {result.matchedProduct.stock_quantity}
                         </TypographyH3>
+
                         <TypographyMuted className="text-gray-600 dark:text-gray-400 font-medium">
                           m³ in stock
                         </TypographyMuted>
                       </CardContent>
                     </Card>
+
+                    {/* Estimated Need */}
+                    {result.quantityEstimation && (
+                      <Card
+                        className="relative overflow-hidden border-2 border-purple-200 dark:border-purple-700 
+      hover:border-purple-400 dark:hover:border-purple-500 
+      transition-all duration-300 group hover:-translate-y-1 hover:shadow-xl rounded-2xl !py-0"
+                      >
+                        <CardContent
+                          className="!p-6 py-0 flex flex-col items-center justify-center text-center 
+        bg-gradient-to-br from-purple-50 to-pink-50 
+        dark:from-purple-950/50 dark:to-pink-950/50 
+        group-hover:from-purple-100 group-hover:to-pink-100 
+        dark:group-hover:from-purple-950/70 dark:group-hover:to-pink-950/70 transition-colors"
+                        >
+                          <Badge
+                            className="mb-4 px-3 py-1 rounded-full text-sm font-medium
+          bg-purple-100 dark:bg-purple-800 text-purple-800 dark:text-purple-200 
+          border border-purple-200 dark:border-purple-600"
+                          >
+                            Estimated Need
+                          </Badge>
+
+                          <TypographyH3 className="text-4xl font-extrabold text-purple-800 dark:text-purple-300 mb-2">
+                            {result.quantityEstimation.estimatedVolume}
+                          </TypographyH3>
+
+                          <TypographyMuted className="text-purple-600 dark:text-purple-400 font-medium">
+                            m³ needed
+                          </TypographyMuted>
+                        </CardContent>
+                      </Card>
+                    )}
                   </div>
+
+                  {/* Total Cost Estimation */}
+                  {result.costEstimation && (
+                    <Card className="mb-8 border-2 border-indigo-200 dark:border-indigo-700 bg-gradient-to-r from-indigo-50/50 to-blue-50/50 dark:from-indigo-950/30 dark:to-blue-950/30">
+                      <CardContent className="p-6">
+                        <div className="flex items-start space-x-4">
+                          <div className="p-3 bg-indigo-100 dark:bg-indigo-800 rounded-xl">
+                            <DollarSign className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                          </div>
+                          <div className="flex-1">
+                            <TypographyH5 className="font-bold text-gray-900 dark:text-white mb-4">
+                              Total Project Cost Estimation
+                            </TypographyH5>
+
+                            <div className="grid md:grid-cols-2 gap-6">
+                              {/* Normal pricing */}
+                              <div className="bg-white/80 dark:bg-gray-800/80 rounded-xl p-6 border border-indigo-200 dark:border-indigo-700">
+                                <div className="text-center space-y-3">
+                                  <Badge className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200">
+                                    Normal Delivery
+                                  </Badge>
+                                  <div>
+                                    <div className="text-3xl font-bold text-indigo-700 dark:text-indigo-300">
+                                      ${result.costEstimation.normal.total}
+                                    </div>
+                                    <TypographySmall className="text-gray-600 dark:text-gray-400">
+                                      Range: $
+                                      {result.costEstimation.normal.range.min} -
+                                      ${result.costEstimation.normal.range.max}
+                                    </TypographySmall>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Pump pricing if available */}
+                              {result.costEstimation.pump && (
+                                <div className="bg-white/80 dark:bg-gray-800/80 rounded-xl p-6 border border-indigo-200 dark:border-indigo-700">
+                                  <div className="text-center space-y-3">
+                                    <Badge className="bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200">
+                                      Pump Delivery
+                                    </Badge>
+                                    <div>
+                                      <div className="text-3xl font-bold text-indigo-700 dark:text-indigo-300">
+                                        ${result.costEstimation.pump.total}
+                                      </div>
+                                      <TypographySmall className="text-gray-600 dark:text-gray-400">
+                                        Range: $
+                                        {result.costEstimation.pump.range.min} -
+                                        ${result.costEstimation.pump.range.max}
+                                      </TypographySmall>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-950/50 rounded-lg border border-yellow-200 dark:border-yellow-700">
+                              <div className="flex items-start space-x-2">
+                                <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-400 mt-0.5" />
+                                <TypographySmall className="text-yellow-800 dark:text-yellow-300">
+                                  These are estimates based on AI analysis. For
+                                  accurate quotes, please consult with our
+                                  specialists who can consider site conditions,
+                                  access requirements, and specific project
+                                  details.
+                                </TypographySmall>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
 
                   {/* Detected Elements */}
                   {result.detectedLabels &&
