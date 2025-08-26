@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -7,14 +8,90 @@ export async function GET() {
     const cookieStore = cookies();
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
 
-    const today = new Date();
-    const thirtyDaysAgo = new Date(today);
-    thirtyDaysAgo.setDate(today.getDate() - 30);
-    const sixtyDaysAgo = new Date(today);
-    sixtyDaysAgo.setDate(today.getDate() - 60);
+    const now = new Date();
 
-    // -------------------
-    // 1️⃣ Revenue
+    // Try multiple fallback periods for more reliable comparisons
+    const periods = [
+      // Current vs Previous Month
+      {
+        current: new Date(now.getFullYear(), now.getMonth(), 1),
+        previous: new Date(now.getFullYear(), now.getMonth() - 1, 1),
+        previousEnd: new Date(now.getFullYear(), now.getMonth(), 0),
+      },
+      // Last 30 days vs Previous 30 days
+      {
+        current: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
+        previous: new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000),
+        previousEnd: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
+      },
+      // Last 7 days vs Previous 7 days
+      {
+        current: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
+        previous: new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000),
+        previousEnd: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
+      },
+    ];
+
+    // Helper function to calculate growth with multiple period fallbacks
+    const calculateGrowthWithFallback = (
+      data: any[],
+      valueExtractor: (item: any) => number
+    ) => {
+      for (const period of periods) {
+        const currentValue =
+          data
+            ?.filter((item) => new Date(item.created_at) >= period.current)
+            .reduce((sum, item) => sum + valueExtractor(item), 0) || 0;
+
+        const previousValue =
+          data
+            ?.filter((item) => {
+              const itemDate = new Date(item.created_at);
+              return (
+                itemDate >= period.previous && itemDate <= period.previousEnd
+              );
+            })
+            .reduce((sum, item) => sum + valueExtractor(item), 0) || 0;
+
+        // If we have meaningful data for both periods, use this calculation
+        if (previousValue > 0) {
+          return {
+            growth: ((currentValue - previousValue) / previousValue) * 100,
+            hasValidComparison: true,
+          };
+        }
+      }
+
+      // No valid comparison found across all periods
+      return { growth: 0, hasValidComparison: false };
+    };
+
+    const calculateCountGrowthWithFallback = (data: any[]) => {
+      for (const period of periods) {
+        const currentCount =
+          data?.filter((item) => new Date(item.created_at) >= period.current)
+            .length || 0;
+
+        const previousCount =
+          data?.filter((item) => {
+            const itemDate = new Date(item.created_at);
+            return (
+              itemDate >= period.previous && itemDate <= period.previousEnd
+            );
+          }).length || 0;
+
+        if (previousCount > 0) {
+          return {
+            growth: ((currentCount - previousCount) / previousCount) * 100,
+            hasValidComparison: true,
+          };
+        }
+      }
+
+      return { growth: 0, hasValidComparison: false };
+    };
+
+    // Revenue
     const { data: revenueData, error: revenueError } = await supabase
       .from("orders")
       .select("total, created_at")
@@ -25,28 +102,12 @@ export async function GET() {
     const totalRevenue =
       revenueData?.reduce((sum, order) => sum + Number(order.total || 0), 0) ||
       0;
+    const revenueGrowthData = calculateGrowthWithFallback(
+      revenueData || [],
+      (order) => Number(order.total || 0)
+    );
 
-    const recentRevenue =
-      revenueData
-        ?.filter((o) => new Date(o.created_at) >= thirtyDaysAgo)
-        .reduce((sum, o) => sum + Number(o.total || 0), 0) || 0;
-
-    const previousRevenue =
-      revenueData
-        ?.filter(
-          (o) =>
-            new Date(o.created_at) >= sixtyDaysAgo &&
-            new Date(o.created_at) < thirtyDaysAgo
-        )
-        .reduce((sum, o) => sum + Number(o.total || 0), 0) || 0;
-
-    const revenueGrowth =
-      previousRevenue > 0
-        ? ((recentRevenue - previousRevenue) / previousRevenue) * 100
-        : 0;
-
-    // -------------------
-    // 2️⃣ Orders
+    // Orders
     const {
       data: ordersData,
       count: totalOrders,
@@ -55,24 +116,9 @@ export async function GET() {
 
     if (ordersError) throw ordersError;
 
-    const recentOrders =
-      ordersData?.filter((o) => new Date(o.created_at) >= thirtyDaysAgo)
-        .length || 0;
+    const ordersGrowthData = calculateCountGrowthWithFallback(ordersData || []);
 
-    const previousOrders =
-      ordersData?.filter(
-        (o) =>
-          new Date(o.created_at) >= sixtyDaysAgo &&
-          new Date(o.created_at) < thirtyDaysAgo
-      ).length || 0;
-
-    const ordersGrowth =
-      previousOrders > 0
-        ? ((recentOrders - previousOrders) / previousOrders) * 100
-        : 0;
-
-    // -------------------
-    // 3️⃣ Products
+    // Products
     const {
       data: productsData,
       count: totalProducts,
@@ -84,24 +130,11 @@ export async function GET() {
 
     if (productsError) throw productsError;
 
-    const recentProducts =
-      productsData?.filter((p) => new Date(p.created_at) >= thirtyDaysAgo)
-        .length || 0;
+    const productsGrowthData = calculateCountGrowthWithFallback(
+      productsData || []
+    );
 
-    const previousProducts =
-      productsData?.filter(
-        (p) =>
-          new Date(p.created_at) >= sixtyDaysAgo &&
-          new Date(p.created_at) < thirtyDaysAgo
-      ).length || 0;
-
-    const productsGrowth =
-      previousProducts > 0
-        ? ((recentProducts - previousProducts) / previousProducts) * 100
-        : 0;
-
-    // -------------------
-    // 4️⃣ Open Enquiries (unread enquiries)
+    // Open Enquiries
     let totalEnquiries = 0;
     try {
       const { count, error } = await supabase
@@ -110,25 +143,24 @@ export async function GET() {
         .eq("status", "open");
 
       if (error) throw error;
-
       totalEnquiries = count || 0;
     } catch {
       // silently ignore if enquiries table not found
     }
 
-    // -------------------
-    // ✅ Return
     return NextResponse.json({
       totalRevenue,
-      revenueGrowth,
+      revenueGrowth: Math.round(revenueGrowthData.growth * 100) / 100,
+      revenueHasValidComparison: revenueGrowthData.hasValidComparison,
       totalOrders: totalOrders || 0,
-      ordersGrowth,
+      ordersGrowth: Math.round(ordersGrowthData.growth * 100) / 100,
+      ordersHasValidComparison: ordersGrowthData.hasValidComparison,
       totalProducts: totalProducts || 0,
-      productsGrowth,
+      productsGrowth: Math.round(productsGrowthData.growth * 100) / 100,
+      productsHasValidComparison: productsGrowthData.hasValidComparison,
       totalEnquiries,
     });
-  } catch (error) {
-    console.error("Error fetching KPI metrics:", error);
+  } catch {
     return NextResponse.json(
       { error: "Failed to fetch KPI metrics" },
       { status: 500 }

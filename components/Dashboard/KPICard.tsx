@@ -9,12 +9,14 @@ import { formatCurrency } from "@/lib/utils/currency";
 interface KpiData {
   totalRevenue: number;
   revenueGrowth: number;
+  revenueHasValidComparison: boolean;
   totalOrders: number;
   ordersGrowth: number;
+  ordersHasValidComparison: boolean;
   totalProducts: number;
   productsGrowth: number;
+  productsHasValidComparison: boolean;
   totalEnquiries: number;
-  enquiriesGrowth?: number;
 }
 
 export function KpiCards() {
@@ -26,7 +28,6 @@ export function KpiCards() {
       try {
         const res = await fetch("/api/admin/kpi-metrics");
         const data = await res.json();
-        console.log("KPI data:", data);
         setKpiData(data);
       } catch (error) {
         console.error("Failed to fetch KPI data:", error);
@@ -80,6 +81,7 @@ export function KpiCards() {
       bgGradient:
         "from-white to-emerald-50/30 dark:from-gray-900 dark:to-emerald-900/10",
       description: "Revenue this period",
+      hideGrowth: !kpiData?.revenueHasValidComparison,
     },
     {
       title: "Total Orders",
@@ -90,6 +92,7 @@ export function KpiCards() {
       bgGradient:
         "from-white to-blue-50/30 dark:from-gray-900 dark:to-blue-900/10",
       description: "Orders received",
+      hideGrowth: !kpiData?.ordersHasValidComparison,
     },
     {
       title: "Published Products",
@@ -100,17 +103,18 @@ export function KpiCards() {
       bgGradient:
         "from-white to-orange-50/30 dark:from-gray-900 dark:to-orange-900/10",
       description: "Active products",
+      hideGrowth: !kpiData?.productsHasValidComparison,
     },
     {
       title: "Open Enquiries",
       value: kpiData ? formatNumber(kpiData.totalEnquiries) : "0",
-      growth: kpiData?.enquiriesGrowth || 0,
+      growth: 0,
       icon: Users,
       gradient: "from-purple-500 to-violet-600",
       bgGradient:
         "from-white to-purple-50/30 dark:from-gray-900 dark:to-purple-900/10",
       description: "Pending enquiries",
-      hideGrowth: !kpiData?.enquiriesGrowth,
+      hideGrowth: true,
     },
   ];
 
