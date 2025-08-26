@@ -266,8 +266,7 @@ export default function ConcreteDetectorPage() {
           <Card className="border-0 shadow-2xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
             <CardContent className="p-0">
               {!file ? (
-                /* Enhanced Upload State with Fixed Click Area */
-                <div className="p-8">
+                <div className="p-8 text-center">
                   <div className="text-center mb-8">
                     <TypographyH3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                       Upload Your Construction Photo

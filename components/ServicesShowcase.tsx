@@ -144,7 +144,7 @@ export function ServicesShowcase() {
                 columns, and more. Quality guaranteed with every batch. Browse
                 all products.
               </TypographyP>
-              <div className="inline-flex items-center text-blue-600 dark:text-blue-400 font-medium">
+              <div className="inline-flex items-center text-blue-600 dark:text-blue-400 font-medium justify-center w-full flex">
                 <span>View Products</span>
                 <svg
                   className="w-4 h-4 ml-1"
@@ -183,7 +183,7 @@ export function ServicesShowcase() {
                 Chatbot for instant answers, Smart Comparison for product
                 selection, and Recommended Products tailored to your needs.
               </TypographyP>
-              <div className="inline-flex items-center text-purple-600 dark:text-purple-400 font-medium">
+              <div className="inline-flex items-center text-purple-600 dark:text-purple-400 font-medium justify-center w-full flex">
                 <span>Explore AI Tools</span>
                 <svg
                   className="w-4 h-4 ml-1"
@@ -210,7 +210,7 @@ export function ServicesShowcase() {
                 Expert advice on mix selection, application, and compliance with
                 Malaysian standards. Professional guidance at every step.
               </TypographyP>
-              <div className="inline-flex items-center text-blue-600 dark:text-blue-400 font-medium">
+              <div className="inline-flex items-center text-blue-600 dark:text-blue-400 font-medium justify-center w-full flex">
                 <span>Contact Us</span>
                 <svg
                   className="w-4 h-4 ml-1"
