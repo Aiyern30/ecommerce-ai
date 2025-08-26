@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { CartItem } from "@/type/cart";
 import { getProductPrice } from "@/lib/cart/utils";
 import { SelectedServiceDetails } from "@/type/selectedServiceDetails";
 import { AdditionalService } from "@/type/additionalService";
 import { FreightCharge } from "@/type/freightCharges";
+import { Order } from "@/type/order";
 
 export interface CreateOrderData {
   items: {
@@ -192,61 +192,31 @@ export async function createOrderAPI(
   }
 }
 
-export async function getUserOrders(userId: string) {
+export async function getOrderById(
+  orderId: string,
+  userId: string
+): Promise<Order | null> {
   try {
-    const response = await fetch(`/api/orders?user_id=${userId}`);
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || "Failed to fetch orders");
-    }
-
-    const result = await response.json();
-
-    // Enhance order items with product images
-    const ordersWithImages = await Promise.all(
-      result.orders.map(async (order: any) => {
-        if (order.order_items && order.order_items.length > 0) {
-          const enhancedItems = await Promise.all(
-            order.order_items.map(async (item: any) => {
-              try {
-                // Fetch product image using product_id
-                const productResponse = await fetch(
-                  `/api/products/${item.product_id}`
-                );
-                if (productResponse.ok) {
-                  const productData = await productResponse.json();
-                  console.log(
-                    "Fetched productData for order item:",
-                    productData
-                  ); // <-- Add this line
-                  return {
-                    ...item,
-                    image_url: productData.image_url || null,
-                  };
-                }
-              } catch (error) {
-                console.warn(
-                  `Failed to fetch image for product ${item.product_id}:`,
-                  error
-                );
-              }
-              return item; // Return original item if fetch fails
-            })
-          );
-
-          return {
-            ...order,
-            order_items: enhancedItems,
-          };
-        }
-        return order;
-      })
+    const response = await fetch(
+      `/api/orders?user_id=${userId}&order_id=${orderId}`
     );
 
-    return ordersWithImages;
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null;
+      }
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to fetch order");
+    }
+
+    const data = await response.json();
+    if (Array.isArray(data.orders)) {
+      const order = data.orders.find((o: Order) => o.id === orderId);
+      return order || null;
+    }
+    return null;
   } catch (error) {
-    console.error("Error fetching orders:", error);
-    return [];
+    console.error("Error fetching order:", error);
+    return null;
   }
 }

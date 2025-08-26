@@ -5,6 +5,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("user_id");
+    const orderId = searchParams.get("order_id");
 
     if (!userId) {
       return NextResponse.json(
@@ -13,8 +14,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch orders with address data using JOIN
-    const { data: orders, error } = await supabaseAdmin
+    let query = supabaseAdmin
       .from("orders")
       .select(
         `
@@ -41,8 +41,15 @@ export async function GET(request: NextRequest) {
         )
       `
       )
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
+      .eq("user_id", userId);
+
+    if (orderId) {
+      query = query.eq("id", orderId);
+    }
+
+    query = query.order("created_at", { ascending: false });
+
+    const { data: orders, error } = await query;
 
     if (error) {
       console.error("Error fetching orders:", error);
