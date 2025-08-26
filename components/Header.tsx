@@ -25,7 +25,7 @@ import { useUser } from "@supabase/auth-helpers-react";
 import { supabase } from "@/lib/supabase/browserClient";
 import { Product } from "@/type/product";
 import { useProductSearch } from "@/hooks/useProductSearch";
-
+import { IoCameraOutline } from "react-icons/io5";
 function getBestPriceAndLabel(product: Product) {
   const priceFields = [
     { key: "normal", label: "Normal Delivery", price: product.normal_price },
@@ -84,16 +84,8 @@ function ProductSearchBox({
           className={`pl-10 ${inputClassName}`}
         />
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 pointer-events-none" />
-        {/* Image button for AI search */}
-        <Button
-          type="button"
-          size="icon"
-          variant="ghost"
-          className="ml-2"
-          aria-label="Image Search"
-          onClick={() => router.push("/search")}
-        >
-          🖼️
+        <Button type="button" size="icon" variant="ghost" className="ml-2">
+          <IoCameraOutline size={48} />
         </Button>
       </div>
       <AnimatePresence>

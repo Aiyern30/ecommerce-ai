@@ -3,10 +3,11 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { RiRobot2Line } from "react-icons/ri";
+
 import {
   Send,
   X,
-  Bot,
   User,
   Loader2,
   ShoppingCart,
@@ -267,7 +268,7 @@ export default function GeminiChat({
       case "product_search":
         return <Package size={12} className="text-orange-600" />;
       default:
-        return <Bot size={12} className="text-gray-600" />;
+        return <RiRobot2Line size={12} className="text-gray-600" />;
     }
   };
 
@@ -595,7 +596,7 @@ export default function GeminiChat({
                   : "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300"
               }`}
             >
-              {isBot ? <Bot size={16} /> : <User size={16} />}
+              {isBot ? <RiRobot2Line size={16} /> : <User size={16} />}
             </div>
           </div>
 
@@ -863,7 +864,7 @@ export default function GeminiChat({
       <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 rounded-t-lg">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-            <Bot size={16} className="text-white" />
+            <RiRobot2Line size={16} className="text-white" />
           </div>
           <div>
             <h3 className="font-semibold text-sm">Concrete Specialist AI</h3>
@@ -901,7 +902,7 @@ export default function GeminiChat({
               <div className="flex justify-start mb-4">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Bot size={16} className="text-blue-600" />
+                    <RiRobot2Line size={16} className="text-blue-600" />
                   </div>
                   <div className="bg-gray-100 dark:bg-gray-800 rounded-lg px-4 py-2">
                     <Loader2 size={16} className="animate-spin" />
