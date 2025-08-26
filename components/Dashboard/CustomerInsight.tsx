@@ -198,14 +198,14 @@ export function CustomerInsights() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="h-[300px] flex flex-col gap-4">
+              <ResponsiveContainer width="100%" height="80%">
                 <PieChart>
                   <Pie
                     data={data?.customerSegments}
                     cx="50%"
                     cy="50%"
-                    outerRadius={100}
+                    outerRadius={90}
                     dataKey="count"
                     label={({ segment, count }) => `${segment}: ${count}`}
                   >
@@ -213,9 +213,42 @@ export function CustomerInsights() {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip
+                    content={({ active, payload }) =>
+                      active && payload && payload.length ? (
+                        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-xl shadow-xl">
+                          <div className="font-semibold text-gray-900 dark:text-white text-lg">
+                            {payload[0].payload.segment}
+                          </div>
+                          <div className="text-blue-600 dark:text-blue-400 font-bold text-lg">
+                            {payload[0].value} customers
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            RM{payload[0].payload.value.toLocaleString()} value
+                          </div>
+                        </div>
+                      ) : null
+                    }
+                  />
                 </PieChart>
               </ResponsiveContainer>
+              {/* Enhanced legend */}
+              <div className="flex flex-wrap gap-4 justify-center mt-2">
+                {data?.customerSegments.map((entry, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <span
+                      className="inline-block w-3 h-3 rounded-full"
+                      style={{ background: entry.color }}
+                    />
+                    <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">
+                      {entry.segment}
+                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      ({entry.count} customers, RM{entry.value.toLocaleString()} value)
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>
