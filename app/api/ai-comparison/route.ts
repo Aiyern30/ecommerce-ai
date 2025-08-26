@@ -46,16 +46,14 @@ interface AIComparisonResult {
   insights: AIInsight[];
 }
 
-// Optimized generation config for speed
 const generationConfig: GenerationConfig = {
-  temperature: 0.3, // Lower for faster, more consistent responses
-  topK: 20, // Reduced for speed
-  topP: 0.8, // Lower for speed
-  maxOutputTokens: 1500, // Reduced significantly for speed
+  temperature: 0.3,
+  topK: 20,
+  topP: 0.8,
+  maxOutputTokens: 1500,
   responseMimeType: "text/plain",
 };
 
-// Minimal safety settings for speed
 const safetySettings: SafetySetting[] = [
   {
     category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
@@ -67,7 +65,6 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
   try {
-    // Quick validation
     const body = await request.json().catch(() => null);
     if (!body || !Array.isArray(body.products)) {
       return NextResponse.json(
@@ -78,9 +75,7 @@ export async function POST(request: NextRequest) {
 
     const { products }: { products: Product[] } = body;
 
-    // Quick validation
     if (products.length < 2 || products.length > 4) {
-      // Limit to 4 for speed
       return NextResponse.json(
         { error: "2-4 products required for comparison" },
         { status: 400 }
@@ -94,21 +89,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`Starting fast AI analysis for ${products.length} products`);
-
-    // Set aggressive timeout for Vercel free tier
     const aiResult = await Promise.race([
       generateFastAIAnalysis(products),
-      new Promise<AIComparisonResult>(
-        (_, reject) => setTimeout(() => reject(new Error("timeout")), 7000) // 7 seconds max
+      new Promise<AIComparisonResult>((_, reject) =>
+        setTimeout(() => reject(new Error("timeout")), 7000)
       ),
     ]).catch(() => {
-      console.log("AI analysis timed out, using fallback");
       return createFallbackResponse(products);
     });
 
     const processingTime = Date.now() - startTime;
-    console.log(`Analysis completed in ${processingTime}ms`);
 
     return NextResponse.json({
       ...aiResult,
@@ -118,9 +108,7 @@ export async function POST(request: NextRequest) {
         timestamp: new Date().toISOString(),
       },
     });
-  } catch (error) {
-    console.error("AI Comparison Error:", error);
-
+  } catch {
     return NextResponse.json(
       { error: "Analysis failed. Please try again." },
       { status: 500 }
@@ -132,35 +120,27 @@ async function generateFastAIAnalysis(
   products: Product[]
 ): Promise<AIComparisonResult> {
   try {
-    // Use fastest model with minimal config
     const model = genAI.getGenerativeModel({
       model: "gemini-1.5-flash",
       generationConfig,
       safetySettings,
     });
 
-    console.log("Sending request to Gemini API...");
-
     const result = await model.generateContent(createOptimizedPrompt(products));
     const response = await result.response;
     const text = response.text();
 
-    console.log("Received response from Gemini API");
-
     if (!text || text.trim().length < 20) {
-      console.log("Empty or short response, using fallback");
       return createFallbackResponse(products);
     }
 
     return parseAIResponse(text, products);
-  } catch (error) {
-    console.log("Gemini API error, using fallback:", error);
+  } catch {
     return createFallbackResponse(products);
   }
 }
 
 function createOptimizedPrompt(products: Product[]): string {
-  // Simplified product details for faster processing
   const productSummary = products
     .map((product, i) => {
       const price =
@@ -175,7 +155,6 @@ function createOptimizedPrompt(products: Product[]): string {
     })
     .join("\n");
 
-  // Much shorter, focused prompt for speed
   return `Compare these ${products.length} construction materials quickly:
 
 ${productSummary}
@@ -201,7 +180,6 @@ function parseAIResponse(
   products: Product[]
 ): AIComparisonResult {
   try {
-    // Extract JSON more aggressively
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       return createFallbackResponse(products);
@@ -209,7 +187,6 @@ function parseAIResponse(
 
     const parsed = JSON.parse(jsonMatch[0]);
 
-    // Quick validation and sanitization
     const result: AIComparisonResult = {
       summary:
         typeof parsed.summary === "string"
@@ -233,7 +210,6 @@ function parseAIResponse(
         : [],
     };
 
-    // Ensure minimum content
     if (result.keyDifferences.length === 0) {
       result.keyDifferences = generateQuickDifferences(products);
     }
@@ -243,7 +219,6 @@ function parseAIResponse(
 
     return result;
   } catch {
-    console.log("JSON parsing failed, using fallback");
     return createFallbackResponse(products);
   }
 }
@@ -316,7 +291,6 @@ function generateQuickDifferences(products: Product[]): string[] {
 function generateQuickRecommendations(products: Product[]): string[] {
   const recs = [];
 
-  // Find highest grade
   const highGrade = products.reduce((prev, curr) =>
     parseInt(curr.grade.replace("N", "")) >
     parseInt(prev.grade.replace("N", ""))
@@ -328,7 +302,6 @@ function generateQuickRecommendations(products: Product[]): string[] {
     `For structural work, choose "${highGrade.name}" with ${highGrade.grade} grade`
   );
 
-  // Find cheapest
   const cheapest = products.reduce((prev, curr) => {
     const prevPrice = parseFloat(prev.normal_price || "999999");
     const currPrice = parseFloat(curr.normal_price || "999999");
