@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState } from "react";
@@ -266,6 +267,20 @@ export default function ConcreteDetectorPage() {
     }
   };
 
+  // Helper to get available price types for a product
+  const getAvailablePrices = (product: any) => {
+    const priceTypes = [
+      { key: "normal_price", label: "Normal Delivery", color: "green" },
+      { key: "pump_price", label: "Pump Delivery", color: "blue" },
+      { key: "tremie_1_price", label: "Tremie 1", color: "purple" },
+      { key: "tremie_2_price", label: "Tremie 2", color: "purple" },
+      { key: "tremie_3_price", label: "Tremie 3", color: "purple" },
+    ];
+    return priceTypes.filter(
+      (type) => product[type.key] !== null && product[type.key] !== undefined
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50 dark:from-slate-900 dark:via-blue-950/30 dark:to-indigo-950">
       {/* Enhanced Hero Header */}
@@ -374,7 +389,7 @@ export default function ConcreteDetectorPage() {
                             </TypographySmall>
                           </div>
                           <div className="flex flex-col items-center space-y-2 group/item">
-                            <div className="p-3 bg-purple-100 dark:bg-purple-800 rounded-xl group-hover/item:bg-purple-200 dark:group-hover/item:bg-purple-700 transition-colors">
+                            <div className="p-3 bg-purple-100 dark:bg-purple-800 rounded-xl group-hover:item:bg-purple-200 dark:group-hover:item:bg-purple-700 transition-colors">
                               <TrendingUp className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                             </div>
                             <TypographySmall className="text-gray-600 dark:text-gray-400 font-medium">
@@ -477,7 +492,7 @@ export default function ConcreteDetectorPage() {
                     {loading ? (
                       <div className="flex items-center justify-center w-full">
                         <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent mr-3"></div>
-                        <div className="flex flex-col items-start">
+                        <div className="flex flex-col items-center">
                           <span>AI Analysis in Progress...</span>
                           <span className="text-sm font-normal opacity-90">
                             Processing your image with advanced algorithms
@@ -648,69 +663,73 @@ export default function ConcreteDetectorPage() {
 
                   {/* Enhanced Pricing Cards with Cost Estimation */}
                   <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    {/* Normal Price */}
-                    <Card
-                      className="relative overflow-hidden border-2 border-green-200 dark:border-green-700 
-    hover:border-green-400 dark:hover:border-green-500 
-    transition-all duration-300 group hover:-translate-y-1 hover:shadow-xl rounded-2xl !py-0"
-                    >
-                      <CardContent
-                        className="!p-6 py-0 flex flex-col items-center justify-center text-center 
-      bg-gradient-to-br from-green-50 to-emerald-50 
-      dark:from-green-950/50 dark:to-emerald-950/50 
-      group-hover:from-green-100 group-hover:to-emerald-100 
-      dark:group-hover:from-green-950/70 dark:group-hover:to-emerald-950/70 transition-colors"
-                      >
-                        <Badge
-                          className="mb-4 px-3 py-1 rounded-full text-sm font-medium
-        bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 
-        border border-green-200 dark:border-green-600"
+                    {/* Dynamically render available price types */}
+                    {getAvailablePrices(result.matchedProduct).map((type) => {
+                      // Custom gradient for blue price cards
+                      const isBlue = type.color === "blue";
+                      const cardGradient = isBlue
+                        ? "bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-950"
+                        : `bg-gradient-to-br from-${type.color}-50 to-${
+                            type.color === "green"
+                              ? "emerald-50"
+                              : type.color + "-100"
+                          } dark:from-${type.color}-950/50 dark:to-${
+                            type.color === "green"
+                              ? "emerald-950/50"
+                              : type.color + "-950/50"
+                          }`;
+                      const hoverGradient = isBlue
+                        ? "group-hover:from-blue-100 group-hover:to-indigo-200 dark:group-hover:from-blue-900 dark:group-hover:to-indigo-900"
+                        : `group-hover:from-${type.color}-100 group-hover:to-${
+                            type.color === "green"
+                              ? "emerald-100"
+                              : type.color + "-100"
+                          } dark:group-hover:from-${
+                            type.color
+                          }-950/70 dark:group-hover:to-${
+                            type.color === "green"
+                              ? "emerald-950/70"
+                              : type.color + "-950/70"
+                          }`;
+
+                      return (
+                        <Card
+                          key={type.key}
+                          className={`relative overflow-hidden border-2 border-${type.color}-200 dark:border-${type.color}-700 
+        hover:border-${type.color}-400 dark:hover:border-${type.color}-500 
+        transition-all duration-300 group hover:-translate-y-1 hover:shadow-xl rounded-2xl !py-0`}
                         >
-                          Normal Price
-                        </Badge>
-
-                        <TypographyH3 className="text-4xl font-extrabold text-green-800 dark:text-green-300 mb-2">
-                          ${result.matchedProduct.normal_price}
-                        </TypographyH3>
-
-                        <TypographyMuted className="text-green-600 dark:text-green-400 font-medium">
-                          per {result.matchedProduct.unit}
-                        </TypographyMuted>
-                      </CardContent>
-                    </Card>
-
-                    {/* Pump Price */}
-                    {result.matchedProduct.pump_price && (
-                      <Card
-                        className="relative overflow-hidden border-2 border-blue-200 dark:border-blue-700 
-      hover:border-blue-400 dark:hover:border-blue-500 
-      transition-all duration-300 group hover:-translate-y-1 hover:shadow-xl rounded-2xl !py-0"
-                      >
-                        <CardContent
-                          className="!p-6 py-0 flex flex-col items-center justify-center text-center 
-        bg-gradient-to-br from-blue-50 to-indigo-50 
-        dark:from-blue-950/50 dark:to-indigo-950/50 
-        group-hover:from-blue-100 group-hover:to-indigo-100 
-        dark:group-hover:from-blue-950/70 dark:group-hover:to-indigo-950/70 transition-colors"
-                        >
-                          <Badge
-                            className="mb-4 px-3 py-1 rounded-full text-sm font-medium
-          bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 
-          border border-blue-200 dark:border-blue-600"
+                          <CardContent
+                            className={`!p-6 py-0 flex flex-col items-center justify-center text-center ${cardGradient} ${hoverGradient} transition-colors`}
                           >
-                            Pump Price
-                          </Badge>
-
-                          <TypographyH3 className="text-4xl font-extrabold text-blue-800 dark:text-blue-300 mb-2">
-                            ${result.matchedProduct.pump_price}
-                          </TypographyH3>
-
-                          <TypographyMuted className="text-blue-600 dark:text-blue-400 font-medium">
-                            per {result.matchedProduct.unit}
-                          </TypographyMuted>
-                        </CardContent>
-                      </Card>
-                    )}
+                            <Badge
+                              className={`mb-4 px-3 py-1 rounded-full text-sm font-medium
+            bg-${type.color}-100 dark:bg-${type.color}-800 text-${type.color}-800 dark:text-${type.color}-200 
+            border border-${type.color}-200 dark:border-${type.color}-600`}
+                            >
+                              {type.label}
+                            </Badge>
+                            <TypographyH3
+                              className={`text-4xl font-extrabold text-${type.color}-800 dark:text-${type.color}-300 mb-2`}
+                            >
+                              {result.matchedProduct
+                                ? result.matchedProduct[
+                                    type.key as keyof typeof result.matchedProduct
+                                  ]
+                                : ""}
+                            </TypographyH3>
+                            <TypographyMuted
+                              className={`text-${type.color}-600 dark:text-${type.color}-400 font-medium`}
+                            >
+                              per{" "}
+                              {result.matchedProduct
+                                ? result.matchedProduct.unit
+                                : ""}
+                            </TypographyMuted>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
 
                     {/* Stock */}
                     <Card
