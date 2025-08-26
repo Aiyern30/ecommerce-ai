@@ -2,6 +2,8 @@
 import type { CartItem } from "@/type/cart";
 import { getProductPrice } from "@/lib/cart/utils";
 import { SelectedServiceDetails } from "@/type/selectedServiceDetails";
+import { AdditionalService } from "@/type/additionalService";
+import { FreightCharge } from "@/type/freightCharges";
 
 export interface CreateOrderData {
   items: {
@@ -58,38 +60,6 @@ export function calculateOrderTotals(cartItems: CartItem[]) {
   };
 }
 
-// New helper function for full order total
-export function calculateFullOrderTotals(
-  cartItems: CartItem[],
-  selectedServices: { [serviceCode: string]: SelectedServiceDetails | null },
-  additionalServices: any[],
-  freightCharges: any[],
-  totalVolume: number
-) {
-  const baseTotals = calculateOrderTotals(cartItems);
-
-  // Additional services total
-  const additionalServicesTotal = Object.values(selectedServices)
-    .filter(Boolean)
-    .reduce(
-      (sum, service) => sum + (service?.rate_per_m3 ?? 0) * totalVolume,
-      0
-    );
-
-  // Freight charges total (implement your logic if needed)
-  // Example: const freightTotal = ...;
-  const freightTotal = 0; // Replace with your logic if needed
-
-  const total = baseTotals.total + additionalServicesTotal + freightTotal;
-
-  return {
-    ...baseTotals,
-    additionalServicesTotal,
-    freightTotal,
-    total,
-  };
-}
-
 export async function createOrderAPI(
   userId: string,
   cartItems: CartItem[],
@@ -97,24 +67,25 @@ export async function createOrderAPI(
   paymentIntentId?: string,
   notes?: string,
   selectedServices?: { [serviceCode: string]: SelectedServiceDetails | null },
-  additionalServices?: any[],
-  freightCharges?: any[],
-  totalVolume?: number
-): Promise<CreateOrderResponse | null> {
+  additionalServices?: AdditionalService[],
+  freightCharges?: FreightCharge[],
+  totalVolume?: number,
+  isRecoveryAttempt?: boolean // New parameter for recovery attempts
+) {
   try {
+    // Filter selected items
     const selectedItems = cartItems.filter((item) => item.selected);
 
     if (selectedItems.length === 0) {
-      throw new Error("No items selected");
+      throw new Error("No items selected for order");
     }
 
-    // Calculate subtotal from selected items
+    // Calculate totals (your existing calculation logic)
     const subtotal = selectedItems.reduce((sum, item) => {
       const itemPrice = getProductPrice(item.product, item.variant_type);
       return sum + itemPrice * item.quantity;
     }, 0);
 
-    // Calculate additional services total
     const servicesTotal =
       additionalServices?.reduce((sum, service) => {
         if (selectedServices?.[service.service_code]) {
@@ -123,8 +94,7 @@ export async function createOrderAPI(
         return sum;
       }, 0) || 0;
 
-    // Get applicable freight charge
-    const getApplicableFreightCharge = () => {
+    const getApplicableFreightCharge = (): FreightCharge | null => {
       if (!totalVolume || !freightCharges) return null;
 
       return (
@@ -142,41 +112,40 @@ export async function createOrderAPI(
     };
 
     const applicableFreightCharge = getApplicableFreightCharge();
-    const freightCost = applicableFreightCharge
-      ? applicableFreightCharge.delivery_fee
-      : 0;
-
-    // Calculate tax (SST 6%) on subtotal + services + freight
-    const taxableAmount = subtotal + servicesTotal + freightCost;
+    const shippingCost = applicableFreightCharge?.delivery_fee || 0;
+    const taxableAmount = subtotal + servicesTotal + shippingCost;
     const tax = taxableAmount * 0.06;
-
-    // Calculate total
     const total = taxableAmount + tax;
 
+    // Prepare order data
     const orderData = {
       user_id: userId,
       address_id: addressId,
-      items: selectedItems.map((item) => ({
-        product_id: item.product_id,
-        quantity: item.quantity,
-        variant_type: item.variant_type || undefined,
-        price: getProductPrice(item.product, item.variant_type),
-      })),
-      notes,
       payment_intent_id: paymentIntentId,
       subtotal,
-      shipping_cost: freightCost,
+      shipping_cost: shippingCost,
       tax,
       total,
       total_volume: totalVolume || 0,
-      // Pass the selected services with proper structure
-      selected_services: selectedServices || {},
-      // Pass additional services for reference
-      additional_services_data: additionalServices || [],
+      notes,
+      selected_services: selectedServices,
+      additional_services_data: additionalServices,
+      is_recovery_attempt: isRecoveryAttempt, // Include recovery flag
+      items: selectedItems.map((item) => ({
+        product_id: item.product.id,
+        quantity: item.quantity,
+        variant_type: item.variant_type,
+        price: getProductPrice(item.product, item.variant_type),
+      })),
     };
 
-    console.log("Creating order with data:", orderData);
+    console.log("Creating order with data:", {
+      ...orderData,
+      isRecoveryAttempt,
+      paymentIntentId,
+    });
 
+    // Call the enhanced API endpoint
     const response = await fetch("/api/orders/create", {
       method: "POST",
       headers: {
@@ -186,37 +155,40 @@ export async function createOrderAPI(
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || "Failed to create order");
+      // Handle different error scenarios
+      let errorMessage = `HTTP error! status: ${response.status}`;
+
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorMessage;
+      } catch {
+        // If response is not valid JSON, use status text
+        errorMessage = `${response.status} ${response.statusText}`;
+      }
+
+      throw new Error(errorMessage);
     }
 
-    const result = await response.json();
+    // Check if response has content before parsing JSON
+    const responseText = await response.text();
+    if (!responseText) {
+      throw new Error("Empty response from server");
+    }
+
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch {
+      console.error("Failed to parse response:", responseText);
+      throw new Error("Invalid JSON response from server");
+    }
+
+    console.log("Order creation result:", result);
+
     return result;
   } catch (error) {
-    console.error("Error creating order:", error);
-    return null;
-  }
-}
-
-export async function confirmOrderAPI(paymentIntentId: string) {
-  try {
-    const response = await fetch("/api/orders/confirm", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ payment_intent_id: paymentIntentId }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || "Failed to confirm order");
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error confirming order:", error);
-    return null;
+    console.error("Error in createOrderAPI:", error);
+    throw error;
   }
 }
 

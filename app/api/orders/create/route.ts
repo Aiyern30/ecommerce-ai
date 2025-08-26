@@ -6,7 +6,6 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import type { CreateOrderRequest } from "@/type/order";
 import { createNotification } from "@/lib/notification/server";
 
-// Add interface for selected services
 interface SelectedServiceDetails {
   id: string;
   service_code: string;
@@ -16,10 +15,37 @@ interface SelectedServiceDetails {
   description?: string;
 }
 
+function handleError(error: any, operation: string) {
+  console.error(`${operation} error:`, error);
+
+  if (error.message) {
+    return error.message;
+  }
+
+  if (typeof error === "string") {
+    return error;
+  }
+
+  return `${operation} failed - please try again`;
+}
+
 export async function POST(request: NextRequest) {
   try {
-    console.log("Create order API called");
-    const body = (await request.json()) as CreateOrderRequest & {
+    let body;
+
+    try {
+      body = await request.json();
+    } catch (parseError) {
+      console.error("Failed to parse request body:", parseError);
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 }
+      );
+    }
+
+    console.log("Request body parsed successfully");
+
+    const requestData = body as CreateOrderRequest & {
       user_id: string;
       payment_intent_id?: string;
       address_id: string;
@@ -28,6 +54,7 @@ export async function POST(request: NextRequest) {
       tax: number;
       total: number;
       total_volume: number;
+      is_recovery_attempt?: boolean;
       selected_services?: {
         [serviceCode: string]: SelectedServiceDetails | null;
       };
@@ -40,23 +67,16 @@ export async function POST(request: NextRequest) {
       }[];
     };
 
-    console.log("Request body:", body);
-    console.log("Selected services received:", body.selected_services);
-    console.log("Additional services data:", body.additional_services_data);
-    console.log("Total volume received:", body.total_volume);
-
-    // Validate request
-    if (!body.items || body.items.length === 0) {
+    if (!requestData.items || requestData.items.length === 0) {
       console.log("No items in order");
       return NextResponse.json({ error: "No items in order" }, { status: 400 });
     }
 
-    // Validate totals are provided
     if (
-      body.subtotal === undefined ||
-      body.shipping_cost === undefined ||
-      body.tax === undefined ||
-      body.total === undefined
+      requestData.subtotal === undefined ||
+      requestData.shipping_cost === undefined ||
+      requestData.tax === undefined ||
+      requestData.total === undefined
     ) {
       console.log("Missing totals in request");
       return NextResponse.json(
@@ -65,46 +85,83 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // If payment_intent_id is provided, verify it's completed
+    if (!requestData.user_id) {
+      console.log("Missing user_id");
+      return NextResponse.json(
+        { error: "User ID is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!requestData.address_id) {
+      console.log("Missing address_id");
+      return NextResponse.json(
+        { error: "Address ID is required" },
+        { status: 400 }
+      );
+    }
+
+    console.log("Request validation passed");
+
     let paymentStatus = "pending";
-    if (body.payment_intent_id) {
+    let orderStatus = "pending";
+    let paymentVerified = false;
+
+    if (requestData.payment_intent_id) {
       try {
+        console.log("Verifying payment intent:", requestData.payment_intent_id);
         const paymentIntent = await stripe.paymentIntents.retrieve(
-          body.payment_intent_id
+          requestData.payment_intent_id
         );
+
         if (paymentIntent.status === "succeeded") {
           paymentStatus = "paid";
-          console.log("Using completed payment:", body.payment_intent_id);
+          paymentVerified = true;
+          console.log("Payment verified as succeeded");
         } else {
-          console.log("Payment intent status:", paymentIntent.status);
-          return NextResponse.json(
-            { error: `Payment not completed. Status: ${paymentIntent.status}` },
-            { status: 400 }
-          );
+          paymentStatus = "failed";
+          orderStatus = "failed";
         }
       } catch (stripeError) {
         console.error("Error verifying payment intent:", stripeError);
-        return NextResponse.json(
-          { error: "Invalid payment intent" },
-          { status: 400 }
-        );
+        paymentStatus = "failed";
+        orderStatus = "failed";
       }
     }
 
-    // Fetch product details from database for order items
-    const productIds = body.items.map((item) => item.product_id);
-    // Fetch products with images
+    if (requestData.payment_intent_id && !requestData.is_recovery_attempt) {
+      console.log("Checking for existing order");
+      const { data: existingOrder } = await supabaseAdmin
+        .from("orders")
+        .select("id, status, payment_status")
+        .eq("payment_intent_id", requestData.payment_intent_id)
+        .single();
+
+      if (existingOrder) {
+        console.log(
+          "Order already exists for payment intent:",
+          requestData.payment_intent_id
+        );
+        return NextResponse.json({
+          order_id: existingOrder.id,
+          amount: requestData.total,
+          payment_completed: existingOrder.payment_status === "paid",
+          already_exists: true,
+          order_status: existingOrder.status,
+          payment_status: existingOrder.payment_status,
+        });
+      }
+    }
+
+    const productIds = requestData.items.map((item) => item.product_id);
     const { data: products, error: productError } = await supabase
       .from("products")
       .select("*, product_images(id, image_url, is_primary, sort_order)")
       .in("id", productIds);
 
     if (productError) {
-      console.error("Product fetch error:", productError);
-      return NextResponse.json(
-        { error: `Failed to fetch product details: ${productError.message}` },
-        { status: 400 }
-      );
+      const errorMsg = handleError(productError, "Product fetch");
+      return NextResponse.json({ error: errorMsg }, { status: 400 });
     }
 
     if (!products) {
@@ -112,13 +169,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No products found" }, { status: 400 });
     }
 
-    // Log the first product to see available fields
-    console.log("Sample product data:", products[0]);
-
-    // Create order items for database storage (but use frontend totals)
     const orderItems = [];
-
-    for (const item of body.items) {
+    for (const item of requestData.items) {
       const product = products.find((p) => p.id === item.product_id);
       if (!product) {
         return NextResponse.json(
@@ -127,7 +179,6 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Find main image (is_primary or first)
       let image_url = null;
       if (product.product_images && product.product_images.length > 0) {
         const primary = product.product_images.find(
@@ -145,52 +196,30 @@ export async function POST(request: NextRequest) {
         price: item.price,
         quantity: item.quantity,
         variant_type: item.variant_type,
-        image_url, // <-- Store image_url directly in order item
+        image_url,
       });
     }
-
-    // Use totals from frontend instead of recalculating
-    const subtotal = body.subtotal;
-    const shipping_cost = body.shipping_cost;
-    const tax = body.tax;
-    const total = body.total;
-
-    console.log("Using frontend calculated totals:", {
-      subtotal,
-      shipping_cost,
-      tax,
-      total,
-    });
 
     const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
       .insert({
-        user_id: body.user_id,
-        address_id: body.address_id,
-        status: "pending",
+        user_id: requestData.user_id,
+        address_id: requestData.address_id,
+        status: orderStatus,
         payment_status: paymentStatus,
-        payment_intent_id: body.payment_intent_id,
-        subtotal: subtotal,
-        shipping_cost: shipping_cost,
-        tax: tax,
-        total: total,
-        notes: body.notes,
+        payment_intent_id: requestData.payment_intent_id,
+        subtotal: requestData.subtotal,
+        shipping_cost: requestData.shipping_cost,
+        tax: requestData.tax,
+        total: requestData.total,
+        notes: requestData.notes,
       })
       .select()
       .single();
 
     if (orderError) {
-      console.error("Order creation error:", orderError);
-      return NextResponse.json(
-        {
-          error: `Failed to create order: ${
-            orderError.message ||
-            orderError.details ||
-            JSON.stringify(orderError)
-          }`,
-        },
-        { status: 500 }
-      );
+      const errorMsg = handleError(orderError, "Order creation");
+      return NextResponse.json({ error: errorMsg }, { status: 500 });
     }
 
     if (!order) {
@@ -201,13 +230,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create order items using admin client
+    console.log("Order created successfully, ID:", order.id);
+
     const orderItemsWithOrderId = orderItems.map((item) => ({
       ...item,
       order_id: order.id,
     }));
 
-    console.log("Creating order items:", orderItemsWithOrderId);
+    console.log("Creating order items, count:", orderItemsWithOrderId.length);
 
     const { error: itemsError } = await supabaseAdmin
       .from("order_items")
@@ -215,155 +245,225 @@ export async function POST(request: NextRequest) {
 
     if (itemsError) {
       console.error("Order items creation error:", itemsError);
-      // Rollback order creation
-      await supabaseAdmin.from("orders").delete().eq("id", order.id);
+      await supabaseAdmin
+        .from("orders")
+        .update({
+          status: "failed",
+        })
+        .eq("id", order.id);
+
       return NextResponse.json(
         {
-          error: `Failed to create order items: ${
-            itemsError.message || JSON.stringify(itemsError)
-          }`,
+          error: `Failed to create order items: ${handleError(
+            itemsError,
+            "Order items creation"
+          )}`,
+          order_id: order.id,
+          order_status: "failed",
+          payment_status: paymentStatus,
         },
         { status: 500 }
       );
     }
 
-    // Create notification for successful order
-    const orderIdFormatted = order.id;
-    const notificationTitle =
-      paymentStatus === "paid" ? "Order Placed Successfully!" : "Order Created";
-    const notificationMessage =
-      paymentStatus === "paid"
-        ? `Your order ${orderIdFormatted} has been placed successfully and payment confirmed. Total: RM${total.toFixed(
-            2
-          )}`
-        : `Your order ${orderIdFormatted} has been created. Total: RM${total.toFixed(
-            2
-          )}`;
+    console.log("Order items created successfully");
 
-    await createNotification({
-      user_id: body.user_id,
-      title: notificationTitle,
-      message: notificationMessage,
-      type: "order",
-      id: order.id,
-    });
-
-    console.log("Order notification created");
-
-    // --- Update product stock_quantity for each ordered item ---
-    for (const item of body.items) {
-      // Fetch current stock
-      const { data: product, error: fetchError } = await supabaseAdmin
-        .from("products")
-        .select("stock_quantity")
-        .eq("id", item.product_id)
-        .single();
-
-      if (fetchError) {
-        console.warn(
-          `Failed to fetch stock for product ${item.product_id}:`,
-          fetchError
-        );
-        continue;
-      }
-
-      const newStock = (product?.stock_quantity || 0) - item.quantity;
-
-      const { error: stockError } = await supabaseAdmin
-        .from("products")
-        .update({ stock_quantity: newStock })
-        .eq("id", item.product_id);
-
-      if (stockError) {
-        console.warn(
-          `Failed to update stock for product ${item.product_id}:`,
-          stockError
-        );
-      }
-    }
-    // --- End update stock ---
-
-    // Clear selected cart items after successful order creation using your existing logic
     try {
-      // Use the same logic as your clearCart function but with admin client
-      const { data: cartData } = await supabaseAdmin
-        .from("carts")
-        .select("id")
-        .eq("user_id", body.user_id)
-        .single();
+      const orderIdFormatted = order.id;
+      let notificationTitle: string;
+      let notificationMessage: string;
+      let notificationType:
+        | "order"
+        | "promotion"
+        | "system"
+        | "payment"
+        | "shipping" = "order";
 
-      if (cartData?.id) {
-        // Clear only selected items (or all items if you prefer)
-        const { error: deleteError } = await supabaseAdmin
-          .from("cart_items")
-          .delete()
-          .eq("cart_id", cartData.id)
-          .eq("selected", true); // Only clear selected items
+      if (orderStatus === "failed") {
+        notificationTitle = "Order Failed";
+        notificationMessage = `Order ${orderIdFormatted} failed to process. Please contact support if payment was charged.`;
+        notificationType = "order";
+      } else if (paymentStatus === "paid") {
+        notificationTitle = "Order Placed Successfully!";
+        notificationMessage = `Your order ${orderIdFormatted} has been placed successfully and payment confirmed. Total: RM${requestData.total.toFixed(
+          2
+        )}`;
+        notificationType = "order";
+      } else {
+        notificationTitle = "Order Created";
+        notificationMessage = `Your order ${orderIdFormatted} has been created. Total: RM${requestData.total.toFixed(
+          2
+        )}`;
+        notificationType = "order";
+      }
 
-        if (deleteError) {
-          console.warn("Failed to clear selected cart items:", deleteError);
-        } else {
-          console.log("Selected cart items cleared successfully");
+      await createNotification({
+        user_id: requestData.user_id,
+        title: notificationTitle,
+        message: notificationMessage,
+        type: notificationType,
+        id: order.id,
+      });
+    } catch (notificationError) {
+      console.warn("Failed to create notification:", notificationError);
+      // Don't  the order for notification errors
+    }
+
+    if (orderStatus !== "failed" && paymentVerified) {
+      console.log("Updating stock quantities");
+      for (const item of requestData.items) {
+        try {
+          const { data: product, error: fetchError } = await supabaseAdmin
+            .from("products")
+            .select("stock_quantity")
+            .eq("id", item.product_id)
+            .single();
+
+          if (fetchError) {
+            console.warn(
+              `Failed to fetch stock for product ${item.product_id}:`,
+              fetchError
+            );
+            continue;
+          }
+
+          const newStock = (product?.stock_quantity || 0) - item.quantity;
+
+          const { error: stockError } = await supabaseAdmin
+            .from("products")
+            .update({ stock_quantity: newStock })
+            .eq("id", item.product_id);
+
+          if (stockError) {
+            console.warn(
+              `Failed to update stock for product ${item.product_id}:`,
+              stockError
+            );
+          } else {
+            console.log(
+              `Updated stock for product ${item.product_id}: ${newStock}`
+            );
+          }
+        } catch (stockUpdateError) {
+          console.warn(
+            `Error updating stock for product ${item.product_id}:`,
+            stockUpdateError
+          );
         }
       }
-    } catch (cartError) {
-      console.warn("Failed to clear cart items:", cartError);
-      // Don't fail the order creation if cart clearing fails
+    } else {
+      console.log(
+        "Skipping stock update - order failed or payment not verified"
+      );
     }
 
-    // --- Insert additional services (optimized, no debug/test logic) ---
-    if (
-      body.selected_services &&
-      body.additional_services_data &&
-      body.total_volume
-    ) {
-      const selectedServiceCodes = Object.keys(body.selected_services).filter(
-        (code) => body.selected_services![code] !== null
-      );
+    if (orderStatus !== "failed" && paymentVerified) {
+      console.log("Clearing cart items");
+      try {
+        const { data: cartData } = await supabaseAdmin
+          .from("carts")
+          .select("id")
+          .eq("user_id", requestData.user_id)
+          .single();
 
-      if (selectedServiceCodes.length > 0) {
-        const selectedServicesData = body.additional_services_data.filter(
-          (service) => selectedServiceCodes.includes(service.service_code)
-        );
+        if (cartData?.id) {
+          const { error: deleteError } = await supabaseAdmin
+            .from("cart_items")
+            .delete()
+            .eq("cart_id", cartData.id)
+            .eq("selected", true);
 
-        if (selectedServicesData.length > 0) {
-          const orderAdditionalServices = selectedServicesData.map(
-            (service) => ({
-              order_id: order.id,
-              additional_service_id: service.id,
-              service_name: String(service.service_name),
-              rate_per_m3: parseFloat(service.rate_per_m3),
-              quantity: body.total_volume,
-              total_price: parseFloat(service.rate_per_m3) * body.total_volume,
-            })
-          );
-
-          const { error: addServicesError } = await supabaseAdmin
-            .from("order_additional_services")
-            .insert(orderAdditionalServices);
-
-          if (addServicesError) {
-            console.error(
-              "Failed to insert additional services:",
-              addServicesError
-            );
-            // Optionally: return error or continue
+          if (deleteError) {
+            console.warn("Failed to clear selected cart items:", deleteError);
+          } else {
+            console.log("Selected cart items cleared successfully");
           }
         }
+      } catch (cartError) {
+        console.warn("Failed to clear cart items:", cartError);
       }
     }
-    // --- End insert additional services ---
+
+    if (
+      orderStatus !== "failed" &&
+      paymentVerified &&
+      requestData.selected_services &&
+      requestData.additional_services_data &&
+      requestData.total_volume
+    ) {
+      try {
+        const selectedServiceCodes = Object.keys(
+          requestData.selected_services
+        ).filter((code) => requestData.selected_services![code] !== null);
+
+        if (selectedServiceCodes.length > 0) {
+          const selectedServicesData =
+            requestData.additional_services_data.filter((service) =>
+              selectedServiceCodes.includes(service.service_code)
+            );
+
+          if (selectedServicesData.length > 0) {
+            const orderAdditionalServices = selectedServicesData.map(
+              (service) => ({
+                order_id: order.id,
+                additional_service_id: service.id,
+                service_name: String(service.service_name),
+                rate_per_m3: parseFloat(service.rate_per_m3),
+                quantity: requestData.total_volume,
+                total_price:
+                  parseFloat(service.rate_per_m3) * requestData.total_volume!,
+              })
+            );
+
+            const { error: addServicesError } = await supabaseAdmin
+              .from("order_additional_services")
+              .insert(orderAdditionalServices);
+
+            if (addServicesError) {
+              console.error(
+                "Failed to insert additional services:",
+                addServicesError
+              );
+            } else {
+              console.log("Additional services inserted successfully");
+            }
+          }
+        }
+      } catch (servicesError) {
+        console.warn("Error processing additional services:", servicesError);
+      }
+    }
+
+    console.log("Order creation completed successfully");
 
     return NextResponse.json({
       order_id: order.id,
-      amount: total,
+      amount: requestData.total,
       payment_completed: paymentStatus === "paid",
+      order_status: orderStatus,
+      payment_status: paymentStatus,
     });
   } catch (error) {
-    console.error("Error creating order:", error);
+    console.error("Unexpected error in POST /api/orders:", error);
+
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }
+}
+
+export async function GET() {
+  return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
+}
+
+export async function PUT() {
+  return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
+}
+
+export async function DELETE() {
+  return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
 }
