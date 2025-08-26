@@ -145,14 +145,23 @@ export function CustomerInsights() {
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data?.orderFrequency}>
+                  <defs>
+                    <linearGradient id="orderFreqBar" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#6366f1" stopOpacity={0.9} />
+                      <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.7} />
+                    </linearGradient>
+                  </defs>
                   <XAxis
                     dataKey="frequency"
                     label={{
                       value: "Order Frequency",
                       position: "insideBottom",
                       offset: -5,
-                      style: { fill: "#6b7280", fontSize: 13 },
+                      style: { fill: "#6366f1", fontSize: 13 },
                     }}
+                    tick={{ fontSize: 12, fill: "#6366f1" }}
+                    axisLine={false}
+                    tickLine={false}
                   />
                   <YAxis
                     label={{
@@ -160,18 +169,21 @@ export function CustomerInsights() {
                       angle: -90,
                       position: "insideLeft",
                       offset: 10,
-                      style: { fill: "#6b7280", fontSize: 13 },
+                      style: { fill: "#3b82f6", fontSize: 13 },
                     }}
+                    tick={{ fontSize: 12, fill: "#3b82f6" }}
+                    axisLine={false}
+                    tickLine={false}
                   />
                   <Tooltip
-                    cursor={{ fill: "rgba(59, 130, 246, 0.08)" }}
+                    cursor={{ fill: "rgba(99, 102, 241, 0.12)" }}
                     content={({ active, payload, label }) =>
                       active && payload && payload.length ? (
-                        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 px-4 py-3 rounded-xl shadow-xl backdrop-blur-sm">
-                          <p className="font-semibold text-gray-900 dark:text-white text-lg">
+                        <div className="bg-indigo-50 dark:bg-indigo-900 border border-indigo-200 dark:border-indigo-700 px-4 py-3 rounded-xl shadow-xl backdrop-blur-sm">
+                          <p className="font-semibold text-indigo-700 dark:text-indigo-200 text-lg">
                             {payload[0].value} Customers
                           </p>
-                          <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">
+                          <p className="text-indigo-600 dark:text-indigo-400 text-sm font-medium">
                             {label}
                           </p>
                         </div>
@@ -180,9 +192,10 @@ export function CustomerInsights() {
                   />
                   <Bar
                     dataKey="customers"
-                    fill="#3b82f6"
-                    radius={[6, 6, 0, 0]}
+                    fill="url(#orderFreqBar)"
+                    radius={[8, 8, 0, 0]}
                     barSize={32}
+                    className="transition-all duration-200"
                   />
                 </BarChart>
               </ResponsiveContainer>
