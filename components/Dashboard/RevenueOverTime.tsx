@@ -525,11 +525,7 @@ export function RevenueOverTime() {
 
           {/* Summary Stats - similar to OrdersOverTime */}
           {data.length > 0 && (
-            <div
-              className={`grid ${
-                isMobile ? "grid-cols-2 gap-3" : "grid-cols-4 gap-6"
-              }`}
-            >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               <StatsCards
                 title="Total Revenue"
                 value={formatCurrency(totalRevenue)}
@@ -543,6 +539,8 @@ export function RevenueOverTime() {
                     ? TrendingDown
                     : Calendar
                 }
+                gradient="from-emerald-500 to-green-600"
+                bgGradient="from-white to-emerald-50/30 dark:from-gray-900 dark:to-emerald-900/10"
               />
               <StatsCards
                 title="Current Period"
@@ -554,67 +552,43 @@ export function RevenueOverTime() {
                     ? TrendingDown
                     : Calendar
                 }
+                gradient="from-blue-500 to-indigo-600"
+                bgGradient="from-white to-blue-50/30 dark:from-gray-900 dark:to-blue-900/10"
               />
-              {!isMobile && (
-                <>
-                  <StatsCards
-                    title="Peak Period"
-                    value={formatCurrency(maxRevenue)}
-                    icon={
-                      revenueChange > 0
-                        ? TrendingUp
-                        : revenueChange < 0
-                        ? TrendingDown
-                        : Calendar
-                    }
-                  />
-                  <StatsCards
-                    title={`Avg per ${
-                      filter === "today"
-                        ? "4hrs"
-                        : filter === "week"
-                        ? "Day"
-                        : filter === "30days"
-                        ? "Week"
-                        : "Period"
-                    }`}
-                    value={formatCurrency(avgRevenue)}
-                    icon={
-                      revenueChange > 0
-                        ? TrendingUp
-                        : revenueChange < 0
-                        ? TrendingDown
-                        : Calendar
-                    }
-                  />
-                </>
-              )}
-              {isMobile && (
-                <div className="col-span-2 grid grid-cols-2 gap-3">
-                  <StatsCards
-                    title="Peak"
-                    value={formatCurrency(maxRevenue)}
-                    icon={
-                      revenueChange > 0
-                        ? TrendingUp
-                        : revenueChange < 0
-                        ? TrendingDown
-                        : Calendar
-                    }
-                  />
-                  <StatsCards
-                    title="Average"
-                    value={formatCurrency(avgRevenue)}
-                    icon={
-                      revenueChange > 0
-                        ? TrendingUp
-                        : revenueChange < 0
-                        ? TrendingDown
-                        : Calendar
-                    }
-                  />
-                </div>
-              )}
+              <StatsCards
+                title="Peak Period"
+                value={formatCurrency(maxRevenue)}
+                icon={
+                  revenueChange > 0
+                    ? TrendingUp
+                    : revenueChange < 0
+                    ? TrendingDown
+                    : Calendar
+                }
+                gradient="from-orange-500 to-amber-600"
+                bgGradient="from-white to-orange-50/30 dark:from-gray-900 dark:to-orange-900/10"
+              />
+              <StatsCards
+                title={`Avg per ${
+                  filter === "today"
+                    ? "4hrs"
+                    : filter === "week"
+                    ? "Day"
+                    : filter === "30days"
+                    ? "Week"
+                    : "Period"
+                }`}
+                value={formatCurrency(avgRevenue)}
+                icon={
+                  revenueChange > 0
+                    ? TrendingUp
+                    : revenueChange < 0
+                    ? TrendingDown
+                    : Calendar
+                }
+                gradient="from-purple-500 to-violet-600"
+                bgGradient="from-white to-purple-50/30 dark:from-gray-900 dark:to-purple-900/10"
+              />
             </div>
           )}
 
@@ -644,7 +618,7 @@ export function RevenueOverTime() {
                       top: isMobile ? 10 : 20,
                       right: isMobile ? 10 : 20,
                       left: isMobile ? 0 : 0,
-                      bottom: isMobile ? 40 : 60,
+                      bottom: isMobile ? 10 : 20,
                     }}
                   >
                     <defs>
@@ -674,8 +648,15 @@ export function RevenueOverTime() {
                       className="dark:stroke-gray-600"
                       opacity={0.5}
                     />
+                    {/* X Axis with label */}
                     <XAxis
                       dataKey="period"
+                      label={{
+                        value: "Period",
+                        position: "insideBottom",
+                        offset: -10,
+                        style: { fill: "#059669", fontSize: 13 },
+                      }}
                       tick={{
                         fontSize: isMobile ? 10 : 12,
                         fill: "currentColor",
@@ -685,10 +666,18 @@ export function RevenueOverTime() {
                       className="text-gray-600 dark:text-gray-400"
                       angle={isMobile ? -45 : 0}
                       textAnchor={isMobile ? "end" : "middle"}
-                      height={isMobile ? 60 : 40}
+                      height={isMobile ? 40 : 30}
                       interval={isMobile && data.length > 6 ? 1 : 0}
                     />
+                    {/* Y Axis with label */}
                     <YAxis
+                      label={{
+                        value: "Revenue",
+                        angle: -90,
+                        position: "insideLeft",
+                        offset: 5,
+                        style: { fill: "#059669", fontSize: 13 },
+                      }}
                       tick={{ fontSize: 12, fill: "currentColor" }}
                       tickLine={false}
                       axisLine={false}
@@ -701,13 +690,6 @@ export function RevenueOverTime() {
                         }).format(value)
                       }
                       className="text-gray-600 dark:text-gray-400"
-                      label={{
-                        value: "Revenue",
-                        angle: -90,
-                        position: "insideLeft",
-                        offset: 5,
-                        style: { fill: "#059669", fontSize: 13 },
-                      }}
                     />
                     <Tooltip
                       content={<CustomTooltip />}
