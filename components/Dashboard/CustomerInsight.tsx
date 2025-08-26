@@ -146,9 +146,19 @@ export function CustomerInsights() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data?.orderFrequency}>
                   <defs>
-                    <linearGradient id="orderFreqBar" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient
+                      id="orderFreqBar"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop offset="0%" stopColor="#6366f1" stopOpacity={0.9} />
-                      <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.7} />
+                      <stop
+                        offset="100%"
+                        stopColor="#3b82f6"
+                        stopOpacity={0.7}
+                      />
                     </linearGradient>
                   </defs>
                   <XAxis
@@ -229,14 +239,21 @@ export function CustomerInsights() {
                   <Tooltip
                     content={({ active, payload }) =>
                       active && payload && payload.length ? (
-                        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-xl shadow-xl">
-                          <div className="font-semibold text-gray-900 dark:text-white text-lg">
+                        <div
+                          className="px-4 py-2 rounded-xl shadow-xl"
+                          style={{
+                            background: payload[0].payload.color,
+                            color: "#fff",
+                            border: "1px solid #fff",
+                          }}
+                        >
+                          <div className="font-semibold text-lg">
                             {payload[0].payload.segment}
                           </div>
-                          <div className="text-blue-600 dark:text-blue-400 font-bold text-lg">
+                          <div className="font-bold text-lg">
                             {payload[0].value} customers
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                          <div className="text-xs">
                             RM{payload[0].payload.value.toLocaleString()} value
                           </div>
                         </div>
@@ -253,12 +270,14 @@ export function CustomerInsights() {
                       className="inline-block w-3 h-3 rounded-full"
                       style={{ background: entry.color }}
                     />
-                    <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">
+                    <span
+                      className="text-xs font-medium"
+                      style={{ color: entry.color }}
+                    >
                       {entry.segment}
                     </span>
                     <span className="text-xs text-gray-500 dark:text-gray-400">
-                      ({entry.count} customers, RM{entry.value.toLocaleString()}{" "}
-                      value)
+                      ({entry.count} customers, RM{entry.value.toLocaleString()} value)
                     </span>
                   </div>
                 ))}
