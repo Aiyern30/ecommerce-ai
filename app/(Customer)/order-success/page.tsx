@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/Typography";
 import { Order } from "@/type/order";
 import { getOrderById } from "@/lib/order/api";
+import { formatDate, getPaymentStatusColor } from "@/lib/utils/format";
 
 export default function OrderSuccessPage() {
   const searchParams = useSearchParams();
@@ -167,16 +168,6 @@ export default function OrderSuccessPage() {
     );
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-MY", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
@@ -189,21 +180,6 @@ export default function OrderSuccessPage() {
         return "text-green-700 bg-green-100 dark:bg-green-900/20 dark:text-green-400";
       case "cancelled":
         return "text-red-700 bg-red-100 dark:bg-red-900/20 dark:text-red-400";
-      default:
-        return "text-gray-700 bg-gray-100 dark:bg-gray-900/20 dark:text-gray-400";
-    }
-  };
-
-  const getPaymentStatusColor = (status: string) => {
-    switch (status) {
-      case "paid":
-        return "text-green-700 bg-green-100 dark:bg-green-900/20 dark:text-green-400";
-      case "pending":
-        return "text-yellow-700 bg-yellow-100 dark:bg-yellow-900/20 dark:text-yellow-400";
-      case "failed":
-        return "text-red-700 bg-red-100 dark:bg-red-900/20 dark:text-red-400";
-      case "refunded":
-        return "text-blue-700 bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400";
       default:
         return "text-gray-700 bg-gray-100 dark:bg-gray-900/20 dark:text-gray-400";
     }
