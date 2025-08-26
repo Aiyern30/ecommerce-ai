@@ -197,22 +197,28 @@ export function ProductPerformance() {
               {data?.topStockProducts.map((product, index) => (
                 <div
                   key={index}
-                  className="p-4 bg-white dark:bg-gray-800 rounded-xl border border-green-200 dark:border-green-800"
+                  className="p-4 rounded-xl border border-green-200 dark:border-green-800 shadow-sm transition-all duration-200
+                    bg-gradient-to-br from-green-50/60 via-emerald-50/40 to-blue-50/60 dark:from-green-900/40 dark:via-emerald-900/30 dark:to-blue-900/40
+                    hover:shadow-md hover:scale-[1.01] opacity-90"
                 >
-                  <h4 className="font-semibold text-gray-900 dark:text-white">
-                    {product.name}
-                  </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {product.product_type}
-                  </p>
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="text-green-600 dark:text-green-400 font-bold">
-                      Stock: {product.stock}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      Price:{" "}
-                      {product.price !== null ? `RM${product.price}` : "N/A"}
-                    </span>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">
+                        {product.name}
+                      </h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {product.product_type}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span className="text-green-600 dark:text-green-400 font-bold">
+                        Stock: {product.stock}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        Price:{" "}
+                        {product.price !== null ? `RM${product.price}` : "N/A"}
+                      </span>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -233,21 +239,27 @@ export function ProductPerformance() {
             {data?.topSellingProducts.slice(0, 5).map((product) => (
               <div
                 key={product.productId}
-                className="p-4 bg-white dark:bg-gray-800 rounded-xl border border-blue-200 dark:border-blue-800"
+                className="p-4 rounded-xl border border-blue-200 dark:border-blue-800 shadow-sm transition-all duration-200
+                  bg-gradient-to-br from-blue-50/60 via-indigo-50/40 to-purple-50/60 dark:from-blue-900/40 dark:via-indigo-900/30 dark:to-purple-900/40
+                  hover:shadow-md hover:scale-[1.01] opacity-90"
               >
-                <h4 className="font-semibold text-gray-900 dark:text-white">
-                  {product.name}
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {product.product_type}
-                </p>
-                <div className="mt-2 flex flex-col gap-1">
-                  <span className="text-blue-600 dark:text-blue-400 font-bold">
-                    Total Sold: {product.totalSold}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    Revenue: RM{product.totalRevenue.toLocaleString()}
-                  </span>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-semibold text-gray-900 dark:text-white">
+                      {product.name}
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {product.product_type}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <span className="text-blue-600 dark:text-blue-400 font-bold">
+                      Total Sold: {product.totalSold}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      Revenue: RM{product.totalRevenue.toLocaleString()}
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}
