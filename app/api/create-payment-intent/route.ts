@@ -5,21 +5,18 @@ export async function POST(request: NextRequest) {
   try {
     const { amount } = await request.json();
 
-    // Validate amount
     if (!amount || amount < 1) {
       return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
     }
 
     console.log("Creating PaymentIntent for amount:", amount, "RM");
 
-    // Create PaymentIntent
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // Convert RM to sen (cents)
+      amount: Math.round(amount * 100),
       currency: "myr",
       automatic_payment_methods: {
         enabled: true,
       },
-      // Add metadata to help track
       metadata: {
         created_at: new Date().toISOString(),
         amount_rm: amount.toString(),

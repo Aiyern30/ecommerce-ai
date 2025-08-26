@@ -64,13 +64,11 @@ export function StripePaymentForm({
 
   const selectedItems = cartItems.filter((item) => item.selected);
 
-  // Calculate subtotal from selected items (same as CheckoutSummary)
   const subtotal = selectedItems.reduce((sum, item) => {
     const itemPrice = getProductPrice(item.product, item.variant_type);
     return sum + itemPrice * item.quantity;
   }, 0);
 
-  // Calculate additional services total (same as CheckoutSummary)
   const servicesTotal = additionalServices.reduce((sum, service) => {
     if (selectedServices[service.service_code]) {
       return sum + service.rate_per_m3 * totalVolume;
@@ -78,7 +76,6 @@ export function StripePaymentForm({
     return sum;
   }, 0);
 
-  // Get applicable freight charge (same logic as CheckoutSummary)
   const getApplicableFreightCharge = (): FreightCharge | null => {
     if (totalVolume === 0) return null;
 
@@ -101,11 +98,9 @@ export function StripePaymentForm({
     ? applicableFreightCharge.delivery_fee
     : 0;
 
-  // Calculate tax (SST 6%) on subtotal + services + freight (same as CheckoutSummary)
   const taxableAmount = subtotal + servicesTotal + freightCost;
   const tax = taxableAmount * 0.06;
 
-  // Calculate total (same as CheckoutSummary)
   const total = taxableAmount + tax;
 
   const selectedItemsCount = selectedItems.reduce(
@@ -113,7 +108,6 @@ export function StripePaymentForm({
     0
   );
 
-  // PaymentElement options
   const paymentElementOptions: StripePaymentElementOptions = {
     layout: "tabs",
     paymentMethodOrder: ["card", "fpx"],
@@ -176,11 +170,10 @@ export function StripePaymentForm({
         await paymentIntentResponse.json();
       console.log("PaymentIntent created:", paymentIntentId);
 
-      // Step 3: Confirm payment with the newly created PaymentIntent
       const { error: stripeError, paymentIntent } = await stripe.confirmPayment(
         {
           elements,
-          clientSecret, // Use the newly created client secret
+          clientSecret,
           confirmParams: {
             return_url: `${window.location.origin}/checkout/confirm`,
             payment_method_data: {
@@ -198,7 +191,7 @@ export function StripePaymentForm({
               },
             },
           },
-          redirect: "if_required", // Only redirect for payment methods that require it (like FPX)
+          redirect: "if_required",
         }
       );
 
