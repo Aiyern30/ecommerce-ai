@@ -45,36 +45,6 @@ interface Order {
 
 type FilterType = "today" | "week" | "30days" | "all";
 
-const CustomTooltip = ({
-  active,
-  payload,
-  label,
-}: {
-  active?: boolean;
-  payload?: any[];
-  label?: string;
-}) => {
-  if (active && payload && payload.length) {
-    const value = payload[0].value;
-    return (
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 px-4 py-3 rounded-xl shadow-xl backdrop-blur-sm">
-        <p className="font-semibold text-gray-900 dark:text-white text-lg">
-          {new Intl.NumberFormat("en-MY", {
-            style: "currency",
-            currency: "MYR",
-            minimumFractionDigits: 2,
-          }).format(value)}
-        </p>
-        <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">
-          {label}
-        </p>
-      </div>
-    );
-  }
-  return null;
-};
-
-// Period generation logic copied from OrdersOverTime, but for revenue
 function generateSmartPeriods(orders: Order[], filterType: FilterType) {
   if (!orders || orders.length === 0) return [];
   const sortedOrders = orders.sort(
@@ -517,7 +487,7 @@ export function RevenueOverTime() {
               <div
                 className={`${
                   isMobile ? "p-2" : "p-3"
-                } bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl shadow-lg`}
+                } bg-gradient-to-br from-emerald-500 via-green-400 to-blue-500 dark:from-emerald-600 dark:via-green-700 dark:to-blue-700 rounded-xl shadow-lg`}
               >
                 <DollarSign
                   className={`${isMobile ? "h-5 w-5" : "h-6 w-6"} text-white`}
@@ -527,14 +497,14 @@ export function RevenueOverTime() {
                 <h3
                   className={`${
                     isMobile ? "text-lg" : "text-2xl"
-                  } font-bold text-gray-900 dark:text-white`}
+                  } font-bold bg-gradient-to-r from-emerald-600 via-green-600 to-blue-600 dark:from-emerald-400 dark:via-green-400 dark:to-blue-400 bg-clip-text text-transparent`}
                 >
                   Revenue Analytics
                 </h3>
                 <p
                   className={`${
                     isMobile ? "text-xs" : "text-sm"
-                  } text-gray-600 dark:text-gray-400 font-medium`}
+                  } text-green-600 dark:text-green-400 font-medium`}
                 >
                   {totalRevenue.toLocaleString("en-MY", {
                     style: "currency",
@@ -710,7 +680,7 @@ export function RevenueOverTime() {
                         />
                         <stop
                           offset="100%"
-                          stopColor="#059669"
+                          stopColor="#3b82f6"
                           stopOpacity={0.7}
                         />
                       </linearGradient>
@@ -732,11 +702,12 @@ export function RevenueOverTime() {
                       }}
                       tick={{
                         fontSize: isMobile ? 10 : 12,
-                        fill: "currentColor",
+                        fill: "#059669",
+                        fontWeight: 500,
                       }}
                       tickLine={false}
                       axisLine={false}
-                      className="text-gray-600 dark:text-gray-400"
+                      className="text-emerald-600 dark:text-emerald-400"
                       angle={isMobile ? -45 : 0}
                       textAnchor={isMobile ? "end" : "middle"}
                       height={isMobile ? 40 : 30}
@@ -750,22 +721,45 @@ export function RevenueOverTime() {
                         offset: 5,
                         style: { fill: "#059669", fontSize: 13 },
                       }}
-                      tick={{ fontSize: 12, fill: "currentColor" }}
+                      tick={{
+                        fontSize: 12,
+                        fill: "#3b82f6",
+                        fontWeight: 500,
+                      }}
                       tickLine={false}
                       axisLine={false}
                       tickFormatter={(value) =>
-                        new Intl.NumberFormat("en-MY", {
-                          style: "currency",
-                          currency: "MYR",
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 0,
-                        }).format(value)
+                        typeof value === "number"
+                          ? new Intl.NumberFormat("en-MY", {
+                              style: "currency",
+                              currency: "MYR",
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 0,
+                            }).format(value)
+                          : ""
                       }
-                      className="text-gray-600 dark:text-gray-400"
+                      className="text-blue-600 dark:text-blue-400"
                     />
                     <Tooltip
-                      content={<CustomTooltip />}
-                      cursor={{ fill: "rgba(16, 185, 129, 0.1)" }}
+                      cursor={{ fill: "rgba(16, 185, 129, 0.08)" }}
+                      content={({ active, payload, label }) =>
+                        active && payload && payload.length ? (
+                          <div className="bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-emerald-900/40 dark:to-blue-900/40 border border-emerald-200 dark:border-emerald-800 px-4 py-3 rounded-xl shadow-xl backdrop-blur-sm">
+                            <p className="font-semibold text-emerald-700 dark:text-emerald-200 text-lg">
+                              {typeof payload[0].value === "number"
+                                ? new Intl.NumberFormat("en-MY", {
+                                    style: "currency",
+                                    currency: "MYR",
+                                    minimumFractionDigits: 2,
+                                  }).format(payload[0].value)
+                                : ""}
+                            </p>
+                            <p className="text-blue-600 dark:text-blue-400 text-sm font-medium">
+                              {label}
+                            </p>
+                          </div>
+                        ) : null
+                      }
                     />
                     <Bar
                       dataKey="revenue"
