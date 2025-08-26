@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -44,6 +44,7 @@ import { useTheme } from "../ThemeProvider";
 import { supabase } from "@/lib/supabase/browserClient";
 import { useUser } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/navigation";
+import { useProductSearch } from "@/hooks/useProductSearch";
 import { Product } from "@/type/product";
 
 interface DashboardLayoutProps {
@@ -55,11 +56,18 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const [searchText, setSearchText] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [searchResults, setSearchResults] = useState<Product[]>([]);
-  const [isDropdownOpen, setDropdownOpen] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const {
+    searchResults,
+    searchQuery,
+    setSearchQuery,
+    showDropdown,
+    setShowDropdown,
+    setIsSearchFocused,
+    searchContainerRef,
+    handleSearchChange,
+    handleInputFocus,
+    handleInputBlur,
+  } = useProductSearch();
 
   const sidebarItems = [
     {
@@ -112,127 +120,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     return pathname ? pathname.startsWith(path) : false;
   };
 
-  const triggerFileInput = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setImageFile(file);
-
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64 = (reader.result as string).split(",")[1];
-
-      try {
-        const res = await fetch("/api/search-similar", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ imageBase64: base64 }),
-        });
-
-        const result = await res.json();
-
-        if (!Array.isArray(result)) {
-          console.error("Expected array but got:", result);
-          setSearchResults([]);
-          setDropdownOpen(false);
-          return;
-        }
-
-        setSearchResults(result);
-        setDropdownOpen(true);
-      } catch (err) {
-        console.error("Image similarity search error:", err);
-        setSearchResults([]);
-      }
-    };
-
-    reader.readAsDataURL(file);
-  };
-
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (imageFile) {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64 = (reader.result as string).split(",")[1];
-
-        try {
-          const res = await fetch("/api/search-similar", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ imageBase64: base64 }),
-          });
-
-          if (!res.ok) {
-            const error = await res.json();
-            console.error("API error:", error);
-            setSearchResults([]);
-            setDropdownOpen(false);
-            return;
-          }
-
-          const json = await res.json();
-
-          if (!Array.isArray(json)) {
-            console.error("Expected array but got:", json);
-            setSearchResults([]);
-            setDropdownOpen(false);
-            return;
-          }
-
-          setSearchResults(json);
-          setDropdownOpen(true);
-        } catch (error) {
-          console.error("Image similarity search error:", error);
-          setSearchResults([]);
-          setDropdownOpen(false);
-        }
-      };
-
-      reader.readAsDataURL(imageFile);
-      return;
-    }
-
-    if (searchText.trim()) {
-      try {
-        const res = await fetch(
-          `/api/search-products?query=${encodeURIComponent(searchText.trim())}`
-        );
-
-        if (!res.ok) {
-          const error = await res.json();
-          console.error("Product search API error:", error);
-          setSearchResults([]);
-          setDropdownOpen(false);
-          return;
-        }
-
-        const json = await res.json();
-
-        if (!Array.isArray(json)) {
-          console.error("Expected array but got:", json);
-          setSearchResults([]);
-          setDropdownOpen(false);
-          return;
-        }
-
-        setSearchResults(json);
-        setDropdownOpen(true);
-      } catch (error) {
-        console.error("Keyword search error:", error);
-        setSearchResults([]);
-        setDropdownOpen(false);
-      }
-    }
-  };
-
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -251,6 +138,22 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
+
+  function getBestPriceAndLabel(product: Product) {
+    const priceFields = [
+      { key: "normal", label: "Normal Delivery", price: product.normal_price },
+      { key: "pump", label: "Pump Delivery", price: product.pump_price },
+      { key: "tremie_1", label: "Tremie 1", price: product.tremie_1_price },
+      { key: "tremie_2", label: "Tremie 2", price: product.tremie_2_price },
+      { key: "tremie_3", label: "Tremie 3", price: product.tremie_3_price },
+    ];
+    const found = priceFields.find(
+      (f) => f.price !== null && f.price !== undefined
+    );
+    return found
+      ? { price: Number(found.price), label: found.label }
+      : { price: undefined, label: undefined };
+  }
 
   return (
     <SidebarProvider>
@@ -370,91 +273,91 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="flex items-center justify-between p-4 min-w-0">
               <SidebarTrigger className="h-8 w-8 text-gray-500 flex-shrink-0" />
 
-              <form
-                onSubmit={handleSearch}
+              <div
+                ref={searchContainerRef}
                 className="relative flex items-center gap-2 flex-shrink min-w-0"
-                encType="multipart/form-data"
               >
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                  {/* Search Input */}
+                <div className="relative flex items-center">
                   <Input
-                    type="text"
+                    type="search"
                     name="query"
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
                     placeholder="Search for products..."
                     className="w-[200px] sm:w-[300px] pl-10 dark:bg-gray-800 dark:border-gray-700"
                   />
-
-                  {/* Result Dropdown */}
-                  <div className="absolute top-full mt-1 w-full z-50 bg-white dark:bg-gray-800 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                    {isDropdownOpen &&
-                      searchResults.map((product: Product) => (
-                        <Link
-                          key={product.id}
-                          href={`/staff/products/${product.id}`}
-                          onClick={() => setDropdownOpen(false)}
-                          className="flex items-center gap-3 px-4 py-2 text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                          <div className="relative w-10 h-10 rounded overflow-hidden bg-gray-200 flex-shrink-0">
-                            <Image
-                              src={
-                                product.product_images?.[0]?.image_url ||
-                                "/placeholder.png"
-                              }
-                              alt={product.name}
-                              fill
-                              className="object-cover"
-                              sizes="40px"
-                            />
-                          </div>
-                          <div className="flex flex-col min-w-0 flex-1">
-                            <span className="font-medium truncate">
-                              {product.name}
-                            </span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                              RM {(product.normal_price ?? 0).toFixed(2)} /{" "}
-                              {product.unit || "unit"}
-                            </span>
-                          </div>
-                        </Link>
-                      ))}
-                  </div>
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 pointer-events-none" />
                 </div>
-
-                {/* Hidden File Input */}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                />
-
-                {/* Upload Button */}
-                <label htmlFor="image-upload-preview">
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    title="Upload Image"
-                    onClick={triggerFileInput}
-                    className="flex-shrink-0"
-                  >
-                    🖼️
-                  </Button>
-                </label>
-
-                {/* Uploaded Image Preview */}
-                {imageFile && (
-                  <div className="w-10 h-10 relative rounded overflow-hidden flex-shrink-0">
-                    <Image
-                      src={URL.createObjectURL(imageFile)}
-                      alt="Uploaded"
-                      fill
-                      className="object-cover border rounded"
-                    />
+                {/* Result Dropdown */}
+                {showDropdown && searchResults.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+                    <ul>
+                      {searchResults.map((product) => {
+                        const mainImage =
+                          product.product_images?.find(
+                            (img) => img.is_primary
+                          ) || product.product_images?.[0];
+                        const { price, label } = getBestPriceAndLabel(product);
+                        return (
+                          <li
+                            key={product.id}
+                            className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setShowDropdown(false);
+                              setSearchQuery("");
+                              setIsSearchFocused(false);
+                              router.push(`/staff/products/${product.id}`);
+                            }}
+                          >
+                            <div className="w-10 h-10 rounded bg-gray-100 overflow-hidden flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                              <Image
+                                src={mainImage?.image_url || "/placeholder.svg"}
+                                alt={product.name}
+                                width={40}
+                                height={40}
+                                className="object-cover w-full h-full"
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm truncate">
+                                {product.name}
+                              </div>
+                              {product.category && (
+                                <div className="text-xs text-gray-400 truncate">
+                                  {product.category}
+                                </div>
+                              )}
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-xs text-blue-600 bg-blue-100 dark:bg-blue-800 dark:text-blue-200 px-2 py-0.5 rounded">
+                                  {label || "No price"}
+                                </span>
+                                <span className="font-semibold text-sm">
+                                  {price !== undefined
+                                    ? `RM${price.toFixed(2)}`
+                                    : "N/A"}
+                                </span>
+                                {typeof product.stock_quantity === "number" && (
+                                  <span
+                                    className={`text-xs ml-2 ${
+                                      product.stock_quantity > 20
+                                        ? "text-green-600"
+                                        : product.stock_quantity > 5
+                                        ? "text-yellow-600"
+                                        : "text-red-600"
+                                    }`}
+                                  >
+                                    {product.stock_quantity} in stock
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
                   </div>
                 )}
 
@@ -499,7 +402,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
-              </form>
+              </div>
             </div>
           </header>
 
