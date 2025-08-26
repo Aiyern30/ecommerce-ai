@@ -31,6 +31,7 @@ export default function OrderSuccessPage() {
   const searchParams = useSearchParams();
   const user = useUser();
   const [order, setOrder] = useState<Order | null>(null);
+  console.log("Order state:", order);
   const [isLoading, setIsLoading] = useState(true);
 
   const orderId = searchParams?.get("orderId");
