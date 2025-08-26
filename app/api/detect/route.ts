@@ -32,6 +32,82 @@ function initializeVisionClient() {
   });
 }
 
+// Function to estimate concrete quantity from image analysis
+function estimateConcreteQuantity(labels: string[], objectAnnotations: any[]) {
+  const labelTexts = labels.map((l) => l.toLowerCase());
+
+  // Base estimation logic
+  let estimatedVolume = 0;
+  let confidenceLevel = "low";
+  let reasoning = "";
+
+  // Estimate based on detected construction elements
+  if (labelTexts.some((label) => label.includes("foundation"))) {
+    estimatedVolume = 25; // Typical small foundation
+    confidenceLevel = "medium";
+    reasoning =
+      "Foundation detected - estimated for typical residential foundation";
+  } else if (
+    labelTexts.some(
+      (label) => label.includes("slab") || label.includes("floor")
+    )
+  ) {
+    estimatedVolume = 15; // Typical slab
+    confidenceLevel = "medium";
+    reasoning = "Floor slab detected - estimated for standard room size";
+  } else if (labelTexts.some((label) => label.includes("driveway"))) {
+    estimatedVolume = 8; // Typical driveway
+    confidenceLevel = "medium";
+    reasoning = "Driveway detected - estimated for single car driveway";
+  } else if (labelTexts.some((label) => label.includes("wall"))) {
+    estimatedVolume = 12; // Wall section
+    confidenceLevel = "medium";
+    reasoning = "Wall structure detected - estimated for standard wall section";
+  } else if (
+    labelTexts.some(
+      (label) => label.includes("column") || label.includes("beam")
+    )
+  ) {
+    estimatedVolume = 3; // Structural element
+    confidenceLevel = "medium";
+    reasoning =
+      "Structural element detected - estimated for typical column/beam";
+  } else if (
+    labelTexts.some(
+      (label) =>
+        label.includes("concrete") ||
+        label.includes("cement") ||
+        label.includes("building") ||
+        label.includes("construction")
+    )
+  ) {
+    estimatedVolume = 10; // General concrete work
+    confidenceLevel = "low";
+    reasoning = "General concrete work detected - basic estimation provided";
+  } else {
+    // Fallback estimation
+    estimatedVolume = 5;
+    confidenceLevel = "low";
+    reasoning = "General construction project - conservative estimate";
+  }
+
+  // Adjust based on image complexity (more objects = potentially larger project)
+  if (objectAnnotations.length > 10) {
+    estimatedVolume *= 1.5; // Increase for complex scenes
+    reasoning += " (adjusted for project complexity)";
+  }
+
+  return {
+    estimatedVolume: Math.round(estimatedVolume * 10) / 10, // Round to 1 decimal
+    confidenceLevel,
+    reasoning,
+    range: {
+      min: Math.round(estimatedVolume * 0.7 * 10) / 10,
+      max: Math.round(estimatedVolume * 1.5 * 10) / 10,
+    },
+  };
+}
+
 // Cache for products to avoid repeated database calls
 let cachedProducts: any[] | null = null;
 let cacheTimestamp: number = 0;
@@ -203,13 +279,29 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const imageBuffer = Buffer.from(arrayBuffer);
 
-    // Call Google Cloud Vision API
-    let result;
+    // Call Google Cloud Vision API for both label detection and object localization
+    let labelResult, objectResult;
     try {
       console.log("📸 Calling Google Vision API...");
-      [result] = await vision.labelDetection({
+
+      // Get label annotations
+      const [labelResponse] = await vision.labelDetection({
         image: { content: imageBuffer },
       });
+
+      // Only call objectLocalization if it exists
+      let objectResponse;
+      if (typeof vision.objectLocalization === "function") {
+        [objectResponse] = await vision.objectLocalization({
+          image: { content: imageBuffer },
+        });
+      } else {
+        objectResponse = { localizedObjectAnnotations: [] };
+      }
+
+      labelResult = labelResponse;
+      objectResult = objectResponse;
+
       console.log("✅ Vision API call successful");
     } catch (visionError: any) {
       console.error("❌ Google Cloud Vision API Error:", visionError);
@@ -238,8 +330,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const labels = result.labelAnnotations || [];
+    const labels = labelResult.labelAnnotations || [];
     const labelTexts = labels.map((l) => l.description || "").filter(Boolean);
+    const objectAnnotations = objectResult.localizedObjectAnnotations || [];
+
+    // Estimate concrete quantity
+    const quantityEstimation = estimateConcreteQuantity(
+      labelTexts,
+      objectAnnotations
+    );
 
     // Match to concrete product
     const matchedProduct = matchConcreteProduct(labelTexts, products);
@@ -250,6 +349,34 @@ export async function POST(request: NextRequest) {
         ? Math.min(0.95, Math.max(0.3, labels[0].score || 0.5))
         : 0.5;
 
+    // Calculate total cost estimation
+    let costEstimation = null;
+    if (matchedProduct && quantityEstimation.estimatedVolume > 0) {
+      const normalPrice = parseFloat(matchedProduct.normal_price) || 0;
+      const pumpPrice = matchedProduct.pump_price
+        ? parseFloat(matchedProduct.pump_price)
+        : null;
+
+      costEstimation = {
+        normal: {
+          total: Math.round(normalPrice * quantityEstimation.estimatedVolume),
+          range: {
+            min: Math.round(normalPrice * quantityEstimation.range.min),
+            max: Math.round(normalPrice * quantityEstimation.range.max),
+          },
+        },
+        pump: pumpPrice
+          ? {
+              total: Math.round(pumpPrice * quantityEstimation.estimatedVolume),
+              range: {
+                min: Math.round(pumpPrice * quantityEstimation.range.min),
+                max: Math.round(pumpPrice * quantityEstimation.range.max),
+              },
+            }
+          : null,
+      };
+    }
+
     return NextResponse.json({
       success: true,
       detectedLabels: labelTexts.slice(0, 10),
@@ -258,7 +385,9 @@ export async function POST(request: NextRequest) {
       message: matchedProduct
         ? `We recommend ${matchedProduct.name}`
         : "No suitable concrete type detected",
-      totalProducts: products.length, // For debugging
+      totalProducts: products.length,
+      quantityEstimation,
+      costEstimation,
     });
   } catch (error) {
     console.error("Vision API Error:", error);
@@ -287,12 +416,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-// Optional: Add other HTTP methods if needed
-export async function GET() {
-  return NextResponse.json(
-    { error: "Method not allowed. Use POST to upload images." },
-    { status: 405 }
-  );
 }

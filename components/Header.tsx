@@ -84,7 +84,15 @@ function ProductSearchBox({
           className={`pl-10 ${inputClassName}`}
         />
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 pointer-events-none" />
-        <Button type="button" size="icon" variant="ghost" className="ml-2">
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          className="ml-2"
+          onClick={() => {
+            router.push("/search");
+          }}
+        >
           <IoCameraOutline size={48} />
         </Button>
       </div>
