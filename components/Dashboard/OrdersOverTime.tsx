@@ -631,36 +631,19 @@ export function OrdersOverTime() {
                       top: isMobile ? 10 : 20,
                       right: isMobile ? 10 : 30,
                       left: isMobile ? 0 : 10,
-                      bottom: isMobile ? 40 : 60,
+                      // Reduce bottom margin to move chart down and minimize empty space
+                      bottom: isMobile ? 10 : 20,
                     }}
                   >
-                    <defs>
-                      <linearGradient
-                        id="colorOrders"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor="#3b82f6"
-                          stopOpacity={0.8}
-                        />
-                        <stop
-                          offset="50%"
-                          stopColor="#3b82f6"
-                          stopOpacity={0.4}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor="#3b82f6"
-                          stopOpacity={0.1}
-                        />
-                      </linearGradient>
-                    </defs>
+                    {/* X Axis */}
                     <XAxis
                       dataKey="period"
+                      label={{
+                        value: "Period",
+                        position: "insideBottom",
+                        offset: -10,
+                        style: { fill: "#3b82f6", fontSize: 13 },
+                      }}
                       tick={{
                         fontSize: isMobile ? 10 : 12,
                         fill: "currentColor",
@@ -673,7 +656,15 @@ export function OrdersOverTime() {
                       height={isMobile ? 60 : 40}
                       interval={isMobile && data.length > 6 ? 1 : 0}
                     />
+                    {/* Y Axis */}
                     <YAxis
+                      label={{
+                        value: "Orders",
+                        angle: -90,
+                        position: "insideLeft",
+                        offset: 5,
+                        style: { fill: "#3b82f6", fontSize: 13 },
+                      }}
                       tick={{
                         fontSize: isMobile ? 10 : 12,
                         fill: "currentColor",
@@ -718,11 +709,7 @@ export function OrdersOverTime() {
 
           {/* Summary Stats - Mobile Optimized */}
           {data.length > 0 && (
-            <div
-              className={`grid ${
-                isMobile ? "grid-cols-2 gap-3" : "grid-cols-4 gap-6"
-              }`}
-            >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               <StatCard
                 title="Total Orders"
                 value={totalOrders}
@@ -734,34 +721,21 @@ export function OrdersOverTime() {
                 value={currentPeriodOrders}
                 color="indigo"
               />
-              {!isMobile && (
-                <>
-                  <StatCard
-                    title="Peak Period"
-                    value={maxOrders}
-                    color="purple"
-                  />
-                  <StatCard
-                    title={`Avg per ${
-                      filter === "today"
-                        ? "4hrs"
-                        : filter === "week"
-                        ? "Day"
-                        : filter === "30days"
-                        ? "Week"
-                        : "Period"
-                    }`}
-                    value={avgOrders}
-                    color="amber"
-                  />
-                </>
-              )}
-              {isMobile && (
-                <div className="col-span-2 grid grid-cols-2 gap-3">
-                  <StatCard title="Peak" value={maxOrders} color="purple" />
-                  <StatCard title="Average" value={avgOrders} color="amber" />
-                </div>
-              )}
+
+              <StatCard title="Peak Period" value={maxOrders} color="purple" />
+              <StatCard
+                title={`Avg per ${
+                  filter === "today"
+                    ? "4hrs"
+                    : filter === "week"
+                    ? "Day"
+                    : filter === "30days"
+                    ? "Week"
+                    : "Period"
+                }`}
+                value={avgOrders}
+                color="amber"
+              />
             </div>
           )}
 
