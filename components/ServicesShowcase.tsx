@@ -7,6 +7,7 @@ import {
   TypographyP,
 } from "@/components/ui/Typography";
 import { useChat } from "./ChatContext";
+import { TbPhotoSearch } from "react-icons/tb";
 
 // Enhanced Card component with hover effects and gradient backgrounds
 function Card({
@@ -34,6 +35,7 @@ function Card({
       rounded-xl shadow-md hover:shadow-xl p-6 text-center border 
       transition-all duration-300 ease-in-out transform hover:-translate-y-2
       group
+      min-h-[400px] flex flex-col justify-between
     `}
     >
       {children}
@@ -78,6 +80,14 @@ function AIIcon() {
       >
         <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"></path>
       </svg>
+    </div>
+  );
+}
+
+function PhotoSearchIcon() {
+  return (
+    <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
+      <TbPhotoSearch className="w-6 h-6 text-white" />
     </div>
   );
 }
@@ -277,7 +287,7 @@ export function ServicesShowcase() {
           </Card>
 
           <Card variant="gradient">
-            <AIIcon />
+            <PhotoSearchIcon />
             <TypographyH3 className="mb-3 text-gray-800 dark:text-gray-100 font-bold">
               AI Search
             </TypographyH3>
