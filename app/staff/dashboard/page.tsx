@@ -1,8 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/";
-import { FiSettings } from "react-icons/fi";
-
 import { KpiCards } from "@/components/Dashboard/KPICard";
 import { RevenueOverTime } from "@/components/Dashboard/RevenueOverTime";
 
@@ -10,16 +7,13 @@ import { OrdersOverTime } from "@/components/Dashboard/OrdersOverTime";
 import { CartAnalytics } from "@/components/Dashboard/CartAnalytics";
 import { CustomerInsights } from "@/components/Dashboard/CustomerInsight";
 import { ProductPerformance } from "@/components/Dashboard/ProductPerformance";
+import { TypographyH1 } from "@/components/ui/Typography";
 
 export default function Dashboard() {
   return (
     <>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <Button variant="outline" className="gap-2">
-          <FiSettings size={18} />
-          Manage
-        </Button>
+        <TypographyH1>Dashboard</TypographyH1>
       </div>
 
       <KpiCards />

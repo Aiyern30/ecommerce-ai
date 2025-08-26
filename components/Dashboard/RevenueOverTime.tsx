@@ -417,11 +417,87 @@ export function RevenueOverTime() {
   const avgRevenue =
     data.length > 0 ? Math.round(totalRevenue / data.length) : 0;
 
-  // ...StatsCards component unchanged...
-
   if (loading) {
-    // ...existing loading skeleton...
-    // ...existing code...
+    return (
+      <Card className="col-span-full bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 border-0 shadow-xl">
+        <CardContent className={isMobile ? "p-2" : "p-8"}>
+          <div className={isMobile ? "space-y-4" : "space-y-8"}>
+            <div
+              className={`flex ${
+                isMobile
+                  ? "flex-col gap-3"
+                  : "flex-row justify-between items-center"
+              }`}
+            >
+              <div className="flex items-center gap-4">
+                <div
+                  className={`${
+                    isMobile ? "p-2" : "p-3"
+                  } bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl shadow-lg`}
+                >
+                  <div className="h-5 w-5 bg-gray-200 dark:bg-gray-700 rounded" />
+                </div>
+                <div>
+                  <div
+                    className={`${
+                      isMobile ? "h-5 w-24" : "h-7 w-40"
+                    } bg-gray-200 dark:bg-gray-700 rounded mb-2`}
+                  />
+                  <div
+                    className={`${
+                      isMobile ? "h-3 w-32" : "h-4 w-56"
+                    } bg-gray-200 dark:bg-gray-700 rounded`}
+                  />
+                </div>
+              </div>
+              <div
+                className={`${
+                  isMobile ? "h-8 w-24" : "h-10 w-32"
+                } bg-gray-200 dark:bg-gray-700 rounded-lg`}
+              />
+            </div>
+            <div
+              className={`grid ${
+                isMobile ? "grid-cols-2 gap-3" : "grid-cols-4 gap-6"
+              }`}
+            >
+              {[...Array(isMobile ? 2 : 4)].map((_, i) => (
+                <div
+                  key={i}
+                  className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 animate-pulse"
+                >
+                  <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+                  <div className="h-7 w-20 bg-gray-200 dark:bg-gray-700 rounded" />
+                </div>
+              ))}
+            </div>
+            <div
+              className={
+                isMobile
+                  ? "bg-white dark:bg-gray-800 rounded-2xl p-2 shadow-lg border border-gray-100 dark:border-gray-700"
+                  : "bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700"
+              }
+            >
+              <div
+                className={isMobile ? "h-[220px] w-full" : "h-[320px] w-full"}
+              >
+                <div className="h-full w-full bg-gray-200 dark:bg-gray-700 rounded-2xl animate-pulse" />
+              </div>
+            </div>
+            <div className="flex items-center justify-center">
+              <div
+                className={`flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-full ${
+                  isMobile ? "text-xs" : "text-sm"
+                }`}
+              >
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="h-3 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
@@ -430,7 +506,6 @@ export function RevenueOverTime() {
         <div
           className={isMobile ? "flex flex-col gap-4" : "flex flex-col gap-8"}
         >
-          {/* Header - filter dropdown same as OrdersOverTime */}
           <div
             className={`${
               isMobile
@@ -523,7 +598,6 @@ export function RevenueOverTime() {
             </DropdownMenu>
           </div>
 
-          {/* Summary Stats - similar to OrdersOverTime */}
           {data.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               <StatsCards
@@ -592,7 +666,6 @@ export function RevenueOverTime() {
             </div>
           )}
 
-          {/* Chart - BarChart */}
           <div
             className={
               isMobile
@@ -648,7 +721,6 @@ export function RevenueOverTime() {
                       className="dark:stroke-gray-600"
                       opacity={0.5}
                     />
-                    {/* X Axis with label */}
                     <XAxis
                       dataKey="period"
                       label={{
@@ -669,7 +741,6 @@ export function RevenueOverTime() {
                       height={isMobile ? 40 : 30}
                       interval={isMobile && data.length > 6 ? 1 : 0}
                     />
-                    {/* Y Axis with label */}
                     <YAxis
                       label={{
                         value: "Revenue",
@@ -707,7 +778,6 @@ export function RevenueOverTime() {
             </div>
           </div>
 
-          {/* Data Status Indicator */}
           <div className="flex items-center justify-center">
             <div
               className={`flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-full ${
