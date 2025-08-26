@@ -15,14 +15,18 @@ export default function ProductCarousel() {
     loop: true,
     slides: { perView: 4, spacing: 32 },
     breakpoints: {
-      "(max-width: 1024px)": {
+      "(max-width: 1400px)": {
         slides: { perView: 3, spacing: 24 },
       },
-      "(max-width: 768px)": {
+      "(max-width: 1000px)": {
         slides: { perView: 2, spacing: 16 },
       },
       "(max-width: 640px)": {
-        slides: { perView: 1.25, spacing: 12 },
+        slides: {
+          perView: 1.25,
+          spacing: 10,
+          origin: "center",
+        },
       },
     },
   });
