@@ -8,6 +8,8 @@ import {
 } from "@/components/ui/Typography";
 import { useChat } from "./ChatContext";
 import { TbPhotoSearch } from "react-icons/tb";
+import { RiRobot2Line } from "react-icons/ri";
+import { Brain, Sparkles } from "lucide-react";
 
 // Enhanced Card component with hover effects and gradient backgrounds
 function Card({
@@ -70,24 +72,34 @@ function SupportIcon() {
   );
 }
 
-function AIIcon() {
-  return (
-    <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
-      <svg
-        className="w-6 h-6 text-white"
-        fill="currentColor"
-        viewBox="0 0 20 20"
-      >
-        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"></path>
-      </svg>
-    </div>
-  );
-}
-
 function PhotoSearchIcon() {
   return (
     <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
       <TbPhotoSearch className="w-6 h-6 text-white" />
+    </div>
+  );
+}
+
+function AIServiceIcon() {
+  return (
+    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-full flex items-center justify-center">
+      <Sparkles className="w-8 h-8 text-white" />
+    </div>
+  );
+}
+
+function AIChatbotIcon() {
+  return (
+    <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-green-400 to-blue-500 rounded-lg flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
+      <RiRobot2Line className="w-7 h-7 text-white" />
+    </div>
+  );
+}
+
+function AISmartComparisonIcon() {
+  return (
+    <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
+      <Brain className="w-6 h-6 text-white" />
     </div>
   );
 }
@@ -149,7 +161,7 @@ export function ServicesShowcase() {
             </Card>
           </Link>
 
-          {/* Make AI Services card clickable and scroll to AI Tools section */}
+          {/* AI Services card with new icon */}
           <button
             type="button"
             className="text-left w-full"
@@ -162,7 +174,7 @@ export function ServicesShowcase() {
             }}
           >
             <Card variant="gradient">
-              <AIIcon />
+              <AIServiceIcon />
               <TypographyH3 className="mb-3 text-gray-800 dark:text-gray-100 font-bold">
                 AI Services
               </TypographyH3>
@@ -228,7 +240,7 @@ export function ServicesShowcase() {
         {/* AI Tools Grid - same layout as Our Services */}
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-12">
           <Card variant="gradient">
-            <AIIcon />
+            <AIChatbotIcon />
             <TypographyH3 className="mb-3 text-gray-800 dark:text-gray-100 font-bold">
               AI Chatbot
             </TypographyH3>
@@ -260,7 +272,7 @@ export function ServicesShowcase() {
           </Card>
 
           <Card variant="gradient">
-            <AIIcon />
+            <AISmartComparisonIcon />
             <TypographyH3 className="mb-3 text-gray-800 dark:text-gray-100 font-bold">
               AI Smart Comparison
             </TypographyH3>
