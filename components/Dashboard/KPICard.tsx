@@ -71,7 +71,9 @@ export function KpiCards() {
   const kpiCards = [
     {
       title: "Total Revenue",
-      value: kpiData ? formatCurrency(kpiData.totalRevenue) : formatCurrency(0),
+      value: kpiData
+        ? formatCurrency(kpiData.totalRevenue, true)
+        : formatCurrency(0, true),
       growth: kpiData?.revenueGrowth || 0,
       icon: DollarSign,
       gradient: "from-emerald-500 to-green-600",
@@ -108,7 +110,7 @@ export function KpiCards() {
       bgGradient:
         "from-white to-purple-50/30 dark:from-gray-900 dark:to-purple-900/10",
       description: "Pending enquiries",
-      hideGrowth: !kpiData?.enquiriesGrowth, // Hide growth if not provided
+      hideGrowth: !kpiData?.enquiriesGrowth,
     },
   ];
 

@@ -76,7 +76,7 @@ export function StatsCards({
               <TypographyH6>{title}</TypographyH6>
               <TypographyP
                 className="text-2xl font-bold text-gray-900 dark:text-white leading-tight
-                  max-w-[8rem] sm:max-w-[10rem] md:max-w-none truncate overflow-ellipsis"
+                  max-w-[8rem] sm:max-w-[10rem] md:max-w-none "
               >
                 {value}
               </TypographyP>
