@@ -29,6 +29,7 @@ import {
 } from "recharts";
 import { useDeviceType } from "@/utils/useDeviceTypes";
 import { formatCurrency } from "@/lib/utils/currency";
+import { StatsCards } from "../StatsCards";
 
 interface RevenueData {
   period: string;
@@ -42,7 +43,7 @@ interface Order {
   payment_status: string;
 }
 
-type FilterType = "day" | "week" | "month";
+type FilterType = "today" | "week" | "30days" | "all";
 
 const CustomTooltip = ({
   active,
@@ -73,102 +74,170 @@ const CustomTooltip = ({
   return null;
 };
 
-function generateHourlyPeriods() {
-  const periods = [];
-  const today = new Date();
+// Period generation logic copied from OrdersOverTime, but for revenue
+function generateSmartPeriods(orders: Order[], filterType: FilterType) {
+  if (!orders || orders.length === 0) return [];
+  const sortedOrders = orders.sort(
+    (a, b) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  );
+  const earliestOrder = new Date(sortedOrders[0].created_at);
+  const latestOrder = new Date(
+    sortedOrders[sortedOrders.length - 1].created_at
+  );
+  const now = new Date();
 
-  for (let hour = 0; hour < 24; hour++) {
-    const startOfHour = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate(),
-      hour,
-      0,
-      0,
-      0
-    );
-    const endOfHour = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate(),
-      hour,
-      59,
-      59,
-      999
-    );
-
-    const displayHour =
-      hour === 0
-        ? "12am"
-        : hour < 12
-        ? `${hour}am`
-        : hour === 12
-        ? "12pm"
-        : `${hour - 12}pm`;
-
-    periods.push({
-      start: startOfHour,
-      end: endOfHour,
-      label: displayHour,
-      sortDate: startOfHour.toISOString(),
-    });
+  if (filterType === "today") {
+    const periods = [];
+    const startOfDay = new Date(now);
+    startOfDay.setHours(0, 0, 0, 0);
+    for (let hour = 0; hour < 24; hour += 4) {
+      const start = new Date(startOfDay);
+      start.setHours(hour);
+      const end = new Date(startOfDay);
+      end.setHours(hour + 3, 59, 59, 999);
+      const startHour =
+        hour === 0
+          ? "12am"
+          : hour < 12
+          ? `${hour}am`
+          : hour === 12
+          ? "12pm"
+          : `${hour - 12}pm`;
+      const endHour =
+        hour + 3 >= 24
+          ? "12am"
+          : hour + 3 < 12
+          ? `${hour + 3}am`
+          : hour + 3 === 12
+          ? "12pm"
+          : `${hour + 3 - 12}pm`;
+      periods.push({
+        start,
+        end,
+        label: `${startHour}-${endHour}`,
+        sortDate: start.toISOString(),
+      });
+    }
+    return periods;
   }
-  return periods;
-}
-
-function generateWeeklyPeriods(weeksBack = 8) {
-  const periods = [];
-  const today = new Date();
-
-  for (let i = weeksBack - 1; i >= 0; i--) {
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - (today.getDay() + 7 * i));
-    startOfWeek.setHours(0, 0, 0, 0);
-
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
-    endOfWeek.setHours(23, 59, 59, 999);
-
-    periods.push({
-      start: startOfWeek,
-      end: endOfWeek,
-      label: `${startOfWeek.getMonth() + 1}/${startOfWeek.getDate()} - ${
-        endOfWeek.getMonth() + 1
-      }/${endOfWeek.getDate()}`,
-      sortDate: startOfWeek.toISOString(),
-    });
+  if (filterType === "week") {
+    const periods = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(now.getDate() - i);
+      const start = new Date(date);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(date);
+      end.setHours(23, 59, 59, 999);
+      periods.push({
+        start,
+        end,
+        label: date.toLocaleDateString("en-US", {
+          weekday: "short",
+          month: "numeric",
+          day: "numeric",
+        }),
+        sortDate: start.toISOString(),
+      });
+    }
+    return periods;
   }
-  return periods;
-}
-
-function generateMonthlyPeriods(monthsBack = 6) {
-  const periods = [];
-  const today = new Date();
-
-  for (let i = monthsBack - 1; i >= 0; i--) {
-    const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
-    const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-    const endOfMonth = new Date(
-      date.getFullYear(),
-      date.getMonth() + 1,
-      0,
-      23,
-      59,
-      59,
-      999
+  if (filterType === "30days") {
+    const periods = [];
+    for (let week = 4; week >= 0; week--) {
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - (week * 7 + 6));
+      startOfWeek.setHours(0, 0, 0, 0);
+      const endOfWeek = new Date(now);
+      endOfWeek.setDate(now.getDate() - week * 7);
+      endOfWeek.setHours(23, 59, 59, 999);
+      periods.push({
+        start: startOfWeek,
+        end: endOfWeek,
+        label: `${startOfWeek.getMonth() + 1}/${startOfWeek.getDate()} - ${
+          endOfWeek.getMonth() + 1
+        }/${endOfWeek.getDate()}`,
+        sortDate: startOfWeek.toISOString(),
+      });
+    }
+    return periods;
+  }
+  if (filterType === "all") {
+    const daysDiff = Math.ceil(
+      (latestOrder.getTime() - earliestOrder.getTime()) / (1000 * 60 * 60 * 24)
     );
-
-    periods.push({
-      start: startOfMonth,
-      end: endOfMonth,
-      label: startOfMonth.toLocaleDateString("en-US", {
-        month: "short",
-        year: "numeric",
-      }),
-      sortDate: startOfMonth.toISOString(),
-    });
+    if (daysDiff <= 7) {
+      const periods = [];
+      const start = new Date(earliestOrder);
+      start.setHours(0, 0, 0, 0);
+      while (start <= now) {
+        const end = new Date(start);
+        end.setHours(23, 59, 59, 999);
+        periods.push({
+          start: new Date(start),
+          end: new Date(end),
+          label: start.toLocaleDateString("en-US", {
+            month: "numeric",
+            day: "numeric",
+          }),
+          sortDate: start.toISOString(),
+        });
+        start.setDate(start.getDate() + 1);
+      }
+      return periods;
+    } else if (daysDiff <= 30) {
+      const periods = [];
+      const start = new Date(earliestOrder);
+      start.setDate(start.getDate() - start.getDay());
+      start.setHours(0, 0, 0, 0);
+      while (start <= now) {
+        const end = new Date(start);
+        end.setDate(start.getDate() + 6);
+        end.setHours(23, 59, 59, 999);
+        periods.push({
+          start: new Date(start),
+          end: new Date(end),
+          label: `${start.getMonth() + 1}/${start.getDate()}-${
+            end.getMonth() + 1
+          }/${end.getDate()}`,
+          sortDate: start.toISOString(),
+        });
+        start.setDate(start.getDate() + 7);
+      }
+      return periods;
+    } else {
+      const periods = [];
+      const start = new Date(
+        earliestOrder.getFullYear(),
+        earliestOrder.getMonth(),
+        1
+      );
+      while (start <= now) {
+        const end = new Date(
+          start.getFullYear(),
+          start.getMonth() + 1,
+          0,
+          23,
+          59,
+          59,
+          999
+        );
+        periods.push({
+          start: new Date(start),
+          end: new Date(end),
+          label: start.toLocaleDateString("en-US", {
+            month: "short",
+            year: "numeric",
+          }),
+          sortDate: start.toISOString(),
+        });
+        start.setMonth(start.getMonth() + 1);
+      }
+      return periods;
+    }
   }
-  return periods;
+  return [];
 }
 
 function groupRevenueByPeriod(orders: Order[], periods: any[]) {
@@ -194,84 +263,104 @@ function groupRevenueByPeriod(orders: Order[], periods: any[]) {
 
 export function RevenueOverTime() {
   const [data, setData] = useState<RevenueData[]>([]);
-  const [filter, setFilter] = useState<FilterType>("month");
+  const [filter, setFilter] = useState<FilterType>("all");
   const [loading, setLoading] = useState(true);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [totalOrders, setTotalOrders] = useState(0);
+  console.log("Revenue data:", totalOrders);
   const [previousPeriodRevenue, setPreviousPeriodRevenue] = useState(0);
+  const [currentPeriodRevenue, setCurrentPeriodRevenue] = useState(0);
+  const [dataSpanDays, setDataSpanDays] = useState(0);
   const { isMobile } = useDeviceType();
 
   useEffect(() => {
     async function fetchRevenue() {
       setLoading(true);
       try {
-        let since: Date;
-        let queryData;
+        // Get all orders for the filter
+        const { data: allOrders, error } = await supabase
+          .from("orders")
+          .select("created_at, total, payment_status")
+          .order("created_at", { ascending: true });
 
-        if (filter === "day") {
-          since = new Date();
-          since.setHours(0, 0, 0, 0);
-          const endOfDay = new Date();
-          endOfDay.setHours(23, 59, 59, 999);
-
-          queryData = await supabase
-            .from("orders")
-            .select("created_at, total, payment_status")
-            .gte("created_at", since.toISOString())
-            .lte("created_at", endOfDay.toISOString())
-            .order("created_at", { ascending: true });
-        } else {
-          const daysBack = filter === "week" ? 56 : 180;
-          since = new Date();
-          since.setDate(since.getDate() - daysBack);
-          since.setHours(0, 0, 0, 0);
-
-          queryData = await supabase
-            .from("orders")
-            .select("created_at, total, payment_status")
-            .gte("created_at", since.toISOString())
-            .order("created_at", { ascending: true });
-        }
-
-        const { data: orders, error } = queryData;
         if (error) {
           console.error("Error fetching revenue:", error);
           return;
         }
 
-        const periods =
-          filter === "day"
-            ? generateHourlyPeriods()
-            : filter === "week"
-            ? generateWeeklyPeriods(8)
-            : generateMonthlyPeriods(6);
+        if (!allOrders || allOrders.length === 0) {
+          setData([]);
+          setTotalRevenue(0);
+          setTotalOrders(0);
+          setPreviousPeriodRevenue(0);
+          setCurrentPeriodRevenue(0);
+          setDataSpanDays(0);
+          return;
+        }
 
-        const chartData = groupRevenueByPeriod(orders || [], periods);
-        const paidOrders =
-          orders?.filter((order) => order.payment_status === "paid") || [];
-        const total = paidOrders.reduce(
-          (sum, order) => sum + Number.parseFloat(order.total || "0"),
+        // Calculate data span
+        const earliestOrder = new Date(allOrders[0].created_at);
+        const latestOrder = new Date(
+          allOrders[allOrders.length - 1].created_at
+        );
+        const daysDiff = Math.ceil(
+          (latestOrder.getTime() - earliestOrder.getTime()) /
+            (1000 * 60 * 60 * 24)
+        );
+        setDataSpanDays(daysDiff);
+
+        // Filter orders based on selected filter
+        let filteredOrders = allOrders;
+        const now = new Date();
+
+        if (filter === "today") {
+          const startOfDay = new Date(now);
+          startOfDay.setHours(0, 0, 0, 0);
+          filteredOrders = allOrders.filter(
+            (order) => new Date(order.created_at) >= startOfDay
+          );
+        } else if (filter === "week") {
+          const weekAgo = new Date(now);
+          weekAgo.setDate(now.getDate() - 7);
+          filteredOrders = allOrders.filter(
+            (order) => new Date(order.created_at) >= weekAgo
+          );
+        } else if (filter === "30days") {
+          const monthAgo = new Date(now);
+          monthAgo.setDate(now.getDate() - 30);
+          filteredOrders = allOrders.filter(
+            (order) => new Date(order.created_at) >= monthAgo
+          );
+        }
+        // "all" uses all orders
+
+        const periods = generateSmartPeriods(filteredOrders, filter);
+        const chartData = groupRevenueByPeriod(filteredOrders, periods);
+
+        const total = chartData.reduce((sum, item) => sum + item.revenue, 0);
+        const paidOrders = filteredOrders.filter(
+          (order) => order.payment_status === "paid"
+        ).length;
+
+        // Calculate previous/current period revenue for comparison
+        const midPoint = Math.floor(chartData.length / 2);
+        const previousPeriodData = chartData.slice(0, midPoint);
+        const currentPeriodData = chartData.slice(midPoint);
+
+        const prevTotal = previousPeriodData.reduce(
+          (sum, item) => sum + item.revenue,
           0
         );
-        const orderCount = paidOrders.length;
-
-        // Calculate previous period for comparison
-        // const currentPeriodData = chartData.slice(
-        //   -Math.ceil(chartData.length / 2)
-        // );
-        const previousPeriodData = chartData.slice(
-          0,
-          Math.floor(chartData.length / 2)
-        );
-        const prevTotal = previousPeriodData.reduce(
+        const currTotal = currentPeriodData.reduce(
           (sum, item) => sum + item.revenue,
           0
         );
 
         setData(chartData);
         setTotalRevenue(total);
-        setTotalOrders(orderCount);
+        setTotalOrders(paidOrders);
         setPreviousPeriodRevenue(prevTotal);
+        setCurrentPeriodRevenue(currTotal);
       } catch (error) {
         console.error("Error fetching revenue:", error);
       } finally {
@@ -282,19 +371,58 @@ export function RevenueOverTime() {
     fetchRevenue();
   }, [filter]);
 
+  // Filter options same as OrdersOverTime
   const filterOptions = [
-    { value: "day" as FilterType, label: "Today", desc: "Hourly breakdown" },
-    { value: "week" as FilterType, label: "Weekly", desc: "Last 8 weeks" },
-    { value: "month" as FilterType, label: "Monthly", desc: "Last 6 months" },
+    {
+      value: "today" as FilterType,
+      label: "Today",
+      desc: "Last 24 hours",
+      icon: "📅",
+    },
+    {
+      value: "week" as FilterType,
+      label: "This Week",
+      desc: "Last 7 days",
+      icon: "📊",
+    },
+    ...(dataSpanDays >= 14
+      ? [
+          {
+            value: "30days" as FilterType,
+            label: "Monthly",
+            desc: "Last 30 days",
+            icon: "📈",
+          },
+        ]
+      : []),
+    {
+      value: "all" as FilterType,
+      label: "All Time",
+      desc: `${dataSpanDays} days of data`,
+      icon: "🎯",
+    },
   ];
 
-  const currentFilterLabel =
-    filterOptions.find((opt) => opt.value === filter)?.label || "Today";
+  const currentFilterOption =
+    filterOptions.find((opt) => opt.value === filter) || filterOptions[0];
 
   const revenueChange =
     previousPeriodRevenue > 0
       ? ((totalRevenue - previousPeriodRevenue) / previousPeriodRevenue) * 100
+      : totalRevenue > 0
+      ? 100
       : 0;
+
+  const maxRevenue = Math.max(...data.map((d) => d.revenue), 0);
+  const avgRevenue =
+    data.length > 0 ? Math.round(totalRevenue / data.length) : 0;
+
+  // ...StatsCards component unchanged...
+
+  if (loading) {
+    // ...existing loading skeleton...
+    // ...existing code...
+  }
 
   return (
     <Card className="col-span-full bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 border-0 shadow-xl">
@@ -302,176 +430,195 @@ export function RevenueOverTime() {
         <div
           className={isMobile ? "flex flex-col gap-4" : "flex flex-col gap-8"}
         >
-          {/* Header */}
-          {isMobile ? (
-            <div className="flex flex-col gap-2 px-1 pt-2">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl shadow-lg">
-                  <DollarSign className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                    Revenue Overview
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-xs font-medium">
-                    {currentFilterLabel} breakdown
-                  </p>
-                </div>
+          {/* Header - filter dropdown same as OrdersOverTime */}
+          <div
+            className={`${
+              isMobile
+                ? "flex-col gap-3"
+                : "flex-row justify-between items-center"
+            } flex`}
+          >
+            <div className="flex items-center gap-4">
+              <div
+                className={`${
+                  isMobile ? "p-2" : "p-3"
+                } bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl shadow-lg`}
+              >
+                <DollarSign
+                  className={`${isMobile ? "h-5 w-5" : "h-6 w-6"} text-white`}
+                />
               </div>
-              <div className="flex justify-end">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-2 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm"
-                    >
-                      <Calendar className="h-4 w-4" />
-                      {currentFilterLabel}
-                      <ChevronDown className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="end"
-                    className="w-48 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
-                  >
-                    {filterOptions.map((option) => (
-                      <DropdownMenuItem
-                        key={option.value}
-                        onClick={() => setFilter(option.value)}
-                        className="flex flex-col items-start gap-1 p-3 hover:bg-gray-50 dark:hover:bg-gray-700"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div
-                            className={`w-2.5 h-2.5 rounded-full ${
-                              filter === option.value
-                                ? "bg-emerald-500 shadow-lg shadow-emerald-500/30"
-                                : "bg-gray-300 dark:bg-gray-600"
-                            }`}
-                          />
-                          <span className="font-semibold text-gray-900 dark:text-white text-sm">
-                            {option.label}
-                          </span>
-                        </div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-5">
-                          {option.desc}
-                        </span>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+              <div>
+                <h3
+                  className={`${
+                    isMobile ? "text-lg" : "text-2xl"
+                  } font-bold text-gray-900 dark:text-white`}
+                >
+                  Revenue Analytics
+                </h3>
+                <p
+                  className={`${
+                    isMobile ? "text-xs" : "text-sm"
+                  } text-gray-600 dark:text-gray-400 font-medium`}
+                >
+                  {totalRevenue.toLocaleString("en-MY", {
+                    style: "currency",
+                    currency: "MYR",
+                  })}{" "}
+                  total • {dataSpanDays} days of data
+                </p>
               </div>
             </div>
-          ) : (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl shadow-lg">
-                  <DollarSign className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    Revenue Overview
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 font-medium">
-                    {currentFilterLabel} breakdown
-                  </p>
-                </div>
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="gap-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm"
-                  >
-                    <Calendar className="h-4 w-4" />
-                    {currentFilterLabel}
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="w-56 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size={isMobile ? "sm" : "default"}
+                  className="gap-2 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm min-w-[120px]"
                 >
-                  {filterOptions.map((option) => (
-                    <DropdownMenuItem
-                      key={option.value}
-                      onClick={() => setFilter(option.value)}
-                      className="flex flex-col items-start gap-1 p-4 hover:bg-gray-50 dark:hover:bg-gray-700"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-3 h-3 rounded-full ${
-                            filter === option.value
-                              ? "bg-emerald-500 shadow-lg shadow-emerald-500/30"
-                              : "bg-gray-300 dark:bg-gray-600"
-                          }`}
-                        />
-                        <span className="font-semibold text-gray-900 dark:text-white">
-                          {option.label}
-                        </span>
-                      </div>
-                      <span className="text-sm text-gray-500 dark:text-gray-400 ml-6">
+                  <span className={isMobile ? "text-xs" : "text-sm"}>
+                    {currentFilterOption.icon}
+                  </span>
+                  {currentFilterOption.label}
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className={`${
+                  isMobile ? "w-48" : "w-56"
+                } bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700`}
+              >
+                {filterOptions.map((option) => (
+                  <DropdownMenuItem
+                    key={option.value}
+                    onClick={() => setFilter(option.value)}
+                    className={`flex items-center gap-3 ${
+                      isMobile ? "p-3" : "p-4"
+                    } hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer`}
+                  >
+                    <span className="text-lg">{option.icon}</span>
+                    <div className="flex flex-col">
+                      <span
+                        className={`font-semibold text-gray-900 dark:text-white ${
+                          isMobile ? "text-sm" : "text-base"
+                        }`}
+                      >
+                        {option.label}
+                      </span>
+                      <span
+                        className={`${
+                          isMobile ? "text-xs" : "text-sm"
+                        } text-gray-500 dark:text-gray-400`}
+                      >
                         {option.desc}
                       </span>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    </div>
+                    {filter === option.value && (
+                      <div className="ml-auto w-2 h-2 bg-emerald-500 rounded-full"></div>
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Summary Stats - similar to OrdersOverTime */}
+          {data.length > 0 && (
+            <div
+              className={`grid ${
+                isMobile ? "grid-cols-2 gap-3" : "grid-cols-4 gap-6"
+              }`}
+            >
+              <StatsCards
+                title="Total Revenue"
+                value={formatCurrency(totalRevenue)}
+                description={`vs last period: ${Math.abs(revenueChange).toFixed(
+                  1
+                )}%`}
+                icon={
+                  revenueChange > 0
+                    ? TrendingUp
+                    : revenueChange < 0
+                    ? TrendingDown
+                    : Calendar
+                }
+              />
+              <StatsCards
+                title="Current Period"
+                value={formatCurrency(currentPeriodRevenue)}
+                icon={
+                  revenueChange > 0
+                    ? TrendingUp
+                    : revenueChange < 0
+                    ? TrendingDown
+                    : Calendar
+                }
+              />
+              {!isMobile && (
+                <>
+                  <StatsCards
+                    title="Peak Period"
+                    value={formatCurrency(maxRevenue)}
+                    icon={
+                      revenueChange > 0
+                        ? TrendingUp
+                        : revenueChange < 0
+                        ? TrendingDown
+                        : Calendar
+                    }
+                  />
+                  <StatsCards
+                    title={`Avg per ${
+                      filter === "today"
+                        ? "4hrs"
+                        : filter === "week"
+                        ? "Day"
+                        : filter === "30days"
+                        ? "Week"
+                        : "Period"
+                    }`}
+                    value={formatCurrency(avgRevenue)}
+                    icon={
+                      revenueChange > 0
+                        ? TrendingUp
+                        : revenueChange < 0
+                        ? TrendingDown
+                        : Calendar
+                    }
+                  />
+                </>
+              )}
+              {isMobile && (
+                <div className="col-span-2 grid grid-cols-2 gap-3">
+                  <StatsCards
+                    title="Peak"
+                    value={formatCurrency(maxRevenue)}
+                    icon={
+                      revenueChange > 0
+                        ? TrendingUp
+                        : revenueChange < 0
+                        ? TrendingDown
+                        : Calendar
+                    }
+                  />
+                  <StatsCards
+                    title="Average"
+                    value={formatCurrency(avgRevenue)}
+                    icon={
+                      revenueChange > 0
+                        ? TrendingUp
+                        : revenueChange < 0
+                        ? TrendingDown
+                        : Calendar
+                    }
+                  />
+                </div>
+              )}
             </div>
           )}
 
-          {/* Summary Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                    Total Revenue
-                  </p>
-                  <h4 className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
-                    {formatCurrency(totalRevenue)}
-                  </h4>
-                </div>
-                <div
-                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${
-                    revenueChange >= 0
-                      ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
-                      : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
-                  }`}
-                >
-                  {revenueChange >= 0 ? (
-                    <TrendingUp className="h-4 w-4" />
-                  ) : (
-                    <TrendingDown className="h-4 w-4" />
-                  )}
-                  {Math.abs(revenueChange).toFixed(1)}%
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                Paid Orders
-              </p>
-              <h4 className="text-3xl font-bold text-gray-900 dark:text-white">
-                {totalOrders.toLocaleString()}
-              </h4>
-            </div>
-
-            {totalOrders > 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  Avg Order Value
-                </p>
-                <h4 className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {formatCurrency(totalRevenue / totalOrders)}
-                </h4>
-              </div>
-            )}
-          </div>
-
-          {/* Chart */}
+          {/* Chart - BarChart */}
           <div
             className={
               isMobile
@@ -497,14 +644,7 @@ export function RevenueOverTime() {
                       top: isMobile ? 10 : 20,
                       right: isMobile ? 10 : 20,
                       left: isMobile ? 0 : 0,
-                      bottom:
-                        filter === "day"
-                          ? isMobile
-                            ? 20
-                            : 40
-                          : isMobile
-                          ? 10
-                          : 20,
+                      bottom: isMobile ? 40 : 60,
                     }}
                   >
                     <defs>
@@ -537,26 +677,16 @@ export function RevenueOverTime() {
                     <XAxis
                       dataKey="period"
                       tick={{
-                        fontSize: filter === "day" ? 11 : 13,
+                        fontSize: isMobile ? 10 : 12,
                         fill: "currentColor",
                       }}
                       tickLine={false}
                       axisLine={false}
                       className="text-gray-600 dark:text-gray-400"
-                      angle={filter === "day" ? -45 : 0}
-                      textAnchor={filter === "day" ? "end" : "middle"}
-                      height={filter === "day" ? 80 : 40}
-                      label={{
-                        value:
-                          filter === "day"
-                            ? "Hour"
-                            : filter === "week"
-                            ? "Week"
-                            : "Month",
-                        position: "insideBottom",
-                        offset: -5,
-                        style: { fill: "#059669", fontSize: 13 },
-                      }}
+                      angle={isMobile ? -45 : 0}
+                      textAnchor={isMobile ? "end" : "middle"}
+                      height={isMobile ? 60 : 40}
+                      interval={isMobile && data.length > 6 ? 1 : 0}
                     />
                     <YAxis
                       tick={{ fontSize: 12, fill: "currentColor" }}
@@ -587,11 +717,27 @@ export function RevenueOverTime() {
                       dataKey="revenue"
                       fill="url(#revenueGradient)"
                       radius={[8, 8, 0, 0]}
-                      barSize={filter === "day" ? 20 : 24}
+                      barSize={filter === "today" ? 20 : 24}
                     />
                   </BarChart>
                 </ResponsiveContainer>
               )}
+            </div>
+          </div>
+
+          {/* Data Status Indicator */}
+          <div className="flex items-center justify-center">
+            <div
+              className={`flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-full ${
+                isMobile ? "text-xs" : "text-sm"
+              }`}
+            >
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-gray-600 dark:text-gray-400 font-medium">
+                {dataSpanDays === 0
+                  ? "No data yet"
+                  : `${dataSpanDays} days of revenue history`}
+              </span>
             </div>
           </div>
         </div>
