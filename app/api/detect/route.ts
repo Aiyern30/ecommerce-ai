@@ -125,7 +125,6 @@ async function getProductsFromDatabase() {
     const { data: products, error } = await supabaseAdmin
       .from("products")
       .select("*")
-      .eq("product_type", "concrete")
       .eq("status", "published");
 
     if (error) {
