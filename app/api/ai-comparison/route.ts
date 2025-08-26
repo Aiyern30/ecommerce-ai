@@ -46,31 +46,20 @@ interface AIComparisonResult {
   insights: AIInsight[];
 }
 
+// Optimized generation config for speed
 const generationConfig: GenerationConfig = {
-  temperature: 0.7,
-  topK: 40,
-  topP: 0.95,
-  maxOutputTokens: 4096,
+  temperature: 0.3, // Lower for faster, more consistent responses
+  topK: 20, // Reduced for speed
+  topP: 0.8, // Lower for speed
+  maxOutputTokens: 1500, // Reduced significantly for speed
   responseMimeType: "text/plain",
 };
 
-// Safety settings with correct enum values
+// Minimal safety settings for speed
 const safetySettings: SafetySetting[] = [
   {
-    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-    threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-  },
-  {
-    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-    threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-  },
-  {
-    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-    threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-  },
-  {
     category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-    threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
   },
 ];
 
@@ -78,61 +67,48 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
   try {
-    // Validate request
+    // Quick validation
     const body = await request.json().catch(() => null);
-    if (!body || !body.products) {
+    if (!body || !Array.isArray(body.products)) {
       return NextResponse.json(
-        { error: "Invalid request format. Expected { products: Product[] }" },
+        { error: "Invalid request format" },
         { status: 400 }
       );
     }
 
     const { products }: { products: Product[] } = body;
 
-    // Validate products array
-    if (!Array.isArray(products) || products.length < 2) {
+    // Quick validation
+    if (products.length < 2 || products.length > 4) {
+      // Limit to 4 for speed
       return NextResponse.json(
-        { error: "At least 2 products are required for comparison" },
+        { error: "2-4 products required for comparison" },
         { status: 400 }
       );
     }
 
-    if (products.length > 5) {
-      return NextResponse.json(
-        { error: "Maximum 5 products allowed for comparison" },
-        { status: 400 }
-      );
-    }
-
-    // Validate API key
     if (!process.env.GOOGLE_AI_API_KEY) {
-      console.error("Google AI API key is not configured");
       return NextResponse.json(
-        { error: "AI service is temporarily unavailable" },
+        { error: "AI service unavailable" },
         { status: 500 }
       );
     }
 
-    // Validate products have required fields
-    for (const product of products) {
-      if (!product.name || !product.id || !product.grade) {
-        return NextResponse.json(
-          {
-            error:
-              "Invalid product data. Missing required fields (name, id, grade)",
-          },
-          { status: 400 }
-        );
-      }
-    }
+    console.log(`Starting fast AI analysis for ${products.length} products`);
 
-    console.log(`Starting AI analysis for ${products.length} products`);
-
-    // Generate AI analysis with enhanced error handling
-    const aiResult = await generateAIAnalysis(products);
+    // Set aggressive timeout for Vercel free tier
+    const aiResult = await Promise.race([
+      generateFastAIAnalysis(products),
+      new Promise<AIComparisonResult>(
+        (_, reject) => setTimeout(() => reject(new Error("timeout")), 7000) // 7 seconds max
+      ),
+    ]).catch(() => {
+      console.log("AI analysis timed out, using fallback");
+      return createFallbackResponse(products);
+    });
 
     const processingTime = Date.now() - startTime;
-    console.log(`AI analysis completed in ${processingTime}ms`);
+    console.log(`Analysis completed in ${processingTime}ms`);
 
     return NextResponse.json({
       ...aiResult,
@@ -143,211 +119,81 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    const processingTime = Date.now() - startTime;
     console.error("AI Comparison Error:", error);
-    console.log(`Request failed after ${processingTime}ms`);
-
-    // Handle specific error types
-    if (error instanceof Error) {
-      if (error.message.includes("quota")) {
-        return NextResponse.json(
-          { error: "AI service quota exceeded. Please try again later." },
-          { status: 429 }
-        );
-      }
-      if (error.message.includes("timeout")) {
-        return NextResponse.json(
-          {
-            error:
-              "AI analysis timed out. Please try again with fewer products.",
-          },
-          { status: 408 }
-        );
-      }
-    }
 
     return NextResponse.json(
-      { error: "Failed to generate AI comparison. Please try again." },
+      { error: "Analysis failed. Please try again." },
       { status: 500 }
     );
   }
 }
 
-async function generateAIAnalysis(
+async function generateFastAIAnalysis(
   products: Product[]
 ): Promise<AIComparisonResult> {
-  // Only use the fastest model for speed
-  const modelInfo = {
-    name: "gemini-1.5-flash",
-    config: { ...generationConfig, maxOutputTokens: 2048 }, // reduce tokens for speed
-  };
-
   try {
+    // Use fastest model with minimal config
     const model = genAI.getGenerativeModel({
-      model: modelInfo.name,
-      generationConfig: modelInfo.config,
+      model: "gemini-1.5-flash",
+      generationConfig,
       safetySettings,
     });
 
-    // Reduce timeout to 6000ms (6 seconds)
-    const result = await Promise.race([
-      model.generateContent(createComparisonPrompt(products)),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("timeout")), 6000)
-      ),
-    ]);
+    console.log("Sending request to Gemini API...");
 
+    const result = await model.generateContent(createOptimizedPrompt(products));
     const response = await result.response;
     const text = response.text();
 
-    if (!text || text.trim().length < 50) {
-      throw new Error("AI response too short or empty");
+    console.log("Received response from Gemini API");
+
+    if (!text || text.trim().length < 20) {
+      console.log("Empty or short response, using fallback");
+      return createFallbackResponse(products);
     }
 
     return parseAIResponse(text, products);
-  } catch {
-    // Immediately return fallback if any error or timeout
+  } catch (error) {
+    console.log("Gemini API error, using fallback:", error);
     return createFallbackResponse(products);
   }
 }
 
-function createComparisonPrompt(products: Product[]): string {
-  const productDetails = products
-    .map((product, index) => {
-      // Get selected price and label
-      let price: string | null = null;
-      let label: string = "";
-      let allPrices: string[] = [];
+function createOptimizedPrompt(products: Product[]): string {
+  // Simplified product details for faster processing
+  const productSummary = products
+    .map((product, i) => {
+      const price =
+        product.normal_price ||
+        product.pump_price ||
+        product.tremie_1_price ||
+        "N/A";
 
-      // Build price information
-      const priceTypes = [
-        { key: "normal", price: product.normal_price, label: "Normal Price" },
-        { key: "pump", price: product.pump_price, label: "Pump Price" },
-        {
-          key: "tremie_1",
-          price: product.tremie_1_price,
-          label: "Tremie 1 Price",
-        },
-        {
-          key: "tremie_2",
-          price: product.tremie_2_price,
-          label: "Tremie 2 Price",
-        },
-        {
-          key: "tremie_3",
-          price: product.tremie_3_price,
-          label: "Tremie 3 Price",
-        },
-      ];
-
-      // Get selected price
-      const selectedPriceType = priceTypes.find(
-        (pt) => pt.key === product.selectedPriceType
-      );
-      if (selectedPriceType && selectedPriceType.price) {
-        price = selectedPriceType.price;
-        label = selectedPriceType.label;
-      } else {
-        // Fallback to normal price
-        const normalPrice = priceTypes.find((pt) => pt.key === "normal");
-        if (normalPrice && normalPrice.price) {
-          price = normalPrice.price;
-          label = normalPrice.label;
-        }
-      }
-
-      // Get all available prices for context
-      allPrices = priceTypes
-        .filter((pt) => pt.price && parseFloat(pt.price) > 0)
-        .map((pt) => `${pt.label}: RM ${pt.price}`);
-
-      return `Product ${index + 1}: ${product.name}
-    - Grade: ${product.grade}
-    - Type: ${product.product_type}
-    - Category: ${product.category || "Construction Material"}
-    - Description: ${
-      product.description || "High-quality construction material"
-    }
-    - Selected Price (${label}): RM ${price || "N/A"} per ${
+      return `${i + 1}. ${product.name} - Grade ${product.grade}, RM${price}/${
         product.unit || "unit"
-      }
-    - All Available Prices: ${
-      allPrices.length > 0
-        ? allPrices.join(", ")
-        : "Price information not available"
-    }
-    - Stock: ${product.stock_quantity || "N/A"} units
-    - Keywords: ${product.keywords?.join(", ") || "None"}
-    - Mortar Ratio: ${product.mortar_ratio || "N/A"}`;
+      }, Stock: ${product.stock_quantity || "N/A"}`;
     })
-    .join("\n\n");
+    .join("\n");
 
-  const productNames = products.map((p) => p.name).join(", ");
-  const productCount = products.length;
+  // Much shorter, focused prompt for speed
+  return `Compare these ${products.length} construction materials quickly:
 
-  return `You are an expert construction materials consultant specializing in Malaysian construction standards and practices. Analyze and compare these ${productCount} concrete/mortar products for construction professionals:
+${productSummary}
 
-${productDetails}
-
-Provide a comprehensive comparison analysis in the following JSON format. Ensure the response is valid JSON and follows this exact structure:
-
+Respond with ONLY this JSON format:
 {
-  "summary": "Write a detailed 3-4 sentence overview highlighting the main distinctions between these products, focusing on their grades, applications, and value propositions.",
-  "keyDifferences": [
-    "List 4-6 key technical differences between the products",
-    "Include grade differences and their structural implications",
-    "Mention price variations and delivery method differences",
-    "Highlight performance characteristics and applications"
-  ],
-  "recommendations": [
-    "Provide 4-5 specific, actionable recommendations for choosing between these products",
-    "At least 2 recommendations must clearly mention and recommend specific products from: [${productNames}]",
-    "Consider cost-effectiveness, application suitability, and performance",
-    "Include recommendations for different project types and budgets"
-  ],
-  "useCases": [
-    {
-      "product": "Exact product name from the list",
-      "useCase": "Specific construction application or project type",
-      "reason": "Detailed explanation of why this product excels in this application"
-    }
-  ],
-  "costAnalysis": "Provide a detailed analysis of cost differences, value proposition for each product, and recommendations for budget-conscious decisions. Include analysis of delivery method costs and their impact on total project cost.",
+  "summary": "Brief 2-sentence comparison highlighting key differences and value",
+  "keyDifferences": ["3-4 key differences in grade, price, and application"],
+  "recommendations": ["3-4 specific recommendations mentioning product names"],
+  "useCases": [{"product": "Product name", "useCase": "Best application", "reason": "Why suitable"}],
+  "costAnalysis": "Brief cost comparison and value assessment",
   "insights": [
-    {
-      "type": "recommendation",
-      "title": "Professional recommendation title",
-      "content": "Detailed professional insight about product selection",
-      "icon": "lightbulb"
-    },
-    {
-      "type": "analysis",
-      "title": "Technical analysis title", 
-      "content": "Technical comparison insight",
-      "icon": "brain"
-    },
-    {
-      "type": "tip",
-      "title": "Construction tip title",
-      "content": "Practical construction advice",
-      "icon": "trending"
-    }
+    {"type": "tip", "title": "Quick tip", "content": "Practical advice", "icon": "lightbulb"},
+    {"type": "analysis", "title": "Key insight", "content": "Technical insight", "icon": "brain"}
   ]
 }
 
-Analysis Guidelines:
-- Focus on Malaysian construction standards (MS standards where applicable)
-- Consider tropical climate conditions and their impact on material selection
-- Analyze grade differences (N15, N20, N25, N30, etc.) and their structural applications
-- Compare delivery methods (normal, pump, tremie) and their cost-benefit analysis
-- Consider stock availability and project timeline implications
-- Use technical but accessible language for construction professionals
-- Provide actionable insights for contractors, architects, and builders
-- Include safety considerations and quality standards
-- Consider environmental factors and sustainability where relevant
-- Always recommend at least 2 specific products from the compared list
-
-Important: Respond with ONLY valid JSON. Do not include any text before or after the JSON object.`;
+Focus on: grades (N15-N30), prices, construction applications. Keep responses concise. JSON only.`;
 }
 
 function parseAIResponse(
@@ -355,299 +201,176 @@ function parseAIResponse(
   products: Product[]
 ): AIComparisonResult {
   try {
-    // Clean the response text to extract JSON
-    let cleanedText = text.trim();
-
-    // Remove common prefixes/suffixes that might break JSON parsing
-    cleanedText = cleanedText.replace(/^```json\s*/, "").replace(/\s*```$/, "");
-    cleanedText = cleanedText.replace(/^```\s*/, "").replace(/\s*```$/, "");
-
-    // Find the JSON object
-    const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
+    // Extract JSON more aggressively
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      console.error("No JSON found in AI response");
       return createFallbackResponse(products);
     }
 
-    const jsonStr = jsonMatch[0];
-    const parsed = JSON.parse(jsonStr);
+    const parsed = JSON.parse(jsonMatch[0]);
 
-    // Validate and sanitize the parsed response
+    // Quick validation and sanitization
     const result: AIComparisonResult = {
       summary:
-        typeof parsed.summary === "string" && parsed.summary.length > 0
+        typeof parsed.summary === "string"
           ? parsed.summary
-          : `Comparison analysis of ${products.length} construction materials completed.`,
+          : `Comparison of ${products.length} construction materials with varying grades and prices.`,
       keyDifferences: Array.isArray(parsed.keyDifferences)
-        ? parsed.keyDifferences.filter(
-            (diff: string) => typeof diff === "string" && diff.length > 0
-          )
+        ? parsed.keyDifferences.slice(0, 4)
         : [],
       recommendations: Array.isArray(parsed.recommendations)
-        ? parsed.recommendations.filter(
-            (rec: string) => typeof rec === "string" && rec.length > 0
-          )
+        ? parsed.recommendations.slice(0, 4)
         : [],
       useCases: Array.isArray(parsed.useCases)
-        ? parsed.useCases.filter(
-            (useCase: { product: string; useCase: string; reason: string }) =>
-              useCase &&
-              typeof useCase.product === "string" &&
-              typeof useCase.useCase === "string" &&
-              typeof useCase.reason === "string"
-          )
+        ? parsed.useCases.slice(0, products.length)
         : [],
       costAnalysis:
-        typeof parsed.costAnalysis === "string" &&
-        parsed.costAnalysis.length > 0
+        typeof parsed.costAnalysis === "string"
           ? parsed.costAnalysis
-          : "Cost analysis not available.",
+          : "Cost analysis unavailable.",
       insights: Array.isArray(parsed.insights)
-        ? parsed.insights.filter(
-            (insight: AIInsight) =>
-              insight &&
-              typeof insight.type === "string" &&
-              typeof insight.title === "string" &&
-              typeof insight.content === "string" &&
-              typeof insight.icon === "string" &&
-              ["recommendation", "analysis", "warning", "tip"].includes(
-                insight.type
-              ) &&
-              ["brain", "lightbulb", "trending", "alert"].includes(insight.icon)
-          )
+        ? parsed.insights.slice(0, 3)
         : [],
     };
 
-    // Ensure quality of response
+    // Ensure minimum content
     if (result.keyDifferences.length === 0) {
-      result.keyDifferences = generateFallbackDifferences(products);
+      result.keyDifferences = generateQuickDifferences(products);
     }
-
     if (result.recommendations.length === 0) {
-      result.recommendations = generateFallbackRecommendations(products);
+      result.recommendations = generateQuickRecommendations(products);
     }
 
-    if (result.useCases.length === 0) {
-      result.useCases = generateFallbackUseCases(products);
-    }
-
-    if (result.insights.length === 0) {
-      result.insights = generateFallbackInsights();
-    }
-
-    // Ensure at least one recommendation mentions a compared product
-    const productNames = products.map((p) => p.name.toLowerCase());
-    const hasProductRecommendation = result.recommendations.some((rec) =>
-      productNames.some((name) => rec.toLowerCase().includes(name))
-    );
-
-    if (!hasProductRecommendation && products.length > 0) {
-      const firstProduct = products[0];
-      result.recommendations.unshift(
-        `Based on our analysis, "${
-          firstProduct.name
-        }" offers excellent value with its ${
-          firstProduct.grade
-        } grade concrete, making it suitable for ${
-          firstProduct.product_type === "concrete"
-            ? "structural applications"
-            : "general construction work"
-        }.`
-      );
-    }
-
-    console.log(
-      `Successfully parsed AI response with ${result.keyDifferences.length} differences, ${result.recommendations.length} recommendations`
-    );
     return result;
-  } catch (error) {
-    console.error("Failed to parse AI response:", error);
-    console.log("Raw AI response:", text.substring(0, 500) + "...");
+  } catch {
+    console.log("JSON parsing failed, using fallback");
     return createFallbackResponse(products);
   }
 }
 
 function createFallbackResponse(products: Product[]): AIComparisonResult {
-  console.log(
-    "Creating fallback response for products:",
-    products.map((p) => p.name)
-  );
-
   const prices = products
-    .map((p) => {
-      switch (p.selectedPriceType) {
-        case "pump":
-          return parseFloat(p.pump_price || "0");
-        case "tremie_1":
-          return parseFloat(p.tremie_1_price || "0");
-        case "tremie_2":
-          return parseFloat(p.tremie_2_price || "0");
-        case "tremie_3":
-          return parseFloat(p.tremie_3_price || "0");
-        default:
-          return parseFloat(p.normal_price || "0");
-      }
-    })
+    .map((p) => parseFloat(p.normal_price || p.pump_price || "0"))
     .filter((p) => p > 0);
 
   const minPrice = prices.length ? Math.min(...prices) : 0;
   const maxPrice = prices.length ? Math.max(...prices) : 0;
-  const avgPrice = prices.length
-    ? prices.reduce((a, b) => a + b, 0) / prices.length
-    : 0;
-
   const grades = [...new Set(products.map((p) => p.grade))];
-  const types = [...new Set(products.map((p) => p.product_type))];
 
   return {
-    summary: `Comparing ${
-      products.length
-    } construction materials with grades ranging from ${grades.join(
+    summary: `Comparing ${products.length} materials with grades ${grades.join(
       ", "
-    )} and prices from RM${minPrice.toFixed(0)} to RM${maxPrice.toFixed(
-      0
-    )}. The analysis covers ${types.join(
-      " and "
-    )} products suitable for various construction applications in Malaysian building standards.`,
-    keyDifferences: generateFallbackDifferences(products),
-    recommendations: generateFallbackRecommendations(products),
-    useCases: generateFallbackUseCases(products),
-    costAnalysis: `Price analysis shows a range from RM${minPrice.toFixed(
-      0
-    )} to RM${maxPrice.toFixed(
-      0
-    )} per cubic meter, with an average of RM${avgPrice.toFixed(
-      0
-    )}. Higher-grade products (${grades
-      .filter((g) => parseInt(g.replace("N", "")) > 20)
-      .join(
-        ", "
-      )}) command premium pricing but offer superior strength for structural applications. Delivery method selection can impact total project costs by 10-15%.`,
-    insights: generateFallbackInsights(),
+    )} and prices RM${minPrice}-${maxPrice}. Each offers distinct advantages for different construction applications.`,
+    keyDifferences: generateQuickDifferences(products),
+    recommendations: generateQuickRecommendations(products),
+    useCases: generateQuickUseCases(products),
+    costAnalysis: `Price range: RM${minPrice}-${maxPrice}. Higher grades offer better strength but cost more. Consider project requirements vs budget.`,
+    insights: [
+      {
+        type: "tip",
+        title: "Grade Selection",
+        content:
+          "Higher grades (N25+) for structural, N20 for general use saves 15-20% costs.",
+        icon: "lightbulb",
+      },
+      {
+        type: "analysis",
+        title: "Cost vs Performance",
+        content:
+          "Balance grade requirements with budget. Overspecifying wastes money.",
+        icon: "brain",
+      },
+    ],
   };
 }
 
-function generateFallbackDifferences(products: Product[]): string[] {
-  const differences = [];
+function generateQuickDifferences(products: Product[]): string[] {
+  const diffs = [];
 
   const grades = [...new Set(products.map((p) => p.grade))];
   if (grades.length > 1) {
-    differences.push(
-      `Grade variations: ${grades.join(
-        ", "
-      )} - higher grades provide increased compressive strength`
+    diffs.push(
+      `Grade variations: ${grades.join(", ")} affecting strength capacity`
     );
   }
 
-  const priceRange = products
+  const prices = products
     .map((p) => parseFloat(p.normal_price || "0"))
     .filter((p) => p > 0);
-  if (priceRange.length > 1) {
-    differences.push(
-      `Price range from RM${Math.min(...priceRange)} to RM${Math.max(
-        ...priceRange
-      )} affects budget considerations`
+  if (prices.length > 1) {
+    diffs.push(
+      `Price range: RM${Math.min(...prices)}-${Math.max(
+        ...prices
+      )} per cubic meter`
     );
   }
 
-  const stockLevels = products.map((p) => p.stock_quantity || 0);
-  if (Math.max(...stockLevels) - Math.min(...stockLevels) > 50) {
-    differences.push(
-      "Stock availability varies significantly, affecting project timeline planning"
-    );
-  }
-
-  differences.push(
-    "Delivery method options differ between products, impacting accessibility and cost"
+  diffs.push(
+    "Different delivery methods available (normal, pump, tremie) affecting cost"
   );
+  diffs.push("Stock availability varies affecting project scheduling");
 
-  return differences;
+  return diffs.slice(0, 4);
 }
 
-function generateFallbackRecommendations(products: Product[]): string[] {
-  const recommendations = [];
+function generateQuickRecommendations(products: Product[]): string[] {
+  const recs = [];
 
-  // Find highest grade product
-  const highestGradeProduct = products.reduce((prev, current) => {
-    const prevGrade = parseInt(prev.grade.replace("N", ""));
-    const currentGrade = parseInt(current.grade.replace("N", ""));
-    return currentGrade > prevGrade ? current : prev;
-  });
-
-  recommendations.push(
-    `For structural applications, choose "${highestGradeProduct.name}" with ${highestGradeProduct.grade} grade for optimal load-bearing capacity`
+  // Find highest grade
+  const highGrade = products.reduce((prev, curr) =>
+    parseInt(curr.grade.replace("N", "")) >
+    parseInt(prev.grade.replace("N", ""))
+      ? curr
+      : prev
   );
 
-  // Find most cost-effective
-  const cheapestProduct = products.reduce((prev, current) => {
+  recs.push(
+    `For structural work, choose "${highGrade.name}" with ${highGrade.grade} grade`
+  );
+
+  // Find cheapest
+  const cheapest = products.reduce((prev, curr) => {
     const prevPrice = parseFloat(prev.normal_price || "999999");
-    const currentPrice = parseFloat(current.normal_price || "999999");
-    return currentPrice < prevPrice ? current : prev;
+    const currPrice = parseFloat(curr.normal_price || "999999");
+    return currPrice < prevPrice ? curr : prev;
   });
 
-  recommendations.push(
-    `For budget-conscious projects, "${cheapestProduct.name}" offers the best value at RM${cheapestProduct.normal_price} per cubic meter`
+  recs.push(
+    `For budget projects, "${cheapest.name}" offers best value at RM${cheapest.normal_price}`
   );
 
-  recommendations.push(
-    "Consider pump concrete for high-rise construction to reduce labor costs and improve efficiency"
+  recs.push(
+    "Consider pump concrete for multi-story buildings to reduce labor costs"
   );
-  recommendations.push(
-    "Evaluate stock levels and delivery schedules when making final product selection"
-  );
+  recs.push("Check stock levels before finalizing orders to avoid delays");
 
-  return recommendations;
+  return recs.slice(0, 4);
 }
 
-function generateFallbackUseCases(
+function generateQuickUseCases(
   products: Product[]
 ): Array<{ product: string; useCase: string; reason: string }> {
-  return products.map((product) => {
+  return products.slice(0, 3).map((product) => {
     const grade = parseInt(product.grade.replace("N", ""));
-    let useCase = "General construction";
-    let reason = `${product.grade} grade concrete provides adequate strength`;
 
     if (grade >= 25) {
-      useCase = "Structural elements (columns, beams, foundations)";
-      reason = `${product.grade} grade offers high compressive strength suitable for load-bearing structures`;
+      return {
+        product: product.name,
+        useCase: "Structural elements (beams, columns)",
+        reason: `${product.grade} grade provides high compressive strength for load-bearing`,
+      };
     } else if (grade >= 20) {
-      useCase = "Residential construction and slabs";
-      reason = `${product.grade} grade balances strength and cost for residential applications`;
+      return {
+        product: product.name,
+        useCase: "Residential slabs and foundations",
+        reason: `${product.grade} grade balances strength and cost for residential use`,
+      };
     } else {
-      useCase = "Non-structural applications";
-      reason = `${product.grade} grade is economical for driveways, walkways, and non-load bearing elements`;
+      return {
+        product: product.name,
+        useCase: "Driveways and non-structural work",
+        reason: `${product.grade} grade is economical for non-load bearing applications`,
+      };
     }
-
-    return {
-      product: product.name,
-      useCase,
-      reason,
-    };
   });
-}
-
-function generateFallbackInsights(): AIInsight[] {
-  return [
-    {
-      type: "tip",
-      title: "Grade Selection Strategy",
-      content:
-        "Higher grade concrete (N25+) is essential for structural elements, while N20 grade is sufficient for slabs and general construction. This can save 15-20% on material costs for non-structural elements.",
-      icon: "lightbulb",
-    },
-    {
-      type: "analysis",
-      title: "Delivery Method Impact",
-      content:
-        "Pump concrete typically costs 10-15% more but can reduce labor costs by up to 30% and construction time by 25% for multi-story projects.",
-      icon: "trending",
-    },
-    {
-      type: "recommendation",
-      title: "Stock Planning",
-      content:
-        "Always verify stock availability before finalizing concrete orders. Consider ordering 5-10% extra to account for wastage and ensure project continuity.",
-      icon: "brain",
-    },
-  ];
 }
