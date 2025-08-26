@@ -32,6 +32,7 @@ interface CustomerInsightsData {
 
 export function CustomerInsights() {
   const [data, setData] = useState<CustomerInsightsData | null>(null);
+  console.log("Customer Insights Data:", data);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -277,7 +278,8 @@ export function CustomerInsights() {
                       {entry.segment}
                     </span>
                     <span className="text-xs text-gray-500 dark:text-gray-400">
-                      ({entry.count} customers, RM{entry.value.toLocaleString()} value)
+                      ({entry.count} customers, RM{entry.value.toLocaleString()}{" "}
+                      value)
                     </span>
                   </div>
                 ))}
