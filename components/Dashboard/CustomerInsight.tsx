@@ -244,7 +244,8 @@ export function CustomerInsights() {
                       {entry.segment}
                     </span>
                     <span className="text-xs text-gray-500 dark:text-gray-400">
-                      ({entry.count} customers, RM{entry.value.toLocaleString()} value)
+                      ({entry.count} customers, RM{entry.value.toLocaleString()}{" "}
+                      value)
                     </span>
                   </div>
                 ))}

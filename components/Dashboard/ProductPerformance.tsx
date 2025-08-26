@@ -14,7 +14,7 @@ import {
 
 interface ProductPerformanceData {
   categoryPerformance: Array<{
-    category: string;
+    product_type: string;
     avgPrice: number;
     totalStock: number;
     totalProducts: number;
@@ -27,17 +27,17 @@ interface ProductPerformanceData {
     name: string;
     price: number | null;
     stock: number;
-    category: string;
+    product_type: string;
   }>;
   topStockProducts: Array<{
     name: string;
     price: number | null;
     stock: number;
-    category: string;
+    product_type: string;
   }>;
   topSellingProducts: Array<{
     name: string;
-    category: string;
+    product_type: string;
     productId: string;
     totalSold: number;
     totalRevenue: number;
@@ -75,7 +75,7 @@ export function ProductPerformance() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    {category.category}
+                    {category.product_type}
                   </p>
                   <h3 className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
                     Avg Price: RM{category.avgPrice.toLocaleString()}
@@ -151,7 +151,7 @@ export function ProductPerformance() {
                     {product.name}
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {product.category}
+                    {product.product_type}
                   </p>
                   <div className="mt-2 flex items-center justify-between">
                     <span className="text-green-600 dark:text-green-400 font-bold">
@@ -187,7 +187,7 @@ export function ProductPerformance() {
                   {product.name}
                 </h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {product.category}
+                  {product.product_type}
                 </p>
                 <div className="mt-2 flex flex-col gap-1">
                   <span className="text-blue-600 dark:text-blue-400 font-bold">
@@ -226,7 +226,7 @@ export function ProductPerformance() {
                   {product.name}
                 </h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {product.category}
+                  {product.product_type}
                 </p>
                 <div className="mt-2 flex items-center justify-between">
                   <span className="text-red-600 dark:text-red-400 font-bold">
