@@ -524,7 +524,7 @@ export function OrdersOverTime() {
               <div
                 className={`${
                   isMobile ? "p-2" : "p-3"
-                } bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg`}
+                } bg-gradient-to-br from-blue-500 via-indigo-400 to-purple-500 dark:from-blue-600 dark:via-indigo-700 dark:to-purple-700 rounded-xl shadow-lg`}
               >
                 <BarChart3
                   className={`${isMobile ? "h-5 w-5" : "h-6 w-6"} text-white`}
@@ -534,14 +534,14 @@ export function OrdersOverTime() {
                 <h3
                   className={`${
                     isMobile ? "text-lg" : "text-2xl"
-                  } font-bold text-gray-900 dark:text-white`}
+                  } font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400 bg-clip-text text-transparent`}
                 >
                   Orders Analytics
                 </h3>
                 <p
                   className={`${
                     isMobile ? "text-xs" : "text-sm"
-                  } text-gray-600 dark:text-gray-400 font-medium`}
+                  } text-indigo-600 dark:text-indigo-400 font-medium`}
                 >
                   {totalOrders} total • {dataSpanDays} days of data
                 </p>
