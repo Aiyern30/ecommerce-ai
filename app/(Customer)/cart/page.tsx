@@ -159,7 +159,6 @@ export default function CartPage() {
     }
   }, [totalVolume, selectedServices]);
 
-  // Handle individual item selection
   const handleItemSelect = async (itemId: string, checked: boolean) => {
     const success = await updateCartItemSelection(itemId, checked);
     if (success) {
@@ -169,7 +168,6 @@ export default function CartPage() {
     }
   };
 
-  // Handle select all
   const handleSelectAll = async (checked: boolean) => {
     if (!user?.id) return;
     const success = await selectAllCartItems(user.id, checked);
@@ -181,7 +179,6 @@ export default function CartPage() {
     }
   };
 
-  // Handle service selection with localStorage
   const handleServiceSelect = (serviceCode: string, checked: boolean) => {
     const service = additionalServices.find(
       (s) => s.service_code === serviceCode
@@ -207,7 +204,6 @@ export default function CartPage() {
 
     setSelectedServices(newSelectedServices);
 
-    // Save to localStorage
     localStorage.setItem(
       "selectedServices",
       JSON.stringify(newSelectedServices)
@@ -226,13 +222,11 @@ export default function CartPage() {
     }
   };
 
-  // Handle delete click
   const handleDeleteClick = (item: CartItem) => {
     setItemToDelete(item);
     setDeleteDialogOpen(true);
   };
 
-  // Confirm delete
   const confirmDelete = async () => {
     if (itemToDelete) {
       await removeFromCart(itemToDelete.id);
@@ -251,7 +245,6 @@ export default function CartPage() {
     refreshCart();
   };
 
-  // Handle proceed to checkout with validation
   const handleProceedToCheckout = () => {
     if (selectedItems.length === 0) {
       toast.error("Please select at least one item to proceed with checkout", {
@@ -260,14 +253,11 @@ export default function CartPage() {
       });
       return;
     }
-    // Go directly to the address step
     router.push("/checkout/address");
   };
 
-  // Local state for quantity input per item
   const [inputQty, setInputQty] = useState<{ [id: string]: string }>({});
 
-  // Sync inputQty state with cartItems when cartItems change
   useEffect(() => {
     const qtyState: { [id: string]: string } = {};
     cartItems.forEach((item) => {
@@ -283,9 +273,7 @@ export default function CartPage() {
         {isLoading ? (
           <div className="mt-8">
             {isMobile ? (
-              // Mobile Layout - Single Column
               <div className="space-y-6 max-w-full overflow-hidden">
-                {/* Cart Items Skeleton - Mobile */}
                 <div className="w-full">
                   <Card className="overflow-hidden shadow-sm p-0">
                     <CardHeader className="p-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
@@ -323,7 +311,6 @@ export default function CartPage() {
                   </Card>
                 </div>
 
-                {/* Order Summary Skeleton - Mobile */}
                 <div className="w-full">
                   <Card className="overflow-hidden shadow-sm p-0">
                     <CardHeader className="p-4">
@@ -355,9 +342,7 @@ export default function CartPage() {
                 </div>
               </div>
             ) : (
-              // Desktop Layout - Grid
               <div className="grid gap-8 lg:grid-cols-3">
-                {/* Cart Items Skeleton - Desktop */}
                 <div className="lg:col-span-2">
                   <Card className="overflow-hidden shadow-sm p-0">
                     <CardHeader className="p-6 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
@@ -402,7 +387,6 @@ export default function CartPage() {
                   </Card>
                 </div>
 
-                {/* Order Summary Skeleton - Desktop */}
                 <div className="lg:col-span-1 self-start sticky top-28">
                   <CheckoutSummary
                     showCheckoutButton={true}
@@ -453,11 +437,8 @@ export default function CartPage() {
               isMobile ? "space-y-6" : "grid gap-8 lg:grid-cols-3"
             }`}
           >
-            {/* Cart Items */}
             <div className={isMobile ? "" : "lg:col-span-2 space-y-6"}>
-              {/* Products Section */}
               <Card className="overflow-hidden shadow-sm py-0 gap-0">
-                {/* Choose All Product Header */}
                 <CardHeader
                   className={`${
                     isMobile ? "p-4" : "p-6"
@@ -490,7 +471,6 @@ export default function CartPage() {
                       selected
                     </TypographyP>
                   </div>
-                  {/* Mobile: Show selection count below on mobile */}
                   {isMobile && (
                     <TypographyP className="text-xs text-gray-600 dark:text-gray-400 font-medium !mt-2">
                       {selectedItems.length} of {cartItems.length} items
@@ -498,11 +478,9 @@ export default function CartPage() {
                     </TypographyP>
                   )}
                 </CardHeader>
-                {/* Product Items */}
                 <CardContent className="p-0">
                   <div className="divide-y divide-gray-200 dark:divide-gray-700">
                     {cartItems.map((item) => {
-                      // Get the correct price based on variant_type
                       const itemPrice = getProductPrice(
                         item.product,
                         item.variant_type
@@ -518,7 +496,6 @@ export default function CartPage() {
                             isMobile ? "p-4" : "p-6"
                           } hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-all duration-200 cursor-pointer group`}
                           onClick={(e) => {
-                            // Only navigate if not clicking on interactive elements
                             const target = e.target as HTMLElement;
                             if (
                               !target.closest("button") &&
@@ -532,7 +509,6 @@ export default function CartPage() {
                           <div
                             className={`flex ${isMobile ? "gap-3" : "gap-4"}`}
                           >
-                            {/* Checkbox for individual item */}
                             <div
                               className={`flex items-start ${
                                 isMobile ? "pt-2" : "pt-3"
@@ -548,7 +524,6 @@ export default function CartPage() {
                                 className="h-5 w-5"
                               />
                             </div>
-                            {/* Product Image */}
                             <div
                               className={`relative ${
                                 isMobile
@@ -565,7 +540,6 @@ export default function CartPage() {
                                 className="object-cover group-hover:scale-105 transition-transform duration-300"
                               />
                             </div>
-                            {/* Product Details */}
                             <div
                               className={`flex flex-1 flex-col justify-between ${
                                 isMobile
@@ -606,7 +580,6 @@ export default function CartPage() {
                                     </div>
                                   )}
                                 </div>
-                                {/* Delete Button - Positioned differently on mobile */}
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -626,7 +599,6 @@ export default function CartPage() {
                                   />
                                 </button>
                               </div>
-                              {/* Mobile: Product details */}
                               {isMobile && (
                                 <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mb-2">
                                   <span>
@@ -638,7 +610,6 @@ export default function CartPage() {
                                   </span>
                                 </div>
                               )}
-                              {/* Price and Quantity Controls */}
                               <div
                                 className={`flex items-center justify-between ${
                                   isMobile ? "mt-2" : "mt-4"
@@ -651,7 +622,6 @@ export default function CartPage() {
                                 >
                                   RM{itemPrice.toFixed(2)}
                                 </div>
-                                {/* Quantity Controls */}
                                 <div
                                   className={`flex items-center bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-600 shadow-sm ${
                                     isMobile ? "scale-90" : ""
@@ -686,7 +656,6 @@ export default function CartPage() {
                                       } group-hover:scale-110 transition-transform duration-200`}
                                     />
                                   </button>
-                                  {/* Number input for quantity */}
                                   <input
                                     type="number"
                                     min={1}
@@ -694,7 +663,6 @@ export default function CartPage() {
                                     onClick={(e) => e.stopPropagation()}
                                     onChange={(e) => {
                                       const val = e.target.value;
-                                      // Allow empty string for typing, but only positive numbers
                                       if (/^\d*$/.test(val)) {
                                         setInputQty((prev) => ({
                                           ...prev,
@@ -730,7 +698,6 @@ export default function CartPage() {
                                       MozAppearance: "textfield",
                                     }}
                                   />
-                                  {/* Tick button for mobile confirmation */}
                                   {isMobile && (
                                     <button
                                       type="button"
@@ -760,7 +727,6 @@ export default function CartPage() {
                                         item.quantity + 1
                                       );
                                     }}
-                                    // Optionally disable if at stock limit
                                     disabled={
                                       typeof item.product?.stock_quantity ===
                                         "number" &&
@@ -787,7 +753,6 @@ export default function CartPage() {
                 </CardContent>
               </Card>
 
-              {/* Enhanced Additional Services Section */}
               {selectedItems.length > 0 && (
                 <Card className="overflow-hidden shadow-lg border-2 border-blue-100 dark:border-blue-900 p-0 mt-6">
                   <CardHeader
@@ -813,7 +778,6 @@ export default function CartPage() {
                       </div>
                     </div>
 
-                    {/* Volume Display */}
                     <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-blue-700">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -880,7 +844,6 @@ export default function CartPage() {
                                 )
                               }
                             >
-                              {/* Selected Badge */}
                               {isSelected && (
                                 <div className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-medium">
                                   Added
@@ -988,7 +951,6 @@ export default function CartPage() {
                                 )}
                               </div>
 
-                              {/* Service Index for visual appeal */}
                               <div
                                 className={`absolute top-2 left-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
                                   isSelected
@@ -1002,7 +964,6 @@ export default function CartPage() {
                           );
                         })}
 
-                        {/* Services Summary */}
                         {Object.values(selectedServices).some(Boolean) && (
                           <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700 rounded-xl">
                             <div className="flex items-center justify-between">
@@ -1044,7 +1005,6 @@ export default function CartPage() {
               )}
             </div>
 
-            {/* Order Summary with Checkout Button */}
             <div className={isMobile ? "" : "lg:col-span-1"}>
               <div className={isMobile ? "" : "sticky top-6 z-10"}>
                 <CheckoutSummary
@@ -1063,7 +1023,6 @@ export default function CartPage() {
         )}
       </div>
 
-      {/* Enhanced Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent
           className={`${isMobile ? "max-w-sm mx-4" : "max-w-md"}`}
