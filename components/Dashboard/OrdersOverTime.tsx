@@ -7,10 +7,10 @@ import { Card, CardContent } from "@/components/ui/";
 import { Button } from "@/components/ui/";
 import {
   ChevronDown,
-  Calendar,
   TrendingUp,
   BarChart3,
   TrendingDown,
+  Activity,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -39,7 +39,7 @@ interface Order {
   created_at: string;
 }
 
-type FilterType = "day" | "week" | "month";
+type FilterType = "today" | "week" | "30days" | "all";
 
 const CustomTooltip = ({
   active,
@@ -53,7 +53,9 @@ const CustomTooltip = ({
   if (active && payload && payload.length) {
     return (
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 px-4 py-3 rounded-xl shadow-xl backdrop-blur-sm">
-        <p className="font-semibold text-gray-900 dark:text-white text-lg">{`${payload[0].value} Orders`}</p>
+        <p className="font-semibold text-gray-900 dark:text-white text-lg">
+          {`${payload[0].value} Orders`}
+        </p>
         <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">
           {label}
         </p>
@@ -63,102 +65,201 @@ const CustomTooltip = ({
   return null;
 };
 
-function generateHourlyPeriods() {
-  const periods = [];
-  const today = new Date();
-
-  for (let hour = 0; hour < 24; hour++) {
-    const startOfHour = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate(),
-      hour,
-      0,
-      0,
-      0
-    );
-    const endOfHour = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate(),
-      hour,
-      59,
-      59,
-      999
-    );
-
-    const displayHour =
-      hour === 0
-        ? "12am"
-        : hour < 12
-        ? `${hour}am`
-        : hour === 12
-        ? "12pm"
-        : `${hour - 12}pm`;
-
-    periods.push({
-      start: startOfHour,
-      end: endOfHour,
-      label: displayHour,
-      sortDate: startOfHour.toISOString(),
-    });
+// Generate periods based on available data
+function generateSmartPeriods(orders: Order[], filterType: FilterType) {
+  if (!orders || orders.length === 0) {
+    return [];
   }
-  return periods;
-}
 
-function generateWeeklyPeriods(weeksBack = 8) {
-  const periods = [];
-  const today = new Date();
+  const sortedOrders = orders.sort(
+    (a, b) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  );
 
-  for (let i = weeksBack - 1; i >= 0; i--) {
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - (today.getDay() + 7 * i));
-    startOfWeek.setHours(0, 0, 0, 0);
+  const earliestOrder = new Date(sortedOrders[0].created_at);
+  const latestOrder = new Date(
+    sortedOrders[sortedOrders.length - 1].created_at
+  );
+  const now = new Date();
 
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
-    endOfWeek.setHours(23, 59, 59, 999);
+  if (filterType === "today") {
+    // Show last 24 hours in 4-hour blocks
+    const periods = [];
+    const startOfDay = new Date(now);
+    startOfDay.setHours(0, 0, 0, 0);
 
-    periods.push({
-      start: startOfWeek,
-      end: endOfWeek,
-      label: `${startOfWeek.getMonth() + 1}/${startOfWeek.getDate()} - ${
-        endOfWeek.getMonth() + 1
-      }/${endOfWeek.getDate()}`,
-      sortDate: startOfWeek.toISOString(),
-    });
+    for (let hour = 0; hour < 24; hour += 4) {
+      const start = new Date(startOfDay);
+      start.setHours(hour);
+      const end = new Date(startOfDay);
+      end.setHours(hour + 3, 59, 59, 999);
+
+      const startHour =
+        hour === 0
+          ? "12am"
+          : hour < 12
+          ? `${hour}am`
+          : hour === 12
+          ? "12pm"
+          : `${hour - 12}pm`;
+      const endHour =
+        hour + 3 >= 24
+          ? "12am"
+          : hour + 3 < 12
+          ? `${hour + 3}am`
+          : hour + 3 === 12
+          ? "12pm"
+          : `${hour + 3 - 12}pm`;
+
+      periods.push({
+        start,
+        end,
+        label: `${startHour}-${endHour}`,
+        sortDate: start.toISOString(),
+      });
+    }
+    return periods;
   }
-  return periods;
-}
 
-function generateMonthlyPeriods(monthsBack = 6) {
-  const periods = [];
-  const today = new Date();
+  if (filterType === "week") {
+    // Show last 7 days
+    const periods = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(now.getDate() - i);
+      const start = new Date(date);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(date);
+      end.setHours(23, 59, 59, 999);
 
-  for (let i = monthsBack - 1; i >= 0; i--) {
-    const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
-    const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-    const endOfMonth = new Date(
-      date.getFullYear(),
-      date.getMonth() + 1,
-      0,
-      23,
-      59,
-      59,
-      999
+      periods.push({
+        start,
+        end,
+        label: date.toLocaleDateString("en-US", {
+          weekday: "short",
+          month: "numeric",
+          day: "numeric",
+        }),
+        sortDate: start.toISOString(),
+      });
+    }
+    return periods;
+  }
+
+  if (filterType === "30days") {
+    // Show last 30 days grouped by weeks
+    const periods = [];
+    for (let week = 4; week >= 0; week--) {
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - (week * 7 + 6));
+      startOfWeek.setHours(0, 0, 0, 0);
+
+      const endOfWeek = new Date(now);
+      endOfWeek.setDate(now.getDate() - week * 7);
+      endOfWeek.setHours(23, 59, 59, 999);
+
+      periods.push({
+        start: startOfWeek,
+        end: endOfWeek,
+        label: `${startOfWeek.getMonth() + 1}/${startOfWeek.getDate()} - ${
+          endOfWeek.getMonth() + 1
+        }/${endOfWeek.getDate()}`,
+        sortDate: startOfWeek.toISOString(),
+      });
+    }
+    return periods;
+  }
+
+  if (filterType === "all") {
+    // Adaptive periods based on data span
+    const daysDiff = Math.ceil(
+      (latestOrder.getTime() - earliestOrder.getTime()) / (1000 * 60 * 60 * 24)
     );
 
-    periods.push({
-      start: startOfMonth,
-      end: endOfMonth,
-      label: startOfMonth.toLocaleDateString("en-US", {
-        month: "short",
-        year: "numeric",
-      }),
-      sortDate: startOfMonth.toISOString(),
-    });
+    if (daysDiff <= 7) {
+      // Show daily for a week or less
+      const periods = [];
+      const start = new Date(earliestOrder);
+      start.setHours(0, 0, 0, 0);
+
+      while (start <= now) {
+        const end = new Date(start);
+        end.setHours(23, 59, 59, 999);
+
+        periods.push({
+          start: new Date(start),
+          end: new Date(end),
+          label: start.toLocaleDateString("en-US", {
+            month: "numeric",
+            day: "numeric",
+          }),
+          sortDate: start.toISOString(),
+        });
+
+        start.setDate(start.getDate() + 1);
+      }
+      return periods;
+    } else if (daysDiff <= 30) {
+      // Show weekly for a month or less
+      const periods = [];
+      const start = new Date(earliestOrder);
+      start.setDate(start.getDate() - start.getDay()); // Start of week
+      start.setHours(0, 0, 0, 0);
+
+      while (start <= now) {
+        const end = new Date(start);
+        end.setDate(start.getDate() + 6);
+        end.setHours(23, 59, 59, 999);
+
+        periods.push({
+          start: new Date(start),
+          end: new Date(end),
+          label: `${start.getMonth() + 1}/${start.getDate()}-${
+            end.getMonth() + 1
+          }/${end.getDate()}`,
+          sortDate: start.toISOString(),
+        });
+
+        start.setDate(start.getDate() + 7);
+      }
+      return periods;
+    } else {
+      // Show monthly for longer periods
+      const periods = [];
+      const start = new Date(
+        earliestOrder.getFullYear(),
+        earliestOrder.getMonth(),
+        1
+      );
+
+      while (start <= now) {
+        const end = new Date(
+          start.getFullYear(),
+          start.getMonth() + 1,
+          0,
+          23,
+          59,
+          59,
+          999
+        );
+
+        periods.push({
+          start: new Date(start),
+          end: new Date(end),
+          label: start.toLocaleDateString("en-US", {
+            month: "short",
+            year: "numeric",
+          }),
+          sortDate: start.toISOString(),
+        });
+
+        start.setMonth(start.getMonth() + 1);
+      }
+      return periods;
+    }
   }
-  return periods;
+
+  return [];
 }
 
 function groupOrdersByPeriod(orders: Order[], periods: any[]) {
@@ -178,69 +279,88 @@ function groupOrdersByPeriod(orders: Order[], periods: any[]) {
 
 export function OrdersOverTime() {
   const [data, setData] = useState<OrdersData[]>([]);
-  const [filter, setFilter] = useState<FilterType>("month");
+  const [filter, setFilter] = useState<FilterType>("all");
   const [loading, setLoading] = useState(true);
   const [totalOrders, setTotalOrders] = useState(0);
   const [previousPeriodOrders, setPreviousPeriodOrders] = useState(0);
+  const [currentPeriodOrders, setCurrentPeriodOrders] = useState(0); // <-- use this state
+  const [dataSpanDays, setDataSpanDays] = useState(0);
   const { isMobile } = useDeviceType();
 
   useEffect(() => {
     async function fetchOrders() {
       setLoading(true);
       try {
-        let since: Date;
-        let queryData;
+        // Get all orders first to determine data span
+        const { data: allOrders, error } = await supabase
+          .from("orders")
+          .select("created_at")
+          .order("created_at", { ascending: true });
 
-        if (filter === "day") {
-          since = new Date();
-          since.setHours(0, 0, 0, 0);
-          const endOfDay = new Date();
-          endOfDay.setHours(23, 59, 59, 999);
-
-          queryData = await supabase
-            .from("orders")
-            .select("created_at")
-            .gte("created_at", since.toISOString())
-            .lte("created_at", endOfDay.toISOString())
-            .order("created_at", { ascending: true });
-        } else {
-          const daysBack = filter === "week" ? 56 : 180;
-          since = new Date();
-          since.setDate(since.getDate() - daysBack);
-          since.setHours(0, 0, 0, 0);
-
-          queryData = await supabase
-            .from("orders")
-            .select("created_at")
-            .gte("created_at", since.toISOString())
-            .order("created_at", { ascending: true });
-        }
-
-        const { data: orders, error } = queryData;
         if (error) {
           console.error("Error fetching orders:", error);
           return;
         }
 
-        const periods =
-          filter === "day"
-            ? generateHourlyPeriods()
-            : filter === "week"
-            ? generateWeeklyPeriods(8)
-            : generateMonthlyPeriods(6);
+        if (!allOrders || allOrders.length === 0) {
+          setData([]);
+          setTotalOrders(0);
+          setPreviousPeriodOrders(0);
+          setDataSpanDays(0);
+          return;
+        }
 
-        const chartData = groupOrdersByPeriod(orders || [], periods);
+        // Calculate data span
+        const earliestOrder = new Date(allOrders[0].created_at);
+        const latestOrder = new Date(
+          allOrders[allOrders.length - 1].created_at
+        );
+        const daysDiff = Math.ceil(
+          (latestOrder.getTime() - earliestOrder.getTime()) /
+            (1000 * 60 * 60 * 24)
+        );
+        setDataSpanDays(daysDiff);
+
+        // Filter orders based on selected filter
+        let filteredOrders = allOrders;
+        const now = new Date();
+
+        if (filter === "today") {
+          const startOfDay = new Date(now);
+          startOfDay.setHours(0, 0, 0, 0);
+          filteredOrders = allOrders.filter(
+            (order) => new Date(order.created_at) >= startOfDay
+          );
+        } else if (filter === "week") {
+          const weekAgo = new Date(now);
+          weekAgo.setDate(now.getDate() - 7);
+          filteredOrders = allOrders.filter(
+            (order) => new Date(order.created_at) >= weekAgo
+          );
+        } else if (filter === "30days") {
+          const monthAgo = new Date(now);
+          monthAgo.setDate(now.getDate() - 30);
+          filteredOrders = allOrders.filter(
+            (order) => new Date(order.created_at) >= monthAgo
+          );
+        }
+        // "all" uses all orders
+
+        const periods = generateSmartPeriods(filteredOrders, filter);
+        const chartData = groupOrdersByPeriod(filteredOrders, periods);
+
         const total = chartData.reduce((sum, item) => sum + item.orders, 0);
 
-        // Calculate previous period for comparison
-        // const currentPeriodData = chartData.slice(
-        //   -Math.ceil(chartData.length / 2)
-        // );
-        const previousPeriodData = chartData.slice(
-          0,
-          Math.floor(chartData.length / 2)
-        );
+        // Calculate growth - compare first half vs second half of periods
+        const midPoint = Math.floor(chartData.length / 2);
+        const previousPeriodData = chartData.slice(0, midPoint);
+        const currentPeriodData = chartData.slice(midPoint);
+
         const prevTotal = previousPeriodData.reduce(
+          (sum, item) => sum + item.orders,
+          0
+        );
+        const currentTotal = currentPeriodData.reduce(
           (sum, item) => sum + item.orders,
           0
         );
@@ -248,6 +368,7 @@ export function OrdersOverTime() {
         setData(chartData);
         setTotalOrders(total);
         setPreviousPeriodOrders(prevTotal);
+        setCurrentPeriodOrders(currentTotal); // <-- set current period orders here
       } catch (error) {
         console.error("Error fetching orders:", error);
       } finally {
@@ -258,164 +379,248 @@ export function OrdersOverTime() {
     fetchOrders();
   }, [filter]);
 
-  const filterOptions = [
-    { value: "day" as FilterType, label: "Today", desc: "Hourly breakdown" },
-    { value: "week" as FilterType, label: "Weekly", desc: "Last 8 weeks" },
-    { value: "month" as FilterType, label: "Monthly", desc: "Last 6 months" },
-  ];
+  // Smart filter options based on available data
+  const getFilterOptions = () => {
+    const baseOptions = [
+      {
+        value: "today" as FilterType,
+        label: "Today",
+        desc: "Last 24 hours",
+        icon: "📅",
+      },
+      {
+        value: "week" as FilterType,
+        label: "This Week",
+        desc: "Last 7 days",
+        icon: "📊",
+      },
+    ];
 
-  const currentFilterLabel =
-    filterOptions.find((opt) => opt.value === filter)?.label || "Today";
+    if (dataSpanDays >= 14) {
+      baseOptions.push({
+        value: "30days" as FilterType,
+        label: "Monthly",
+        desc: "Last 30 days",
+        icon: "📈",
+      });
+    }
+
+    baseOptions.push({
+      value: "all" as FilterType,
+      label: "All Time",
+      desc: `${dataSpanDays} days of data`,
+      icon: "🎯",
+    });
+
+    return baseOptions;
+  };
+
+  const filterOptions = getFilterOptions();
+  const currentFilterOption =
+    filterOptions.find((opt) => opt.value === filter) || filterOptions[0];
 
   const ordersChange =
     previousPeriodOrders > 0
       ? ((totalOrders - previousPeriodOrders) / previousPeriodOrders) * 100
+      : totalOrders > 0
+      ? 100
       : 0;
 
   const maxOrders = Math.max(...data.map((d) => d.orders), 0);
   const avgOrders = data.length > 0 ? Math.round(totalOrders / data.length) : 0;
 
-  return (
-    <Card className="col-span-full bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-900 dark:to-blue-900/10 border-0 shadow-xl">
-      <CardContent className={isMobile ? "p-2" : "p-8"}>
-        <div
-          className={isMobile ? "flex flex-col gap-4" : "flex flex-col gap-8"}
-        >
-          {/* Header */}
-          {isMobile ? (
-            <div className="flex flex-col gap-2 px-1 pt-2">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
-                  <BarChart3 className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                    Orders Over Time
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-xs font-medium">
-                    {totalOrders} total orders • {currentFilterLabel} view
-                  </p>
-                </div>
-              </div>
-              <div className="flex justify-end">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-2 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm"
-                    >
-                      <Calendar className="h-4 w-4" />
-                      {currentFilterLabel}
-                      <ChevronDown className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="end"
-                    className="w-48 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
-                  >
-                    {filterOptions.map((option) => (
-                      <DropdownMenuItem
-                        key={option.value}
-                        onClick={() => setFilter(option.value)}
-                        className="flex flex-col items-start gap-1 p-3 hover:bg-gray-50 dark:hover:bg-gray-700"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div
-                            className={`w-2.5 h-2.5 rounded-full ${
-                              filter === option.value
-                                ? "bg-blue-500 shadow-lg shadow-blue-500/30"
-                                : "bg-gray-300 dark:bg-gray-600"
-                            }`}
-                          />
-                          <span className="font-semibold text-gray-900 dark:text-white text-sm">
-                            {option.label}
-                          </span>
-                        </div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-5">
-                          {option.desc}
-                        </span>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-          ) : (
+  const StatCard = ({
+    title,
+    value,
+    trend,
+    color = "blue",
+  }: {
+    title: string;
+    value: string | number;
+    trend?: number;
+    color?: string;
+  }) => (
+    <div
+      className={`${
+        isMobile ? "p-4" : "p-6"
+      } bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all duration-200`}
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <p
+            className={`${
+              isMobile ? "text-xs" : "text-sm"
+            } font-medium text-gray-600 dark:text-gray-400 mb-1`}
+          >
+            {title}
+          </p>
+          <h4
+            className={`${
+              isMobile ? "text-xl" : "text-2xl"
+            } font-bold text-${color}-600 dark:text-${color}-400`}
+          >
+            {typeof value === "number" ? value.toLocaleString() : value}
+          </h4>
+        </div>
+        {trend !== undefined && (
+          <div
+            className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+              trend > 0
+                ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
+                : trend < 0
+                ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+            }`}
+          >
+            {trend > 0 ? (
+              <TrendingUp className="h-3 w-3" />
+            ) : trend < 0 ? (
+              <TrendingDown className="h-3 w-3" />
+            ) : (
+              <Activity className="h-3 w-3" />
+            )}
+            {Math.abs(trend).toFixed(1)}%
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <Card className="col-span-full bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-900 dark:to-blue-900/10 border-0 shadow-xl">
+        <CardContent className={isMobile ? "p-4" : "p-8"}>
+          <div className="animate-pulse space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg">
-                  <BarChart3 className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    Orders Over Time
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 font-medium">
-                    {totalOrders} total orders • {currentFilterLabel} view
-                  </p>
+                <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+                <div className="space-y-2">
+                  <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-40"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
                 </div>
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="gap-3 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm"
-                  >
-                    <Calendar className="h-4 w-4" />
-                    {currentFilterLabel}
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="w-56 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+              <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+            </div>
+            <div className="h-80 bg-gray-200 dark:bg-gray-700 rounded-2xl"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="col-span-full bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-900 dark:to-blue-900/10 border-0 shadow-xl">
+      <CardContent className={isMobile ? "p-4" : "p-8"}>
+        <div className="flex flex-col gap-6">
+          {/* Header - Mobile Optimized */}
+          <div
+            className={`${
+              isMobile
+                ? "flex-col gap-3"
+                : "flex-row justify-between items-center"
+            } flex`}
+          >
+            <div className="flex items-center gap-4">
+              <div
+                className={`${
+                  isMobile ? "p-2" : "p-3"
+                } bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg`}
+              >
+                <BarChart3
+                  className={`${isMobile ? "h-5 w-5" : "h-6 w-6"} text-white`}
+                />
+              </div>
+              <div>
+                <h3
+                  className={`${
+                    isMobile ? "text-lg" : "text-2xl"
+                  } font-bold text-gray-900 dark:text-white`}
                 >
-                  {filterOptions.map((option) => (
-                    <DropdownMenuItem
-                      key={option.value}
-                      onClick={() => setFilter(option.value)}
-                      className="flex flex-col items-start gap-1 p-4 hover:bg-gray-50 dark:hover:bg-gray-700"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-3 h-3 rounded-full ${
-                            filter === option.value
-                              ? "bg-blue-500 shadow-lg shadow-blue-500/30"
-                              : "bg-gray-300 dark:bg-gray-600"
-                          }`}
-                        />
-                        <span className="font-semibold text-gray-900 dark:text-white">
-                          {option.label}
-                        </span>
-                      </div>
-                      <span className="text-sm text-gray-500 dark:text-gray-400 ml-6">
+                  Orders Analytics
+                </h3>
+                <p
+                  className={`${
+                    isMobile ? "text-xs" : "text-sm"
+                  } text-gray-600 dark:text-gray-400 font-medium`}
+                >
+                  {totalOrders} total • {dataSpanDays} days of data
+                </p>
+              </div>
+            </div>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size={isMobile ? "sm" : "default"}
+                  className="gap-2 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm min-w-[120px]"
+                >
+                  <span className={isMobile ? "text-xs" : "text-sm"}>
+                    {currentFilterOption.icon}
+                  </span>
+                  {currentFilterOption.label}
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className={`${
+                  isMobile ? "w-48" : "w-56"
+                } bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700`}
+              >
+                {filterOptions.map((option) => (
+                  <DropdownMenuItem
+                    key={option.value}
+                    onClick={() => setFilter(option.value)}
+                    className={`flex items-center gap-3 ${
+                      isMobile ? "p-3" : "p-4"
+                    } hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer`}
+                  >
+                    <span className="text-lg">{option.icon}</span>
+                    <div className="flex flex-col">
+                      <span
+                        className={`font-semibold text-gray-900 dark:text-white ${
+                          isMobile ? "text-sm" : "text-base"
+                        }`}
+                      >
+                        {option.label}
+                      </span>
+                      <span
+                        className={`${
+                          isMobile ? "text-xs" : "text-sm"
+                        } text-gray-500 dark:text-gray-400`}
+                      >
                         {option.desc}
                       </span>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          )}
+                    </div>
+                    {filter === option.value && (
+                      <div className="ml-auto w-2 h-2 bg-blue-500 rounded-full"></div>
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
 
-          {/* Chart */}
-          <div
-            className={
-              isMobile
-                ? "bg-white dark:bg-gray-800 rounded-2xl p-2 shadow-lg border border-gray-100 dark:border-gray-700"
-                : "bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700"
-            }
-          >
-            <div className={isMobile ? "h-[260px] w-full" : "h-[360px] w-full"}>
-              {loading ? (
+          {/* Chart - Mobile Optimized */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div
+              className={`${
+                isMobile ? "h-[280px] p-2" : "h-[400px] p-6"
+              } w-full`}
+            >
+              {data.length === 0 ? (
                 <div className="flex items-center justify-center h-full">
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full animate-pulse"></div>
-                    <span className="text-gray-600 dark:text-gray-400 font-medium">
-                      Loading chart...
-                    </span>
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4 mx-auto">
+                      <BarChart3 className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                      No Orders Yet
+                    </h4>
+                    <p className="text-gray-500 dark:text-gray-400">
+                      Orders will appear here once you start receiving them
+                    </p>
                   </div>
                 </div>
               ) : (
@@ -425,15 +630,8 @@ export function OrdersOverTime() {
                     margin={{
                       top: isMobile ? 10 : 20,
                       right: isMobile ? 10 : 30,
-                      left: isMobile ? 0 : 0,
-                      bottom:
-                        filter === "day"
-                          ? isMobile
-                            ? 20
-                            : 40
-                          : isMobile
-                          ? 10
-                          : 20,
+                      left: isMobile ? 0 : 10,
+                      bottom: isMobile ? 40 : 60,
                     }}
                   >
                     <defs>
@@ -464,40 +662,26 @@ export function OrdersOverTime() {
                     <XAxis
                       dataKey="period"
                       tick={{
-                        fontSize: filter === "day" ? 11 : 13,
+                        fontSize: isMobile ? 10 : 12,
                         fill: "currentColor",
                       }}
                       tickLine={false}
                       axisLine={false}
                       className="text-gray-600 dark:text-gray-400"
-                      angle={filter === "day" ? -45 : 0}
-                      textAnchor={filter === "day" ? "end" : "middle"}
-                      height={filter === "day" ? 80 : 40}
-                      label={{
-                        value:
-                          filter === "day"
-                            ? "Hour"
-                            : filter === "week"
-                            ? "Week"
-                            : "Month",
-                        position: "insideBottom",
-                        offset: -5,
-                        style: { fill: "#6b7280", fontSize: 13 },
-                      }}
+                      angle={isMobile ? -45 : 0}
+                      textAnchor={isMobile ? "end" : "middle"}
+                      height={isMobile ? 60 : 40}
+                      interval={isMobile && data.length > 6 ? 1 : 0}
                     />
                     <YAxis
-                      tick={{ fontSize: 12, fill: "currentColor" }}
+                      tick={{
+                        fontSize: isMobile ? 10 : 12,
+                        fill: "currentColor",
+                      }}
                       tickLine={false}
                       axisLine={false}
-                      tickFormatter={(value) => `${value}`}
                       className="text-gray-600 dark:text-gray-400"
-                      label={{
-                        value: "Orders",
-                        angle: -90,
-                        position: "insideLeft",
-                        offset: 10,
-                        style: { fill: "#6b7280", fontSize: 13 },
-                      }}
+                      width={isMobile ? 30 : 60}
                     />
                     <CartesianGrid
                       strokeDasharray="3 3"
@@ -513,10 +697,14 @@ export function OrdersOverTime() {
                       stroke="#3b82f6"
                       fillOpacity={1}
                       fill="url(#colorOrders)"
-                      strokeWidth={3}
-                      dot={{ fill: "#3b82f6", strokeWidth: 2, r: 4 }}
+                      strokeWidth={isMobile ? 2 : 3}
+                      dot={{
+                        fill: "#3b82f6",
+                        strokeWidth: 2,
+                        r: isMobile ? 3 : 4,
+                      }}
                       activeDot={{
-                        r: 6,
+                        r: isMobile ? 5 : 6,
                         stroke: "#3b82f6",
                         strokeWidth: 2,
                         fill: "#ffffff",
@@ -528,77 +716,68 @@ export function OrdersOverTime() {
             </div>
           </div>
 
-          {/* Summary Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                    Total Orders
-                  </p>
-                  <h4 className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                    {totalOrders.toLocaleString()}
-                  </h4>
+          {/* Summary Stats - Mobile Optimized */}
+          {data.length > 0 && (
+            <div
+              className={`grid ${
+                isMobile ? "grid-cols-2 gap-3" : "grid-cols-4 gap-6"
+              }`}
+            >
+              <StatCard
+                title="Total Orders"
+                value={totalOrders}
+                trend={ordersChange}
+                color="blue"
+              />
+              <StatCard
+                title="Current Period"
+                value={currentPeriodOrders}
+                color="indigo"
+              />
+              {!isMobile && (
+                <>
+                  <StatCard
+                    title="Peak Period"
+                    value={maxOrders}
+                    color="purple"
+                  />
+                  <StatCard
+                    title={`Avg per ${
+                      filter === "today"
+                        ? "4hrs"
+                        : filter === "week"
+                        ? "Day"
+                        : filter === "30days"
+                        ? "Week"
+                        : "Period"
+                    }`}
+                    value={avgOrders}
+                    color="amber"
+                  />
+                </>
+              )}
+              {isMobile && (
+                <div className="col-span-2 grid grid-cols-2 gap-3">
+                  <StatCard title="Peak" value={maxOrders} color="purple" />
+                  <StatCard title="Average" value={avgOrders} color="amber" />
                 </div>
-                <div
-                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${
-                    ordersChange >= 0
-                      ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                      : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
-                  }`}
-                >
-                  {ordersChange >= 0 ? (
-                    <TrendingUp className="h-4 w-4" />
-                  ) : (
-                    <TrendingDown className="h-4 w-4" />
-                  )}
-                  {Math.abs(ordersChange).toFixed(1)}%
-                </div>
-              </div>
+              )}
             </div>
+          )}
 
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                Average per{" "}
-                {filter === "day"
-                  ? "Hour"
-                  : filter === "week"
-                  ? "Week"
-                  : "Month"}
-              </p>
-              <h4 className="text-3xl font-bold text-gray-900 dark:text-white">
-                {avgOrders}
-              </h4>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                Peak{" "}
-                {filter === "day"
-                  ? "Hour"
-                  : filter === "week"
-                  ? "Week"
-                  : "Month"}
-              </p>
-              <h4 className="text-3xl font-bold text-gray-900 dark:text-white">
-                {maxOrders}
-              </h4>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                Growth Rate
-              </p>
-              <h4
-                className={`text-3xl font-bold ${
-                  ordersChange >= 0
-                    ? "text-emerald-600 dark:text-emerald-400"
-                    : "text-red-600 dark:text-red-400"
-                }`}
-              >
-                {ordersChange >= 0 ? "+" : ""}
-                {ordersChange.toFixed(1)}%
-              </h4>
+          {/* Data Status Indicator */}
+          <div className="flex items-center justify-center">
+            <div
+              className={`flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-full ${
+                isMobile ? "text-xs" : "text-sm"
+              }`}
+            >
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-gray-600 dark:text-gray-400 font-medium">
+                {dataSpanDays === 0
+                  ? "No data yet"
+                  : `${dataSpanDays} days of order history`}
+              </span>
             </div>
           </div>
         </div>
