@@ -603,9 +603,7 @@ export function RevenueOverTime() {
               <StatsCards
                 title="Total Revenue"
                 value={formatCurrency(totalRevenue)}
-                description={`vs last period: ${Math.abs(revenueChange).toFixed(
-                  1
-                )}%`}
+                growth={parseFloat(Math.abs(revenueChange).toFixed(1))}
                 icon={
                   revenueChange > 0
                     ? TrendingUp
@@ -619,6 +617,7 @@ export function RevenueOverTime() {
               <StatsCards
                 title="Current Period"
                 value={formatCurrency(currentPeriodRevenue)}
+                growth={parseFloat(Math.abs(revenueChange).toFixed(1))}
                 icon={
                   revenueChange > 0
                     ? TrendingUp
@@ -632,6 +631,7 @@ export function RevenueOverTime() {
               <StatsCards
                 title="Peak Period"
                 value={formatCurrency(maxRevenue)}
+                growth={parseFloat(Math.abs(revenueChange).toFixed(1))}
                 icon={
                   revenueChange > 0
                     ? TrendingUp
@@ -653,6 +653,7 @@ export function RevenueOverTime() {
                     : "Period"
                 }`}
                 value={formatCurrency(avgRevenue)}
+                growth={parseFloat(Math.abs(revenueChange).toFixed(1))}
                 icon={
                   revenueChange > 0
                     ? TrendingUp
