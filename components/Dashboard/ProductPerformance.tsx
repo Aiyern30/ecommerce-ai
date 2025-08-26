@@ -10,35 +10,36 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-  Area,
-  AreaChart,
 } from "recharts";
 
 interface ProductPerformanceData {
-  topSellingProducts: Array<{
-    name: string;
-    sales: number;
-    revenue: number;
-    category: string;
-  }>;
   categoryPerformance: Array<{
     category: string;
-    products: number;
-    revenue: number;
     avgPrice: number;
+    totalStock: number;
+    totalProducts: number;
+  }>;
+  priceAnalysis: Array<{
+    priceRange: string;
+    products: number;
   }>;
   lowStockProducts: Array<{
     name: string;
+    price: number | null;
     stock: number;
     category: string;
-    reorderLevel: number;
   }>;
-  priceAnalysis: Array<{ priceRange: string; products: number; sales: number }>;
+  topStockProducts: Array<{
+    name: string;
+    price: number | null;
+    stock: number;
+    category: string;
+  }>;
 }
 
 export function ProductPerformance() {
   const [data, setData] = useState<ProductPerformanceData | null>(null);
-  console.log("ProductPerformance data:", data);
+  console.log("Product Performance Data:", data);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -70,10 +71,11 @@ export function ProductPerformance() {
                     {category.category}
                   </p>
                   <h3 className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                    RM{category.revenue.toLocaleString()}
+                    Avg Price: RM{category.avgPrice.toLocaleString()}
                   </h3>
                   <p className="text-xs text-gray-500 mt-1">
-                    {category.products} products
+                    {category.totalProducts} products • {category.totalStock} in
+                    stock
                   </p>
                 </div>
                 <div className="p-3 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl">
@@ -87,81 +89,17 @@ export function ProductPerformance() {
 
       {/* Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Top Selling Products */}
-        <Card className="bg-white dark:bg-gray-800 shadow-xl border-0">
-          <CardHeader>
-            <CardTitle className="text-gray-900 dark:text-white">
-              Top Selling Products
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data?.topSellingProducts} layout="horizontal">
-                  <XAxis
-                    type="number"
-                    label={{
-                      value: "Units Sold",
-                      position: "insideBottom",
-                      offset: -5,
-                      style: { fill: "#10b981", fontSize: 13 },
-                    }}
-                  />
-                  <YAxis
-                    dataKey="name"
-                    type="category"
-                    width={120}
-                    label={{
-                      value: "Product",
-                      angle: -90,
-                      position: "insideLeft",
-                      offset: 10,
-                      style: { fill: "#10b981", fontSize: 13 },
-                    }}
-                  />
-                  <Tooltip
-                    cursor={{
-                      fill: "rgba(16, 185, 129, 0.08)",
-                      // Fix: restrict cursor height to bar only, not full chart
-                      // This disables the default cursor and uses a custom one
-                      // See recharts docs: set cursor to false to remove the default
-                      // and use a custom <Rectangle /> if needed
-                      // For now, set to false for best result
-                      // https://recharts.org/en-US/api/Tooltip#cursor
-                      // Remove the fill above and use:
-                      // cursor={false}
-                    }}
-                    content={({ active, payload, label }) =>
-                      active && payload && payload.length ? (
-                        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 px-4 py-3 rounded-xl shadow-xl backdrop-blur-sm">
-                          <div className="font-semibold text-gray-900 dark:text-white text-lg">
-                            {payload[0].value} units
-                          </div>
-                          <div className="text-gray-600 dark:text-gray-400 text-sm font-medium">
-                            {label}
-                          </div>
-                        </div>
-                      ) : null
-                    }
-                  />
-                  <Bar dataKey="sales" fill="#10b981" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Price Analysis */}
         <Card className="bg-white dark:bg-gray-800 shadow-xl border-0">
           <CardHeader>
             <CardTitle className="text-gray-900 dark:text-white">
-              Sales by Price Range
+              Products by Price Range
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={data?.priceAnalysis}>
+                <BarChart data={data?.priceAnalysis}>
                   <XAxis
                     dataKey="priceRange"
                     label={{
@@ -173,7 +111,7 @@ export function ProductPerformance() {
                   />
                   <YAxis
                     label={{
-                      value: "Sales",
+                      value: "Products",
                       angle: -90,
                       position: "insideLeft",
                       offset: 10,
@@ -181,15 +119,44 @@ export function ProductPerformance() {
                     }}
                   />
                   <Tooltip />
-                  <Area
-                    type="monotone"
-                    dataKey="sales"
-                    stroke="#3b82f6"
-                    fill="#3b82f6"
-                    fillOpacity={0.3}
-                  />
-                </AreaChart>
+                  <Bar dataKey="products" fill="#3b82f6" />
+                </BarChart>
               </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Top Stock Products */}
+        <Card className="bg-white dark:bg-gray-800 shadow-xl border-0">
+          <CardHeader>
+            <CardTitle className="text-gray-900 dark:text-white">
+              Top Stock Products
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2">
+              {data?.topStockProducts.map((product, index) => (
+                <div
+                  key={index}
+                  className="p-4 bg-white dark:bg-gray-800 rounded-xl border border-green-200 dark:border-green-800"
+                >
+                  <h4 className="font-semibold text-gray-900 dark:text-white">
+                    {product.name}
+                  </h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {product.category}
+                  </p>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-green-600 dark:text-green-400 font-bold">
+                      Stock: {product.stock}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      Price:{" "}
+                      {product.price !== null ? `RM${product.price}` : "N/A"}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -225,7 +192,8 @@ export function ProductPerformance() {
                     Stock: {product.stock}
                   </span>
                   <span className="text-xs text-gray-500">
-                    Reorder: {product.reorderLevel}
+                    Price:{" "}
+                    {product.price !== null ? `RM${product.price}` : "N/A"}
                   </span>
                 </div>
               </div>
