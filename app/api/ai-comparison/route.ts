@@ -176,70 +176,39 @@ export async function POST(request: NextRequest) {
 async function generateAIAnalysis(
   products: Product[]
 ): Promise<AIComparisonResult> {
-  const prompt = createComparisonPrompt(products);
+  // Only use the fastest model for speed
+  const modelInfo = {
+    name: "gemini-1.5-flash",
+    config: { ...generationConfig, maxOutputTokens: 2048 }, // reduce tokens for speed
+  };
 
-  const models = [
-    {
-      name: "gemini-1.5-flash",
-      config: { ...generationConfig, maxOutputTokens: 4096 },
-    },
-    {
-      name: "gemini-1.5-pro",
-      config: { ...generationConfig, maxOutputTokens: 8192 },
-    },
-    // Removed gemini-pro (not supported for generateContent in v1beta)
-  ];
+  try {
+    const model = genAI.getGenerativeModel({
+      model: modelInfo.name,
+      generationConfig: modelInfo.config,
+      safetySettings,
+    });
 
-  for (const modelInfo of models) {
-    try {
-      console.log(`Attempting analysis with ${modelInfo.name}`);
+    // Reduce timeout to 6000ms (6 seconds)
+    const result = await Promise.race([
+      model.generateContent(createComparisonPrompt(products)),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("timeout")), 6000)
+      ),
+    ]);
 
-      const model = genAI.getGenerativeModel({
-        model: modelInfo.name,
-        generationConfig: modelInfo.config,
-        safetySettings,
-      });
+    const response = await result.response;
+    const text = response.text();
 
-      // Reduce timeout to 8000ms (8 seconds)
-      const result = await Promise.race([
-        model.generateContent(prompt),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("timeout")), 8000)
-        ),
-      ]);
-
-      const response = await result.response;
-      const text = response.text();
-
-      if (!text || text.trim().length < 50) {
-        throw new Error("AI response too short or empty");
-      }
-
-      console.log(`Successfully generated response with ${modelInfo.name}`);
-      return parseAIResponse(text, products);
-    } catch (error) {
-      console.warn(
-        `${modelInfo.name} failed:`,
-        error instanceof Error ? error.message : error
-      );
-
-      // If it's a quota/rate limit error, don't try other models
-      if (
-        error instanceof Error &&
-        (error.message.includes("quota") ||
-          error.message.includes("rate") ||
-          error.message.includes("limit"))
-      ) {
-        throw error;
-      }
-
-      // Continue to next model for other errors
-      continue;
+    if (!text || text.trim().length < 50) {
+      throw new Error("AI response too short or empty");
     }
-  }
 
-  // If all models failed or timed out, return fallback immediately
-  return createFallbackResponse(products);
+    return parseAIResponse(text, products);
+  } catch {
+    // Immediately return fallback if any error or timeout
+    return createFallbackResponse(products);
+  }
 }
 
 function createComparisonPrompt(products: Product[]): string {
