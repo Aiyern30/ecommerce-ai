@@ -83,44 +83,48 @@ function ProductTableSkeleton() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[50px]">
-                <Skeleton className="h-4 w-4 rounded-sm" />
+              <TableHead className="min-w-[50px] text-center">
+                <Skeleton className="h-4 w-4 rounded-sm mx-auto" />
               </TableHead>
-              <TableHead className="w-[80px]">Image</TableHead>
-              <TableHead>Product Name</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Grade</TableHead>
-              <TableHead>Product Type</TableHead>
-              <TableHead>Mortar Ratio</TableHead>
-              <TableHead>Normal Price</TableHead>
-              <TableHead>Pump Price</TableHead>
-              <TableHead>Tremie 1 Price</TableHead>
-              <TableHead>Tremie 2 Price</TableHead>
-              <TableHead>Tremie 3 Price</TableHead>
-              <TableHead>Unit</TableHead>
-              <TableHead>Stock</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-              <TableHead>Keywords</TableHead>
+              <TableHead className="min-w-[100px] text-center">Image</TableHead>
+              <TableHead className="min-w-[160px]">Product Name</TableHead>
+              <TableHead className="min-w-[500px]">Description</TableHead>
+              <TableHead className="min-w-[120px]">Category</TableHead>
+              <TableHead className="min-w-[100px]">Grade</TableHead>
+              <TableHead className="min-w-[120px]">Product Type</TableHead>
+              <TableHead className="min-w-[120px] text-center">
+                Mortar Ratio
+              </TableHead>
+              <TableHead className="min-w-[120px]">Normal Price</TableHead>
+              <TableHead className="min-w-[120px]">Pump Price</TableHead>
+              <TableHead className="min-w-[120px]">Tremie 1 Price</TableHead>
+              <TableHead className="min-w-[120px]">Tremie 2 Price</TableHead>
+              <TableHead className="min-w-[120px]">Tremie 3 Price</TableHead>
+              <TableHead className="min-w-[80px]">Unit</TableHead>
+              <TableHead className="min-w-[80px]">Stock</TableHead>
+              <TableHead className="min-w-[100px]">Status</TableHead>
+              <TableHead className="min-w-[350px]">Keywords</TableHead>
+              <TableHead className="min-w-[100px] text-center">
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {Array.from({ length: 10 }).map((_, i) => (
               <TableRow key={i}>
-                <TableCell>
-                  <Skeleton className="h-4 w-4 rounded-sm" />
+                <TableCell className="text-center">
+                  <Skeleton className="h-4 w-4 rounded-sm mx-auto" />
                 </TableCell>
-                <TableCell>
-                  <Skeleton className="h-12 w-12 rounded-md" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-24 rounded" />
+                <TableCell className="flex items-center justify-center">
+                  <Skeleton className="h-10 w-10 rounded-md" />
                 </TableCell>
                 <TableCell>
                   <Skeleton className="h-4 w-32 rounded" />
                 </TableCell>
                 <TableCell>
+                  <Skeleton className="h-4 w-80 rounded" />
+                </TableCell>
+                <TableCell>
                   <Skeleton className="h-4 w-20 rounded" />
                 </TableCell>
                 <TableCell>
@@ -128,6 +132,9 @@ function ProductTableSkeleton() {
                 </TableCell>
                 <TableCell>
                   <Skeleton className="h-4 w-20 rounded" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-16 rounded" />
                 </TableCell>
                 <TableCell>
                   <Skeleton className="h-4 w-20 rounded" />
@@ -151,16 +158,17 @@ function ProductTableSkeleton() {
                   <Skeleton className="h-4 w-12 rounded" />
                 </TableCell>
                 <TableCell>
-                  <Skeleton className="h-4 w-16 rounded" />
-                </TableCell>
-                <TableCell className="text-right">
-                  <Skeleton className="h-8 w-12 ml-auto rounded" />
+                  <Skeleton className="h-6 w-20 rounded-full" />
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
-                    <Skeleton className="h-5 w-16 rounded" />
-                    <Skeleton className="h-5 w-12 rounded" />
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                    <Skeleton className="h-5 w-12 rounded-full" />
+                    <Skeleton className="h-5 w-14 rounded-full" />
                   </div>
+                </TableCell>
+                <TableCell className="text-center">
+                  <Skeleton className="h-8 w-12 mx-auto rounded" />
                 </TableCell>
               </TableRow>
             ))}
@@ -840,7 +848,7 @@ export default function ProductsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[50px] min-w-[50px]">
+                <TableHead className="min-w-[50px] text-center">
                   <Checkbox
                     checked={
                       selectedProducts.length === currentPageData.length &&
@@ -850,13 +858,17 @@ export default function ProductsPage() {
                     aria-label="Select all"
                   />
                 </TableHead>
-                <TableHead className="w-[80px] min-w-[80px]">Image</TableHead>
+                <TableHead className="min-w-[100px] text-center">
+                  Image
+                </TableHead>
                 <TableHead className="min-w-[160px]">Product Name</TableHead>
-                <TableHead className="min-w-[200px]">Description</TableHead>
+                <TableHead className="min-w-[500px]">Description</TableHead>
                 <TableHead className="min-w-[120px]">Category</TableHead>
                 <TableHead className="min-w-[100px]">Grade</TableHead>
                 <TableHead className="min-w-[120px]">Product Type</TableHead>
-                <TableHead className="min-w-[120px]">Mortar Ratio</TableHead>
+                <TableHead className="min-w-[120px] text-center">
+                  Mortar Ratio
+                </TableHead>
                 <TableHead className="min-w-[120px]">Normal Price</TableHead>
                 <TableHead className="min-w-[120px]">Pump Price</TableHead>
                 <TableHead className="min-w-[120px]">Tremie 1 Price</TableHead>
@@ -865,8 +877,8 @@ export default function ProductsPage() {
                 <TableHead className="min-w-[80px]">Unit</TableHead>
                 <TableHead className="min-w-[80px]">Stock</TableHead>
                 <TableHead className="min-w-[100px]">Status</TableHead>
-                <TableHead className="min-w-[120px]">Keywords</TableHead>
-                <TableHead className="text-right min-w-[100px]">
+                <TableHead className="min-w-[350px]">Keywords</TableHead>
+                <TableHead className="min-w-[100px] text-center">
                   Actions
                 </TableHead>
               </TableRow>
@@ -878,36 +890,37 @@ export default function ProductsPage() {
                   onClick={() => router.push(`/staff/products/${product.id}`)}
                   className="cursor-pointer "
                 >
-                  <TableCell onClick={(e) => e.stopPropagation()}>
+                  <TableCell
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-center"
+                  >
                     <Checkbox
                       checked={selectedProducts.includes(product.id)}
                       onCheckedChange={() => toggleProductSelection(product.id)}
                       aria-label={`Select product ${product.name}`}
                     />
                   </TableCell>
-                  <TableCell>
-                    <div className="relative w-16 h-12">
-                      {product.product_images &&
-                      product.product_images.length > 0 ? (
-                        <Image
-                          src={product.product_images[0].image_url}
-                          alt={product.name}
-                          className="w-10 h-10 rounded-md object-cover border border-white shadow-sm"
-                          width={40}
-                          height={40}
-                        />
-                      ) : (
-                        <Image
-                          src="/placeholder.svg?height=48&width=48"
-                          alt="No image"
-                          className="w-10 h-10 rounded-md object-cover border border-white shadow-sm"
-                          width={40}
-                          height={40}
-                        />
-                      )}
-                    </div>
+                  <TableCell className="flex items-center justify-center">
+                    {product.product_images &&
+                    product.product_images.length > 0 ? (
+                      <Image
+                        src={product.product_images[0].image_url}
+                        alt={product.name}
+                        className="w-10 h-10 rounded-md object-cover border border-white shadow-sm"
+                        width={40}
+                        height={40}
+                      />
+                    ) : (
+                      <Image
+                        src="/placeholder.svg?height=48&width=48"
+                        alt="No image"
+                        className="w-10 h-10 rounded-md object-cover border border-white shadow-sm"
+                        width={40}
+                        height={40}
+                      />
+                    )}
                   </TableCell>
-                  <TableCell className="font-medium">{product.name}</TableCell>
+                  <TableCell className="font-bold">{product.name}</TableCell>
                   <TableCell>{product.description || "-"}</TableCell>
                   <TableCell>{product.category || "-"}</TableCell>
                   <TableCell>{product.grade || "-"}</TableCell>
