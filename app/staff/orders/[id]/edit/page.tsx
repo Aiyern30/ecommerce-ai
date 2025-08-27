@@ -35,13 +35,14 @@ import { Order } from "@/type/order";
 import Link from "next/link";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import Image from "next/image";
-import { formatDate } from "@/lib/utils/format";
+import { formatDate, getStatusBadgeConfig } from "@/lib/utils/format";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
+import type { OrderStatus } from "@/type/order";
 
-const STATUS_OPTIONS = [
+const ORDER_STATUS_OPTIONS = [
   "pending",
   "processing",
   "shipped",
@@ -49,10 +50,10 @@ const STATUS_OPTIONS = [
   "cancelled",
   "failed",
   "refunded",
-] as const;
+] as [OrderStatus, ...OrderStatus[]];
 
 const FormSchema = z.object({
-  status: z.enum(STATUS_OPTIONS),
+  status: z.enum(ORDER_STATUS_OPTIONS),
 });
 type FormValues = z.infer<typeof FormSchema>;
 
@@ -225,10 +226,7 @@ export default function StaffOrderDetailsPage() {
         ]}
       />
       <div className="flex items-center justify-between mb-6">
-        <TypographyH2>
-          Order #{order.id.slice(-8)}
-          <Badge className="ml-3">{order.status}</Badge>
-        </TypographyH2>
+        <TypographyH2>Order #{order.id.slice(-8)}</TypographyH2>
         <Button variant="outline" onClick={() => router.push("/staff/orders")}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Orders
@@ -237,14 +235,12 @@ export default function StaffOrderDetailsPage() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Customer Info & Payment Info */}
           <Card className="mb-6">
             <CardHeader>
               <CardTitle>Customer & Payment Info</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Left Column - Customer Info */}
                 <div>
                   <TypographyP className="font-semibold mb-1">
                     Customer
@@ -289,35 +285,49 @@ export default function StaffOrderDetailsPage() {
                   </div>
                 </div>
 
-                {/* Right Column - Status & Payment Info */}
-                <div>
-                  <FormField
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                      <FormItem className="mb-4">
-                        <FormLabel>Order Status</FormLabel>
-                        <FormControl>
-                          <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {STATUS_OPTIONS.map((opt) => (
-                                <SelectItem key={opt} value={opt}>
-                                  {opt.charAt(0).toUpperCase() + opt.slice(1)}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <div className="flex flex-col item-center">
+                  {/* Order Status row with button on right */}
+                  <div className="flex items-end gap-2 mb-4">
+                    <FormField
+                      control={form.control}
+                      name="status"
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormLabel>Order Status</FormLabel>
+                          <FormControl>
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select status" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {ORDER_STATUS_OPTIONS.map((opt) => {
+                                  const config = getStatusBadgeConfig(opt);
+                                  return (
+                                    <SelectItem key={opt} value={opt}>
+                                      <Badge
+                                        variant={config.variant}
+                                        className={config.className}
+                                      >
+                                        {config.label}
+                                      </Badge>
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button type="submit" size={"sm"} disabled={updating}>
+                      <Save className="mr-2 h-4 w-4" />
+                      {updating ? "Updating..." : "Update Status"}
+                    </Button>
+                  </div>
 
                   <TypographyP className="font-semibold mb-1">
                     Payment Status
@@ -348,24 +358,11 @@ export default function StaffOrderDetailsPage() {
                   ) : (
                     <span className="text-xs font-mono break-all">-</span>
                   )}
-
-                  {/* Update Status Button */}
-                  <div className="mt-4">
-                    <Button
-                      type="submit"
-                      disabled={updating}
-                      className="w-full"
-                    >
-                      <Save className="mr-2 h-4 w-4" />
-                      {updating ? "Updating..." : "Update Status"}
-                    </Button>
-                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Totals */}
           <Card className="mb-6">
             <CardHeader>
               <CardTitle>Order Totals</CardTitle>
@@ -406,7 +403,6 @@ export default function StaffOrderDetailsPage() {
             </CardContent>
           </Card>
 
-          {/* Order Items */}
           <Card className="mb-6">
             <CardHeader>
               <CardTitle>Order Items</CardTitle>

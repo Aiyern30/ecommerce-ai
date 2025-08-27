@@ -55,7 +55,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
-import { formatDate } from "@/lib/utils/format";
+import { formatDate, getStatusBadgeConfig } from "@/lib/utils/format";
 import { useDeviceType } from "@/utils/useDeviceTypes";
 import { Order } from "@/type/order";
 import Image from "next/image";
@@ -420,40 +420,6 @@ export default function OrdersPage() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      pending: {
-        variant: "secondary" as const,
-        className: "bg-yellow-500 hover:bg-yellow-600 text-white",
-      },
-      processing: {
-        variant: "secondary" as const,
-        className: "bg-blue-500 hover:bg-blue-600 text-white",
-      },
-      shipped: {
-        variant: "default" as const,
-        className: "bg-purple-500 hover:bg-purple-600 text-white",
-      },
-      delivered: {
-        variant: "default" as const,
-        className: "bg-green-500 hover:bg-green-600 text-white",
-      },
-      cancelled: {
-        variant: "destructive" as const,
-        className: "bg-red-500 hover:bg-red-600 text-white",
-      },
-    };
-
-    const config =
-      statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
-
-    return (
-      <Badge variant={config.variant} className={config.className}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </Badge>
-    );
-  };
 
   const getPaymentStatusBadge = (paymentStatus: string) => {
     const statusConfig = {
@@ -1023,7 +989,6 @@ export default function OrdersPage() {
                         )}
                       </div>
                     </TableCell>
-
                     <TableCell>
                       <HoverCard>
                         <HoverCardTrigger asChild>
@@ -1141,7 +1106,19 @@ export default function OrdersPage() {
                         <span className="text-xs font-mono break-all">-</span>
                       )}
                     </TableCell>
-                    <TableCell>{getStatusBadge(order.status)}</TableCell>
+                    <TableCell>
+                      {(() => {
+                        const config = getStatusBadgeConfig(order.status);
+                        return (
+                          <Badge
+                            variant={config.variant}
+                            className={config.className}
+                          >
+                            {config.label}
+                          </Badge>
+                        );
+                      })()}
+                    </TableCell>{" "}
                     <TableCell>
                       {getPaymentStatusBadge(order.payment_status)}
                     </TableCell>
@@ -1162,7 +1139,6 @@ export default function OrdersPage() {
                       </div>
                     </TableCell>
                     <TableCell>{formatDate(order.created_at)}</TableCell>
-
                     <TableCell
                       className="text-right"
                       onClick={(e) => e.stopPropagation()}

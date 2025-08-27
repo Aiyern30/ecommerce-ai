@@ -42,3 +42,47 @@ export const getPaymentStatusColor = (paymentStatus: string) => {
       return "bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200";
   }
 };
+
+export function getStatusBadgeConfig(status: string) {
+  const statusConfig = {
+    pending: {
+      variant: "secondary" as const,
+      className: "bg-yellow-500 hover:bg-yellow-600 text-white",
+      label: "Pending",
+    },
+    processing: {
+      variant: "secondary" as const,
+      className: "bg-blue-500 hover:bg-blue-600 text-white",
+      label: "Processing",
+    },
+    shipped: {
+      variant: "default" as const,
+      className: "bg-purple-500 hover:bg-purple-600 text-white",
+      label: "Shipped",
+    },
+    delivered: {
+      variant: "default" as const,
+      className: "bg-green-500 hover:bg-green-600 text-white",
+      label: "Delivered",
+    },
+    cancelled: {
+      variant: "destructive" as const,
+      className: "bg-red-500 hover:bg-red-600 text-white",
+      label: "Cancelled",
+    },
+    failed: {
+      variant: "destructive" as const,
+      className: "bg-red-500 hover:bg-red-600 text-white",
+      label: "Failed",
+    },
+    refunded: {
+      variant: "secondary" as const,
+      className: "bg-gray-500 hover:bg-gray-600 text-white",
+      label: "Refunded",
+    },
+  };
+
+  return (
+    statusConfig[status as keyof typeof statusConfig] ?? statusConfig.pending
+  );
+}
