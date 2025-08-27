@@ -30,7 +30,6 @@ export default function StaffLayout({ children }: LayoutProps) {
         user.user_metadata?.banned_at ||
         user.app_metadata?.ban_info?.banned_at
       ) {
-        // User is banned, pass ban info via query string
         const reason =
           user.app_metadata?.ban_info?.reason ||
           user.user_metadata?.ban_reason ||
@@ -46,12 +45,14 @@ export default function StaffLayout({ children }: LayoutProps) {
             `&banned_by_email=${encodeURIComponent(bannedByEmail)}` +
             `&banned_until=${encodeURIComponent(bannedUntil)}`
         );
-      } else if (user.app_metadata?.role !== "staff") {
-        // Logged in but not staff
-        router.replace("/403");
       } else {
-        // Logged in and authorized
-        setIsAuthorized(true);
+        const userRole = user.app_metadata?.role || user.user_metadata?.role;
+
+        if (userRole !== "staff" && userRole !== "admin") {
+          router.replace("/403");
+        } else {
+          setIsAuthorized(true);
+        }
       }
     };
 

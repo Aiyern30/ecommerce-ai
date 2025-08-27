@@ -251,8 +251,14 @@ const Header = () => {
         error,
       } = await supabase.auth.getUser();
 
-      if (!error && supaUser && supaUser.app_metadata?.role === "staff") {
-        setIsStaff(true);
+      if (!error && supaUser) {
+        const userRole =
+          supaUser.app_metadata?.role || supaUser.user_metadata?.role;
+        if (userRole === "staff" || userRole === "admin") {
+          setIsStaff(true);
+        } else {
+          setIsStaff(false);
+        }
       } else {
         setIsStaff(false);
       }
