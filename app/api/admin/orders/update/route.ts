@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { createNotification } from "@/lib/notification/server";
 import { NextRequest, NextResponse } from "next/server";
 
 const ALLOWED_STATUSES = [
@@ -13,15 +14,23 @@ const ALLOWED_STATUSES = [
 
 type OrderStatus = (typeof ALLOWED_STATUSES)[number];
 
+interface NotificationPayload {
+  title: string;
+  message: string;
+  type: "order" | "promotion" | "system" | "payment" | "shipping";
+}
+
 interface UpdateOrderRequest {
   orderId: string;
   status: OrderStatus;
+  userId?: string;
+  notification?: NotificationPayload;
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: UpdateOrderRequest = await request.json();
-    const { orderId, status } = body;
+    const { orderId, status, userId, notification } = body;
 
     // Validate required fields
     if (!orderId) {
@@ -92,6 +101,17 @@ export async function POST(request: NextRequest) {
         { success: false, error: "Failed to update order status" },
         { status: 500 }
       );
+    }
+
+    // After successful update:
+    if (userId && notification) {
+      await createNotification({
+        user_id: userId,
+        title: notification.title,
+        message: notification.message,
+        type: notification.type,
+        id: orderId,
+      });
     }
 
     return NextResponse.json({
