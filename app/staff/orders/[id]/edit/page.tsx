@@ -175,17 +175,26 @@ export default function StaffOrderDetailsPage() {
     async function fetchOrderDetails() {
       setLoading(true);
       try {
-        const res = await fetch(`/api/admin/orders/${orderId}`);
-        const data = await res.json();
+        const res = await fetch("/api/admin/orders/select");
+        const json = await res.json();
 
-        if (!res.ok || !data) {
+        if (!res.ok) {
           setOrder(null);
         } else {
-          setOrder({
-            ...data,
-            additional_services: data.order_additional_services || [],
+          const found = (json.orders || []).find(
+            (o: Order) => o.id === orderId
+          );
+          setOrder(
+            found
+              ? {
+                  ...found,
+                  additional_services: found.order_additional_services || [],
+                }
+              : null
+          );
+          form.reset({
+            status: (found?.status as Order["status"]) || "pending",
           });
-          form.reset({ status: (data.status as Order["status"]) || "pending" });
         }
       } catch {
         setOrder(null);
