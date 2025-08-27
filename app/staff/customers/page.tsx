@@ -763,9 +763,6 @@ export default function CustomersPage() {
       if (!res.ok) throw new Error("Failed to fetch users");
       const data = await res.json();
 
-      const currentUserRole =
-        user?.app_metadata?.role || user?.user_metadata?.role;
-
       const mappedUsers = (data.users || []).map((user: any) => ({
         id: user.id,
         email: user.email,
@@ -790,19 +787,10 @@ export default function CustomersPage() {
             : "active",
       }));
 
-      let filteredUsers = mappedUsers;
-
-      if (currentUserRole === "staff") {
-        filteredUsers = mappedUsers.filter(
-          (user: { role: string }) => user.role === "customer"
-        );
-      } else if (currentUserRole === "admin") {
-        filteredUsers = mappedUsers;
-      } else {
-        filteredUsers = mappedUsers.filter(
-          (user: { role: string }) => user.role === "customer"
-        );
-      }
+      // Filter to only show customers
+      const filteredUsers = mappedUsers.filter(
+        (user: { role: string }) => user.role === "customer"
+      );
 
       setCustomers(filteredUsers);
     } catch (error: any) {
@@ -811,7 +799,7 @@ export default function CustomersPage() {
       setCustomers([]);
     }
     setLoading(false);
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     fetchCustomers();
