@@ -59,6 +59,7 @@ import {
 import Image from "next/image";
 import { Blog } from "@/type/blogs";
 import { useDeviceType } from "@/utils/useDeviceTypes";
+import { formatDate, truncateText } from "@/lib/utils/format";
 
 interface BlogFilters {
   search: string;
@@ -74,52 +75,67 @@ function BlogTableSkeleton() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[50px] min-w-[50px] text-center">
+            <TableHead className="min-w-[50px] text-center">
               <div className="h-4 w-4 rounded-sm bg-gray-200 animate-pulse mx-auto" />
             </TableHead>
-            <TableHead className="w-[80px] min-w-[80px]">Image</TableHead>
-            <TableHead className="min-w-[180px]">Title</TableHead>
-            <TableHead className="min-w-[220px]">Description</TableHead>
-            <TableHead className="min-w-[180px]">Content</TableHead>
-            <TableHead className="min-w-[100px]">Status</TableHead>
-            <TableHead className="min-w-[120px]">Tags</TableHead>
-            <TableHead className="min-w-[120px]">Link</TableHead>
-            <TableHead className="min-w-[120px]">Created</TableHead>
-            <TableHead className="text-right min-w-[100px]">Actions</TableHead>
+            <TableHead className="min-w-[100px] text-center">Image</TableHead>
+            <TableHead className="min-w-[400px]">Title</TableHead>
+            <TableHead className="min-w-[500px]">Description</TableHead>
+            <TableHead className="min-w-[400px]">Content</TableHead>
+            <TableHead className="min-w-[100px] text-center">Status</TableHead>
+            <TableHead className="min-w-[200px] text-center">Tags</TableHead>
+            <TableHead className="min-w-[100px] text-center">Link</TableHead>
+            <TableHead className="min-w-[200px]">Created</TableHead>
+            <TableHead className="text-center min-w-[80px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {Array.from({ length: 5 }).map((_, i) => (
-            <TableRow key={i}>
+            <TableRow key={i} className="max-h-20 h-20">
               <TableCell className="text-center">
                 <div className="h-4 w-4 rounded-sm bg-gray-200 animate-pulse mx-auto" />
               </TableCell>
-              <TableCell>
-                <div className="h-12 w-12 rounded-md bg-gray-200 animate-pulse" />
+              <TableCell className="text-center">
+                <div className="h-10 w-10 rounded-md bg-gray-200 animate-pulse mx-auto" />
               </TableCell>
               <TableCell>
-                <div className="h-4 w-3/4 rounded bg-gray-200 animate-pulse" />
+                <div className="space-y-1 max-h-16 overflow-hidden">
+                  <div className="h-4 w-full bg-gray-200 animate-pulse rounded" />
+                  <div className="h-4 w-3/4 bg-gray-200 animate-pulse rounded" />
+                </div>
               </TableCell>
               <TableCell>
-                <div className="h-4 w-1/2 rounded bg-gray-200 animate-pulse" />
+                <div className="space-y-1 max-h-16 overflow-hidden">
+                  <div className="h-4 w-full bg-gray-200 animate-pulse rounded" />
+                  <div className="h-4 w-2/3 bg-gray-200 animate-pulse rounded" />
+                </div>
               </TableCell>
               <TableCell>
-                <div className="h-4 w-1/2 rounded bg-gray-200 animate-pulse" />
+                <div className="space-y-1 max-h-16 overflow-hidden">
+                  <div className="h-4 w-full bg-gray-200 animate-pulse rounded" />
+                  <div className="h-4 w-1/2 bg-gray-200 animate-pulse rounded" />
+                </div>
+              </TableCell>
+              <TableCell className="text-center">
+                <div className="h-6 w-20 bg-gray-200 animate-pulse rounded-full mx-auto" />
+              </TableCell>
+              <TableCell className="text-center">
+                <div className="flex flex-wrap gap-1 justify-center">
+                  <div className="h-5 w-16 bg-gray-200 animate-pulse rounded-full" />
+                  <div className="h-5 w-12 bg-gray-200 animate-pulse rounded-full" />
+                </div>
+              </TableCell>
+              <TableCell className="text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <div className="h-4 w-4 bg-gray-200 animate-pulse rounded" />
+                  <div className="h-4 w-16 bg-gray-200 animate-pulse rounded" />
+                </div>
               </TableCell>
               <TableCell>
-                <div className="h-4 w-1/4 rounded bg-gray-200 animate-pulse" />
+                <div className="h-4 w-24 bg-gray-200 animate-pulse rounded" />
               </TableCell>
-              <TableCell>
-                <div className="h-4 w-1/3 rounded bg-gray-200 animate-pulse" />
-              </TableCell>
-              <TableCell>
-                <div className="h-4 w-1/4 rounded bg-gray-200 animate-pulse" />
-              </TableCell>
-              <TableCell>
-                <div className="h-4 w-1/4 rounded bg-gray-200 animate-pulse" />
-              </TableCell>
-              <TableCell className="text-right">
-                <div className="h-8 w-12 ml-auto rounded bg-gray-200 animate-pulse" />
+              <TableCell className="text-center">
+                <div className="h-8 w-12 bg-gray-200 animate-pulse rounded mx-auto" />
               </TableCell>
             </TableRow>
           ))}
@@ -371,15 +387,6 @@ export default function Page() {
     currentPage * itemsPerPage
   );
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  // Helper to determine link type and display
   const renderLinkDisplay = (link: string | null, linkName: string | null) => {
     if (!link) {
       return <span className="text-gray-400 text-sm">No link</span>;
@@ -724,7 +731,7 @@ export default function Page() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[50px] min-w-[50px] text-center">
+                <TableHead className="min-w-[50px] text-center">
                   <Checkbox
                     checked={
                       selectedBlogs.length === currentPageData.length &&
@@ -734,15 +741,23 @@ export default function Page() {
                     aria-label="Select all"
                   />
                 </TableHead>
-                <TableHead className="w-[80px] min-w-[80px]">Image</TableHead>
-                <TableHead className="min-w-[180px]">Title</TableHead>
-                <TableHead className="min-w-[220px]">Description</TableHead>
-                <TableHead className="min-w-[180px]">Content</TableHead>
-                <TableHead className="min-w-[100px]">Status</TableHead>
-                <TableHead className="min-w-[120px]">Tags</TableHead>
-                <TableHead className="min-w-[120px]">Link</TableHead>
-                <TableHead className="min-w-[120px]">Created</TableHead>
-                <TableHead className="text-right min-w-[100px]">
+                <TableHead className="min-w-[100px] text-center">
+                  Image
+                </TableHead>
+                <TableHead className="min-w-[400px] ">Title</TableHead>
+                <TableHead className="min-w-[500px] ">Description</TableHead>
+                <TableHead className="min-w-[400px]">Content</TableHead>
+                <TableHead className="min-w-[100px] text-center">
+                  Status
+                </TableHead>
+                <TableHead className="min-w-[200px] text-center">
+                  Tags
+                </TableHead>
+                <TableHead className="min-w-[100px] text-center">
+                  Link
+                </TableHead>
+                <TableHead className="min-w-[200px]">Created</TableHead>
+                <TableHead className="text-center min-w-[80px]">
                   Actions
                 </TableHead>
               </TableRow>
@@ -752,7 +767,7 @@ export default function Page() {
                 <TableRow
                   key={blog.id}
                   onClick={() => router.push(`/staff/blogs/${blog.id}`)}
-                  className="cursor-pointer"
+                  className="cursor-pointer max-h-20 h-20"
                 >
                   <TableCell
                     onClick={(e) => e.stopPropagation()}
@@ -764,62 +779,81 @@ export default function Page() {
                       aria-label={`Select blog ${blog.title}`}
                     />
                   </TableCell>
-                  <TableCell>
-                    <div className="relative w-16 h-12">
-                      {(blog.blog_images || [])
-                        .map((img) => img.image_url)
-                        .filter((src, i, arr) => src && arr.indexOf(src) === i)
-                        .slice(0, 4)
-                        .map((src, index) => (
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center h-full w-full min-h-[3rem]">
+                      <div
+                        className="relative flex"
+                        style={{
+                          width: `${
+                            40 +
+                            (Math.min(blog.blog_images?.length || 0, 4) - 1) *
+                              12
+                          }px`,
+                          height: "40px",
+                        }}
+                      >
+                        {(blog.blog_images || [])
+                          .map((img) => img.image_url)
+                          .filter(
+                            (src, i, arr) => src && arr.indexOf(src) === i
+                          )
+                          .slice(0, 4)
+                          .map((src, index) => (
+                            <Image
+                              key={index}
+                              src={src}
+                              alt={`${blog.title} ${index + 1}`}
+                              className="absolute top-0 left-0 w-10 h-10 rounded-md object-cover border border-white shadow-sm transition-all"
+                              style={{
+                                zIndex: 10 - index,
+                                transform: `translateX(${index * 12}px)`,
+                              }}
+                              width={40}
+                              height={40}
+                            />
+                          ))}
+
+                        {(!blog.blog_images ||
+                          blog.blog_images.length === 0) && (
                           <Image
-                            key={index}
-                            src={src}
-                            alt={`${blog.title} ${index + 1}`}
-                            className="absolute top-0 left-0 w-10 h-10 rounded-md object-cover border border-white shadow-sm transition-all"
-                            style={{
-                              zIndex: 10 - index,
-                              transform: `translateX(${index * 12}px)`,
-                            }}
+                            src="/placeholder.svg?height=40&width=40"
+                            alt="No image"
+                            className="w-10 h-10 rounded-md object-cover border border-white shadow-sm"
                             width={40}
                             height={40}
                           />
-                        ))}
+                        )}
+                      </div>
                     </div>
                   </TableCell>
-                  <TableCell className="font-medium max-w-xs min-w-[180px]">
-                    <div className="truncate" title={blog.title}>
-                      {blog.title}
-                    </div>
-                  </TableCell>
-                  <TableCell className="max-w-xs min-w-[220px]">
+
+                  <TableCell className="max-h-20 overflow-hidden">
                     <div
-                      className="truncate text-gray-600"
-                      title={blog.description || ""}
+                      className="max-w-[500px] leading-relaxed max-h-16 overflow-hidden"
+                      title={blog.title || "-"}
                     >
-                      {/* Only show plain text, not markdown */}
+                      {blog.title ? truncateText(blog.title, 250, 2) : "-"}
+                    </div>
+                  </TableCell>
+                  <TableCell className="max-h-20 overflow-hidden">
+                    <div
+                      className="max-w-[500px] leading-relaxed max-h-16 overflow-hidden"
+                      title={blog.description || "-"}
+                    >
                       {blog.description
-                        ? blog.description.replace(
-                            /[#_*`~>\[\]\(\)\-\!\n\r]/g,
-                            ""
-                          )
-                        : "No description"}
+                        ? truncateText(blog.description, 250, 2)
+                        : "-"}
                     </div>
                   </TableCell>
-                  <TableCell className="max-w-xs min-w-[180px]">
+                  <TableCell className="max-h-20 overflow-hidden">
                     <div
-                      className="truncate text-gray-600"
-                      title={blog.content || ""}
+                      className="max-w-[500px] leading-relaxed max-h-16 overflow-hidden"
+                      title={blog.content || "-"}
                     >
-                      {/* Only show plain text, not markdown */}
-                      {blog.content
-                        ? blog.content
-                            .replace(/[#_*`~>\[\]\(\)\-\!\n\r]/g, "")
-                            .slice(0, 100) +
-                          (blog.content.length > 100 ? "..." : "")
-                        : "No content"}
+                      {blog.content ? truncateText(blog.content, 250, 2) : "-"}
                     </div>
                   </TableCell>
-                  <TableCell className="min-w-[100px]">
+                  <TableCell className="text-center">
                     <Badge
                       variant={
                         blog.status === "published" ? "default" : "secondary"
@@ -833,12 +867,12 @@ export default function Page() {
                       {blog.status === "published" ? "Published" : "Draft"}
                     </Badge>
                   </TableCell>
-                  <TableCell className="min-w-[120px]">
+                  <TableCell className="text-center">
                     <div className="flex flex-wrap gap-1">
                       {blog.blog_tags && blog.blog_tags.length > 0 ? (
                         blog.blog_tags
                           .flatMap((bt) => bt.tags)
-                          .slice(0, 2)
+                          .slice(0, 3)
                           .map((tag) => (
                             <Badge
                               key={tag.id}
@@ -861,15 +895,12 @@ export default function Page() {
                         )}
                     </div>
                   </TableCell>
-                  {/* Link column: use renderLinkDisplay */}
-                  <TableCell className="min-w-[120px]">
+                  <TableCell>
                     {renderLinkDisplay(blog.link, blog.link_name)}
                   </TableCell>
-                  <TableCell className="min-w-[120px]">
-                    {formatDate(blog.created_at)}
-                  </TableCell>
+                  <TableCell>{formatDate(blog.created_at)}</TableCell>
                   <TableCell
-                    className="text-right min-w-[100px]"
+                    className="text-center"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Button
