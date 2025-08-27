@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Shield,
   Eye,
@@ -289,9 +289,56 @@ export default function PrivacyPage() {
     "information-collection"
   );
 
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const yOffset = -100;
+      const y =
+        element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+
+      window.scrollTo({
+        top: y,
+        behavior: "smooth",
+      });
+
+      setActiveSection(sectionId);
+    }
+  };
+
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: "-20% 0px -80% 0px",
+      threshold: 0,
+    };
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(
+      observerCallback,
+      observerOptions
+    );
+
+    privacySections.forEach((section) => {
+      const element = document.getElementById(section.id);
+      if (element) {
+        observer.observe(element);
+      }
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Header Section */}
       <div className="text-center mb-16">
         <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
           <Shield className="w-10 h-10 text-white" />
@@ -316,7 +363,6 @@ export default function PrivacyPage() {
         </div>
       </div>
 
-      {/* Quick Stats */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
         {quickStats.map((stat, index) => (
           <Card
@@ -340,11 +386,9 @@ export default function PrivacyPage() {
         ))}
       </div>
 
-      {/* Main Content */}
       <div className="grid lg:grid-cols-4 gap-8">
-        {/* Table of Contents */}
         <div className="lg:col-span-1">
-          <Card className="lg:sticky lg:top-24">
+          <Card className="lg:sticky lg:top-36">
             <CardHeader>
               <CardTitle className="text-lg text-gray-900 dark:text-gray-100">
                 Table of Contents
@@ -354,11 +398,11 @@ export default function PrivacyPage() {
               {privacySections.map((section) => (
                 <button
                   key={section.id}
-                  onClick={() => setActiveSection(section.id)}
-                  className={`w-full text-left p-3 rounded-lg transition-all duration-200 flex items-center gap-3 ${
+                  onClick={() => scrollToSection(section.id)}
+                  className={`w-full text-left p-3 rounded-lg transition-all duration-200 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 ${
                     activeSection === section.id
                       ? "bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border-l-4 border-blue-500"
-                      : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+                      : "text-gray-700 dark:text-gray-300"
                   }`}
                 >
                   <section.icon className="w-4 h-4 flex-shrink-0" />
@@ -369,7 +413,6 @@ export default function PrivacyPage() {
           </Card>
         </div>
 
-        {/* Privacy Content */}
         <div className="lg:col-span-3">
           <Accordion
             type="multiple"
@@ -380,7 +423,8 @@ export default function PrivacyPage() {
               <AccordionItem
                 key={section.id}
                 value={section.id}
-                className="border rounded-xl bg-white dark:bg-slate-800 shadow-lg"
+                id={section.id}
+                className="border rounded-xl bg-white dark:bg-slate-800 shadow-lg scroll-mt-24"
               >
                 <AccordionTrigger
                   className="px-6 py-4 hover:no-underline"
@@ -429,7 +473,6 @@ export default function PrivacyPage() {
             ))}
           </Accordion>
 
-          {/* Contact Information */}
           <Card className="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-gray-100">
