@@ -1174,7 +1174,7 @@ export default function OrdersPage() {
                           router.push(`/staff/orders/${order.id}/edit`)
                         }
                       >
-                        View
+                        Edit
                       </Button>
                     </TableCell>
                   </TableRow>
