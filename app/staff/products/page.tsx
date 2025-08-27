@@ -60,6 +60,7 @@ import type { Product } from "@/type/product";
 import { ProductFilters } from "@/type/Filter/ProductFilter";
 import { useDeviceType } from "@/utils/useDeviceTypes";
 import { formatCurrency } from "@/lib/utils/currency";
+import { truncateText } from "@/lib/utils/format";
 
 function ProductTableSkeleton() {
   return (
@@ -921,7 +922,16 @@ export default function ProductsPage() {
                     )}
                   </TableCell>
                   <TableCell className="font-bold">{product.name}</TableCell>
-                  <TableCell>{product.description || "-"}</TableCell>
+                  <TableCell>
+                    <div
+                      className="max-w-[500px] leading-relaxed"
+                      title={product.description || "-"}
+                    >
+                      {product.description
+                        ? truncateText(product.description, 150, 2)
+                        : "-"}
+                    </div>
+                  </TableCell>
                   <TableCell>{product.category || "-"}</TableCell>
                   <TableCell>{product.grade || "-"}</TableCell>
                   <TableCell>{product.product_type || "-"}</TableCell>
