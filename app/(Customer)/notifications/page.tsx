@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@supabase/auth-helpers-react";
 import {
+  Badge,
   Button,
   Select,
   SelectContent,
@@ -28,6 +29,11 @@ import {
   deleteNotification,
   clearAllNotifications,
 } from "@/lib/notification/client";
+import {
+  formatDate,
+  getPaymentStatusConfig,
+  getStatusBadgeConfig,
+} from "@/lib/utils/format";
 
 export default function NotificationsPage() {
   const user = useUser();
@@ -340,7 +346,7 @@ export default function NotificationsPage() {
                   {/* Show order details if present */}
                   {notification.order && (
                     <div className="mt-3 sm:mt-4 rounded-xl border border-blue-100 dark:border-blue-900 bg-blue-50/40 dark:bg-blue-900/30 p-3 sm:p-4 shadow-sm">
-                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                      <div className="flex flex-wrap items-center justify-center gap-2 mb-2">
                         <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">
                           Order
                         </span>
@@ -352,24 +358,34 @@ export default function NotificationsPage() {
                         >
                           #{notification.order.id}
                         </Link>
-                        <span className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
-                          {notification.order.status.charAt(0).toUpperCase() +
-                            notification.order.status.slice(1)}
-                        </span>
-                        <span className="text-xs px-2 py-1 rounded bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">
-                          {notification.order.payment_status
-                            .charAt(0)
-                            .toUpperCase() +
-                            notification.order.payment_status.slice(1)}
-                        </span>
+                        {(() => {
+                          const config = getStatusBadgeConfig(
+                            notification.order.status
+                          );
+                          return (
+                            <Badge
+                              variant={config.variant}
+                              className={config.className}
+                            >
+                              {config.label}
+                            </Badge>
+                          );
+                        })()}
+                        {(() => {
+                          const config = getPaymentStatusConfig(
+                            notification.order.payment_status
+                          );
+                          return (
+                            <Badge
+                              variant={config.variant}
+                              className={`${config.className}`}
+                            >
+                              {config.label}
+                            </Badge>
+                          );
+                        })()}
                         <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
-                          {new Date(
-                            notification.order.created_at
-                          ).toLocaleDateString("en-MY", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })}
+                          {formatDate(notification.order.created_at)}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 mb-2">
