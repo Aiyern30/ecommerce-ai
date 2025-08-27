@@ -103,8 +103,8 @@ class RecommendationEngine {
         const alternatives = allProducts
           .filter((p) => {
             return (
-              p.category !== "concrete" &&
-              p.category === "mortar" &&
+              p.product_type !== "concrete" &&
+              p.product_type === "mortar" &&
               p.id !== product.id
             );
           })
@@ -194,7 +194,7 @@ class RecommendationEngine {
         // Suggest concrete alternatives
         const concreteAlternatives = allProducts
           .filter((p) => {
-            return p.category === "concrete" && p.id !== product.id;
+            return p.product_type === "concrete" && p.id !== product.id;
           })
           .slice(0, 1);
 
@@ -223,7 +223,7 @@ class RecommendationEngine {
         const similarProducts = allProducts
           .filter((p) => {
             return (
-              p.category === product.category &&
+              p.product_type === product.product_type &&
               p.id !== product.id &&
               (p.grade !== product.grade ||
                 p.mortar_ratio !== product.mortar_ratio)
@@ -234,7 +234,7 @@ class RecommendationEngine {
         similarProducts.forEach((similar) => {
           recommendations.push({
             product: similar,
-            reason: `Alternative ${product.category} option with different specifications`,
+            reason: `Alternative ${product.product_type} option with different specifications`,
             type: "alternative",
             score: 0.5,
           });
