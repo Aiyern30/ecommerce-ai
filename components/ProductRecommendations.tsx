@@ -88,6 +88,8 @@ export default function ProductRecommendations({
     return prices.length > 0 ? Math.min(...prices) : null;
   };
 
+  const isCartRecommendations = className.includes("cart-recommendations");
+
   if (loading) {
     return (
       <div className={`space-y-6 ${className}`}>
@@ -107,7 +109,25 @@ export default function ProductRecommendations({
   }
 
   if (recommendations.length === 0) {
-    return null;
+    return (
+      <div className="text-center py-8 space-y-4">
+        <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+          <TrendingUp className="w-8 h-8 text-gray-400" />
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            {isCartRecommendations
+              ? "No Additional Recommendations"
+              : "No Recommendations Available"}
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400">
+            {isCartRecommendations
+              ? "You've got great items in your cart! Proceed to checkout when ready."
+              : "We couldn't find any related products at the moment."}
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -126,7 +146,9 @@ export default function ProductRecommendations({
                   <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
                     <IconComponent className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                   </div>
-                  {group.title}
+                  {isCartRecommendations
+                    ? `${group.title} for Your Order`
+                    : group.title}
                 </CardTitle>
                 <Badge className="text-xs" variant="secondary">
                   {group.products.length}{" "}
@@ -135,7 +157,9 @@ export default function ProductRecommendations({
               </div>
               <div className="flex items-start gap-2">
                 <p className="text-gray-600 dark:text-gray-400 text-sm">
-                  {group.description}
+                  {isCartRecommendations
+                    ? `${group.description} - Perfect additions to complement your current selection.`
+                    : group.description}
                 </p>
               </div>
             </CardHeader>
@@ -158,9 +182,13 @@ export default function ProductRecommendations({
                           )}`}
                         >
                           {rec.type === "upsell"
-                            ? "Upgrade"
+                            ? isCartRecommendations
+                              ? "Better Option"
+                              : "Upgrade"
                             : rec.type === "downsell"
-                            ? "Budget"
+                            ? isCartRecommendations
+                              ? "Cost Effective"
+                              : "Budget"
                             : "Alternative"}
                         </Badge>
                       </div>
@@ -168,7 +196,9 @@ export default function ProductRecommendations({
                       {/* Recommendation reason tooltip/overlay */}
                       <div className="absolute bottom-2 left-2 right-2 z-10">
                         <div className="bg-black/75 text-white text-xs p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                          {rec.reason}
+                          {isCartRecommendations
+                            ? `Great addition: ${rec.reason}`
+                            : rec.reason}
                         </div>
                       </div>
 
@@ -204,7 +234,9 @@ export default function ProductRecommendations({
                     className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded"
                   >
                     <span className="font-medium">{rec.product.name}:</span>{" "}
-                    {rec.reason}
+                    {isCartRecommendations
+                      ? `Great addition - ${rec.reason}`
+                      : rec.reason}
                   </div>
                 ))}
               </div>
@@ -212,6 +244,16 @@ export default function ProductRecommendations({
           </Card>
         );
       })}
+
+      {isCartRecommendations && (
+        <div className="text-center mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-700">
+          <p className="text-sm text-blue-700 dark:text-blue-300">
+            💡 <strong>Tip:</strong> These recommendations are based on your
+            current cart items and what other customers typically order
+            together.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
