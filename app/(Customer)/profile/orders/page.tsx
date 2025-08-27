@@ -42,7 +42,11 @@ import { formatCurrency } from "@/lib/utils/currency";
 import { Order } from "@/type/order";
 import { TypographyH1 } from "@/components/ui/Typography";
 import { StatsCards } from "@/components/StatsCards";
-import { formatDate, getPaymentStatusColor } from "@/lib/utils/format";
+import {
+  formatDate,
+  getPaymentStatusConfig,
+  getStatusBadgeConfig,
+} from "@/lib/utils/format";
 
 // Loading skeleton component
 function OrderSkeleton() {
@@ -187,23 +191,6 @@ export default function OrdersPage() {
       loadOrders();
     }
   }, [user, loadOrders]);
-
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800 border-yellow-300 hover:bg-yellow-200";
-      case "processing":
-        return "bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200";
-      case "shipped":
-        return "bg-purple-100 text-purple-800 border-purple-300 hover:bg-purple-200";
-      case "delivered":
-        return "bg-green-100 text-green-800 border-green-300 hover:bg-green-200";
-      case "cancelled":
-        return "bg-red-100 text-red-800 border-red-300 hover:bg-red-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200";
-    }
-  };
 
   const toggleOrderDetails = (orderId: string) => {
     setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
@@ -443,24 +430,31 @@ export default function OrdersPage() {
                         </CardTitle>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        <Badge
-                          variant="outline"
-                          className={`${getStatusColor(
-                            order.status
-                          )} transition-colors`}
-                        >
-                          {order.status.charAt(0).toUpperCase() +
-                            order.status.slice(1)}
-                        </Badge>
-                        <Badge
-                          variant="outline"
-                          className={`${getPaymentStatusColor(
+                        {(() => {
+                          const config = getStatusBadgeConfig(order.status);
+                          return (
+                            <Badge
+                              variant={config.variant}
+                              className={`mb-4 ${config.className}`}
+                            >
+                              {config.label}
+                            </Badge>
+                          );
+                        })()}
+
+                        {(() => {
+                          const config = getPaymentStatusConfig(
                             order.payment_status
-                          )} transition-colors`}
-                        >
-                          {order.payment_status.charAt(0).toUpperCase() +
-                            order.payment_status.slice(1)}
-                        </Badge>
+                          );
+                          return (
+                            <Badge
+                              variant={config.variant}
+                              className={`mb-4 ${config.className}`}
+                            >
+                              {config.label}
+                            </Badge>
+                          );
+                        })()}
                       </div>
                     </div>
                   </CardHeader>

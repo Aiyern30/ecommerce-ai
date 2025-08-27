@@ -403,6 +403,7 @@ export default function ProductDetailClient() {
                   <Award className="w-3 h-3 mr-1" />
                   {product.category || "Construction"}
                 </Badge>
+
                 <Badge
                   variant={
                     product.status === "published" ? "default" : "secondary"

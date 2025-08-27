@@ -24,6 +24,7 @@ import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/currency";
 import { Order } from "@/type/order";
+import { getPaymentStatusConfig } from "@/lib/utils/format";
 
 function OrderDetailsSkeleton() {
   return (
@@ -171,14 +172,17 @@ export default function CustomerOrderDetailsPage() {
               <TypographyP className="font-semibold mb-1">
                 Payment Status
               </TypographyP>
-              <Badge
-                variant={
-                  order.payment_status === "paid" ? "default" : "secondary"
-                }
-              >
-                {order.payment_status.charAt(0).toUpperCase() +
-                  order.payment_status.slice(1)}
-              </Badge>
+              {(() => {
+                const config = getPaymentStatusConfig(order.payment_status);
+                return (
+                  <Badge
+                    variant={config.variant}
+                    className={`mb-4 ${config.className}`}
+                  >
+                    {config.label}
+                  </Badge>
+                );
+              })()}
             </div>
             <div>
               <TypographyP className="font-semibold mb-1">
