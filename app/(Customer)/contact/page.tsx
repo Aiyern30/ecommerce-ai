@@ -1,8 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
 import Link from "next/link";
 import { useState } from "react";
 import {
@@ -17,36 +14,11 @@ import {
   Mail,
   Phone,
 } from "lucide-react";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  Textarea,
-  Input,
-  Button,
-  Skeleton,
-} from "@/components/ui/";
+import { Skeleton } from "@/components/ui/";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { FeatureCard } from "@/components/FeatureCards";
-import { toast } from "sonner";
-
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  subject: z.string().min(5, {
-    message: "Subject must be at least 5 characters.",
-  }),
-  message: z.string().min(10, {
-    message: "Message must be at least 10 characters.",
-  }),
-});
+import { useUser } from "@supabase/auth-helpers-react";
+import ContactForm from "@/components/ContactForm";
 
 function ContactFormSkeleton() {
   return (
@@ -75,133 +47,9 @@ function ContactFormSkeleton() {
   );
 }
 
-function ContactForm() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      subject: "",
-      message: "",
-    },
-  });
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitting(true);
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      console.log(values);
-      toast.success("Message sent successfully! We'll get back to you soon.");
-      form.reset();
-    } catch {
-      toast.error("Failed to send message. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-8">
-      <h3 className="text-xl font-semibold mb-6 text-gray-900 dark:text-gray-100">
-        Send us a Message
-      </h3>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-gray-700 dark:text-gray-300">
-                  Your name *
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Enter your name"
-                    className="border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-gray-700 dark:text-gray-300">
-                  Your email *
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Enter your email"
-                    className="border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="subject"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-gray-700 dark:text-gray-300">
-                  Subject *
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Enter subject"
-                    className="border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="message"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-gray-700 dark:text-gray-300">
-                  Your message *
-                </FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Enter your message"
-                    className="min-h-[120px] border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Sending..." : "Send Message"}
-          </Button>
-        </form>
-      </Form>
-    </div>
-  );
-}
-
 export default function ContactPage() {
   const [loading] = useState(false);
+  const user = useUser();
 
   const features = [
     {
@@ -229,6 +77,11 @@ export default function ContactPage() {
         "Get your orders delivered within an hour in selected areas.",
     },
   ];
+
+  // Get user data for auto-filling form
+  const userName =
+    user?.user_metadata?.full_name || user?.user_metadata?.name || "";
+  const userEmail = user?.email || "";
 
   return (
     <div className="container mx-auto mb-4">
@@ -327,7 +180,11 @@ export default function ContactPage() {
 
         {/* Right Column - Contact Form */}
         <div className="lg:sticky lg:top-24 h-fit">
-          {loading ? <ContactFormSkeleton /> : <ContactForm />}
+          {loading ? (
+            <ContactFormSkeleton />
+          ) : (
+            <ContactForm defaultName={userName} defaultEmail={userEmail} />
+          )}
         </div>
       </div>
 
