@@ -13,6 +13,7 @@ import {
   Package,
   Mail,
   Phone,
+  Youtube,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
@@ -117,27 +118,31 @@ export default function ContactPage() {
               <div className="border-l-4 border-blue-500 pl-6">
                 <div className="flex items-center gap-3 text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">
                   <MapPin className="h-5 w-5 text-blue-500" />
-                  <span>YTL Cement Sdn Bhd</span>
+                  <span>YTL Cement Berhad</span>
                 </div>
                 <h3 className="font-medium mb-2 text-gray-800 dark:text-gray-200">
-                  Headquarters
+                  Corporate Headquarters
                 </h3>
                 <div className="space-y-2 text-gray-600 dark:text-gray-300">
                   <p className="text-sm">
-                    Menara YTL, Bukit Bintang, Kuala Lumpur, Malaysia
+                    11th Floor, Yeoh Tiong Lay Plaza, 55 Jalan Bukit Bintang,
+                    55100 Kuala Lumpur, Malaysia
                   </p>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4" />
-                    <span className="text-sm">+60 3-1234 5678</span>
+                    <span className="text-sm">+60 3-2117 0088</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4" />
                     <Link
-                      href="mailto:info@ytlcement.com"
+                      href="mailto:enquiry@ytl.com.my"
                       className="text-blue-600 dark:text-blue-400 text-sm hover:underline"
                     >
-                      info@ytlcement.com
+                      enquiry@ytl.com.my
                     </Link>
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    Business Hours: Monday - Friday, 9:00 AM - 6:00 PM (GMT+8)
                   </div>
                 </div>
               </div>
@@ -145,32 +150,63 @@ export default function ContactPage() {
               {/* Social Media */}
               <div>
                 <p className="text-sm mb-4 text-gray-700 dark:text-gray-300 font-medium">
-                  Follow us on social media:
+                  Follow YTL Community on social media:
                 </p>
                 <div className="flex gap-3">
                   <Link
-                    href="#"
-                    className="p-3 bg-gray-100 dark:bg-slate-700 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
+                    href="https://www.facebook.com/ytlcommunity"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-3 bg-gray-100 dark:bg-slate-700 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors group"
+                    title="YTL Community Facebook"
                   >
-                    <Facebook className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                    <Facebook className="h-5 w-5 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
                   </Link>
                   <Link
-                    href="#"
-                    className="p-3 bg-gray-100 dark:bg-slate-700 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
+                    href="https://x.com/ytlcommunity"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-3 bg-gray-100 dark:bg-slate-700 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors group"
+                    title="YTL Community Twitter/X"
                   >
-                    <Twitter className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                    <Twitter className="h-5 w-5 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
                   </Link>
                   <Link
-                    href="#"
-                    className="p-3 bg-gray-100 dark:bg-slate-700 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
+                    href="https://www.instagram.com/ytlcommunity/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-3 bg-gray-100 dark:bg-slate-700 rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/20 transition-colors group"
+                    title="YTL Community Instagram"
                   >
-                    <Instagram className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                    <Instagram className="h-5 w-5 text-gray-700 dark:text-gray-300 group-hover:text-pink-600 dark:group-hover:text-pink-400" />
                   </Link>
                   <Link
-                    href="#"
-                    className="p-3 bg-gray-100 dark:bg-slate-700 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
+                    href="https://my.linkedin.com/company/ytl-corporation-bhd"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-3 bg-gray-100 dark:bg-slate-700 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors group"
+                    title="YTL Corporation LinkedIn"
                   >
-                    <Linkedin className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                    <Linkedin className="h-5 w-5 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
+                  </Link>
+                  <Link
+                    href="https://www.youtube.com/ytlcommunity"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-3 bg-gray-100 dark:bg-slate-700 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors group"
+                    title="YTL Community YouTube"
+                  >
+                    <Youtube className="h-5 w-5 text-gray-700 dark:text-gray-300 group-hover:text-red-600 dark:group-hover:text-red-400" />
+                  </Link>
+                </div>
+                <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+                  <Link
+                    href="https://www.ytl.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-blue-600 dark:hover:text-blue-400 underline"
+                  >
+                    Visit our official website: www.ytl.com
                   </Link>
                 </div>
               </div>
