@@ -209,10 +209,10 @@ function OrderTableSkeletonEnhanced() {
                   <Skeleton className="h-4 w-32" />
                 </TableCell>
                 <TableCell className="text-center">
-                  <Skeleton className="h-6 w-16 mx-auto rounded-full" />
+                  <Skeleton className="h-4 w-4 rounded-sm mx-auto" />
                 </TableCell>
                 <TableCell className="text-center">
-                  <Skeleton className="h-6 w-16 mx-auto rounded-full" />
+                  <Skeleton className="h-4 w-4 rounded-sm mx-auto" />
                 </TableCell>
                 <TableCell>
                   <Skeleton className="h-4 w-40" />
@@ -934,7 +934,7 @@ export default function OrdersPage() {
                   <TableRow
                     key={order.id}
                     onClick={() => router.push(`/staff/orders/${order.id}`)}
-                    className="cursor-pointer"
+                    className="cursor-pointer max-h-20 h-20"
                   >
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <Checkbox
@@ -943,8 +943,8 @@ export default function OrdersPage() {
                         aria-label={`Select order ${order.id}`}
                       />
                     </TableCell>
-                    <TableCell className="max-w-xs">
-                      <div className="space-y-1">
+                    <TableCell className="max-w-xs max-h-20 overflow-hidden">
+                      <div className="space-y-1 max-h-16 overflow-hidden">
                         <div
                           className="font-medium truncate text-blue-700 hover:underline cursor-pointer"
                           title={order.addresses?.full_name}
@@ -1038,10 +1038,10 @@ export default function OrdersPage() {
                         </HoverCardContent>
                       </HoverCard>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="max-h-20 overflow-hidden">
                       {order.additional_services &&
                       order.additional_services.length > 0 ? (
-                        <div className="space-y-1">
+                        <div className="space-y-1 max-h-16 overflow-y-auto">
                           {order.additional_services.map((service) => (
                             <div key={service.id} className="text-xs">
                               <span className="font-medium">
@@ -1165,7 +1165,7 @@ export default function OrdersPage() {
                     </TableCell>
                     <TableCell>{formatDate(order.created_at)}</TableCell>
                     <TableCell
-                      className="text-right"
+                      className="text-center"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Button

@@ -65,21 +65,6 @@ import { truncateText } from "@/lib/utils/format";
 function ProductTableSkeleton() {
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-8 w-48" />
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-9 w-36" />
-        </div>
-      </div>
-      <div className="flex flex-col sm:flex-row flex-wrap gap-2">
-        <Skeleton className="h-9 w-full sm:w-[200px]" />
-        <div className="flex flex-wrap gap-2">
-          <Skeleton className="h-9 w-full sm:w-[180px]" />
-          <Skeleton className="h-9 w-full sm:w-[180px]" />
-          <Skeleton className="h-9 w-full sm:w-[180px]" />
-          <Skeleton className="h-9 w-full sm:w-[180px]" />
-        </div>
-      </div>
       <div className="w-full overflow-x-auto rounded-md border">
         <Table>
           <TableHeader>
@@ -116,8 +101,8 @@ function ProductTableSkeleton() {
                 <TableCell className="text-center">
                   <Skeleton className="h-4 w-4 rounded-sm mx-auto" />
                 </TableCell>
-                <TableCell className="flex items-center justify-center">
-                  <Skeleton className="h-10 w-10 rounded-md" />
+                <TableCell className="text-center">
+                  <Skeleton className="h-10 w-10 rounded-md mx-auto" />
                 </TableCell>
                 <TableCell>
                   <Skeleton className="h-4 w-32 rounded" />
@@ -889,7 +874,7 @@ export default function ProductsPage() {
                 <TableRow
                   key={product.id}
                   onClick={() => router.push(`/staff/products/${product.id}`)}
-                  className="cursor-pointer "
+                  className="cursor-pointer max-h-20 h-20"
                 >
                   <TableCell
                     onClick={(e) => e.stopPropagation()}
@@ -901,30 +886,32 @@ export default function ProductsPage() {
                       aria-label={`Select product ${product.name}`}
                     />
                   </TableCell>
-                  <TableCell className="flex items-center justify-center">
-                    {product.product_images &&
-                    product.product_images.length > 0 ? (
-                      <Image
-                        src={product.product_images[0].image_url}
-                        alt={product.name}
-                        className="w-10 h-10 rounded-md object-cover border border-white shadow-sm"
-                        width={40}
-                        height={40}
-                      />
-                    ) : (
-                      <Image
-                        src="/placeholder.svg?height=48&width=48"
-                        alt="No image"
-                        className="w-10 h-10 rounded-md object-cover border border-white shadow-sm"
-                        width={40}
-                        height={40}
-                      />
-                    )}
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center h-full">
+                      {product.product_images &&
+                      product.product_images.length > 0 ? (
+                        <Image
+                          src={product.product_images[0].image_url}
+                          alt={product.name}
+                          className="w-10 h-10 rounded-md object-cover border border-white shadow-sm"
+                          width={40}
+                          height={40}
+                        />
+                      ) : (
+                        <Image
+                          src="/placeholder.svg?height=48&width=48"
+                          alt="No image"
+                          className="w-10 h-10 rounded-md object-cover border border-white shadow-sm"
+                          width={40}
+                          height={40}
+                        />
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="font-bold">{product.name}</TableCell>
-                  <TableCell>
+                  <TableCell className="max-h-20 overflow-hidden">
                     <div
-                      className="max-w-[500px] leading-relaxed"
+                      className="max-w-[500px] leading-relaxed max-h-16 overflow-hidden"
                       title={product.description || "-"}
                     >
                       {product.description
@@ -985,8 +972,8 @@ export default function ProductsPage() {
                           product.status.slice(1)}
                     </Badge>
                   </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
+                  <TableCell className="max-h-20 overflow-hidden">
+                    <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto">
                       {Array.isArray(product.keywords) &&
                       product.keywords.length > 0 ? (
                         <>
@@ -1012,7 +999,7 @@ export default function ProductsPage() {
                     </div>
                   </TableCell>
                   <TableCell
-                    className="text-right"
+                    className="text-center"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Button
