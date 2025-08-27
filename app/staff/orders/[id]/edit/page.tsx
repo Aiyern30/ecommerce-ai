@@ -35,7 +35,11 @@ import { Order } from "@/type/order";
 import Link from "next/link";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import Image from "next/image";
-import { formatDate, getStatusBadgeConfig } from "@/lib/utils/format";
+import {
+  formatDate,
+  getPaymentStatusConfig,
+  getStatusBadgeConfig,
+} from "@/lib/utils/format";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -393,15 +397,17 @@ export default function StaffOrderDetailsPage() {
                   <TypographyP className="font-semibold mb-1">
                     Payment Status
                   </TypographyP>
-                  <Badge
-                    variant={
-                      order.payment_status === "paid" ? "default" : "secondary"
-                    }
-                    className="mb-4"
-                  >
-                    {order.payment_status.charAt(0).toUpperCase() +
-                      order.payment_status.slice(1)}
-                  </Badge>
+                  {(() => {
+                    const config = getPaymentStatusConfig(order.payment_status);
+                    return (
+                      <Badge
+                        variant={config.variant}
+                        className={`mb-4 ${config.className}`}
+                      >
+                        {config.label}
+                      </Badge>
+                    );
+                  })()}
 
                   <TypographyP className="font-semibold mb-1">
                     Payment Intent
