@@ -56,7 +56,7 @@ import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import Image from "next/image";
 import { PostFilters } from "@/type/Filter/PostFilters";
 import { Post } from "@/type/posts";
-import { formatDate } from "@/lib/utils/format";
+import { formatDate, truncateText } from "@/lib/utils/format";
 import { useDeviceType } from "@/utils/useDeviceTypes";
 
 function EmptyPostsState() {
@@ -118,51 +118,61 @@ function PostTableSkeletonEnhanced() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[50px]">
-                <Skeleton className="h-4 w-4 rounded-sm" />
+              <TableHead className="min-w-[50px] text-center">
+                <Skeleton className="h-4 w-4 rounded-sm mx-auto" />
               </TableHead>
-              <TableHead className="w-[80px]">Image</TableHead>
-              <TableHead className="min-w-[150px]">Title</TableHead>
-              <TableHead className="min-w-[120px]">Description</TableHead>
-              <TableHead className="min-w-[120px]">Mobile Desc</TableHead>
-              <TableHead className="min-w-[100px]">Status</TableHead>
-              <TableHead className="min-w-[100px]">Link</TableHead>
-              <TableHead className="min-w-[150px]">Created</TableHead>
-              <TableHead className="text-right min-w-[80px]">Actions</TableHead>
+              <TableHead className="min-w-[100px] text-center">Image</TableHead>
+              <TableHead className="min-w-[400px]">Title</TableHead>
+              <TableHead className="min-w-[500px]">Description</TableHead>
+              <TableHead className="min-w-[400px]">Mobile Desc</TableHead>
+              <TableHead className="min-w-[100px] text-center">
+                Status
+              </TableHead>
+              <TableHead className="min-w-[100px] text-center">Link</TableHead>
+              <TableHead className="min-w-[200px]">Created</TableHead>
+              <TableHead className="text-center min-w-[80px]">
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {Array.from({ length: 8 }).map((_, i) => (
-              <TableRow key={i}>
-                <TableCell>
-                  <Skeleton className="h-4 w-4 rounded-sm" />
+              <TableRow key={i} className="max-h-20 h-20">
+                <TableCell className="text-center">
+                  <Skeleton className="h-4 w-4 rounded-sm mx-auto" />
+                </TableCell>
+                <TableCell className="text-center">
+                  <Skeleton className="h-12 w-12 rounded-md mx-auto" />
                 </TableCell>
                 <TableCell>
-                  <Skeleton className="h-12 w-12 rounded-md" />
+                  <Skeleton className="h-4 w-full max-w-[350px] rounded" />
                 </TableCell>
                 <TableCell>
-                  <Skeleton className="h-4 w-full max-w-[200px]" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-full max-w-[150px]" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-full max-w-[100px]" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-6 w-16" />
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Skeleton className="h-4 w-4" />
-                    <Skeleton className="h-4 w-20" />
+                  <div className="space-y-1 max-h-16 overflow-hidden">
+                    <Skeleton className="h-4 w-full rounded" />
+                    <Skeleton className="h-4 w-3/4 rounded" />
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Skeleton className="h-4 w-24" />
+                  <div className="space-y-1 max-h-16 overflow-hidden">
+                    <Skeleton className="h-4 w-full rounded" />
+                    <Skeleton className="h-4 w-2/3 rounded" />
+                  </div>
                 </TableCell>
-                <TableCell className="text-right">
-                  <Skeleton className="h-8 w-12 ml-auto" />
+                <TableCell className="text-center">
+                  <Skeleton className="h-6 w-20 rounded-full mx-auto" />
+                </TableCell>
+                <TableCell className="text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <Skeleton className="h-4 w-4 rounded" />
+                    <Skeleton className="h-4 w-16 rounded" />
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-24 rounded" />
+                </TableCell>
+                <TableCell className="text-center">
+                  <Skeleton className="h-8 w-12 mx-auto rounded" />
                 </TableCell>
               </TableRow>
             ))}
@@ -716,7 +726,7 @@ export default function PostsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[50px]">
+                <TableHead className="min-w-[50px] text-center">
                   <Checkbox
                     checked={
                       selectedPosts.length === currentPageData.length &&
@@ -726,14 +736,20 @@ export default function PostsPage() {
                     aria-label="Select all"
                   />
                 </TableHead>
-                <TableHead className="w-[80px]">Image</TableHead>
-                <TableHead className="min-w-[150px]">Title</TableHead>
-                <TableHead className="min-w-[120px]">Description</TableHead>
-                <TableHead className="min-w-[120px]">Mobile Desc</TableHead>
-                <TableHead className="min-w-[100px]">Status</TableHead>
-                <TableHead className="min-w-[100px]">Link</TableHead>
-                <TableHead className="min-w-[150px]">Created</TableHead>
-                <TableHead className="text-right min-w-[80px]">
+                <TableHead className="min-w-[100px] text-center">
+                  Image
+                </TableHead>
+                <TableHead className="min-w-[400px] ">Title</TableHead>
+                <TableHead className="min-w-[500px] ">Description</TableHead>
+                <TableHead className="min-w-[400px] ">Mobile Desc</TableHead>
+                <TableHead className="min-w-[100px] text-center">
+                  Status
+                </TableHead>
+                <TableHead className="min-w-[100px] text-center">
+                  Link
+                </TableHead>
+                <TableHead className="min-w-[200px]">Created</TableHead>
+                <TableHead className="text-center min-w-[80px]">
                   Actions
                 </TableHead>
               </TableRow>
@@ -751,49 +767,56 @@ export default function PostsPage() {
                   <TableRow
                     key={post.id}
                     onClick={() => router.push(`/staff/posts/${post.id}`)}
-                    className="cursor-pointer"
+                    className="cursor-pointer max-h-20 h-20"
                   >
-                    <TableCell onClick={(e) => e.stopPropagation()}>
+                    <TableCell
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-center"
+                    >
                       <Checkbox
                         checked={selectedPosts.includes(post.id)}
                         onCheckedChange={() => togglePostSelection(post.id)}
                         aria-label={`Select post ${post.title}`}
                       />
                     </TableCell>
-                    <TableCell>
-                      <Image
-                        src={
-                          post.image_url ||
-                          "/placeholder.svg?height=48&width=48"
-                        }
-                        alt={post.title}
-                        className="h-12 w-12 rounded-md object-cover"
-                        width={48}
-                        height={48}
-                      />
-                    </TableCell>
-                    <TableCell className="font-medium max-w-xs">
-                      <div className="truncate" title={post.title}>
-                        {post.title}
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center h-full">
+                        <Image
+                          src={
+                            post.image_url ||
+                            "/placeholder.svg?height=48&width=48"
+                          }
+                          alt={post.title}
+                          className="h-12 w-12 rounded-md object-cover"
+                          width={40}
+                          height={40}
+                        />
                       </div>
                     </TableCell>
-                    <TableCell className="max-w-xs">
+                    <TableCell className="font-bold">
+                      <div title={post.title}>{post.title}</div>
+                    </TableCell>
+                    <TableCell className="max-h-20 overflow-hidden">
                       <div
-                        className="truncate text-gray-600"
-                        title={post.description || ""}
+                        className="max-w-[500px] leading-relaxed max-h-16 overflow-hidden"
+                        title={post.description || "-"}
                       >
-                        {post.description || "No description"}
+                        {post.description
+                          ? truncateText(post.description, 250, 2)
+                          : "-"}
                       </div>
                     </TableCell>
-                    <TableCell className="max-w-xs">
+                    <TableCell className="max-h-20 overflow-hidden">
                       <div
-                        className="truncate text-gray-600"
-                        title={post.mobile_description || ""}
+                        className="max-w-[500px] leading-relaxed max-h-16 overflow-hidden"
+                        title={post.mobile_description || "-"}
                       >
-                        {post.mobile_description || "No mobile desc"}
+                        {post.mobile_description
+                          ? truncateText(post.mobile_description, 250, 2)
+                          : "-"}
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <Badge
                         variant={
                           post.status === "published" ? "default" : "secondary"
@@ -812,7 +835,7 @@ export default function PostsPage() {
                     </TableCell>
                     <TableCell>{formatDate(post.created_at)}</TableCell>
                     <TableCell
-                      className="text-right"
+                      className="text-center"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Button
