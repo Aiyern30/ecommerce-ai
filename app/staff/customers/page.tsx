@@ -22,6 +22,8 @@ import {
   Clock,
   Ban,
   CheckCircle,
+  UserPlus,
+  UserMinus,
 } from "lucide-react";
 import { Calendar } from "@/components/ui/";
 import { useRouter } from "next/navigation";
@@ -434,6 +436,9 @@ function CustomerCard({
   onViewDetails,
   onBanUser,
   onUnbanUser,
+  onMakeStaff,
+  onRemoveStaff,
+  currentUserRole,
 }: {
   customer: Customer;
   isSelected: boolean;
@@ -441,6 +446,9 @@ function CustomerCard({
   onViewDetails: (id: string) => void;
   onBanUser: (id: string) => void;
   onUnbanUser: (id: string) => void;
+  onMakeStaff: (id: string) => void;
+  onRemoveStaff: (id: string) => void;
+  currentUserRole: string;
 }) {
   const getRoleIcon = (role: string) => {
     switch (role) {
@@ -660,6 +668,37 @@ function CustomerCard({
                 <Eye className="h-4 w-4 mr-2" />
                 View Details
               </DropdownMenuItem>
+
+              {/* Role Management - Only for Admins */}
+              {currentUserRole === "admin" && (
+                <>
+                  <DropdownMenuSeparator />
+                  {customer.role === "customer" ? (
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onMakeStaff(customer.id);
+                      }}
+                      className="cursor-pointer text-blue-600 dark:text-blue-400 focus:text-blue-600 dark:focus:text-blue-400"
+                    >
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Make Staff
+                    </DropdownMenuItem>
+                  ) : customer.role === "staff" ? (
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemoveStaff(customer.id);
+                      }}
+                      className="cursor-pointer text-orange-600 dark:text-orange-400 focus:text-orange-600 dark:focus:text-orange-400"
+                    >
+                      <UserMinus className="h-4 w-4 mr-2" />
+                      Remove Staff
+                    </DropdownMenuItem>
+                  ) : null}
+                </>
+              )}
+
               <DropdownMenuSeparator />
               {isBanned ? (
                 <DropdownMenuItem
@@ -915,6 +954,78 @@ export default function CustomersPage() {
     }
   };
 
+  const handleMakeStaff = async (customerId: string) => {
+    const customer = customers.find((c) => c.id === customerId);
+    if (!customer) return;
+
+    try {
+      setLoading(true);
+      const response = await fetch("/api/admin/add-staff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: customerId,
+          adminUserId: user?.id,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to promote user to staff");
+      }
+
+      toast.success(
+        `${customer.full_name || customer.email} has been promoted to staff`
+      );
+      fetchCustomers();
+    } catch (error) {
+      console.error("Error promoting user to staff:", error);
+      toast.error(
+        error instanceof Error
+          ? `Error promoting user: ${error.message}`
+          : "Failed to promote user to staff"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveStaff = async (customerId: string) => {
+    const customer = customers.find((c) => c.id === customerId);
+    if (!customer) return;
+
+    try {
+      setLoading(true);
+      const response = await fetch("/api/admin/add-staff", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: customerId,
+          adminUserId: user?.id,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to demote user from staff");
+      }
+
+      toast.success(
+        `${customer.full_name || customer.email} has been demoted from staff`
+      );
+      fetchCustomers();
+    } catch (error) {
+      console.error("Error demoting user from staff:", error);
+      toast.error(
+        error instanceof Error
+          ? `Error demoting user: ${error.message}`
+          : "Failed to demote user from staff"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredCustomers = customers.filter((customer) => {
     if (
       filters.search &&
@@ -966,6 +1077,9 @@ export default function CustomersPage() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  const currentUserRole =
+    user?.app_metadata?.role || user?.user_metadata?.role || "customer";
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-full bg-background">
@@ -1219,6 +1333,9 @@ export default function CustomersPage() {
               onViewDetails={(id) => router.push(`/staff/customers/${id}`)}
               onBanUser={handleBanUser}
               onUnbanUser={handleUnbanUser}
+              onMakeStaff={handleMakeStaff}
+              onRemoveStaff={handleRemoveStaff}
+              currentUserRole={currentUserRole}
             />
           ))}
         </div>
