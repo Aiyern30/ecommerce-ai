@@ -75,7 +75,7 @@ function ProductTableSkeleton() {
               <TableHead className="min-w-[100px] text-center">Image</TableHead>
               <TableHead className="min-w-[160px]">Product Name</TableHead>
               <TableHead className="min-w-[500px]">Description</TableHead>
-              <TableHead className="min-w-[120px]">Category</TableHead>
+              <TableHead className="min-w-[120px]">productType</TableHead>
               <TableHead className="min-w-[100px]">Grade</TableHead>
               <TableHead className="min-w-[120px]">Product Type</TableHead>
               <TableHead className="min-w-[120px] text-center">
@@ -231,7 +231,7 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<ProductFilters>({
     search: "",
-    category: "all",
+    productType: "all",
     stockStatus: "all",
     status: "all",
     sortBy: "name-asc",
@@ -311,7 +311,7 @@ export default function ProductsPage() {
   const clearAllFilters = () => {
     setFilters({
       search: "",
-      category: "all",
+      productType: "all",
       stockStatus: "all",
       status: "all",
       sortBy: "name-asc",
@@ -384,8 +384,11 @@ export default function ProductsPage() {
       return false;
     }
 
-    // Filter by category
-    if (filters.category !== "all" && product.category !== filters.category) {
+    // Filter by productType
+    if (
+      filters.productType !== "all" &&
+      product.product_type !== filters.productType
+    ) {
       return false;
     }
 
@@ -487,15 +490,16 @@ export default function ProductsPage() {
                   onChange={(e) => updateFilter("search", e.target.value)}
                 />
                 <Select
-                  value={filters.category}
-                  onValueChange={(value) => updateFilter("category", value)}
+                  value={filters.productType}
+                  onValueChange={(value) => updateFilter("productType", value)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Category" />
+                    <SelectValue placeholder="productType" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
-                    <SelectItem value="bagged">Bagged Cement</SelectItem>
+                    <SelectItem value="all">All Product Type</SelectItem>
+                    <SelectItem value="bagged">Cement</SelectItem>
+                    <SelectItem value="mortar">Mortar</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select
@@ -628,17 +632,18 @@ export default function ProductsPage() {
               )}
             </Button>
             <Select
-              value={filters.category}
+              value={filters.productType}
               onValueChange={(value) => {
-                updateFilter("category", value);
+                updateFilter("productType", value);
               }}
             >
               <SelectTrigger className="w-full sm:w-[180px] h-9">
-                <SelectValue placeholder="Category" />
+                <SelectValue placeholder="productType" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="bagged">Bagged Cement</SelectItem>
+                <SelectItem value="all">All Product Type</SelectItem>
+                <SelectItem value="concrete">Concrete</SelectItem>
+                <SelectItem value="mortar">Mortar</SelectItem>
               </SelectContent>
             </Select>
             <Select
@@ -849,7 +854,7 @@ export default function ProductsPage() {
                 </TableHead>
                 <TableHead className="min-w-[160px]">Product Name</TableHead>
                 <TableHead className="min-w-[500px]">Description</TableHead>
-                <TableHead className="min-w-[120px]">Category</TableHead>
+                <TableHead className="min-w-[120px]">productType</TableHead>
                 <TableHead className="min-w-[100px]">Grade</TableHead>
                 <TableHead className="min-w-[120px]">Product Type</TableHead>
                 <TableHead className="min-w-[120px] text-center">
