@@ -11,10 +11,12 @@ import {
   Search,
   Sun,
   Users,
-  FileText,
   BookOpen,
-  MessageSquare,
   HelpCircle,
+  ShoppingCart,
+  UserCog,
+  Newspaper,
+  Mail,
 } from "lucide-react";
 
 import {
@@ -69,6 +71,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     handleInputBlur,
   } = useProductSearch();
 
+  // Check if current user is admin
+  const currentUserRole =
+    user?.app_metadata?.role || user?.user_metadata?.role || "customer";
+  const isAdmin = currentUserRole === "admin";
+
   const sidebarItems = [
     {
       label: "Dashboard",
@@ -83,12 +90,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     {
       label: "Orders",
       href: "/staff/orders",
-      icon: Package,
+      icon: ShoppingCart,
     },
     {
       label: "Posts",
       href: "/staff/posts",
-      icon: FileText,
+      icon: Newspaper,
     },
     {
       label: "Blogs",
@@ -103,13 +110,23 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     {
       label: "Enquiries",
       href: "/staff/enquiries",
-      icon: MessageSquare,
+      icon: Mail,
     },
     {
       label: "Customers",
       href: "/staff/customers",
       icon: Users,
     },
+    // Only show Staff navigation if user is admin
+    ...(isAdmin
+      ? [
+          {
+            label: "Staff",
+            href: "/staff/staffs",
+            icon: UserCog,
+          },
+        ]
+      : []),
   ];
 
   // Helper function to check if a path is active
