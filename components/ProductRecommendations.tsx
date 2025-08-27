@@ -118,7 +118,7 @@ export default function ProductRecommendations({
         return (
           <Card
             key={groupIndex}
-            className="border-2 hover:border-orange-200 dark:hover:border-orange-800 transition-colors duration-200"
+            className="bg-gradient-to-br from-slate-50 to-gray-100 dark:from-slate-900 dark:to-gray-800 border border-slate-200 dark:border-slate-700 shadow-md hover:shadow-lg transition-all duration-300"
           >
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -183,7 +183,7 @@ export default function ProductRecommendations({
                           stock={product.stock_quantity}
                           image={mainImage?.image_url || "/placeholder.svg"}
                           href={`/products/${product.id}`}
-                          showCompare={false} // Disable compare for recommendations
+                          showCompare={false}
                           normal_price={product.normal_price}
                           pump_price={product.pump_price}
                           tremie_1_price={product.tremie_1_price}

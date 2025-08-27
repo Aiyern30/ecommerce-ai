@@ -641,7 +641,23 @@ export default function ProductDetailClient() {
             </div>
           </div>
         </div>
-        <ProductRecommendations currentProduct={product} />
+
+        {/* Enhanced Product Recommendations Section */}
+        <div className="mt-16 space-y-8">
+          <div className="text-center space-y-2">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+              You Might Also Like
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+              Discover related products and alternatives that might better suit
+              your construction needs
+            </p>
+          </div>
+
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/10 dark:to-purple-900/10 rounded-3xl p-8 border border-blue-100 dark:border-blue-800">
+            <ProductRecommendations currentProduct={product} />
+          </div>
+        </div>
       </div>
     </div>
   );
