@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -45,6 +46,8 @@ import { SelectedServiceDetails } from "@/type/selectedServiceDetails";
 import { AdditionalService } from "@/type/additionalService";
 import { FreightCharge } from "@/type/freightCharges";
 import { getVariantDisplayName } from "@/lib/utils/format";
+import ProductRecommendations from "@/components/ProductRecommendations";
+import { Product } from "@/type/product";
 
 export default function CartPage() {
   const { cartItems, refreshCart, isLoading } = useCart();
@@ -265,6 +268,58 @@ export default function CartPage() {
     });
     setInputQty(qtyState);
   }, [cartItems]);
+
+  // Generate recommendations based on cart items
+  const getCartBasedRecommendations = () => {
+    if (cartItems.length === 0) return null;
+
+    // Get the first product or the most expensive one for recommendations
+    const primaryCartItem = cartItems.reduce((prev, current) => {
+      const prevPrice = getProductPrice(prev.product, prev.variant_type);
+      const currentPrice = getProductPrice(
+        current.product,
+        current.variant_type
+      );
+      return currentPrice > prevPrice ? current : prev;
+    });
+
+    // Ensure the product has all required properties for ProductRecommendations
+    const product = primaryCartItem.product;
+    if (!product || !product.id || !product.name || !product.product_type) {
+      return null;
+    }
+
+    // Create a complete Product object with defaults for missing properties
+    const completeProduct: Product = {
+      id: product.id,
+      name: product.name,
+      description:
+        (product as any).description ||
+        `High-quality ${product.product_type} for construction`,
+      grade: product.grade || "N20", // Default grade
+      product_type: product.product_type,
+      mortar_ratio: (product as any).mortar_ratio || null,
+      category: (product as any).category || "building_materials",
+      normal_price: product.normal_price,
+      pump_price: product.pump_price || null,
+      tremie_1_price: product.tremie_1_price || null,
+      tremie_2_price: product.tremie_2_price || null,
+      tremie_3_price: product.tremie_3_price || null,
+      unit: product.unit || "per m³",
+      stock_quantity: product.stock_quantity || 0,
+      status: (product as any).status || "published",
+      is_featured: (product as any).is_featured || false,
+      created_at: (product as any).created_at || new Date().toISOString(),
+      updated_at: (product as any).updated_at || new Date().toISOString(),
+      keywords: (product as any).keywords || [],
+      product_images: product.product_images || [],
+    };
+
+    return completeProduct;
+  };
+
+  const recommendationProduct = getCartBasedRecommendations();
+
   return (
     <div className="min-h-screen mb-4">
       <div className="container mx-auto px-4 pt-0 pb-4">
@@ -814,7 +869,7 @@ export default function CartPage() {
                       </div>
                     ) : additionalServices.length === 0 ? (
                       <div className="text-center py-8">
-                        <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                           <Info className="h-8 w-8 text-gray-400" />
                         </div>
                         <TypographyP className="text-gray-500 dark:text-gray-400">
@@ -1022,6 +1077,41 @@ export default function CartPage() {
           </div>
         )}
       </div>
+
+      {!isLoading && cartItems.length > 0 && (
+        <div className={`${isMobile ? "mt-8" : "mt-12"}`}>
+          <div className="container mx-auto px-4">
+            <div className="text-center space-y-2 mb-8">
+              <h2
+                className={`${
+                  isMobile ? "text-2xl" : "text-3xl"
+                } font-bold text-gray-900 dark:text-white`}
+              >
+                Complete Your Order
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                Based on your cart items, you might also be interested in these
+                products
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/10 dark:to-purple-900/10 rounded-3xl p-6 border border-blue-100 dark:border-blue-800">
+              {recommendationProduct ? (
+                <ProductRecommendations
+                  currentProduct={recommendationProduct}
+                  className="cart-recommendations"
+                />
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Continue shopping to discover more great products!
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent
