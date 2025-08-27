@@ -220,21 +220,30 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         : "text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-900/20 dark:hover:to-blue-800/20 hover:text-blue-700 dark:hover:text-blue-300 hover:shadow-sm hover:scale-[1.01]"
                     }`}
                   >
-                    <Link href="/">
+                    <Link
+                      href="/"
+                      className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
+                    >
                       <div
-                        className={`p-1.5 rounded-lg transition-colors group-data-[collapsible=icon]:p-2 ${
+                        className={`p-1.5 rounded-lg transition-all duration-200 group-hover:scale-110 group-data-[collapsible=icon]:p-2 ${
                           pathname === "/"
-                            ? "bg-white/20 group-hover:bg-white/30"
-                            : "bg-slate-100 dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
+                            ? "bg-white/20 group-hover:bg-white/30 shadow-sm"
+                            : "bg-slate-100 dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 group-hover:shadow-md"
                         }`}
                       >
-                        <Home className="h-4 w-4" />
+                        <Home
+                          className={`h-4 w-4 transition-all duration-200 ${
+                            pathname === "/"
+                              ? "text-white"
+                              : "text-slate-600 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400"
+                          }`}
+                        />
                       </div>
                       <span className="font-medium group-data-[collapsible=icon]:hidden">
                         Customer Dashboard
                       </span>
                       {pathname === "/" && (
-                        <div className="ml-auto w-2 h-2 bg-white/40 rounded-full group-data-[collapsible=icon]:hidden" />
+                        <div className="ml-auto w-2 h-2 bg-white/40 rounded-full group-data-[collapsible=icon]:hidden animate-pulse" />
                       )}
                     </Link>
                   </SidebarMenuButton>
@@ -250,21 +259,30 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                           : "text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-900/20 dark:hover:to-blue-800/20 hover:text-blue-700 dark:hover:text-blue-300 hover:shadow-sm hover:scale-[1.01]"
                       }`}
                     >
-                      <Link href={href}>
+                      <Link
+                        href={href}
+                        className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
+                      >
                         <div
-                          className={`p-1.5 rounded-lg transition-colors group-data-[collapsible=icon]:p-2 ${
+                          className={`p-1.5 rounded-lg transition-all duration-200 group-hover:scale-110 group-data-[collapsible=icon]:p-2 ${
                             isActivePath(href)
-                              ? "bg-white/20 group-hover:bg-white/30"
-                              : "bg-slate-100 dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
+                              ? "bg-white/20 group-hover:bg-white/30 shadow-sm"
+                              : "bg-slate-100 dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 group-hover:shadow-md"
                           }`}
                         >
-                          <Icon className="h-4 w-4" />
+                          <Icon
+                            className={`h-4 w-4 transition-all duration-200 ${
+                              isActivePath(href)
+                                ? "text-white"
+                                : "text-slate-600 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400"
+                            }`}
+                          />
                         </div>
                         <span className="font-medium group-data-[collapsible=icon]:hidden">
                           {label}
                         </span>
                         {isActivePath(href) && (
-                          <div className="ml-auto w-2 h-2 bg-white/40 rounded-full group-data-[collapsible=icon]:hidden" />
+                          <div className="ml-auto w-2 h-2 bg-white/40 rounded-full group-data-[collapsible=icon]:hidden animate-pulse" />
                         )}
                       </Link>
                     </SidebarMenuButton>
@@ -286,9 +304,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </Sidebar>
 
         <SidebarInset className="flex flex-1 flex-col min-w-0">
-          <header className="w-full bg-white dark:bg-gray-900 shadow-md border-b z-50 dark:border-gray-800 sticky top-0">
-            <div className="flex items-center justify-between p-4 min-w-0">
-              <SidebarTrigger className="h-8 w-8 text-gray-500 flex-shrink-0" />
+          <header className="w-full bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm shadow-md border-b border-slate-200/60 dark:border-slate-700/60 z-50 sticky top-0 h-[68px]">
+            <div className="flex items-center justify-between p-4 min-w-0 h-full">
+              <SidebarTrigger className="h-8 w-8 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-all duration-200 flex-shrink-0" />
 
               <div
                 ref={searchContainerRef}
@@ -303,13 +321,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     onFocus={handleInputFocus}
                     onBlur={handleInputBlur}
                     placeholder="Search for products..."
-                    className="w-[200px] sm:w-[300px] pl-10 dark:bg-gray-800 dark:border-gray-700"
+                    className="w-[200px] sm:w-[300px] pl-10 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:ring-blue-500 focus:border-blue-500"
                   />
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 pointer-events-none" />
                 </div>
                 {/* Result Dropdown */}
                 {showDropdown && searchResults.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
                     <ul>
                       {searchResults.map((product) => {
                         const mainImage =
@@ -329,7 +347,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                               router.push(`/staff/products/${product.id}`);
                             }}
                           >
-                            <div className="w-10 h-10 rounded bg-gray-100 overflow-hidden flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                            <div className="w-10 h-10 rounded bg-slate-100 dark:bg-slate-700 overflow-hidden flex items-center justify-center border border-slate-200 dark:border-slate-600">
                               <Image
                                 src={mainImage?.image_url || "/placeholder.svg"}
                                 alt={product.name}
@@ -339,11 +357,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="font-medium text-sm truncate">
+                              <div className="font-medium text-sm truncate text-slate-900 dark:text-slate-100">
                                 {product.name}
                               </div>
                               {product.category && (
-                                <div className="text-xs text-gray-400 truncate">
+                                <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
                                   {product.category}
                                 </div>
                               )}
@@ -351,7 +369,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                                 <span className="text-xs text-blue-600 bg-blue-100 dark:bg-blue-800 dark:text-blue-200 px-2 py-0.5 rounded">
                                   {label || "No price"}
                                 </span>
-                                <span className="font-semibold text-sm">
+                                <span className="font-semibold text-sm text-slate-900 dark:text-slate-100">
                                   {price !== undefined
                                     ? `RM${price.toFixed(2)}`
                                     : "N/A"}
@@ -384,12 +402,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   size="icon"
                   onClick={toggleTheme}
                   aria-label="Toggle theme"
-                  className="flex-shrink-0"
+                  className="flex-shrink-0 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200"
                 >
                   {theme === "dark" ? (
-                    <Sun className="h-[1.2rem] w-[1.2rem]" />
+                    <Sun className="h-[1.2rem] w-[1.2rem] text-amber-500" />
                   ) : (
-                    <Moon className="h-[1.2rem] w-[1.2rem]" />
+                    <Moon className="h-[1.2rem] w-[1.2rem] text-slate-600" />
                   )}
                 </Button>
 
@@ -397,23 +415,34 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 {user && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Avatar className="h-9 w-9 cursor-pointer border-2 border-[#ff7a5c] flex-shrink-0">
+                      <Avatar className="h-9 w-9 cursor-pointer border-2 border-blue-500/20 hover:border-blue-500/40 transition-all duration-200 flex-shrink-0">
                         <AvatarImage
                           src={user.user_metadata?.avatar_url || undefined}
                           alt="User avatar"
                         />
-                        <AvatarFallback>
+                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-white font-semibold">
                           {user.user_metadata?.full_name
                             ? getInitials(user.user_metadata.full_name)
                             : "U"}
                         </AvatarFallback>
                       </Avatar>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent
+                      align="end"
+                      className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                    >
                       <DropdownMenuItem asChild>
-                        <Link href="/profile">Profile</Link>
+                        <Link
+                          href="/profile"
+                          className="hover:bg-slate-50 dark:hover:bg-slate-700"
+                        >
+                          Profile
+                        </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleLogout}>
+                      <DropdownMenuItem
+                        onClick={handleLogout}
+                        className="hover:bg-slate-50 dark:hover:bg-slate-700"
+                      >
                         Logout
                       </DropdownMenuItem>
                     </DropdownMenuContent>
