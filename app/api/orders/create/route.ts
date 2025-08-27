@@ -129,8 +129,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Check for existing order with payment_intent_id before any creation
     if (requestData.payment_intent_id && !requestData.is_recovery_attempt) {
-      console.log("Checking for existing order");
       const { data: existingOrder } = await supabaseAdmin
         .from("orders")
         .select("id, status, payment_status")
@@ -138,10 +138,6 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (existingOrder) {
-        console.log(
-          "Order already exists for payment intent:",
-          requestData.payment_intent_id
-        );
         return NextResponse.json({
           order_id: existingOrder.id,
           amount: requestData.total,
@@ -153,6 +149,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Prepare order items before creating order
     const productIds = requestData.items.map((item) => item.product_id);
     const { data: products, error: productError } = await supabase
       .from("products")
@@ -165,7 +162,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (!products) {
-      console.log("No products found");
       return NextResponse.json({ error: "No products found" }, { status: 400 });
     }
 
@@ -178,7 +174,6 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-
       let image_url = null;
       if (product.product_images && product.product_images.length > 0) {
         const primary = product.product_images.find(
@@ -188,7 +183,6 @@ export async function POST(request: NextRequest) {
           ? primary.image_url
           : product.product_images[0].image_url;
       }
-
       orderItems.push({
         product_id: item.product_id,
         name: product.name,
@@ -200,6 +194,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Now create the order
     const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
       .insert({
@@ -223,14 +218,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (!order) {
-      console.log("No order returned");
       return NextResponse.json(
         { error: "Failed to create order - no data returned" },
         { status: 500 }
       );
     }
-
-    console.log("Order created successfully, ID:", order.id);
 
     const orderItemsWithOrderId = orderItems.map((item) => ({
       ...item,
@@ -239,19 +231,14 @@ export async function POST(request: NextRequest) {
 
     console.log("Creating order items, count:", orderItemsWithOrderId.length);
 
+    // Create order items, if fails, delete the order to prevent duplicate on retry
     const { error: itemsError } = await supabaseAdmin
       .from("order_items")
       .insert(orderItemsWithOrderId);
 
+    // Only deletes the order created in this request if order_items fails:
     if (itemsError) {
-      console.error("Order items creation error:", itemsError);
-      await supabaseAdmin
-        .from("orders")
-        .update({
-          status: "failed",
-        })
-        .eq("id", order.id);
-
+      await supabaseAdmin.from("orders").delete().eq("id", order.id);
       return NextResponse.json(
         {
           error: `Failed to create order items: ${handleError(
@@ -261,12 +248,11 @@ export async function POST(request: NextRequest) {
           order_id: order.id,
           order_status: "failed",
           payment_status: paymentStatus,
+          deleted_partial_order: true,
         },
         { status: 500 }
       );
     }
-
-    console.log("Order items created successfully");
 
     try {
       const orderIdFormatted = order.id;
