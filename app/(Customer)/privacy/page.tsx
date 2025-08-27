@@ -1,489 +1,476 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/";
-import { Separator } from "@/components/ui/";
-import { Badge } from "@/components/ui/";
-import { Button } from "@/components/ui/";
+import { useState } from "react";
+import {
+  Shield,
+  Eye,
+  Lock,
+  Users,
+  Cookie,
+  Database,
+  Mail,
+  Phone,
+  Calendar,
+  MapPin,
+} from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/";
 import {
   TypographyH1,
   TypographyH3,
-  TypographyH4,
+  TypographyH6,
   TypographyP,
-  TypographyList,
-  TypographyListItem,
-  TypographyLead,
-  TypographyMuted,
-  TypographySmall,
 } from "@/components/ui/Typography";
-import { useRouter } from "next/navigation";
-import { Shield } from "lucide-react";
 
-export default function PrivacyPolicy() {
-  const router = useRouter();
+const privacySections = [
+  {
+    id: "information-collection",
+    title: "Information We Collect",
+    icon: Database,
+    content: {
+      intro:
+        "We collect information you provide directly to us, information we obtain automatically when you use our services, and information from third parties.",
+      subsections: [
+        {
+          title: "Personal Information",
+          items: [
+            "Name and contact information (email, phone, address)",
+            "Account credentials and preferences",
+            "Payment and billing information",
+            "Communication history and support requests",
+          ],
+        },
+        {
+          title: "Automatic Information",
+          items: [
+            "Device and browser information",
+            "IP address and location data",
+            "Usage patterns and analytics",
+            "Cookies and similar technologies",
+          ],
+        },
+        {
+          title: "Third-Party Information",
+          items: [
+            "Social media profile information",
+            "Payment processor data",
+            "Business verification services",
+            "Marketing and analytics partners",
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "information-use",
+    title: "How We Use Your Information",
+    icon: Eye,
+    content: {
+      intro:
+        "We use the information we collect to provide, maintain, and improve our services, process transactions, and communicate with you.",
+      subsections: [
+        {
+          title: "Service Provision",
+          items: [
+            "Process and fulfill your orders",
+            "Provide customer support and assistance",
+            "Manage your account and preferences",
+            "Send transactional communications",
+          ],
+        },
+        {
+          title: "Business Operations",
+          items: [
+            "Analyze usage patterns and improve services",
+            "Detect and prevent fraud and abuse",
+            "Comply with legal obligations",
+            "Protect our rights and property",
+          ],
+        },
+        {
+          title: "Marketing Communications",
+          items: [
+            "Send promotional offers and updates",
+            "Provide personalized recommendations",
+            "Conduct surveys and research",
+            "Share news about our products and services",
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "information-sharing",
+    title: "Information Sharing and Disclosure",
+    icon: Users,
+    content: {
+      intro:
+        "We do not sell, trade, or rent your personal information to third parties. We may share your information in limited circumstances as described below.",
+      subsections: [
+        {
+          title: "Service Providers",
+          items: [
+            "Payment processing and fraud prevention",
+            "Shipping and logistics partners",
+            "Cloud hosting and data storage",
+            "Customer support and communication tools",
+          ],
+        },
+        {
+          title: "Business Transfers",
+          items: [
+            "Mergers, acquisitions, or asset sales",
+            "Bankruptcy or insolvency proceedings",
+            "Corporate restructuring or reorganization",
+          ],
+        },
+        {
+          title: "Legal Requirements",
+          items: [
+            "Compliance with applicable laws and regulations",
+            "Response to legal processes and government requests",
+            "Protection of our rights and safety",
+            "Prevention of fraud and illegal activities",
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "data-security",
+    title: "Data Security and Protection",
+    icon: Lock,
+    content: {
+      intro:
+        "We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.",
+      subsections: [
+        {
+          title: "Technical Safeguards",
+          items: [
+            "Encryption of data in transit and at rest",
+            "Secure server infrastructure and firewalls",
+            "Regular security assessments and monitoring",
+            "Access controls and authentication systems",
+          ],
+        },
+        {
+          title: "Organizational Measures",
+          items: [
+            "Employee training on data protection",
+            "Limited access on a need-to-know basis",
+            "Regular review of security policies",
+            "Incident response and breach notification procedures",
+          ],
+        },
+        {
+          title: "Data Retention",
+          items: [
+            "Retention only for as long as necessary",
+            "Secure deletion when no longer needed",
+            "Regular review of retention periods",
+            "Compliance with legal requirements",
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "cookies-tracking",
+    title: "Cookies and Tracking Technologies",
+    icon: Cookie,
+    content: {
+      intro:
+        "We use cookies and similar technologies to enhance your experience, analyze usage, and provide personalized content and advertising.",
+      subsections: [
+        {
+          title: "Types of Cookies",
+          items: [
+            "Essential cookies for basic functionality",
+            "Performance cookies for analytics",
+            "Functional cookies for preferences",
+            "Advertising cookies for personalization",
+          ],
+        },
+        {
+          title: "Cookie Management",
+          items: [
+            "Browser settings to control cookies",
+            "Opt-out mechanisms for advertising",
+            "Cookie preference center",
+            "Regular review and cleanup",
+          ],
+        },
+        {
+          title: "Third-Party Tracking",
+          items: [
+            "Google Analytics for website analytics",
+            "Social media plugins and widgets",
+            "Advertising network pixels",
+            "Payment processor tracking",
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "your-rights",
+    title: "Your Privacy Rights and Choices",
+    icon: Shield,
+    content: {
+      intro:
+        "You have certain rights regarding your personal information. We are committed to honoring these rights and providing you with control over your data.",
+      subsections: [
+        {
+          title: "Access and Portability",
+          items: [
+            "Request access to your personal information",
+            "Obtain a copy of your data in a portable format",
+            "Review how your information is being used",
+            "Verify the accuracy of your information",
+          ],
+        },
+        {
+          title: "Correction and Deletion",
+          items: [
+            "Update or correct inaccurate information",
+            "Request deletion of your personal data",
+            "Restrict processing in certain circumstances",
+            "Object to processing for marketing purposes",
+          ],
+        },
+        {
+          title: "Communication Preferences",
+          items: [
+            "Unsubscribe from marketing communications",
+            "Update your communication preferences",
+            "Choose your preferred contact methods",
+            "Manage notification settings",
+          ],
+        },
+      ],
+    },
+  },
+];
+
+const quickStats = [
+  {
+    icon: Shield,
+    title: "Data Protection",
+    description: "Enterprise-grade security measures protect your information",
+  },
+  {
+    icon: Users,
+    title: "No Data Selling",
+    description: "We never sell your personal information to third parties",
+  },
+  {
+    icon: Lock,
+    title: "Secure Processing",
+    description: "All transactions are encrypted and securely processed",
+  },
+  {
+    icon: Eye,
+    title: "Transparent Practices",
+    description: "Clear policies on how we collect and use your data",
+  },
+];
+
+export default function PrivacyPage() {
+  const [activeSection, setActiveSection] = useState<string>(
+    "information-collection"
+  );
 
   return (
-    <div className="container mx-auto px-4 pt-0 pb-4">
+    <div className="container mx-auto px-4 py-8">
       {/* Header Section */}
-      <div className="text-center mb-8">
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <Shield className="h-8 w-8 text-primary" />
-          <TypographyH1>Privacy Policy</TypographyH1>
+      <div className="text-center mb-16">
+        <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+          <Shield className="w-10 h-10 text-white" />
         </div>
-        <Badge variant="outline" className="mb-4">
-          Effective Date: July 15, 2025
-        </Badge>
-        <TypographyLead className="max-w-3xl mx-auto">
-          Your privacy is important to us. This Privacy Policy explains how YTL
-          Concrete Hub collects, uses, and protects your personal information.
-        </TypographyLead>
+        <TypographyH1 className="mb-4 text-gray-900 dark:text-gray-100">
+          Privacy Policy
+        </TypographyH1>
+        <TypographyP className="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-6">
+          Your privacy is important to us. This policy explains how YTL Cement
+          Hub collects, uses, and protects your personal information when you
+          use our services.
+        </TypographyP>
+        <div className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Calendar className="w-4 h-4" />
+            <span>Last updated: December 2024</span>
+          </div>
+          <div className="flex items-center justify-center gap-2">
+            <MapPin className="w-4 h-4" />
+            <span>Effective Date: January 1, 2024</span>
+          </div>
+        </div>
       </div>
 
-      <div className="max-w-4xl mx-auto">
-        <Card>
-          <CardHeader>
-            <CardTitle>Privacy Policy</CardTitle>
-          </CardHeader>
-          <CardContent className="prose prose-gray max-w-none dark:prose-invert space-y-6">
-            {/* Section 1 */}
-            <div>
-              <TypographyH3 className="mb-3">
-                1. Information We Collect
-              </TypographyH3>
-
-              <div className="space-y-4">
-                <div>
-                  <TypographyH4 className="mb-2">
-                    Personal Information:
-                  </TypographyH4>
-                  <TypographyList>
-                    <TypographyListItem>
-                      Name, email address, phone number
-                    </TypographyListItem>
-                    <TypographyListItem>
-                      Billing and shipping addresses
-                    </TypographyListItem>
-                    <TypographyListItem>
-                      Payment information (processed securely)
-                    </TypographyListItem>
-                    <TypographyListItem>
-                      Account preferences and settings
-                    </TypographyListItem>
-                  </TypographyList>
-                </div>
-
-                <div>
-                  <TypographyH4 className="mb-2">AI & Usage Data:</TypographyH4>
-                  <TypographyList>
-                    <TypographyListItem>
-                      Images uploaded for AI product search
-                    </TypographyListItem>
-                    <TypographyListItem>
-                      Chat messages and interactions with our AI chatbot
-                    </TypographyListItem>
-                    <TypographyListItem>
-                      Product searches and comparisons
-                    </TypographyListItem>
-                    <TypographyListItem>
-                      Website usage patterns and preferences
-                    </TypographyListItem>
-                  </TypographyList>
-                </div>
-
-                <div>
-                  <TypographyH4 className="mb-2">
-                    Technical Information:
-                  </TypographyH4>
-                  <TypographyList>
-                    <TypographyListItem>
-                      IP address, browser type, device information
-                    </TypographyListItem>
-                    <TypographyListItem>
-                      Cookies and similar tracking technologies
-                    </TypographyListItem>
-                    <TypographyListItem>
-                      Log files and website analytics
-                    </TypographyListItem>
-                  </TypographyList>
-                </div>
+      {/* Quick Stats */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+        {quickStats.map((stat, index) => (
+          <Card
+            key={index}
+            className="text-center border-2 hover:border-blue-200 dark:hover:border-blue-800 transition-colors duration-200"
+          >
+            <CardHeader className="pb-4">
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mx-auto mb-3">
+                <stat.icon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
-            </div>
-
-            <Separator />
-
-            {/* Section 2 */}
-            <div>
-              <TypographyH3 className="mb-3">
-                2. How We Use Your Information
-              </TypographyH3>
-              <TypographyList>
-                <TypographyListItem>
-                  <strong className="text-foreground">Service Delivery:</strong>{" "}
-                  Process orders, payments, and shipments
-                </TypographyListItem>
-                <TypographyListItem>
-                  <strong className="text-foreground">AI Features:</strong>{" "}
-                  Provide image search, product recommendations, and chatbot
-                  assistance
-                </TypographyListItem>
-                <TypographyListItem>
-                  <strong className="text-foreground">
-                    Account Management:
-                  </strong>{" "}
-                  Maintain your account and preferences
-                </TypographyListItem>
-                <TypographyListItem>
-                  <strong className="text-foreground">Communication:</strong>{" "}
-                  Send order updates, support responses, and service
-                  notifications
-                </TypographyListItem>
-                <TypographyListItem>
-                  <strong className="text-foreground">Improvement:</strong>{" "}
-                  Analyze usage to enhance our AI tools and website
-                </TypographyListItem>
-                <TypographyListItem>
-                  <strong className="text-foreground">Security:</strong> Detect
-                  fraud and ensure platform security
-                </TypographyListItem>
-              </TypographyList>
-            </div>
-
-            <Separator />
-
-            {/* Section 3 */}
-            <div>
-              <TypographyH3 className="mb-3">
-                3. Information Sharing
-              </TypographyH3>
-              <TypographyP className="mb-3">
-                We do not sell your personal information. We may share
-                information with:
+              <CardTitle className="text-lg text-gray-900 dark:text-gray-100">
+                {stat.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <TypographyP className="text-sm text-gray-600 dark:text-gray-400">
+                {stat.description}
               </TypographyP>
-              <TypographyList>
-                <TypographyListItem>
-                  <strong className="text-foreground">
-                    Service Providers:
-                  </strong>{" "}
-                  Payment processors, shipping companies, cloud storage
-                </TypographyListItem>
-                <TypographyListItem>
-                  <strong className="text-foreground">YTL Group:</strong>{" "}
-                  Related companies within the YTL corporate family
-                </TypographyListItem>
-                <TypographyListItem>
-                  <strong className="text-foreground">
-                    Legal Requirements:
-                  </strong>{" "}
-                  When required by law or to protect our rights
-                </TypographyListItem>
-                <TypographyListItem>
-                  <strong className="text-foreground">
-                    Business Transfers:
-                  </strong>{" "}
-                  In case of merger, acquisition, or asset sale
-                </TypographyListItem>
-              </TypographyList>
-            </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-            <Separator />
+      {/* Main Content */}
+      <div className="grid lg:grid-cols-4 gap-8">
+        {/* Table of Contents */}
+        <div className="lg:col-span-1">
+          <Card className="lg:sticky lg:top-24">
+            <CardHeader>
+              <CardTitle className="text-lg text-gray-900 dark:text-gray-100">
+                Table of Contents
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {privacySections.map((section) => (
+                <button
+                  key={section.id}
+                  onClick={() => setActiveSection(section.id)}
+                  className={`w-full text-left p-3 rounded-lg transition-all duration-200 flex items-center gap-3 ${
+                    activeSection === section.id
+                      ? "bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border-l-4 border-blue-500"
+                      : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+                  }`}
+                >
+                  <section.icon className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-sm font-medium">{section.title}</span>
+                </button>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
 
-            {/* Section 4 */}
-            <div>
-              <TypographyH3 className="mb-3">
-                4. AI Data Processing
-              </TypographyH3>
-              <div className="space-y-4">
-                <div>
-                  <TypographyH4 className="mb-2">Image Uploads:</TypographyH4>
-                  <TypographyList>
-                    <TypographyListItem>
-                      Images are processed by our AI to identify similar
-                      products
-                    </TypographyListItem>
-                    <TypographyListItem>
-                      Images may be stored temporarily to improve AI accuracy
-                    </TypographyListItem>
-                    <TypographyListItem>
-                      We do not use your images for commercial purposes beyond
-                      our services
-                    </TypographyListItem>
-                  </TypographyList>
-                </div>
+        {/* Privacy Content */}
+        <div className="lg:col-span-3">
+          <Accordion
+            type="multiple"
+            defaultValue={privacySections.map((s) => s.id)}
+            className="space-y-4"
+          >
+            {privacySections.map((section) => (
+              <AccordionItem
+                key={section.id}
+                value={section.id}
+                className="border rounded-xl bg-white dark:bg-slate-800 shadow-lg"
+              >
+                <AccordionTrigger
+                  className="px-6 py-4 hover:no-underline"
+                  onClick={() => setActiveSection(section.id)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                      <section.icon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <TypographyH3 className="text-left text-gray-900 dark:text-gray-100">
+                      {section.title}
+                    </TypographyH3>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-6 pb-6">
+                  <div className="space-y-6">
+                    <TypographyP className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                      {section.content.intro}
+                    </TypographyP>
 
-                <div>
-                  <TypographyH4 className="mb-2">Chat Data:</TypographyH4>
-                  <TypographyList>
-                    <TypographyListItem>
-                      Conversations help train and improve our chatbot
-                    </TypographyListItem>
-                    <TypographyListItem>
-                      Personal information is anonymized when used for training
-                    </TypographyListItem>
-                    <TypographyListItem>
-                      You can request deletion of your chat history
-                    </TypographyListItem>
-                  </TypographyList>
-                </div>
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Section 5 */}
-            <div>
-              <TypographyH3 className="mb-3">5. Data Security</TypographyH3>
-              <TypographyP className="mb-3">
-                We implement industry-standard security measures:
-              </TypographyP>
-              <TypographyList>
-                <TypographyListItem>
-                  SSL/TLS encryption for data transmission
-                </TypographyListItem>
-                <TypographyListItem>
-                  Secure cloud storage with access controls
-                </TypographyListItem>
-                <TypographyListItem>
-                  Regular security audits and updates
-                </TypographyListItem>
-                <TypographyListItem>
-                  Employee training on data protection
-                </TypographyListItem>
-                <TypographyListItem>
-                  Payment data handled by PCI-compliant processors
-                </TypographyListItem>
-              </TypographyList>
-            </div>
-
-            <Separator />
-
-            {/* Section 6 */}
-            <div>
-              <TypographyH3 className="mb-3">6. Your Rights</TypographyH3>
-              <TypographyP className="mb-3">You have the right to:</TypographyP>
-              <TypographyList>
-                <TypographyListItem>
-                  <strong className="text-foreground">Access:</strong> Request a
-                  copy of your personal data
-                </TypographyListItem>
-                <TypographyListItem>
-                  <strong className="text-foreground">Correct:</strong> Update
-                  inaccurate or incomplete information
-                </TypographyListItem>
-                <TypographyListItem>
-                  <strong className="text-foreground">Delete:</strong> Request
-                  deletion of your personal data
-                </TypographyListItem>
-                <TypographyListItem>
-                  <strong className="text-foreground">Restrict:</strong> Limit
-                  how we process your information
-                </TypographyListItem>
-                <TypographyListItem>
-                  <strong className="text-foreground">Portable:</strong> Receive
-                  your data in a machine-readable format
-                </TypographyListItem>
-                <TypographyListItem>
-                  <strong className="text-foreground">Object:</strong> Opt-out
-                  of certain data processing activities
-                </TypographyListItem>
-              </TypographyList>
-              <TypographyMuted className="mt-3">
-                To exercise these rights, please contact us using the
-                information below.
-              </TypographyMuted>
-            </div>
-
-            <Separator />
-
-            {/* Section 7 */}
-            <div>
-              <TypographyH3 className="mb-3">
-                7. Cookies & Tracking
-              </TypographyH3>
-              <TypographyP className="mb-3">
-                We use cookies and similar technologies to:
-              </TypographyP>
-              <TypographyList>
-                <TypographyListItem>
-                  Remember your preferences and login status
-                </TypographyListItem>
-                <TypographyListItem>
-                  Analyze website traffic and usage patterns
-                </TypographyListItem>
-                <TypographyListItem>
-                  Provide personalized content and recommendations
-                </TypographyListItem>
-                <TypographyListItem>
-                  Ensure website security and prevent fraud
-                </TypographyListItem>
-              </TypographyList>
-              <TypographyMuted className="mt-3">
-                You can manage cookie preferences through your browser settings.
-              </TypographyMuted>
-            </div>
-
-            <Separator />
-
-            {/* Section 8 */}
-            <div>
-              <TypographyH3 className="mb-3">8. Data Retention</TypographyH3>
-              <TypographyList>
-                <TypographyListItem>
-                  Account data: Retained while your account is active
-                </TypographyListItem>
-                <TypographyListItem>
-                  Order history: Kept for legal and business purposes (typically
-                  7 years)
-                </TypographyListItem>
-                <TypographyListItem>
-                  AI training data: Anonymized and retained to improve services
-                </TypographyListItem>
-                <TypographyListItem>
-                  Marketing data: Until you unsubscribe or request deletion
-                </TypographyListItem>
-              </TypographyList>
-            </div>
-
-            <Separator />
-
-            {/* Section 9 */}
-            <div>
-              <TypographyH3 className="mb-3">
-                9. Updates to This Policy
-              </TypographyH3>
-              <TypographyP className="mb-3">
-                We may update this Privacy Policy periodically. Material changes
-                will be posted on our website with an updated effective date.
-              </TypographyP>
-              <TypographyP>
-                Your continued use of our services after changes constitutes
-                acceptance of the updated policy.
-              </TypographyP>
-            </div>
-
-            <Separator />
-
-            {/* Section 10 */}
-            <div>
-              <TypographyH3 className="mb-3">10. Contact Us</TypographyH3>
-              <TypographyP className="mb-4">
-                For privacy-related questions or to exercise your rights,
-                contact us:
-              </TypographyP>
-              <div className="bg-muted p-4 rounded-lg">
-                <div className="space-y-3">
-                  <div className="flex items-start gap-2">
-                    <span className="text-lg">📧</span>
-                    <div className="min-w-0 flex-1">
-                      <strong>Privacy Email:</strong>
-                      <br />
-                      <a
-                        href="mailto:privacy@ytlconcretehub.com"
-                        className="text-primary hover:underline break-all"
-                      >
-                        privacy@ytlconcretehub.com
-                      </a>
+                    <div className="space-y-6">
+                      {section.content.subsections.map((subsection, index) => (
+                        <div key={index} className="space-y-3">
+                          <TypographyH6 className="text-gray-900 dark:text-gray-100 font-semibold">
+                            {subsection.title}
+                          </TypographyH6>
+                          <ul className="space-y-2">
+                            {subsection.items.map((item, itemIndex) => (
+                              <li
+                                key={itemIndex}
+                                className="flex items-start gap-3"
+                              >
+                                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2.5 flex-shrink-0" />
+                                <span className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                                  {item}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
                     </div>
                   </div>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
 
-                  <div className="flex items-start gap-2">
-                    <span className="text-lg">📧</span>
-                    <div className="min-w-0 flex-1">
-                      <strong>General Support:</strong>
-                      <br />
-                      <a
-                        href="mailto:support@ytlconcretehub.com"
-                        className="text-primary hover:underline break-all"
-                      >
-                        support@ytlconcretehub.com
-                      </a>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-2">
-                    <span className="text-lg">📍</span>
-                    <div className="min-w-0 flex-1">
-                      <strong>Address:</strong>
-                      <br />
-                      <address className="not-italic text-muted-foreground mt-1 leading-relaxed">
-                        Level 15, 205, Jln Bukit Bintang, Bukit Bintang, 55100
-                        Kuala Lumpur, Federal Territory Malaysia
-                      </address>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <Separator className="my-8" />
-
-            {/* Enhanced Footer */}
-            <div className="bg-gradient-to-r from-muted/50 to-muted/80 p-6 rounded-lg border">
-              <div className="text-center space-y-6">
-                {/* Last Updated Info */}
-                <div className="flex items-center justify-center gap-2">
-                  <Shield className="h-4 w-4 text-muted-foreground" />
-                  <TypographySmall className="text-muted-foreground">
-                    Last updated: July 15, 2025
-                  </TypographySmall>
-                </div>
-
-                {/* Call to Action */}
-                <div className="space-y-2">
-                  <TypographyP className="font-medium">
-                    Questions about your privacy and data protection?
-                  </TypographyP>
-                  <TypographyMuted>
-                    Your privacy matters to us. Contact us for any
-                    privacy-related concerns.
-                  </TypographyMuted>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl mx-auto">
-                  <Button
-                    variant="outline"
-                    onClick={() => router.back()}
-                    className="w-full"
+          {/* Contact Information */}
+          <Card className="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-gray-100">
+                <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                Questions About This Policy?
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <TypographyP className="text-gray-600 dark:text-gray-300">
+                If you have any questions about this Privacy Policy or our data
+                practices, please don't hesitate to contact us.
+              </TypographyP>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="flex items-center gap-3">
+                  <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <a
+                    href="mailto:privacy@ytl.com.my"
+                    className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
                   >
-                    Go Back
-                  </Button>
-                  <Button onClick={() => router.push("/")} className="w-full">
-                    Return to Home
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => router.push("/terms")}
-                    className="w-full"
-                  >
-                    Terms & Conditions
-                  </Button>
+                    privacy@ytl.com.my
+                  </a>
                 </div>
-
-                {/* Privacy-Specific Links */}
-                <div className="pt-4 border-t border-border/50">
-                  <div className="flex flex-wrap justify-center gap-4 text-sm">
-                    <a
-                      href="mailto:privacy@ytlconcretehub.com"
-                      className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
-                    >
-                      🛡️ Privacy Officer
-                    </a>
-                    <span className="text-muted-foreground/50">•</span>
-                    <a
-                      href="mailto:dpo@ytlconcretehub.com"
-                      className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
-                    >
-                      📋 Data Protection
-                    </a>
-                    <span className="text-muted-foreground/50">•</span>
-                    <span className="text-muted-foreground">
-                      🔒 GDPR Compliant
-                    </span>
-                  </div>
+                <div className="flex items-center gap-3">
+                  <Phone className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <a
+                    href="tel:+60321170088"
+                    className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
+                  >
+                    +60 3-2117 0088
+                  </a>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+              <div className="pt-2 border-t border-blue-200 dark:border-blue-800">
+                <TypographyP className="text-xs text-gray-500 dark:text-gray-400">
+                  YTL Cement Berhad • 11th Floor, Yeoh Tiong Lay Plaza, 55 Jalan
+                  Bukit Bintang, 55100 Kuala Lumpur, Malaysia
+                </TypographyP>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
