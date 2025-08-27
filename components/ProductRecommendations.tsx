@@ -1,15 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { ChevronRight, TrendingUp, DollarSign, Lightbulb } from "lucide-react";
+import { TrendingUp, DollarSign, Lightbulb } from "lucide-react";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-  Button,
   Badge,
 } from "@/components/ui/";
 import { Product } from "@/type/product";
@@ -17,7 +14,7 @@ import {
   recommendationEngine,
   RecommendationGroup,
 } from "@/lib/recommendations/recommendationEngine";
-import { formatCurrency } from "@/lib/utils/currency";
+import { ProductCard } from "./ProductCards";
 
 interface ProductRecommendationsProps {
   currentProduct: Product;
@@ -124,18 +121,26 @@ export default function ProductRecommendations({
             className="border-2 hover:border-orange-200 dark:hover:border-orange-800 transition-colors duration-200"
           >
             <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-xl">
-                <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
-                  <IconComponent className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                </div>
-                {group.title}
-              </CardTitle>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">
-                {group.description}
-              </p>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-3 text-xl">
+                  <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
+                    <IconComponent className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  {group.title}
+                </CardTitle>
+                <Badge className="text-xs" variant="secondary">
+                  {group.products.length}{" "}
+                  {group.products.length === 1 ? "item" : "items"}
+                </Badge>
+              </div>
+              <div className="flex items-start gap-2">
+                <p className="text-gray-600 dark:text-gray-400 text-sm">
+                  {group.description}
+                </p>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {group.products.map((rec, index) => {
                   const product = rec.product;
                   const mainImage =
@@ -144,71 +149,64 @@ export default function ProductRecommendations({
                   const bestPrice = getBestPrice(product);
 
                   return (
-                    <Card
-                      key={index}
-                      className="group hover:shadow-lg transition-all duration-200 hover:scale-[1.02] border border-gray-200 dark:border-gray-700"
-                    >
-                      <CardContent className="p-4">
-                        <div className="relative mb-3">
-                          <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
-                            <Image
-                              src={mainImage?.image_url || "/placeholder.svg"}
-                              alt={product.name}
-                              width={200}
-                              height={200}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                            />
-                          </div>
-                          <Badge
-                            className={`absolute top-2 right-2 text-xs px-2 py-1 ${getTypeColor(
-                              rec.type
-                            )}`}
-                          >
-                            {rec.type === "upsell"
-                              ? "Upgrade"
-                              : rec.type === "downsell"
-                              ? "Budget"
-                              : "Alternative"}
-                          </Badge>
+                    <div key={index} className="relative">
+                      {/* Recommendation type badge overlay */}
+                      <div className="absolute top-2 right-2 z-10">
+                        <Badge
+                          className={`text-xs px-2 py-1 ${getTypeColor(
+                            rec.type
+                          )}`}
+                        >
+                          {rec.type === "upsell"
+                            ? "Upgrade"
+                            : rec.type === "downsell"
+                            ? "Budget"
+                            : "Alternative"}
+                        </Badge>
+                      </div>
+
+                      {/* Recommendation reason tooltip/overlay */}
+                      <div className="absolute bottom-2 left-2 right-2 z-10">
+                        <div className="bg-black/75 text-white text-xs p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          {rec.reason}
                         </div>
+                      </div>
 
-                        <div className="space-y-2">
-                          <h4 className="font-semibold text-sm line-clamp-2 text-gray-900 dark:text-gray-100">
-                            {product.name}
-                          </h4>
-
-                          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                            <span>
-                              {product.grade ||
-                                product.mortar_ratio ||
-                                product.category}
-                            </span>
-                            {bestPrice && (
-                              <span className="font-semibold text-orange-600 dark:text-orange-400">
-                                {formatCurrency(bestPrice)}
-                              </span>
-                            )}
-                          </div>
-
-                          <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
-                            {rec.reason}
-                          </p>
-
-                          <Link href={`/products/${product.id}`}>
-                            <Button
-                              size="sm"
-                              className="w-full mt-3 group-hover:bg-orange-600 group-hover:text-white transition-colors duration-200"
-                              variant="outline"
-                            >
-                              View Details
-                              <ChevronRight className="w-3 h-3 ml-1" />
-                            </Button>
-                          </Link>
-                        </div>
-                      </CardContent>
-                    </Card>
+                      <div className="group">
+                        <ProductCard
+                          id={product.id}
+                          name={product.name}
+                          price={bestPrice || 0}
+                          grade={product.grade}
+                          productType={product.product_type}
+                          unit={product.unit}
+                          stock={product.stock_quantity}
+                          image={mainImage?.image_url || "/placeholder.svg"}
+                          href={`/products/${product.id}`}
+                          showCompare={false} // Disable compare for recommendations
+                          normal_price={product.normal_price}
+                          pump_price={product.pump_price}
+                          tremie_1_price={product.tremie_1_price}
+                          tremie_2_price={product.tremie_2_price}
+                          tremie_3_price={product.tremie_3_price}
+                        />
+                      </div>
+                    </div>
                   );
                 })}
+              </div>
+
+              {/* Recommendation reason display for mobile */}
+              <div className="mt-4 space-y-2 md:hidden">
+                {group.products.map((rec, index) => (
+                  <div
+                    key={index}
+                    className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded"
+                  >
+                    <span className="font-medium">{rec.product.name}:</span>{" "}
+                    {rec.reason}
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
