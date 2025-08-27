@@ -19,7 +19,7 @@ import {
   Badge,
 } from "@/components/ui";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
-import { formatDate } from "@/lib/utils/format";
+import { formatDate, getPaymentStatusConfig } from "@/lib/utils/format";
 import { formatCurrency } from "@/lib/utils/currency";
 import Image from "next/image";
 import { ArrowLeft, FileText } from "lucide-react";
@@ -178,14 +178,17 @@ export default function StaffOrderDetailsPage() {
               <TypographyP className="font-semibold mb-1">
                 Payment Status
               </TypographyP>
-              <Badge
-                variant={
-                  order.payment_status === "paid" ? "default" : "secondary"
-                }
-              >
-                {order.payment_status.charAt(0).toUpperCase() +
-                  order.payment_status.slice(1)}
-              </Badge>
+              {(() => {
+                const config = getPaymentStatusConfig(order.payment_status);
+                return (
+                  <Badge
+                    variant={config.variant}
+                    className={`mb-4 ${config.className}`}
+                  >
+                    {config.label}
+                  </Badge>
+                );
+              })()}
             </div>
             <div>
               <TypographyP className="font-semibold mb-1">

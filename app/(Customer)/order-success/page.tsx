@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useUser } from "@supabase/auth-helpers-react";
-import { Button, Skeleton } from "@/components/ui";
+import { Badge, Button, Skeleton } from "@/components/ui";
 import {
   CheckCircle,
   Package,
@@ -25,13 +25,16 @@ import {
 } from "@/components/ui/Typography";
 import { Order } from "@/type/order";
 import { getOrderById } from "@/lib/order/api";
-import { formatDate, getPaymentStatusColor } from "@/lib/utils/format";
+import {
+  formatDate,
+  getPaymentStatusConfig,
+  getStatusBadgeConfig,
+} from "@/lib/utils/format";
 
 export default function OrderSuccessPage() {
   const searchParams = useSearchParams();
   const user = useUser();
   const [order, setOrder] = useState<Order | null>(null);
-  console.log("Order state:", order);
   const [isLoading, setIsLoading] = useState(true);
 
   const orderId = searchParams?.get("orderId");
@@ -169,23 +172,6 @@ export default function OrderSuccessPage() {
     );
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "text-yellow-700 bg-yellow-100 dark:bg-yellow-900/20 dark:text-yellow-400";
-      case "processing":
-        return "text-blue-700 bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400";
-      case "shipped":
-        return "text-purple-700 bg-purple-100 dark:bg-purple-900/20 dark:text-purple-400";
-      case "delivered":
-        return "text-green-700 bg-green-100 dark:bg-green-900/20 dark:text-green-400";
-      case "cancelled":
-        return "text-red-700 bg-red-100 dark:bg-red-900/20 dark:text-red-400";
-      default:
-        return "text-gray-700 bg-gray-100 dark:bg-gray-900/20 dark:text-gray-400";
-    }
-  };
-
   return (
     <div className="container mx-auto px-4 pt-0 pb-4">
       <TypographyH1 className="my-8">ORDER SUCCESS</TypographyH1>
@@ -221,26 +207,31 @@ export default function OrderSuccessPage() {
             <TypographyP className="text-sm text-gray-600 dark:text-gray-400 mb-2 !mt-0">
               Status
             </TypographyP>
-            <span
-              className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${getStatusColor(
-                order.status
-              )}`}
-            >
-              {order.status}
-            </span>
+            {(() => {
+              const config = getStatusBadgeConfig(order.status);
+              return (
+                <Badge variant={config.variant} className={config.className}>
+                  {config.label}
+                </Badge>
+              );
+            })()}
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
             <TypographyP className="text-sm text-gray-600 dark:text-gray-400 mb-2 !mt-0">
               Payment
             </TypographyP>
-            <span
-              className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${getPaymentStatusColor(
-                order.payment_status
-              )}`}
-            >
-              {order.payment_status}
-            </span>
+            {(() => {
+              const config = getPaymentStatusConfig(order.payment_status);
+              return (
+                <Badge
+                  variant={config.variant}
+                  className={`mb-4 ${config.className}`}
+                >
+                  {config.label}
+                </Badge>
+              );
+            })()}
           </div>
         </div>
       </div>
@@ -375,13 +366,18 @@ export default function OrderSuccessPage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="font-medium">Payment Status</span>
-                <span
-                  className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${getPaymentStatusColor(
-                    order.payment_status
-                  )}`}
-                >
-                  {order.payment_status}
-                </span>
+
+                {(() => {
+                  const config = getPaymentStatusConfig(order.payment_status);
+                  return (
+                    <Badge
+                      variant={config.variant}
+                      className={`mb-4 ${config.className}`}
+                    >
+                      {config.label}
+                    </Badge>
+                  );
+                })()}
               </div>
               {order.payment_intent_id && (
                 <TypographyP className="text-sm text-gray-600 dark:text-gray-400 !mt-0">
