@@ -101,3 +101,26 @@ export function getPaymentStatusConfig(paymentStatus: string) {
     statusConfig.pending
   );
 }
+
+export function truncateText(
+  text: string,
+  maxLength: number,
+  maxLines?: number
+): string {
+  if (!text) return "";
+
+  let truncated = text;
+
+  if (truncated.length > maxLength) {
+    truncated = truncated.slice(0, maxLength).trim() + "...";
+  }
+
+  if (maxLines) {
+    const lines = truncated.split(/\r?\n/);
+    if (lines.length > maxLines) {
+      truncated = lines.slice(0, maxLines).join(" ") + "...";
+    }
+  }
+
+  return truncated;
+}
