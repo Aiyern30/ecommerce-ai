@@ -29,6 +29,7 @@ import { TypographyH1, TypographyP } from "@/components/ui/Typography";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { supabase } from "@/lib/supabase/client";
 import type { Product } from "@/type/product";
+import ProductRecommendations from "@/components/ProductRecommendations";
 
 // Enhanced skeleton with modern design
 function ProductDetailSkeleton({}: { isStaffView: boolean }) {
@@ -332,7 +333,7 @@ export default function ProductDetailClient() {
         </div>
 
         {/* Main Product Section */}
-        <div className="grid lg:grid-cols-2 gap-12">
+        <div className="grid lg:grid-cols-2 gap-12 mb-6">
           {/* Image Gallery */}
           <div className="space-y-4">
             <div className="relative aspect-square rounded-2xl overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg sticky top-40">
@@ -640,6 +641,7 @@ export default function ProductDetailClient() {
             </div>
           </div>
         </div>
+        <ProductRecommendations currentProduct={product} />
       </div>
     </div>
   );
