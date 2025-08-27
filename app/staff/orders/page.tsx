@@ -55,7 +55,11 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
-import { formatDate, getStatusBadgeConfig } from "@/lib/utils/format";
+import {
+  formatDate,
+  getPaymentStatusConfig,
+  getStatusBadgeConfig,
+} from "@/lib/utils/format";
 import { useDeviceType } from "@/utils/useDeviceTypes";
 import { Order } from "@/type/order";
 import Image from "next/image";
@@ -420,37 +424,6 @@ export default function OrdersPage() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-
-  const getPaymentStatusBadge = (paymentStatus: string) => {
-    const statusConfig = {
-      pending: {
-        variant: "secondary" as const,
-        className: "bg-yellow-500 hover:bg-yellow-600 text-white",
-      },
-      paid: {
-        variant: "default" as const,
-        className: "bg-green-500 hover:bg-green-600 text-white",
-      },
-      failed: {
-        variant: "destructive" as const,
-        className: "bg-red-500 hover:bg-red-600 text-white",
-      },
-      refunded: {
-        variant: "secondary" as const,
-        className: "bg-gray-500 hover:bg-gray-600 text-white",
-      },
-    };
-
-    const config =
-      statusConfig[paymentStatus as keyof typeof statusConfig] ||
-      statusConfig.pending;
-
-    return (
-      <Badge variant={config.variant} className={config.className}>
-        {paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1)}
-      </Badge>
-    );
-  };
 
   // Export orders to Excel
   const handleExportOrders = async () => {
@@ -1120,7 +1093,19 @@ export default function OrdersPage() {
                       })()}
                     </TableCell>{" "}
                     <TableCell>
-                      {getPaymentStatusBadge(order.payment_status)}
+                      {(() => {
+                        const config = getPaymentStatusConfig(
+                          order.payment_status
+                        );
+                        return (
+                          <Badge
+                            variant={config.variant}
+                            className={config.className}
+                          >
+                            {config.label}
+                          </Badge>
+                        );
+                      })()}
                     </TableCell>
                     <TableCell>
                       <div className="text-xs text-gray-700 dark:text-gray-300 max-w-[180px] truncate">

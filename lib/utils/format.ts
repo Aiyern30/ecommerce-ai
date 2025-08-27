@@ -86,3 +86,33 @@ export function getStatusBadgeConfig(status: string) {
     statusConfig[status as keyof typeof statusConfig] ?? statusConfig.pending
   );
 }
+
+export function getPaymentStatusConfig(paymentStatus: string) {
+  const statusConfig = {
+    pending: {
+      variant: "secondary" as const,
+      className: "bg-yellow-500 hover:bg-yellow-600 text-white",
+      label: "Pending",
+    },
+    paid: {
+      variant: "default" as const,
+      className: "bg-green-500 hover:bg-green-600 text-white",
+      label: "Paid",
+    },
+    failed: {
+      variant: "destructive" as const,
+      className: "bg-red-500 hover:bg-red-600 text-white",
+      label: "Failed",
+    },
+    refunded: {
+      variant: "secondary" as const,
+      className: "bg-gray-500 hover:bg-gray-600 text-white",
+      label: "Refunded",
+    },
+  };
+
+  return (
+    statusConfig[paymentStatus as keyof typeof statusConfig] ??
+    statusConfig.pending
+  );
+}
