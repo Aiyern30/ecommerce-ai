@@ -11,7 +11,6 @@ import {
   Package,
   DollarSign,
 } from "lucide-react";
-import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import ExcelJS from "exceljs";
@@ -329,24 +328,33 @@ export default function OrdersPage() {
 
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from("orders")
-        .delete()
-        .in("id", selectedOrders);
+      const response = await fetch("/api/orders/delete", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ids: selectedOrders }),
+      });
 
-      if (error) {
-        console.error("Error deleting orders:", error.message);
-        toast.error(`Error deleting orders: ${error.message}`);
-      } else {
-        toast.success(
-          `Successfully deleted ${selectedOrders.length} order(s)!`
-        );
-        clearOrderSelection();
-        fetchOrders();
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete orders");
       }
+
+      const result = await response.json();
+      toast.success(
+        result.message ||
+          `Successfully deleted ${selectedOrders.length} order(s)!`
+      );
+      clearOrderSelection();
+      fetchOrders();
     } catch (error) {
-      console.error("Unexpected error during deletion:", error);
-      toast.error("An unexpected error occurred. Please try again.");
+      console.error("Error deleting orders:", error);
+      toast.error(
+        error instanceof Error
+          ? `Error deleting orders: ${error.message}`
+          : "An unexpected error occurred. Please try again."
+      );
     } finally {
       setLoading(false);
       setIsDeleteDialogOpen(false);
@@ -936,7 +944,10 @@ export default function OrdersPage() {
                     onClick={() => router.push(`/staff/orders/${order.id}`)}
                     className="cursor-pointer max-h-20 h-20"
                   >
-                    <TableCell onClick={(e) => e.stopPropagation()}>
+                    <TableCell
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-center"
+                    >
                       <Checkbox
                         checked={selectedOrders.includes(order.id)}
                         onCheckedChange={() => toggleOrderSelection(order.id)}
