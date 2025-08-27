@@ -46,6 +46,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import type { OrderStatus } from "@/type/order";
 import { Skeleton } from "@/components/ui"; // Make sure Skeleton is imported
+import { createNotification } from "@/lib/notification/server";
 
 const ORDER_STATUS_OPTIONS = [
   "pending",
@@ -56,6 +57,16 @@ const ORDER_STATUS_OPTIONS = [
   "failed",
   "refunded",
 ] as [OrderStatus, ...OrderStatus[]];
+
+const STATUS_MESSAGES: Record<string, string> = {
+  pending: "Your order is pending and will be processed soon.",
+  processing: "Your order is now being processed.",
+  shipped: "Your order has been shipped.",
+  delivered: "Your order has been delivered.",
+  cancelled: "Your order has been cancelled.",
+  failed: "Your order failed to process. Please contact support.",
+  refunded: "Your order has been refunded.",
+};
 
 const FormSchema = z.object({
   status: z.enum(ORDER_STATUS_OPTIONS),
@@ -223,6 +234,15 @@ export default function StaffOrderDetailsPage() {
           prev ? { ...prev, status: data.status as Order["status"] } : null
         );
         toast.success("Order status updated successfully!");
+
+        await createNotification({
+          user_id: order.user_id,
+          title: "Order Status Updated",
+          message:
+            STATUS_MESSAGES[data.status] || "Your order status has changed.",
+          type: "order",
+          id: order.id,
+        });
       } else {
         throw new Error(result.error || "Failed to update order status");
       }
