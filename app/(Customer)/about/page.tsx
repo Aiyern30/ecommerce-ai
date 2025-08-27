@@ -78,6 +78,7 @@ export default function AboutYTLConcrete() {
               alt="YTL Concrete construction site"
               fill
               className="object-cover rounded-lg"
+              priority
             />
           </div>
           <div className="space-y-4">
@@ -98,7 +99,7 @@ export default function AboutYTLConcrete() {
               highway, YTL Concrete is your trusted partner for all concrete
               requirements.
             </TypographyP>
-            <Button onClick={() => router.push("/Contact")}>
+            <Button onClick={() => router.push("/contact")}>
               Contact YTL Concrete
             </Button>
           </div>
