@@ -30,9 +30,9 @@ class RecommendationEngine {
       id: "concrete-grade-upsell-downsell",
       name: "Concrete Grade Recommendations",
       condition: (product) =>
-        product.category === "concrete" &&
+        product.product_type === "concrete" &&
         Boolean(product.grade) &&
-        /^N\d+$/i.test(product.grade || ""),
+        /^[NS]\d+$/i.test(product.grade || ""),
       getRecommendations: (product, allProducts) => {
         const currentGrade = this.extractGradeNumber(product.grade);
         if (!currentGrade) return [];
@@ -44,7 +44,7 @@ class RecommendationEngine {
           .filter((p) => {
             const grade = this.extractGradeNumber(p.grade);
             return (
-              p.category === "concrete" &&
+              p.product_type === "concrete" &&
               grade &&
               grade > currentGrade &&
               grade <= currentGrade + 10 && // Don't recommend too high
@@ -74,7 +74,7 @@ class RecommendationEngine {
           .filter((p) => {
             const grade = this.extractGradeNumber(p.grade);
             return (
-              p.category === "concrete" &&
+              p.product_type === "concrete" &&
               grade &&
               grade < currentGrade &&
               grade >= currentGrade - 10 && // Don't recommend too low
@@ -102,11 +102,7 @@ class RecommendationEngine {
         // Find alternative product types
         const alternatives = allProducts
           .filter((p) => {
-            return (
-              p.product_type !== "concrete" &&
-              p.product_type === "mortar" &&
-              p.id !== product.id
-            );
+            return p.product_type === "mortar" && p.id !== product.id;
           })
           .slice(0, 1);
 
@@ -128,7 +124,7 @@ class RecommendationEngine {
       id: "mortar-ratio-recommendations",
       name: "Mortar Ratio Recommendations",
       condition: (product) =>
-        product.category === "mortar" &&
+        product.product_type === "mortar" &&
         Boolean(product.mortar_ratio) &&
         /^\d+:\d+$/i.test(product.mortar_ratio || ""),
       getRecommendations: (product, allProducts) => {
@@ -142,16 +138,16 @@ class RecommendationEngine {
           .filter((p) => {
             const ratio = this.parseMortarRatio(p.mortar_ratio);
             return (
-              p.category === "mortar" &&
+              p.product_type === "mortar" &&
               ratio &&
-              ratio.cement > currentRatio.cement && // Higher cement content = stronger
+              ratio.cement < currentRatio.cement && // Lower ratio number = higher cement content = stronger
               p.id !== product.id
             );
           })
           .sort((a, b) => {
             const ratioA = this.parseMortarRatio(a.mortar_ratio);
             const ratioB = this.parseMortarRatio(b.mortar_ratio);
-            return (ratioB?.cement || 0) - (ratioA?.cement || 0);
+            return (ratioA?.cement || 0) - (ratioB?.cement || 0);
           });
 
         if (strongerMortars.length > 0) {
@@ -169,16 +165,16 @@ class RecommendationEngine {
           .filter((p) => {
             const ratio = this.parseMortarRatio(p.mortar_ratio);
             return (
-              p.category === "mortar" &&
+              p.product_type === "mortar" &&
               ratio &&
-              ratio.cement < currentRatio.cement && // Lower cement content = cheaper
+              ratio.cement > currentRatio.cement && // Higher ratio number = lower cement content = cheaper
               p.id !== product.id
             );
           })
           .sort((a, b) => {
             const ratioA = this.parseMortarRatio(a.mortar_ratio);
             const ratioB = this.parseMortarRatio(b.mortar_ratio);
-            return (ratioA?.cement || 0) - (ratioB?.cement || 0);
+            return (ratioB?.cement || 0) - (ratioA?.cement || 0);
           });
 
         if (weakerMortars.length > 0) {
@@ -247,7 +243,7 @@ class RecommendationEngine {
 
   private extractGradeNumber(grade?: string | null): number | null {
     if (!grade) return null;
-    const match = grade.match(/N(\d+)/i);
+    const match = grade.match(/[NS](\d+)/i);
     return match ? parseInt(match[1]) : null;
   }
 
