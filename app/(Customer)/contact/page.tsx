@@ -16,7 +16,6 @@ import {
   Youtube,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/";
-import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { FeatureCard } from "@/components/FeatureCards";
 import { useUser } from "@supabase/auth-helpers-react";
 import ContactForm from "@/components/ContactForm";
@@ -85,12 +84,7 @@ export default function ContactPage() {
   const userEmail = user?.email || "";
 
   return (
-    <div className="container mx-auto mb-4">
-      <div className="p-4 container mx-auto">
-        <BreadcrumbNav showFilterButton={false} />
-      </div>
-
-      {/* Header Section */}
+    <div className="container mx-auto px-4 py-8">
       <div className="text-center mb-16">
         <h1 className="text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100">
           Get in Touch with Us
@@ -101,9 +95,7 @@ export default function ContactPage() {
         </p>
       </div>
 
-      {/* Main Content */}
       <div className="grid lg:grid-cols-2 gap-12 mb-16">
-        {/* Left Column - Office Information */}
         <div className="space-y-8">
           <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-8">
             <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">
@@ -114,7 +106,6 @@ export default function ContactPage() {
             </p>
 
             <div className="space-y-6">
-              {/* YTL Cement Office */}
               <div className="border-l-4 border-blue-500 pl-6">
                 <div className="flex items-center gap-3 text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">
                   <MapPin className="h-5 w-5 text-blue-500" />
@@ -147,7 +138,6 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              {/* Social Media */}
               <div>
                 <p className="text-sm mb-4 text-gray-700 dark:text-gray-300 font-medium">
                   Follow YTL Community on social media:
@@ -214,7 +204,6 @@ export default function ContactPage() {
           </div>
         </div>
 
-        {/* Right Column - Contact Form */}
         <div className="lg:sticky lg:top-24 h-fit">
           {loading ? (
             <ContactFormSkeleton />
@@ -224,7 +213,6 @@ export default function ContactPage() {
         </div>
       </div>
 
-      {/* Features Section */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {features.map((feature, index) => (
           <FeatureCard key={index} {...feature} />
