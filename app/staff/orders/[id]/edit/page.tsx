@@ -4,22 +4,42 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/browserClient";
 import {
-  Button,
-  Input,
-  Select,
-  SelectItem,
-  SelectContent,
   Card,
   CardHeader,
   CardTitle,
   CardContent,
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+  Badge,
+  Button,
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+  Select,
+  SelectItem,
+  SelectContent,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
-import { ArrowLeft, FileText } from "lucide-react";
+import { ArrowLeft, FileText, Save } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/currency";
 import { Order } from "@/type/order";
 import Link from "next/link";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
+import Image from "next/image";
+import { formatDate } from "@/lib/utils/format";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { toast } from "sonner";
 
 const STATUS_OPTIONS = [
   "pending",
@@ -29,16 +49,21 @@ const STATUS_OPTIONS = [
   "cancelled",
   "failed",
   "refunded",
-];
+] as const;
 
-function OrderEditSkeleton() {
+const FormSchema = z.object({
+  status: z.enum(STATUS_OPTIONS),
+});
+type FormValues = z.infer<typeof FormSchema>;
+
+function OrderDetailsSkeleton() {
   return (
     <div className="flex flex-col gap-6 w-full">
       <BreadcrumbNav
         customItems={[
           { label: "Dashboard", href: "/staff/dashboard" },
           { label: "Orders", href: "/staff/orders" },
-          { label: "Edit Order" },
+          { label: "Order Details" },
         ]}
       />
       <div className="flex items-center justify-center p-8">
@@ -48,7 +73,7 @@ function OrderEditSkeleton() {
   );
 }
 
-export default function StaffOrderEditPage() {
+export default function StaffOrderDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const orderId =
@@ -62,14 +87,18 @@ export default function StaffOrderEditPage() {
 
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState<string>("");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string>("");
+  const [updating, setUpdating] = useState(false);
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      status: "pending",
+    },
+  });
 
   useEffect(() => {
     async function fetchOrderDetails() {
       setLoading(true);
-      setError("");
       try {
         const { data, error } = await supabase
           .from("orders")
@@ -86,52 +115,71 @@ export default function StaffOrderEditPage() {
 
         if (error || !data) {
           setOrder(null);
-          setError("Order not found");
         } else {
           setOrder({
             ...data,
             additional_services: data.order_additional_services || [],
           });
-          setStatus(data.status || "");
+          form.reset({ status: (data.status as Order["status"]) || "pending" });
         }
       } catch {
         setOrder(null);
-        setError("Failed to fetch order");
       }
       setLoading(false);
     }
     if (orderId) fetchOrderDetails();
-  }, [orderId]);
+  }, [form, orderId]);
 
-  async function handleSave() {
-    if (!orderId || !status) return;
-    setSaving(true);
-    setError("");
-    const { error: updateError } = await supabase
-      .from("orders")
-      .update({ status })
-      .eq("id", orderId);
-    if (updateError) {
-      setError("Failed to update status");
-    } else {
-      setError("");
-      router.refresh?.();
+  const onSubmit = async (data: FormValues) => {
+    if (!order) return;
+
+    setUpdating(true);
+    try {
+      const response = await fetch("/api/admin/orders/update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          orderId: order.id,
+          status: data.status,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update order status");
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        setOrder((prev) =>
+          prev ? { ...prev, status: data.status as Order["status"] } : null
+        );
+        toast.success("Order status updated successfully!");
+      } else {
+        throw new Error(result.error || "Failed to update order status");
+      }
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update order status"
+      );
+    } finally {
+      setUpdating(false);
     }
-    setSaving(false);
-  }
+  };
 
-  // Skeleton loading
-  if (loading) return <OrderEditSkeleton />;
+  if (loading) return <OrderDetailsSkeleton />;
 
-  // Not found state
-  if (!order && !loading) {
+  if (!order) {
     return (
       <div className="flex flex-col gap-6 w-full">
         <BreadcrumbNav
           customItems={[
             { label: "Dashboard", href: "/staff/dashboard" },
             { label: "Orders", href: "/staff/orders" },
-            { label: "Edit Order" },
+            { label: "Order Details" },
           ]}
         />
         <div className="flex items-center justify-between">
@@ -167,137 +215,333 @@ export default function StaffOrderEditPage() {
     );
   }
 
-  // Main edit form
   return (
     <div className="flex flex-col gap-6 w-full">
       <BreadcrumbNav
         customItems={[
           { label: "Dashboard", href: "/staff/dashboard" },
           { label: "Orders", href: "/staff/orders" },
-          { label: "Edit Order" },
+          { label: "Order Details" },
         ]}
       />
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-6">
         <TypographyH2>
-          Edit Order #{order?.id ? order.id.slice(-8) : ""}
+          Order #{order.id.slice(-8)}
+          <Badge className="ml-3">{order.status}</Badge>
         </TypographyH2>
-        <Link href="/staff/orders">
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Orders
-          </Button>
-        </Link>
+        <Button variant="outline" onClick={() => router.push("/staff/orders")}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Orders
+        </Button>
       </div>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSave();
-        }}
-        className="space-y-6"
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle>Order Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium mb-1">Customer</label>
-              <Input value={order?.addresses?.full_name || ""} readOnly />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Address</label>
-              <Input
-                value={
-                  order?.addresses
-                    ? [
-                        order.addresses.address_line1,
-                        order.addresses.address_line2,
-                        order.addresses.city,
-                        order.addresses.state,
-                        order.addresses.postal_code,
-                        order.addresses.country,
-                      ]
-                        .filter(Boolean)
-                        .join(", ")
-                    : ""
-                }
-                readOnly
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Created At
-              </label>
-              <Input value={order?.created_at || ""} readOnly />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Payment Status
-              </label>
-              <Input value={order?.payment_status || ""} readOnly />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Order Notes
-              </label>
-              <Input value={order?.notes || ""} readOnly />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Payment Intent
-              </label>
-              <Input value={order?.payment_intent_id || ""} readOnly />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Subtotal</label>
-              <Input value={formatCurrency(order?.subtotal ?? 0)} readOnly />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Shipping</label>
-              <Input
-                value={formatCurrency(order?.shipping_cost ?? 0)}
-                readOnly
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Tax</label>
-              <Input value={formatCurrency(order?.tax ?? 0)} readOnly />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Total</label>
-              <Input value={formatCurrency(order?.total ?? 0)} readOnly />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Status</label>
-              <Select value={status} onValueChange={setStatus}>
-                <SelectContent>
-                  {STATUS_OPTIONS.map((opt) => (
-                    <SelectItem key={opt} value={opt}>
-                      {opt.charAt(0).toUpperCase() + opt.slice(1)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {error && (
-              <TypographyP className="text-red-600">{error}</TypographyP>
-            )}
-          </CardContent>
-        </Card>
-        <div className="flex justify-end gap-4 border-t pt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.push("/staff/orders")}
-            disabled={saving || loading}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" disabled={saving || loading}>
-            {saving ? "Saving..." : "Save"}
-          </Button>
-        </div>
-      </form>
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Customer Info & Payment Info */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Customer & Payment Info</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Left Column - Customer Info */}
+                <div>
+                  <TypographyP className="font-semibold mb-1">
+                    Customer
+                  </TypographyP>
+                  <div className="mb-4">
+                    <span className="font-medium">
+                      {order.addresses?.full_name || "N/A"}
+                    </span>
+                    {order.addresses?.phone && (
+                      <a
+                        href={`tel:${order.addresses.phone}`}
+                        className="ml-2 text-xs text-blue-600 underline"
+                      >
+                        {order.addresses.phone}
+                      </a>
+                    )}
+                  </div>
+
+                  <TypographyP className="font-semibold mb-1">
+                    Address
+                  </TypographyP>
+                  <div className="text-xs text-gray-700 dark:text-gray-300 mb-4">
+                    {order.addresses
+                      ? [
+                          order.addresses.address_line1,
+                          order.addresses.address_line2,
+                          order.addresses.city,
+                          order.addresses.state,
+                          order.addresses.postal_code,
+                          order.addresses.country,
+                        ]
+                          .filter(Boolean)
+                          .join(", ")
+                      : "N/A"}
+                  </div>
+
+                  <TypographyP className="font-semibold mb-1">
+                    Created At
+                  </TypographyP>
+                  <div className="text-xs text-gray-500 mb-2">
+                    {formatDate(order.created_at)}
+                  </div>
+                </div>
+
+                {/* Right Column - Status & Payment Info */}
+                <div>
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem className="mb-4">
+                        <FormLabel>Order Status</FormLabel>
+                        <FormControl>
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {STATUS_OPTIONS.map((opt) => (
+                                <SelectItem key={opt} value={opt}>
+                                  {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <TypographyP className="font-semibold mb-1">
+                    Payment Status
+                  </TypographyP>
+                  <Badge
+                    variant={
+                      order.payment_status === "paid" ? "default" : "secondary"
+                    }
+                    className="mb-4"
+                  >
+                    {order.payment_status.charAt(0).toUpperCase() +
+                      order.payment_status.slice(1)}
+                  </Badge>
+
+                  <TypographyP className="font-semibold mb-1">
+                    Payment Intent
+                  </TypographyP>
+                  {order.payment_intent_id ? (
+                    <a
+                      href={`https://dashboard.stripe.com/payments/${order.payment_intent_id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline hover:text-blue-800 text-xs font-mono break-all"
+                      title="View in Stripe"
+                    >
+                      {order.payment_intent_id}
+                    </a>
+                  ) : (
+                    <span className="text-xs font-mono break-all">-</span>
+                  )}
+
+                  {/* Update Status Button */}
+                  <div className="mt-4">
+                    <Button
+                      type="submit"
+                      disabled={updating}
+                      className="w-full"
+                    >
+                      <Save className="mr-2 h-4 w-4" />
+                      {updating ? "Updating..." : "Update Status"}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Totals */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Order Totals</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <TypographyP className="font-semibold mb-1">
+                    Subtotal
+                  </TypographyP>
+                  <div className="text-xs font-mono">
+                    {formatCurrency(order.subtotal)}
+                  </div>
+                </div>
+                <div>
+                  <TypographyP className="font-semibold mb-1">
+                    Shipping
+                  </TypographyP>
+                  <div className="text-xs font-mono">
+                    {formatCurrency(order.shipping_cost)}
+                  </div>
+                </div>
+                <div>
+                  <TypographyP className="font-semibold mb-1">Tax</TypographyP>
+                  <div className="text-xs font-mono">
+                    {formatCurrency(order.tax)}
+                  </div>
+                </div>
+                <div>
+                  <TypographyP className="font-semibold mb-1">
+                    Total
+                  </TypographyP>
+                  <div className="text-xs font-bold text-blue-700 font-mono">
+                    {formatCurrency(order.total)}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Order Items */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Order Items</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Image</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Grade</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Quantity</TableHead>
+                    <TableHead>Price</TableHead>
+                    <TableHead>Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {order.order_items && order.order_items.length > 0 ? (
+                    <>
+                      {order.order_items.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell>
+                            <div className="w-12 h-12 relative">
+                              <Image
+                                src={item.image_url || "/placeholder.svg"}
+                                alt={item.name}
+                                fill
+                                className="object-cover rounded-md"
+                              />
+                            </div>
+                          </TableCell>
+                          <TableCell>{item.name}</TableCell>
+                          <TableCell>{item.grade}</TableCell>
+                          <TableCell>{item.variant_type || "-"}</TableCell>
+                          <TableCell>{item.quantity}</TableCell>
+                          <TableCell>{formatCurrency(item.price)}</TableCell>
+                          <TableCell>
+                            {formatCurrency(item.price * item.quantity)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      <TableRow>
+                        <TableCell
+                          colSpan={6}
+                          className="text-right font-semibold"
+                        >
+                          Total
+                        </TableCell>
+                        <TableCell className="font-bold text-blue-700">
+                          {formatCurrency(
+                            order.order_items.reduce(
+                              (sum, item) => sum + item.price * item.quantity,
+                              0
+                            )
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    </>
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={7}
+                        className="text-center text-xs text-gray-400"
+                      >
+                        No items found.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          {/* Additional Services */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Additional Services</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Service Name</TableHead>
+                    <TableHead>Rate (RM/m³)</TableHead>
+                    <TableHead>Quantity</TableHead>
+                    <TableHead>Total Price</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {order.additional_services &&
+                  order.additional_services.length > 0 ? (
+                    <>
+                      {order.additional_services.map((service) => (
+                        <TableRow key={service.id}>
+                          <TableCell>{service.service_name}</TableCell>
+                          <TableCell>RM{service.rate_per_m3}</TableCell>
+                          <TableCell>{service.quantity}</TableCell>
+                          <TableCell>RM{service.total_price}</TableCell>
+                        </TableRow>
+                      ))}
+                      <TableRow>
+                        <TableCell
+                          colSpan={3}
+                          className="text-right font-semibold"
+                        >
+                          Total
+                        </TableCell>
+                        <TableCell className="font-bold text-blue-700">
+                          RM
+                          {order.additional_services
+                            .reduce(
+                              (sum, s) => sum + Number(s.total_price || 0),
+                              0
+                            )
+                            .toFixed(2)}
+                        </TableCell>
+                      </TableRow>
+                    </>
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={4}
+                        className="text-center text-xs text-gray-400"
+                      >
+                        No additional services.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </form>
+      </Form>
     </div>
   );
 }
