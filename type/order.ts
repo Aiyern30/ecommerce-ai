@@ -11,7 +11,7 @@ export interface OrderItem {
   created_at: string;
 }
 export interface ShippingAddress {
-  id: string; // <-- Add if you plan to ref the address
+  id: string;
   user_id: string;
   full_name: string;
   phone?: string | null;
@@ -35,11 +35,22 @@ export interface AdditionalService {
   total_price: number;
 }
 
+export type OrderStatus =
+  | "pending"
+  | "processing"
+  | "shipped"
+  | "delivered"
+  | "cancelled"
+  | "failed"
+  | "refunded";
+
+export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
+
 export interface Order {
   id: string;
   user_id: string;
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
-  payment_status: "pending" | "paid" | "failed" | "refunded";
+  status: OrderStatus;
+  payment_status: PaymentStatus;
   payment_intent_id?: string;
   subtotal: number;
   shipping_cost: number;
