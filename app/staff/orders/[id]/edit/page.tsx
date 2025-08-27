@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase/browserClient";
 import {
   Card,
   CardHeader,
@@ -45,8 +44,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
 import type { OrderStatus } from "@/type/order";
-import { Skeleton } from "@/components/ui"; // Make sure Skeleton is imported
-import { createNotification } from "@/lib/notification/server";
+import { Skeleton } from "@/components/ui";
 
 const ORDER_STATUS_OPTIONS = [
   "pending",
@@ -177,20 +175,10 @@ export default function StaffOrderDetailsPage() {
     async function fetchOrderDetails() {
       setLoading(true);
       try {
-        const { data, error } = await supabase
-          .from("orders")
-          .select(
-            `
-            *,
-            addresses (*),
-            order_items (*),
-            order_additional_services (*)
-          `
-          )
-          .eq("id", orderId)
-          .single();
+        const res = await fetch(`/api/admin/orders/${orderId}`);
+        const data = await res.json();
 
-        if (error || !data) {
+        if (!res.ok || !data) {
           setOrder(null);
         } else {
           setOrder({
@@ -212,6 +200,7 @@ export default function StaffOrderDetailsPage() {
 
     setUpdating(true);
     try {
+      // Send status update and notification info to API route
       const response = await fetch("/api/admin/orders/update", {
         method: "POST",
         headers: {
@@ -220,6 +209,13 @@ export default function StaffOrderDetailsPage() {
         body: JSON.stringify({
           orderId: order.id,
           status: data.status,
+          userId: order.user_id,
+          notification: {
+            title: "Order Status Updated",
+            message:
+              STATUS_MESSAGES[data.status] || "Your order status has changed.",
+            type: "order",
+          },
         }),
       });
 
@@ -234,15 +230,7 @@ export default function StaffOrderDetailsPage() {
           prev ? { ...prev, status: data.status as Order["status"] } : null
         );
         toast.success("Order status updated successfully!");
-
-        await createNotification({
-          user_id: order.user_id,
-          title: "Order Status Updated",
-          message:
-            STATUS_MESSAGES[data.status] || "Your order status has changed.",
-          type: "order",
-          id: order.id,
-        });
+        // Notification is handled by the API route, not here
       } else {
         throw new Error(result.error || "Failed to update order status");
       }

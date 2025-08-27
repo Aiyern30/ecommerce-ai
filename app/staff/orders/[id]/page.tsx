@@ -19,7 +19,11 @@ import {
   Badge,
 } from "@/components/ui";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
-import { formatDate, getPaymentStatusConfig } from "@/lib/utils/format";
+import {
+  formatDate,
+  getPaymentStatusConfig,
+  getStatusBadgeConfig,
+} from "@/lib/utils/format";
 import { formatCurrency } from "@/lib/utils/currency";
 import Image from "next/image";
 import { ArrowLeft, FileText } from "lucide-react";
@@ -125,7 +129,17 @@ export default function StaffOrderDetailsPage() {
         <CardHeader>
           <CardTitle>
             Order #{order.id.slice(-8)}
-            <Badge className="ml-3">{order.status}</Badge>
+            {(() => {
+              const config = getStatusBadgeConfig(order.status);
+              return (
+                <Badge
+                  variant={config.variant}
+                  className={`ml-4 ${config.className}`}
+                >
+                  {config.label}
+                </Badge>
+              );
+            })()}{" "}
           </CardTitle>
         </CardHeader>
         <CardContent>
