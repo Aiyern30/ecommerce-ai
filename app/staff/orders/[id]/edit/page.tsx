@@ -41,6 +41,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
 import type { OrderStatus } from "@/type/order";
+import { Skeleton } from "@/components/ui"; // Make sure Skeleton is imported
 
 const ORDER_STATUS_OPTIONS = [
   "pending",
@@ -67,9 +68,69 @@ function OrderDetailsSkeleton() {
           { label: "Order Details" },
         ]}
       />
-      <div className="flex items-center justify-center p-8">
-        <p>Loading order data...</p>
+      <div className="flex items-center justify-between mb-6">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-10 w-32" />
       </div>
+      <Card className="mb-6">
+        <CardHeader>
+          <Skeleton className="h-6 w-48 mb-2" />
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <Skeleton className="h-5 w-32 mb-2" />
+              <Skeleton className="h-5 w-40 mb-4" />
+              <Skeleton className="h-5 w-32 mb-2" />
+              <Skeleton className="h-5 w-56 mb-4" />
+              <Skeleton className="h-5 w-32 mb-2" />
+              <Skeleton className="h-5 w-32 mb-2" />
+            </div>
+            <div>
+              <div className="flex items-end gap-2 mb-4">
+                <Skeleton className="h-10 w-48" />
+                <Skeleton className="h-10 w-32" />
+              </div>
+              <Skeleton className="h-5 w-32 mb-2" />
+              <Skeleton className="h-6 w-24 mb-4" />
+              <Skeleton className="h-5 w-32 mb-2" />
+              <Skeleton className="h-5 w-56 mb-2" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      <Card className="mb-6">
+        <CardHeader>
+          <Skeleton className="h-6 w-48 mb-2" />
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Skeleton className="h-5 w-24" />
+            <Skeleton className="h-5 w-24" />
+            <Skeleton className="h-5 w-24" />
+            <Skeleton className="h-5 w-24" />
+          </div>
+        </CardContent>
+      </Card>
+      <Card className="mb-6">
+        <CardHeader>
+          <Skeleton className="h-6 w-48 mb-2" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-10 w-full mb-2" />
+          <Skeleton className="h-10 w-full mb-2" />
+          <Skeleton className="h-10 w-full mb-2" />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-48 mb-2" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-10 w-full mb-2" />
+          <Skeleton className="h-10 w-full mb-2" />
+        </CardContent>
+      </Card>
     </div>
   );
 }
