@@ -37,6 +37,8 @@ import {
   ShoppingBag,
   TrendingUp,
   Filter,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/currency";
 import { Order } from "@/type/order";
@@ -49,7 +51,6 @@ import {
 } from "@/lib/utils/format";
 import HistoryBasedRecommendations from "@/components/HistoryBasedRecommendations";
 
-// Loading skeleton component
 function OrderSkeleton() {
   return (
     <Card className="animate-pulse">
@@ -93,6 +94,9 @@ export default function OrdersPage() {
   const [sortBy, setSortBy] = useState("newest");
   const [showFilters, setShowFilters] = useState(false);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [ordersPerPage] = useState(3);
+
   const loadOrders = useCallback(async () => {
     if (!user?.id) {
       return;
@@ -101,7 +105,6 @@ export default function OrdersPage() {
     try {
       setIsLoading(true);
 
-      // Enhanced query similar to staff page - fetch orders with addresses and order_items
       const { data: ordersData, error: ordersError } = await supabase
         .from("orders")
         .select(
@@ -132,7 +135,6 @@ export default function OrdersPage() {
     }
   }, [user]);
 
-  // Filter and sort orders
   useEffect(() => {
     if (!orders.length) {
       setFilteredOrders([]);
@@ -141,7 +143,6 @@ export default function OrdersPage() {
 
     let filtered = [...orders];
 
-    // Apply search filter
     if (searchQuery) {
       filtered = filtered.filter(
         (order) =>
@@ -152,19 +153,16 @@ export default function OrdersPage() {
       );
     }
 
-    // Apply status filter
     if (statusFilter !== "all") {
       filtered = filtered.filter((order) => order.status === statusFilter);
     }
 
-    // Apply payment filter
     if (paymentFilter !== "all") {
       filtered = filtered.filter(
         (order) => order.payment_status === paymentFilter
       );
     }
 
-    // Apply sorting
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "newest":
@@ -185,6 +183,7 @@ export default function OrdersPage() {
     });
 
     setFilteredOrders(filtered);
+    setCurrentPage(1);
   }, [orders, searchQuery, statusFilter, paymentFilter, sortBy]);
 
   useEffect(() => {
@@ -197,7 +196,6 @@ export default function OrdersPage() {
     setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
   };
 
-  // Calculate stats
   const totalOrders = orders.length;
   const totalSpent = orders.reduce((sum, order) => sum + order.total, 0);
   const recentOrders = orders.filter((order) => {
@@ -206,6 +204,49 @@ export default function OrdersPage() {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     return orderDate >= thirtyDaysAgo;
   }).length;
+
+  const totalOrdersFiltered = filteredOrders.length;
+  const totalPages = Math.ceil(totalOrdersFiltered / ordersPerPage);
+  const startIndex = (currentPage - 1) * ordersPerPage;
+  const endIndex = startIndex + ordersPerPage;
+  const currentOrders = filteredOrders.slice(startIndex, endIndex);
+
+  const handlePreviousPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
+
+  const handlePageClick = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      const halfVisible = Math.floor(maxVisiblePages / 2);
+      let startPage = Math.max(currentPage - halfVisible, 1);
+      const endPage = Math.min(startPage + maxVisiblePages - 1, totalPages);
+
+      if (endPage - startPage < maxVisiblePages - 1) {
+        startPage = Math.max(endPage - maxVisiblePages + 1, 1);
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+    }
+
+    return pages;
+  };
 
   if (user === undefined || isLoading) {
     return (
@@ -349,7 +390,10 @@ export default function OrdersPage() {
         {orders.length > 0 && (
           <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-300 pt-2 border-t">
             <span className="font-medium">
-              Showing {filteredOrders.length} of {orders.length} orders
+              Showing {startIndex + 1}-{Math.min(endIndex, totalOrders)} of{" "}
+              {totalOrders} orders
+              {currentOrders.length !== totalOrders &&
+                ` (Page ${currentPage} of ${totalPages})`}
             </span>
             {searchQuery && <span>• Filtered by "{searchQuery}"</span>}
             {statusFilter !== "all" && <span>• Status: {statusFilter}</span>}
@@ -406,228 +450,394 @@ export default function OrdersPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-6">
-              {filteredOrders.map((order) => (
-                <Card
-                  key={order.id}
-                  className="hover:shadow-lg transition-all duration-200 border-0 shadow-sm overflow-hidden"
-                >
-                  <CardHeader>
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="space-y-2">
-                        <CardTitle className="text-xl flex items-center gap-3">
-                          <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                            <Package className="h-5 w-5 text-blue-600" />
-                          </div>
-                          <div>
-                            <span className="text-gray-900 dark:text-gray-100">
-                              Order #{order.id.slice(-8).toUpperCase()}
-                            </span>
-                            <p className="text-sm font-normal text-gray-600 dark:text-gray-300 mt-1 flex items-center gap-2">
-                              <Calendar className="h-4 w-4" />
-                              Placed on {formatDate(order.created_at)}
-                            </p>
-                          </div>
-                        </CardTitle>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {(() => {
-                          const config = getStatusBadgeConfig(order.status);
-                          return (
-                            <Badge
-                              variant={config.variant}
-                              className={`mb-4 ${config.className}`}
-                            >
-                              {config.label}
-                            </Badge>
-                          );
-                        })()}
-
-                        {(() => {
-                          const config = getPaymentStatusConfig(
-                            order.payment_status
-                          );
-                          return (
-                            <Badge
-                              variant={config.variant}
-                              className={`mb-4 ${config.className}`}
-                            >
-                              {config.label}
-                            </Badge>
-                          );
-                        })()}
-                      </div>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                      {/* Total Amount */}
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                          <DollarSign className="h-5 w-5 text-green-600" />
+            <>
+              <div className="space-y-6">
+                {currentOrders.map((order) => (
+                  <Card
+                    key={order.id}
+                    className="hover:shadow-lg transition-all duration-200 border-0 shadow-sm overflow-hidden"
+                  >
+                    <CardHeader>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="space-y-2">
+                          <CardTitle className="text-xl flex items-center gap-3">
+                            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                              <Package className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <div>
+                              <span className="text-gray-900 dark:text-gray-100">
+                                Order #{order.id.slice(-8).toUpperCase()}
+                              </span>
+                              <p className="text-sm font-normal text-gray-600 dark:text-gray-300 mt-1 flex items-center gap-2">
+                                <Calendar className="h-4 w-4" />
+                                Placed on {formatDate(order.created_at)}
+                              </p>
+                            </div>
+                          </CardTitle>
                         </div>
-                        <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-300">
-                            Total Amount
-                          </p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                            {formatCurrency(order.total)}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Items Count */}
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                          <Package className="h-5 w-5 text-purple-600" />
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-300">
-                            Items
-                          </p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                            {order.order_items?.length || 0}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Shipping Address */}
-                      {order.addresses && (
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                            <MapPin className="h-5 w-5 text-blue-600" />
-                          </div>
-                          <div className="max-w-[160px] truncate">
-                            <p className="text-sm text-gray-600 dark:text-gray-300">
-                              Shipping To
-                            </p>
-                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                              {order.addresses.city}, {order.addresses.state}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Contact */}
-                      {order.addresses?.phone && (
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-orange-100 dark:bg-orange-900 rounded-lg">
-                            <Phone className="h-5 w-5 text-orange-600" />
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-300">
-                              Contact
-                            </p>
-                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                              {order.addresses.phone}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <Link
-                        href={`/profile/orders/${order.id}`}
-                        className="flex-1"
-                      >
-                        <Button
-                          variant="default"
-                          className="w-full flex items-center gap-2"
-                        >
-                          <Eye className="h-4 w-4" />
-                          View Full Details
-                        </Button>
-                      </Link>
-                      <Button
-                        variant="outline"
-                        onClick={() => toggleOrderDetails(order.id)}
-                        className="flex items-center gap-2 sm:w-auto"
-                      >
-                        {expandedOrderId === order.id
-                          ? "Hide Items"
-                          : "Show Items"}
-                        {expandedOrderId === order.id ? (
-                          <ChevronUp className="h-4 w-4" />
-                        ) : (
-                          <ChevronDown className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-
-                    {/* Expanded Order Items */}
-                    {expandedOrderId === order.id && (
-                      <div className="mt-6 pt-6 border-t bg-gray-50 dark:bg-gray-900 -mx-6 px-6 pb-6">
-                        <h4 className="font-semibold mb-4 flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                          <Package className="h-5 w-5" />
-                          Order Items ({order.order_items?.length || 0})
-                        </h4>
-
-                        {order.order_items && order.order_items.length > 0 ? (
-                          <div className="grid gap-4">
-                            {order.order_items.map((item) => (
-                              <div
-                                key={item.id}
-                                className="flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg border hover:shadow-sm transition-shadow"
+                        <div className="flex flex-wrap gap-2">
+                          {(() => {
+                            const config = getStatusBadgeConfig(order.status);
+                            return (
+                              <Badge
+                                variant={config.variant}
+                                className={`mb-4 ${config.className}`}
                               >
-                                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center overflow-hidden">
-                                  {item.image_url ? (
-                                    <Image
-                                      src={item.image_url}
-                                      alt={item.name}
-                                      width={64}
-                                      height={64}
-                                      className="w-full h-full object-cover"
-                                    />
-                                  ) : (
-                                    <Package className="h-6 w-6 text-gray-400" />
-                                  )}
-                                </div>
+                                {config.label}
+                              </Badge>
+                            );
+                          })()}
 
-                                <div className="flex-1 min-w-0">
-                                  <h5 className="font-medium text-gray-900 dark:text-gray-100 truncate">
-                                    {item.name}
-                                  </h5>
-                                  {item.grade && (
-                                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                                      Grade: {item.grade}
-                                    </p>
-                                  )}
-                                  {item.variant_type && (
-                                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                                      Variant: {item.variant_type}
-                                    </p>
-                                  )}
-                                </div>
+                          {(() => {
+                            const config = getPaymentStatusConfig(
+                              order.payment_status
+                            );
+                            return (
+                              <Badge
+                                variant={config.variant}
+                                className={`mb-4 ${config.className}`}
+                              >
+                                {config.label}
+                              </Badge>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    </CardHeader>
 
-                                <div className="text-right">
-                                  <p className="font-medium text-gray-900 dark:text-gray-100">
-                                    {formatCurrency(item.price)}
-                                  </p>
-                                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                                    Qty: {item.quantity}
-                                  </p>
-                                </div>
-                              </div>
-                            ))}
+                    <CardContent className="p-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+                            <DollarSign className="h-5 w-5 text-green-600" />
                           </div>
-                        ) : (
-                          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                            <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                            <p>No items found for this order</p>
+                          <div>
+                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                              Total Amount
+                            </p>
+                            <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                              {formatCurrency(order.total)}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
+                            <Package className="h-5 w-5 text-purple-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                              Items
+                            </p>
+                            <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                              {order.order_items?.length || 0}
+                            </p>
+                          </div>
+                        </div>
+
+                        {order.addresses && (
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                              <MapPin className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <div className="max-w-[160px] truncate">
+                              <p className="text-sm text-gray-600 dark:text-gray-300">
+                                Shipping To
+                              </p>
+                              <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                                {order.addresses.city}, {order.addresses.state}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {order.addresses?.phone && (
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-orange-100 dark:bg-orange-900 rounded-lg">
+                              <Phone className="h-5 w-5 text-orange-600" />
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-600 dark:text-gray-300">
+                                Contact
+                              </p>
+                              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                {order.addresses.phone}
+                              </p>
+                            </div>
                           </div>
                         )}
                       </div>
-                    )}
+
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <Link
+                          href={`/profile/orders/${order.id}`}
+                          className="flex-1"
+                        >
+                          <Button
+                            variant="default"
+                            className="w-full flex items-center gap-2"
+                          >
+                            <Eye className="h-4 w-4" />
+                            View Full Details
+                          </Button>
+                        </Link>
+                        <Button
+                          variant="outline"
+                          onClick={() => toggleOrderDetails(order.id)}
+                          className="flex items-center gap-2 sm:w-auto"
+                        >
+                          {expandedOrderId === order.id
+                            ? "Hide Items"
+                            : "Show Items"}
+                          {expandedOrderId === order.id ? (
+                            <ChevronUp className="h-4 w-4" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+
+                      {expandedOrderId === order.id && (
+                        <div className="mt-6 pt-6 border-t bg-gray-50 dark:bg-gray-900 -mx-6 px-6 pb-6">
+                          <h4 className="font-semibold mb-4 flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                            <Package className="h-5 w-5" />
+                            Order Items ({order.order_items?.length || 0})
+                          </h4>
+
+                          {order.order_items && order.order_items.length > 0 ? (
+                            <div className="grid gap-4">
+                              {order.order_items.map((item) => (
+                                <div
+                                  key={item.id}
+                                  className="flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg border hover:shadow-sm transition-shadow"
+                                >
+                                  <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center overflow-hidden">
+                                    {item.image_url ? (
+                                      <Image
+                                        src={item.image_url}
+                                        alt={item.name}
+                                        width={64}
+                                        height={64}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    ) : (
+                                      <Package className="h-6 w-6 text-gray-400" />
+                                    )}
+                                  </div>
+
+                                  <div className="flex-1 min-w-0">
+                                    <h5 className="font-medium text-gray-900 dark:text-gray-100 truncate">
+                                      {item.name}
+                                    </h5>
+                                    {item.grade && (
+                                      <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                                        Grade: {item.grade}
+                                      </p>
+                                    )}
+                                    {item.variant_type && (
+                                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                                        Variant: {item.variant_type}
+                                      </p>
+                                    )}
+                                  </div>
+
+                                  <div className="text-right">
+                                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                                      {formatCurrency(item.price)}
+                                    </p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                                      Qty: {item.quantity}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                              <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                              <p>No items found for this order</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {totalPages > 1 && (
+                <Card className="border-0 shadow-sm">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col gap-4">
+                      <div className="text-sm text-gray-600 dark:text-gray-400 text-center sm:text-left">
+                        Showing {startIndex + 1} to{" "}
+                        {Math.min(endIndex, totalOrdersFiltered)} of{" "}
+                        {totalOrdersFiltered} orders
+                        <span className="block sm:inline sm:ml-2">
+                          (Page {currentPage} of {totalPages})
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handlePreviousPage}
+                          disabled={currentPage === 1}
+                          className="flex items-center gap-1 px-2 sm:px-3"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                          <span className="hidden sm:inline">Previous</span>
+                        </Button>
+
+                        <div className="flex items-center gap-1 sm:hidden">
+                          {currentPage > 1 && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handlePageClick(1)}
+                              className="w-8 h-8 text-xs"
+                            >
+                              1
+                            </Button>
+                          )}
+
+                          {currentPage > 2 && (
+                            <span className="text-gray-400 text-xs px-1">
+                              ...
+                            </span>
+                          )}
+
+                          <Button
+                            variant="default"
+                            size="sm"
+                            className="w-8 h-8 text-xs"
+                          >
+                            {currentPage}
+                          </Button>
+
+                          {currentPage < totalPages - 1 && (
+                            <span className="text-gray-400 text-xs px-1">
+                              ...
+                            </span>
+                          )}
+
+                          {currentPage < totalPages && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handlePageClick(totalPages)}
+                              className="w-8 h-8 text-xs"
+                            >
+                              {totalPages}
+                            </Button>
+                          )}
+                        </div>
+
+                        <div className="hidden sm:flex items-center gap-1">
+                          {getPageNumbers().map((page, index, array) => (
+                            <React.Fragment key={page}>
+                              {index === 0 && page > 1 && (
+                                <>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handlePageClick(1)}
+                                    className="w-10 h-10"
+                                  >
+                                    1
+                                  </Button>
+                                  {page > 2 && (
+                                    <span className="px-2 text-gray-400 text-sm">
+                                      ...
+                                    </span>
+                                  )}
+                                </>
+                              )}
+
+                              <Button
+                                variant={
+                                  currentPage === page ? "default" : "outline"
+                                }
+                                size="sm"
+                                onClick={() => handlePageClick(page)}
+                                className="w-10 h-10"
+                              >
+                                {page}
+                              </Button>
+
+                              {index === array.length - 1 &&
+                                page < totalPages && (
+                                  <>
+                                    {page < totalPages - 1 && (
+                                      <span className="px-2 text-gray-400 text-sm">
+                                        ...
+                                      </span>
+                                    )}
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() =>
+                                        handlePageClick(totalPages)
+                                      }
+                                      className="w-10 h-10"
+                                    >
+                                      {totalPages}
+                                    </Button>
+                                  </>
+                                )}
+                            </React.Fragment>
+                          ))}
+                        </div>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleNextPage}
+                          disabled={currentPage === totalPages}
+                          className="flex items-center gap-1 px-2 sm:px-3"
+                        >
+                          <span className="hidden sm:inline">Next</span>
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      {totalPages > 5 && (
+                        <div className="flex items-center justify-center gap-2 sm:hidden">
+                          <span className="text-xs text-gray-500">
+                            Jump to:
+                          </span>
+
+                          <Select
+                            value={String(currentPage)}
+                            onValueChange={(value) =>
+                              handlePageClick(Number(value))
+                            }
+                          >
+                            <SelectTrigger className="h-7 w-[100px] text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
+                              <SelectValue placeholder="Select page" />
+                            </SelectTrigger>
+
+                            <SelectContent>
+                              {Array.from(
+                                { length: totalPages },
+                                (_, i) => i + 1
+                              ).map((page) => (
+                                <SelectItem key={page} value={String(page)}>
+                                  Page {page}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
+              )}
+            </>
           )}
 
-          {/* Add recommendations section after orders */}
           {orders.length > 0 && (
             <div className="mt-16">
               <HistoryBasedRecommendations userOrders={orders} />
