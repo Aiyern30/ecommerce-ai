@@ -572,7 +572,7 @@ export function RevenueOverTime() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               <StatsCards
                 title="Total Revenue"
-                value={formatCurrency(totalRevenue)}
+                value={formatCurrency(totalRevenue, true)}
                 growth={parseFloat(Math.abs(revenueChange).toFixed(1))}
                 icon={
                   revenueChange > 0
@@ -586,7 +586,7 @@ export function RevenueOverTime() {
               />
               <StatsCards
                 title="Current Period"
-                value={formatCurrency(currentPeriodRevenue)}
+                value={formatCurrency(currentPeriodRevenue, true)}
                 growth={parseFloat(Math.abs(revenueChange).toFixed(1))}
                 icon={
                   revenueChange > 0
@@ -600,7 +600,7 @@ export function RevenueOverTime() {
               />
               <StatsCards
                 title="Peak Period"
-                value={formatCurrency(maxRevenue)}
+                value={formatCurrency(maxRevenue, true)}
                 growth={parseFloat(Math.abs(revenueChange).toFixed(1))}
                 icon={
                   revenueChange > 0
@@ -622,7 +622,7 @@ export function RevenueOverTime() {
                     ? "Week"
                     : "Period"
                 }`}
-                value={formatCurrency(avgRevenue)}
+                value={formatCurrency(avgRevenue, true)}
                 growth={parseFloat(Math.abs(revenueChange).toFixed(1))}
                 icon={
                   revenueChange > 0

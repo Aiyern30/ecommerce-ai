@@ -67,51 +67,57 @@ export function StatsCards({
 
   return (
     <Card
-      className={`bg-gradient-to-br ${bgGradient} border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]`}
+      className={`bg-gradient-to-br ${bgGradient} border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] min-h-[160px] sm:min-h-[180px]`}
     >
-      <CardContent className="p-6">
-        <div className="flex flex-col gap-4">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <TypographyH6>{title}</TypographyH6>
-              <TypographyP
-                className="text-2xl font-bold text-gray-900 dark:text-white leading-tight
-                  max-w-[8rem] sm:max-w-[10rem] md:max-w-none "
+      <CardContent className="p-4 sm:p-6 h-full">
+        <div className="flex flex-col h-full">
+          <div className="relative mb-3 sm:mb-4">
+            <div className="absolute top-0 right-0">
+              <div
+                className={`p-1.5 sm:p-2 bg-gradient-to-br ${gradient} rounded-lg shadow-lg flex items-center justify-center`}
               >
-                {value}
-              </TypographyP>
-              {description && (
-                <TypographyP className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                  {description}
-                </TypographyP>
-              )}
-            </div>
-            <div
-              className={`p-3 bg-gradient-to-br ${gradient} rounded-2xl shadow-lg flex items-center justify-center`}
-            >
-              <IconComponent className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 text-white" />
-            </div>
-          </div>
-
-          {!hideGrowth && (
-            <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
-              {renderGrowthIndicator(growth)}
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                vs last period
-              </span>
-            </div>
-          )}
-
-          {hideGrowth && (
-            <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  Real-time data
-                </span>
+                <IconComponent className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
               </div>
             </div>
-          )}
+
+            <TypographyH6 className="pr-12 leading-snug">{title}</TypographyH6>
+          </div>
+
+          <div className="flex-1 flex flex-col justify-center">
+            <TypographyP className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white leading-tight mb-1 sm:mb-2 word-wrap break-words">
+              {value}
+            </TypographyP>
+
+            {description && (
+              <TypographyP className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                {description}
+              </TypographyP>
+            )}
+          </div>
+
+          <div className="mt-auto pt-3 sm:pt-4">
+            {!hideGrowth && (
+              <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-700 pt-2 sm:pt-3">
+                <div className="flex-shrink-0">
+                  {renderGrowthIndicator(growth)}
+                </div>
+                <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                  vs last period
+                </span>
+              </div>
+            )}
+
+            {hideGrowth && (
+              <div className="border-t border-gray-100 dark:border-gray-700 pt-2 sm:pt-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse flex-shrink-0"></div>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    Real-time data
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
