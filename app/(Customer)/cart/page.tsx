@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -294,12 +293,19 @@ export default function CartPage() {
       id: product.id,
       name: product.name,
       description:
-        (product as any).description ||
-        `High-quality ${product.product_type} for construction`,
+        "description" in product
+          ? (product.description as string | null)
+          : `High-quality ${product.product_type} for construction`,
       grade: product.grade || "N20", // Default grade
       product_type: product.product_type,
-      mortar_ratio: (product as any).mortar_ratio || null,
-      category: (product as any).category || "building_materials",
+      mortar_ratio:
+        "mortar_ratio" in product
+          ? (product.mortar_ratio as string | null)
+          : null,
+      category:
+        "category" in product
+          ? (product.category as string | null)
+          : "building_materials",
       normal_price: product.normal_price,
       pump_price: product.pump_price || null,
       tremie_1_price: product.tremie_1_price || null,
@@ -307,11 +313,22 @@ export default function CartPage() {
       tremie_3_price: product.tremie_3_price || null,
       unit: product.unit || "per m³",
       stock_quantity: product.stock_quantity || 0,
-      status: (product as any).status || "published",
-      is_featured: (product as any).is_featured || false,
-      created_at: (product as any).created_at || new Date().toISOString(),
-      updated_at: (product as any).updated_at || new Date().toISOString(),
-      keywords: (product as any).keywords || [],
+      status:
+        "status" in product
+          ? (product.status as "published" | "draft" | "archived")
+          : "published",
+      is_featured:
+        "is_featured" in product ? (product.is_featured as boolean) : false,
+      created_at:
+        "created_at" in product
+          ? (product.created_at as string)
+          : new Date().toISOString(),
+      updated_at:
+        "updated_at" in product
+          ? (product.updated_at as string)
+          : new Date().toISOString(),
+      keywords:
+        "keywords" in product ? (product.keywords as string[] | null) : [],
       product_images: product.product_images || [],
     };
 
