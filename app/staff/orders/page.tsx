@@ -93,7 +93,7 @@ function EmptyOrdersState() {
       <TypographyH2 className="mb-2">No orders found</TypographyH2>
       <TypographyP className="text-muted-foreground text-center mb-6 max-w-sm">
         Orders will appear here once customers start placing them through your
-        store.
+        platform.
       </TypographyP>
       <Link href="/staff/products">
         <Button className="flex items-center gap-2">
@@ -697,7 +697,6 @@ export default function OrdersPage() {
             <Input
               type="search"
               placeholder="Search by order ID, customer name, or phone..."
-              className="pl-8"
               value={filters.search}
               onChange={(e) => updateFilter("search", e.target.value)}
             />

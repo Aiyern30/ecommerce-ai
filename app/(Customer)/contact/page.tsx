@@ -54,27 +54,27 @@ export default function ContactPage() {
   const features = [
     {
       icon: Clock,
-      title: "Online Payment Only",
+      title: "Secure Online Payment",
       description:
-        "We accept only online payments for a seamless shopping experience.",
+        "We accept secure online payments for a seamless shopping experience.",
     },
     {
       icon: Package,
-      title: "New Stock and Sales",
+      title: "Fresh Inventory & Promotions",
       description:
-        "Stay updated with our latest stock arrivals and exclusive discounts.",
+        "Stay updated with our latest inventory arrivals and exclusive promotions.",
     },
     {
       icon: ShieldCheck,
       title: "Quality Assurance",
       description:
-        "All our products go through strict quality control to ensure customer satisfaction.",
+        "All our products undergo rigorous quality control to ensure customer satisfaction.",
     },
     {
       icon: Clock,
-      title: "Fast Delivery",
+      title: "Express Delivery",
       description:
-        "Get your orders delivered within an hour in selected areas.",
+        "Get your orders delivered promptly within selected service areas.",
     },
   ];
 

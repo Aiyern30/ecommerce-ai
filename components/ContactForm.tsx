@@ -61,7 +61,7 @@ export default function ContactForm({
     try {
       setLoading(true);
       await insertEnquiry(values);
-      toast.success("Your enquiry has been sent! ✅");
+      toast.success("Your inquiry has been sent successfully! ✅");
       // Only reset subject and message, keep user info if provided
       form.setValue("subject", "");
       form.setValue("message", "");
@@ -71,7 +71,7 @@ export default function ContactForm({
         form.reset();
       }
     } catch {
-      toast.error("Failed to send enquiry. Please try again.");
+      toast.error("Failed to send inquiry. Please try again.");
     } finally {
       setLoading(false);
     }

@@ -101,7 +101,7 @@ export default function FaqPage() {
         </TypographyH1>
         <TypographyP className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto text-center mb-12">
           Find answers to common questions about our services, policies, and
-          more. If you need further help, feel free to contact us.
+          more. If you need further assistance, feel free to contact us.
         </TypographyP>
 
         {loading ? (
@@ -162,8 +162,8 @@ export default function FaqPage() {
               No FAQs Available
             </TypographyH6>
             <TypographyP className="text-gray-500 dark:text-gray-400">
-              We're working on adding frequently asked questions. Check back
-              soon!
+              We're working on adding frequently asked questions. Please check
+              back soon!
             </TypographyP>
           </div>
         )}
