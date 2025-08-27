@@ -47,6 +47,7 @@ import {
   getPaymentStatusConfig,
   getStatusBadgeConfig,
 } from "@/lib/utils/format";
+import HistoryBasedRecommendations from "@/components/HistoryBasedRecommendations";
 
 // Loading skeleton component
 function OrderSkeleton() {
@@ -623,6 +624,13 @@ export default function OrdersPage() {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+          )}
+
+          {/* Add recommendations section after orders */}
+          {orders.length > 0 && (
+            <div className="mt-16">
+              <HistoryBasedRecommendations userOrders={orders} />
             </div>
           )}
 
