@@ -70,33 +70,75 @@ export default function AIInsightsPage() {
   const loadAIInsights = useCallback(async () => {
     try {
       setLoading(true);
+      console.log("Starting to fetch AI insights..."); // Debug log
 
       // Fetch daily summary
-      const summaryResponse = await fetch("/api/ai-insights/daily-summary");
-      if (summaryResponse.ok) {
-        const summary = await summaryResponse.json();
-        setDailySummary(summary);
+      try {
+        const summaryResponse = await fetch("/api/ai-insights/daily-summary");
+        console.log("Summary response status:", summaryResponse.status); // Debug log
+
+        if (summaryResponse.ok) {
+          const summary = await summaryResponse.json();
+          console.log("Daily summary data:", summary); // Debug log
+          setDailySummary(summary);
+        } else {
+          console.error(
+            "Failed to fetch daily summary:",
+            summaryResponse.statusText
+          );
+        }
+      } catch (summaryError) {
+        console.error("Error fetching daily summary:", summaryError);
       }
 
       // Fetch predictive alerts
-      const alertsResponse = await fetch("/api/ai-insights/predictive-alerts");
-      if (alertsResponse.ok) {
-        const alerts = await alertsResponse.json();
-        setPredictiveAlerts(alerts);
+      try {
+        const alertsResponse = await fetch(
+          "/api/ai-insights/predictive-alerts"
+        );
+        console.log("Alerts response status:", alertsResponse.status); // Debug log
+
+        if (alertsResponse.ok) {
+          const alerts = await alertsResponse.json();
+          console.log("Predictive alerts data:", alerts); // Debug log
+          setPredictiveAlerts(alerts);
+        } else {
+          console.error(
+            "Failed to fetch predictive alerts:",
+            alertsResponse.statusText
+          );
+        }
+      } catch (alertsError) {
+        console.error("Error fetching predictive alerts:", alertsError);
       }
 
       // Fetch general insights
-      const insightsResponse = await fetch("/api/ai-insights/general");
-      if (insightsResponse.ok) {
-        const generalInsights = await insightsResponse.json();
-        setInsights(generalInsights);
+      try {
+        const insightsResponse = await fetch("/api/ai-insights/general");
+        console.log("Insights response status:", insightsResponse.status); // Debug log
+
+        if (insightsResponse.ok) {
+          const generalInsights = await insightsResponse.json();
+          console.log("General insights data:", generalInsights); // Debug log
+          setInsights(generalInsights);
+        } else {
+          console.error(
+            "Failed to fetch general insights:",
+            insightsResponse.statusText
+          );
+        }
+      } catch (insightsError) {
+        console.error("Error fetching general insights:", insightsError);
       }
 
       setLastUpdated(new Date());
     } catch (error) {
       console.error("Failed to load AI insights:", error);
-      // Load mock data for development
-      loadMockData();
+      // Only load mock data if specifically requested or in development
+      if (process.env.NODE_ENV === "development") {
+        console.log("Loading mock data for development...");
+        loadMockData();
+      }
     } finally {
       setLoading(false);
     }

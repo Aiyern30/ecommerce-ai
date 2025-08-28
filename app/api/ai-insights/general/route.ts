@@ -3,18 +3,28 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
+    console.log("Starting general insights generation..."); // Debug log
+
     const insights = [];
     const sevenDaysAgo = new Date(
       Date.now() - 7 * 24 * 60 * 60 * 1000
     ).toISOString();
 
+    console.log("Seven days ago date:", sevenDaysAgo); // Debug log
+
     // Analyze recent order value trends
-    const { data: recentOrders } = await supabaseAdmin
+    const { data: recentOrders, error: ordersError } = await supabaseAdmin
       .from("orders")
       .select("total, created_at, payment_status")
       .gte("created_at", sevenDaysAgo)
       .eq("payment_status", "paid")
       .order("created_at", { ascending: false });
+
+    if (ordersError) {
+      console.error("Error fetching recent orders:", ordersError);
+    } else {
+      console.log("Recent orders count:", recentOrders?.length);
+    }
 
     if (recentOrders && recentOrders.length > 0) {
       const avgOrderValue =
@@ -41,7 +51,7 @@ export async function GET() {
     }
 
     // Product performance analysis
-    const { data: topProducts } = await supabaseAdmin
+    const { data: topProducts, error: productsError } = await supabaseAdmin
       .from("order_items")
       .select(
         `
@@ -52,6 +62,12 @@ export async function GET() {
       )
       .gte("orders.created_at", sevenDaysAgo)
       .eq("orders.payment_status", "paid");
+
+    if (productsError) {
+      console.error("Error fetching top products:", productsError);
+    } else {
+      console.log("Top products data length:", topProducts?.length);
+    }
 
     if (topProducts && topProducts.length > 0) {
       // Group by product and sum quantities
@@ -79,12 +95,18 @@ export async function GET() {
     }
 
     // Stock level analysis
-    const { data: stockAnalysis } = await supabaseAdmin
+    const { data: stockAnalysis, error: stockError } = await supabaseAdmin
       .from("products")
       .select("name, stock_quantity, grade")
       .eq("status", "published")
       .eq("is_active", true)
       .order("stock_quantity", { ascending: true });
+
+    if (stockError) {
+      console.error("Error fetching stock analysis data:", stockError);
+    } else {
+      console.log("Stock analysis data length:", stockAnalysis?.length);
+    }
 
     if (stockAnalysis && stockAnalysis.length > 0) {
       const lowStockItems = stockAnalysis.filter((p) => p.stock_quantity < 200);
@@ -123,7 +145,7 @@ export async function GET() {
     }
 
     // Grade preference analysis
-    const { data: gradeAnalysis } = await supabaseAdmin
+    const { data: gradeAnalysis, error: gradeError } = await supabaseAdmin
       .from("order_items")
       .select(
         `
@@ -134,6 +156,12 @@ export async function GET() {
       )
       .gte("orders.created_at", sevenDaysAgo)
       .eq("orders.payment_status", "paid");
+
+    if (gradeError) {
+      console.error("Error fetching grade analysis data:", gradeError);
+    } else {
+      console.log("Grade analysis data length:", gradeAnalysis?.length);
+    }
 
     if (gradeAnalysis && gradeAnalysis.length > 0) {
       const gradePattern = gradeAnalysis.reduce((acc, item) => {
@@ -178,11 +206,12 @@ export async function GET() {
       });
     }
 
+    console.log("Generated insights count:", insights.length);
     return NextResponse.json(insights);
   } catch (error) {
     console.error("Error generating general insights:", error);
     return NextResponse.json(
-      { error: "Failed to generate insights" },
+      { error: "Failed to generate insights", details: error },
       { status: 500 }
     );
   }
