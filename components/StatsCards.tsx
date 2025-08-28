@@ -14,6 +14,11 @@ interface StatsCardsProps {
   gradient?: string;
   bgGradient?: string;
   hideGrowth?: boolean;
+  stockInfo?: {
+    current: number;
+    suggested: number;
+    status: "critical" | "low" | "normal" | "high";
+  };
 }
 
 export function StatsCards({
@@ -25,6 +30,7 @@ export function StatsCards({
   gradient = "from-blue-500 to-indigo-600",
   bgGradient = "from-white to-blue-50/30 dark:from-gray-900 dark:to-blue-900/10",
   hideGrowth = false,
+  stockInfo,
 }: StatsCardsProps) {
   const renderGrowthIndicator = (growth: number) => {
     const isPositive = growth > 0;
@@ -65,6 +71,45 @@ export function StatsCards({
     );
   };
 
+  const renderStockIndicator = (
+    stockInfo: NonNullable<StatsCardsProps["stockInfo"]>
+  ) => {
+    const getStatusColor = (status: string) => {
+      switch (status) {
+        case "critical":
+          return "text-red-600 bg-red-100 dark:bg-red-900/30";
+        case "low":
+          return "text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30";
+        case "normal":
+          return "text-green-600 bg-green-100 dark:bg-green-900/30";
+        case "high":
+          return "text-blue-600 bg-blue-100 dark:bg-blue-900/30";
+        default:
+          return "text-gray-600 bg-gray-100 dark:bg-gray-900/30";
+      }
+    };
+
+    return (
+      <div className="border-t border-gray-100 dark:border-gray-700 pt-2 sm:pt-3">
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-gray-500">Current: {stockInfo.current} m³</span>
+          <div
+            className={`px-2 py-1 rounded-full ${getStatusColor(
+              stockInfo.status
+            )}`}
+          >
+            {stockInfo.status.toUpperCase()}
+          </div>
+        </div>
+        {stockInfo.suggested > stockInfo.current && (
+          <div className="text-xs text-green-600 dark:text-green-400 mt-1">
+            Suggested: +{stockInfo.suggested - stockInfo.current} m³
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <Card
       className={`bg-gradient-to-br ${bgGradient} border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] min-h-[160px] sm:min-h-[180px]`}
@@ -96,7 +141,9 @@ export function StatsCards({
           </div>
 
           <div className="mt-auto pt-3 sm:pt-4">
-            {!hideGrowth && (
+            {stockInfo ? (
+              renderStockIndicator(stockInfo)
+            ) : !hideGrowth ? (
               <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-700 pt-2 sm:pt-3">
                 <div className="flex-shrink-0">
                   {renderGrowthIndicator(growth)}
@@ -105,9 +152,7 @@ export function StatsCards({
                   vs last period
                 </span>
               </div>
-            )}
-
-            {hideGrowth && (
+            ) : (
               <div className="border-t border-gray-100 dark:border-gray-700 pt-2 sm:pt-3">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse flex-shrink-0"></div>
