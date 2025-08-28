@@ -166,7 +166,6 @@ export default function ProductRecommendations({
               </div>
               <div className="flex items-start gap-2">
                 <p className="text-gray-600 dark:text-gray-400 text-sm">
-                  {isCartRecommendations}
                   {isCartRecommendations
                     ? `${group.description} - Perfect additions to complement your current selection.`
                     : isAIComparisonRecommendations

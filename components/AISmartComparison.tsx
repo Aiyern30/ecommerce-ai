@@ -433,22 +433,10 @@ export function AISmartComparison({
       {/* Product Recommendations Section */}
       {aiResult && comparedProducts.length > 0 && (
         <div className="mt-8">
-          <div className="text-center space-y-2 mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Related Product Recommendations
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Based on your comparison, discover more products that might suit
-              your needs
-            </p>
-          </div>
-
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/10 dark:to-purple-900/10 rounded-3xl p-6 border border-blue-100 dark:border-blue-800">
-            <ProductRecommendations
-              currentProduct={getProductRecommendationsFromAI()!}
-              className="ai-comparison-recommendations"
-            />
-          </div>
+          <ProductRecommendations
+            currentProduct={getProductRecommendationsFromAI()!}
+            className="ai-comparison-recommendations"
+          />
         </div>
       )}
     </div>
