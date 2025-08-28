@@ -55,13 +55,27 @@ interface DailySummary {
 
 interface PredictiveAlert {
   id: string;
-  type: "stockout" | "demand_spike" | "delivery_delay" | "price_change";
+  type:
+    | "stockout"
+    | "demand_spike"
+    | "delivery_delay"
+    | "price_change"
+    | "weather_impact"
+    | "price_optimization";
   product: string;
-  productId?: string; // Add optional product ID
+  productId?: string;
+  currentStock?: number; // Add current stock
+  suggestedRestock?: {
+    // Add restock suggestion
+    amount: number;
+    reasoning: string;
+    targetLevel: number;
+  };
   probability: number;
   timeframe: string;
   impact: string;
   action: string;
+  priority?: number; // Add priority field
 }
 
 export default function AIInsightsPage() {
@@ -500,12 +514,70 @@ export default function AIInsightsPage() {
                           </p>
                         </div>
 
-                        {/* Impact description */}
+                        {/* Enhanced impact description for stock alerts */}
                         <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-3 border">
                           <p className="text-sm text-gray-700 dark:text-gray-300">
                             <span className="font-medium">Impact:</span>{" "}
                             {alert.impact}
                           </p>
+
+                          {/* Show current stock and restock info for stock alerts */}
+                          {alert.type === "stockout" &&
+                            alert.currentStock !== undefined &&
+                            alert.suggestedRestock && (
+                              <div className="mt-2 p-3 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-lg border-l-4 border-red-400">
+                                <div className="text-xs space-y-2">
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600 dark:text-gray-400">
+                                        Current Stock:
+                                      </span>
+                                      <span className="font-bold text-red-600 dark:text-red-400">
+                                        {alert.currentStock} m³
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600 dark:text-gray-400">
+                                        Suggested Restock:
+                                      </span>
+                                      <span className="font-bold text-green-600 dark:text-green-400">
+                                        +{alert.suggestedRestock.amount} m³
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div className="flex justify-between pt-1 border-t border-gray-200 dark:border-gray-600">
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                      Target Level:
+                                    </span>
+                                    <span className="font-bold text-blue-600 dark:text-blue-400">
+                                      {alert.suggestedRestock.targetLevel} m³
+                                    </span>
+                                  </div>
+                                  <div className="text-gray-500 dark:text-gray-400 italic mt-2 p-2 bg-white/50 dark:bg-gray-800/50 rounded">
+                                    <span className="font-medium">
+                                      Reasoning:
+                                    </span>{" "}
+                                    {alert.suggestedRestock.reasoning}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                          {/* Show enhanced info for demand spike alerts */}
+                          {alert.type === "demand_spike" && alert.productId && (
+                            <div className="mt-2 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border-l-4 border-blue-400">
+                              <div className="text-xs">
+                                <p className="text-blue-700 dark:text-blue-300">
+                                  <span className="font-medium">
+                                    📈 Trend Analysis:
+                                  </span>{" "}
+                                  This product shows significant demand growth.
+                                  Consider increasing inventory to meet
+                                  projected demand.
+                                </p>
+                              </div>
+                            </div>
+                          )}
                         </div>
 
                         {/* Recommended action */}
