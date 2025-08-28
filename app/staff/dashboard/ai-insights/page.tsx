@@ -30,6 +30,7 @@ import { TypographyH1, TypographyP } from "@/components/ui/Typography";
 import { formatDate } from "@/lib/utils/format";
 import { formatCurrency } from "@/lib/utils/currency";
 import { StatsCards } from "@/components/StatsCards";
+import Link from "next/link";
 
 interface AIInsight {
   id: string;
@@ -56,6 +57,7 @@ interface PredictiveAlert {
   id: string;
   type: "stockout" | "demand_spike" | "delivery_delay" | "price_change";
   product: string;
+  productId?: string; // Add optional product ID
   probability: number;
   timeframe: string;
   impact: string;
@@ -249,6 +251,51 @@ export default function AIInsightsPage() {
       default:
         return "border-gray-300 bg-gray-50 dark:bg-gray-900/20";
     }
+  };
+
+  // Enhanced helper functions for navigation
+  const getProductEditLink = (alert: PredictiveAlert) => {
+    // If we have a specific product ID, go directly to edit
+    if (alert.productId) {
+      return `/staff/products/${alert.productId}/edit`;
+    }
+
+    // For system-wide alerts, go to relevant management pages
+    if (
+      alert.product === "Multiple Orders" ||
+      alert.product === "Order Processing System"
+    ) {
+      return "/staff/orders";
+    }
+
+    if (alert.product === "All Concrete Products") {
+      return "/staff/products";
+    }
+
+    // For products without ID, search in products list
+    return `/staff/products?search=${encodeURIComponent(alert.product)}`;
+  };
+
+  const getProductViewLink = (alert: PredictiveAlert) => {
+    // If we have a specific product ID, go directly to view
+    if (alert.productId) {
+      return `/staff/products/${alert.productId}`;
+    }
+
+    // For system-wide alerts
+    if (
+      alert.product === "Multiple Orders" ||
+      alert.product === "Order Processing System"
+    ) {
+      return "/staff/orders?status=processing";
+    }
+
+    if (alert.product === "All Concrete Products") {
+      return "/staff/products?type=concrete";
+    }
+
+    // For products without ID, search in products list
+    return `/staff/products?search=${encodeURIComponent(alert.product)}`;
   };
 
   return (
@@ -476,23 +523,37 @@ export default function AIInsightsPage() {
 
                         {/* Quick action buttons */}
                         <div className="flex gap-2 pt-2">
-                          <Button
-                            size="sm"
-                            variant="default"
-                            className="text-xs"
+                          <Link
+                            href={getProductEditLink(alert)}
+                            className="inline-block"
                           >
-                            Take Action
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs"
+                            <Button
+                              size="sm"
+                              variant="default"
+                              className="text-xs"
+                            >
+                              {alert.type === "stockout"
+                                ? "Manage Inventory"
+                                : alert.type === "demand_spike"
+                                ? "Adjust Stock"
+                                : alert.type === "delivery_delay"
+                                ? "Review Orders"
+                                : "Take Action"}
+                            </Button>
+                          </Link>
+
+                          <Link
+                            href={getProductViewLink(alert)}
+                            className="inline-block"
                           >
-                            View Details
-                          </Button>
-                          <Button size="sm" variant="ghost" className="text-xs">
-                            Dismiss
-                          </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs"
+                            >
+                              View Details
+                            </Button>
+                          </Link>
                         </div>
                       </div>
 
