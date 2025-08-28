@@ -3,10 +3,12 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
+    console.log("Starting predictive alerts generation..."); // Debug log
+
     const alerts = [];
 
     // Get products with low stock for stockout predictions
-    const { data: lowStockProducts } = await supabaseAdmin
+    const { data: lowStockProducts, error: stockError } = await supabaseAdmin
       .from("products")
       .select("name, stock_quantity, grade")
       .lt("stock_quantity", 200) // Alert when stock below 200
@@ -14,6 +16,12 @@ export async function GET() {
       .eq("is_active", true)
       .order("stock_quantity", { ascending: true })
       .limit(10);
+
+    if (stockError) {
+      console.error("Error fetching low stock products:", stockError);
+    } else {
+      console.log("Low stock products count:", lowStockProducts?.length);
+    }
 
     // Generate stockout alerts for critical products
     lowStockProducts?.forEach((product, index) => {
@@ -44,7 +52,7 @@ export async function GET() {
     const sevenDaysAgo = new Date(
       Date.now() - 7 * 24 * 60 * 60 * 1000
     ).toISOString();
-    const { data: recentOrders } = await supabaseAdmin
+    const { data: recentOrders, error: orderError } = await supabaseAdmin
       .from("order_items")
       .select(
         `
@@ -55,6 +63,12 @@ export async function GET() {
       )
       .gte("orders.created_at", sevenDaysAgo)
       .order("quantity", { ascending: false });
+
+    if (orderError) {
+      console.error("Error fetching recent orders:", orderError);
+    } else {
+      console.log("Recent orders count:", recentOrders?.length);
+    }
 
     // Analyze demand patterns
     if (recentOrders && recentOrders.length > 0) {
@@ -107,11 +121,12 @@ export async function GET() {
       });
     }
 
+    console.log("Generated alerts count:", alerts.length);
     return NextResponse.json(alerts.slice(0, 5)); // Return top 5 alerts
   } catch (error) {
     console.error("Error generating predictive alerts:", error);
     return NextResponse.json(
-      { error: "Failed to generate alerts" },
+      { error: "Failed to generate alerts", details: error },
       { status: 500 }
     );
   }
