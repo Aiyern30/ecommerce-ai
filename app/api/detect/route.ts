@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/** @type {import('next').NextConfig} */
 // app/api/detect/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { ImageAnnotatorClient } from "@google-cloud/vision";
@@ -468,7 +469,7 @@ function generateSpecialConsiderations(
   return considerations.slice(0, 8);
 }
 
-// Enhanced function to estimate concrete quantity with better algorithms
+// Enhanced function to estimate concrete quantity with much better algorithms
 function estimateConcreteQuantity(labels: string[], objectAnnotations: any[]) {
   const labelTexts = labels.map((l) => l.toLowerCase());
 
@@ -477,100 +478,327 @@ function estimateConcreteQuantity(labels: string[], objectAnnotations: any[]) {
   let reasoning = "";
   let projectType = "general";
 
-  // Enhanced detection patterns
+  console.log("🔍 Analyzing labels for concrete detection:", labelTexts);
+
+  // DRAMATICALLY ENHANCED detection patterns with much more keywords
   const patterns = {
     foundation: {
-      keywords: ["foundation", "footing", "basement", "ground", "excavation"],
+      keywords: [
+        "foundation",
+        "footing",
+        "basement",
+        "ground",
+        "excavation",
+        "concrete foundation",
+        "building foundation",
+        "house foundation",
+        "strip foundation",
+        "pad foundation",
+        "pile",
+        "deep foundation",
+        "concrete footing",
+        "structural foundation",
+        "base",
+        "groundwork",
+        "underpinning",
+        "raft foundation",
+        "mat foundation",
+        "footings",
+      ],
       baseVolume: 35,
       multiplier: 1.2,
       confidence: "high" as const,
     },
     slab: {
-      keywords: ["slab", "floor", "concrete floor", "ground floor", "patio"],
+      keywords: [
+        "slab",
+        "floor",
+        "concrete floor",
+        "ground floor",
+        "patio",
+        "concrete slab",
+        "floor slab",
+        "ground slab",
+        "suspended slab",
+        "concrete patio",
+        "driveway slab",
+        "garage floor",
+        "basement floor",
+        "industrial floor",
+        "warehouse floor",
+        "flooring",
+        "concrete flooring",
+        "reinforced slab",
+        "post-tensioned slab",
+        "flat slab",
+      ],
       baseVolume: 20,
       multiplier: 1.0,
       confidence: "high" as const,
     },
-    driveway: {
-      keywords: ["driveway", "parking", "carport", "vehicle access"],
-      baseVolume: 12,
-      multiplier: 1.1,
-      confidence: "medium" as const,
-    },
-    wall: {
-      keywords: ["wall", "retaining wall", "barrier", "boundary"],
-      baseVolume: 15,
-      multiplier: 1.3,
-      confidence: "medium" as const,
-    },
     column: {
-      keywords: ["column", "pillar", "post", "support"],
-      baseVolume: 5,
+      keywords: [
+        "column",
+        "pillar",
+        "post",
+        "support",
+        "concrete column",
+        "structural column",
+        "reinforced column",
+        "round column",
+        "square column",
+        "precast column",
+        "cast-in-place column",
+        "concrete pillar",
+        "structural support",
+        "vertical support",
+        "concrete post",
+        "building column",
+      ],
+      baseVolume: 8,
       multiplier: 1.0,
       confidence: "high" as const,
     },
     beam: {
-      keywords: ["beam", "lintel", "structural beam"],
-      baseVolume: 8,
+      keywords: [
+        "beam",
+        "lintel",
+        "structural beam",
+        "concrete beam",
+        "reinforced beam",
+        "precast beam",
+        "girder",
+        "joist",
+        "transfer beam",
+        "grade beam",
+        "tie beam",
+        "plinth beam",
+        "concrete lintel",
+        "structural member",
+        "horizontal beam",
+      ],
+      baseVolume: 10,
       multiplier: 1.2,
       confidence: "high" as const,
     },
+    wall: {
+      keywords: [
+        "wall",
+        "retaining wall",
+        "barrier",
+        "boundary",
+        "concrete wall",
+        "structural wall",
+        "shear wall",
+        "basement wall",
+        "boundary wall",
+        "retaining structure",
+        "concrete barrier",
+        "precast wall",
+        "cast-in-place wall",
+        "reinforced wall",
+        "load bearing wall",
+      ],
+      baseVolume: 15,
+      multiplier: 1.3,
+      confidence: "medium" as const,
+    },
     stairs: {
-      keywords: ["stairs", "steps", "staircase"],
+      keywords: [
+        "stairs",
+        "steps",
+        "staircase",
+        "concrete stairs",
+        "stairway",
+        "concrete steps",
+        "precast stairs",
+        "spiral stairs",
+        "straight stairs",
+        "stair landing",
+        "concrete staircase",
+        "structural stairs",
+      ],
       baseVolume: 6,
       multiplier: 1.4,
       confidence: "medium" as const,
     },
+    driveway: {
+      keywords: [
+        "driveway",
+        "parking",
+        "carport",
+        "vehicle access",
+        "concrete driveway",
+        "parking lot",
+        "concrete parking",
+        "garage approach",
+        "vehicle path",
+        "concrete road",
+        "access road",
+        "pavement",
+        "concrete pavement",
+      ],
+      baseVolume: 12,
+      multiplier: 1.1,
+      confidence: "medium" as const,
+    },
     pool: {
-      keywords: ["pool", "swimming", "water feature"],
+      keywords: [
+        "pool",
+        "swimming",
+        "water feature",
+        "swimming pool",
+        "concrete pool",
+        "pool structure",
+        "aquatic facility",
+        "water tank",
+        "reservoir",
+        "concrete basin",
+        "water storage",
+        "pool deck",
+      ],
       baseVolume: 50,
       multiplier: 1.5,
       confidence: "medium" as const,
     },
+    // NEW: High-rise/Commercial detection
+    highrise: {
+      keywords: [
+        "high-rise building",
+        "skyscraper",
+        "tower",
+        "commercial building",
+        "office building",
+        "apartment building",
+        "multi-story",
+        "high-rise",
+        "concrete building",
+        "structural building",
+        "commercial construction",
+        "building construction",
+        "concrete structure",
+        "structural work",
+      ],
+      baseVolume: 100,
+      multiplier: 2.0,
+      confidence: "high" as const,
+    },
+    // NEW: Infrastructure projects
+    infrastructure: {
+      keywords: [
+        "bridge",
+        "tunnel",
+        "highway",
+        "infrastructure",
+        "public works",
+        "concrete bridge",
+        "overpass",
+        "underpass",
+        "concrete infrastructure",
+        "civil engineering",
+        "heavy construction",
+        "mass concrete",
+      ],
+      baseVolume: 200,
+      multiplier: 3.0,
+      confidence: "high" as const,
+    },
   };
 
-  // Detect project type and calculate base estimation
-  let matchedPattern = null;
-  let maxScore = 0;
+  // Enhanced detection with weighted scoring
+  const bestMatches: Array<{ pattern: any; score: number; type: string }> = [];
 
   for (const [type, pattern] of Object.entries(patterns)) {
     let score = 0;
+    const matchedKeywords: string[] = [];
+
     pattern.keywords.forEach((keyword) => {
       if (labelTexts.some((label) => label.includes(keyword))) {
         score += 1;
+        matchedKeywords.push(keyword);
+
+        // Bonus points for exact matches
+        if (labelTexts.includes(keyword)) {
+          score += 0.5;
+        }
+
+        // Bonus for multiple word matches
+        if (
+          keyword.includes(" ") &&
+          labelTexts.some((label) => label.includes(keyword))
+        ) {
+          score += 0.3;
+        }
       }
     });
 
-    if (score > maxScore) {
-      maxScore = score;
-      matchedPattern = { type, ...pattern };
+    if (score > 0) {
+      bestMatches.push({ pattern: { ...pattern, type }, score, type });
+      console.log(
+        `✅ Found ${type} match: score=${score}, keywords=[${matchedKeywords.join(
+          ", "
+        )}]`
+      );
     }
   }
 
-  if (matchedPattern && maxScore > 0) {
-    estimatedVolume = matchedPattern.baseVolume;
-    confidenceLevel = matchedPattern.confidence;
-    projectType = matchedPattern.type;
-    reasoning = `${
-      matchedPattern.type.charAt(0).toUpperCase() + matchedPattern.type.slice(1)
-    } project detected`;
+  // Sort by score and take the best match
+  bestMatches.sort((a, b) => b.score - a.score);
 
-    // Apply size adjustments based on image complexity
-    if (objectAnnotations.length > 15) {
-      estimatedVolume *= 1.8; // Large complex project
-      reasoning += " - Large scale project detected";
-    } else if (objectAnnotations.length > 8) {
-      estimatedVolume *= 1.4; // Medium project
+  if (bestMatches.length > 0) {
+    const bestMatch = bestMatches[0];
+    estimatedVolume = bestMatch.pattern.baseVolume;
+    confidenceLevel = bestMatch.pattern.confidence;
+    projectType = bestMatch.type;
+    reasoning = `${
+      bestMatch.type.charAt(0).toUpperCase() + bestMatch.type.slice(1)
+    } project detected (confidence: ${bestMatch.score} matches)`;
+
+    console.log(`🎯 Best match: ${projectType} with score ${bestMatch.score}`);
+
+    // Enhanced size adjustments based on image complexity AND labels
+    const complexityIndicators = [
+      "large",
+      "big",
+      "massive",
+      "huge",
+      "extensive",
+      "major",
+      "complex",
+      "multi-story",
+      "high-rise",
+      "commercial",
+      "industrial",
+      "infrastructure",
+    ];
+
+    const sizeIndicators = labelTexts.filter((label) =>
+      complexityIndicators.some((indicator) => label.includes(indicator))
+    ).length;
+
+    if (objectAnnotations.length > 15 || sizeIndicators > 2) {
+      estimatedVolume *= 2.5; // Very large complex project
+      reasoning += " - Large scale complex project detected";
+      confidenceLevel = "high";
+    } else if (objectAnnotations.length > 8 || sizeIndicators > 1) {
+      estimatedVolume *= 1.8; // Medium project
       reasoning += " - Medium scale project";
-    } else if (objectAnnotations.length < 4) {
-      estimatedVolume *= 0.7; // Small project
+    } else if (objectAnnotations.length < 4 && sizeIndicators === 0) {
+      estimatedVolume *= 0.6; // Small project
       reasoning += " - Small scale project";
     }
 
     // Apply pattern-specific multiplier
-    estimatedVolume *= matchedPattern.multiplier;
+    estimatedVolume *= bestMatch.pattern.multiplier;
+
+    // Special logic for high-rise buildings
+    if (projectType === "highrise") {
+      confidenceLevel = "high";
+      reasoning +=
+        " - High-strength concrete recommended for high-rise construction";
+    }
   } else {
-    // Fallback estimation based on general construction indicators
+    // Enhanced fallback detection
     const constructionIndicators = [
       "building",
       "construction",
@@ -581,32 +809,61 @@ function estimateConcreteQuantity(labels: string[], objectAnnotations: any[]) {
       "work",
       "project",
       "development",
+      "engineering",
+      "architectural",
+      "structural",
+      "industrial",
+      "commercial",
+      "residential",
     ];
 
-    const hasConstruction = labelTexts.some((label) =>
+    const generalConstructionScore = labelTexts.filter((label) =>
       constructionIndicators.some((indicator) => label.includes(indicator))
-    );
+    ).length;
 
-    if (hasConstruction) {
-      estimatedVolume = 15;
-      reasoning = "General construction project detected";
+    if (generalConstructionScore > 2) {
+      estimatedVolume = 25;
+      reasoning = `General construction project detected (${generalConstructionScore} construction indicators)`;
       projectType = "general";
+      confidenceLevel = "medium";
+    } else if (generalConstructionScore > 0) {
+      estimatedVolume = 15;
+      reasoning = `Basic construction work estimated (${generalConstructionScore} indicators)`;
+      projectType = "basic";
+      confidenceLevel = "low";
     } else {
       estimatedVolume = 8;
-      reasoning = "Basic concrete work estimated";
+      reasoning =
+        "Minimal concrete work estimated - consider manual verification";
       projectType = "basic";
+      confidenceLevel = "low";
     }
+
+    console.log(`⚠️ Fallback detection: ${reasoning}`);
   }
 
   // Safety margin and rounding
   const finalVolume = Math.round(estimatedVolume * 10) / 10;
   const safetyMargin = 0.15; // 15% safety margin
 
-  // Calculate confidence from labels array (fix for score property)
+  // IMPROVED confidence calculation
   const confidence =
-    labelTexts.length > 0
-      ? Math.min(0.95, Math.max(0.4, labelTexts.length > 3 ? 0.8 : 0.6))
-      : 0.5;
+    bestMatches.length > 0
+      ? Math.min(
+          0.95,
+          Math.max(
+            0.5,
+            (bestMatches[0].score / 5) * 0.8 + // Base score component
+              (labelTexts.length / 10) * 0.2 // Label quantity component
+          )
+        )
+      : Math.max(0.3, Math.min(0.6, labelTexts.length / 15));
+
+  console.log(
+    `📊 Final analysis: volume=${finalVolume}m³, confidence=${Math.round(
+      confidence * 100
+    )}%, type=${projectType}`
+  );
 
   const dynamicRecommendations = generateDynamicRecommendations(
     labelTexts,
@@ -629,11 +886,140 @@ function estimateConcreteQuantity(labels: string[], objectAnnotations: any[]) {
       recommended: Math.round(finalVolume * 1.15 * 10) / 10,
     },
     breakdown: {
-      baseEstimate: Math.round(estimatedVolume * 10) / 10,
+      baseEstimate: Math.round((finalVolume / (1 + safetyMargin)) * 10) / 10,
       safetyMargin: Math.round(finalVolume * safetyMargin * 10) / 10,
       wastageAllowance: Math.round(finalVolume * 0.05 * 10) / 10,
     },
   };
+}
+
+// ENHANCED product matching with better scoring
+function matchConcreteProduct(labels: string[], products: any[]) {
+  if (!products || products.length === 0) {
+    return null;
+  }
+
+  const labelTexts = labels.map((l) => l.toLowerCase());
+  let bestMatch = { product: null, score: 0 };
+
+  console.log("🔍 Matching concrete product for labels:", labelTexts);
+
+  // Enhanced concrete grade detection patterns - fix type error
+  const gradePatterns: { [key: string]: string[] } = {
+    N10: ["blinding", "filling", "leveling", "non-structural", "base"],
+    N15: ["footpath", "kerb", "light duty", "residential", "small"],
+    N20: [
+      "driveway",
+      "general",
+      "versatile",
+      "standard",
+      "residential",
+      "floor",
+    ],
+    N25: ["structural", "commercial", "column", "beam", "load bearing"],
+    S30: ["high strength", "suspended", "precast", "structural", "commercial"],
+    S35: ["high-rise", "tower", "skyscraper", "infrastructure", "heavy duty"],
+  };
+
+  products.forEach((product) => {
+    let score = 0;
+
+    // Match against grade-specific patterns - fix type error
+    const productGrade = product.grade?.toUpperCase();
+    if (productGrade && gradePatterns[productGrade]) {
+      gradePatterns[productGrade].forEach((pattern) => {
+        if (labelTexts.some((label) => label.includes(pattern))) {
+          score += 3; // High weight for grade-specific matches
+        }
+      });
+    }
+
+    // Enhanced keyword matching
+    let keywords: string[] = [];
+    if (product.keywords) {
+      try {
+        keywords = Array.isArray(product.keywords)
+          ? product.keywords
+          : JSON.parse(product.keywords);
+      } catch {
+        keywords = [];
+      }
+    }
+
+    keywords.forEach((keyword: string) => {
+      if (labelTexts.some((label) => label.includes(keyword.toLowerCase()))) {
+        score += 2;
+      }
+    });
+
+    // Product name and description matching
+    const productName = product.name?.toLowerCase() || "";
+    const productDesc = product.description?.toLowerCase() || "";
+
+    labelTexts.forEach((label) => {
+      if (
+        productName.includes(label) ||
+        label.includes(productName.replace("concrete ", ""))
+      ) {
+        score += 3;
+      }
+      if (productDesc.includes(label)) {
+        score += 1;
+      }
+    });
+
+    // Special scoring for high-rise detection
+    if (
+      labelTexts.some(
+        (label) =>
+          label.includes("high-rise") ||
+          label.includes("skyscraper") ||
+          label.includes("tower")
+      )
+    ) {
+      if (productGrade === "S30" || productGrade === "S35") {
+        score += 5; // Bonus for high-strength concrete in high-rise
+      }
+    }
+
+    console.log(`Product ${product.name} (${productGrade}): score=${score}`);
+
+    if (score > bestMatch.score) {
+      bestMatch = { product, score };
+    }
+  });
+
+  // Smart fallback based on detected project type
+  if (bestMatch.score === 0) {
+    console.log("⚠️ No direct match found, using intelligent fallback");
+
+    // Check if we detected high-rise/commercial
+    if (
+      labelTexts.some(
+        (label) =>
+          label.includes("high-rise") ||
+          label.includes("skyscraper") ||
+          label.includes("tower") ||
+          label.includes("commercial")
+      )
+    ) {
+      const highStrengthProduct = products.find(
+        (p) => p.grade === "S30" || p.grade === "S35"
+      );
+      if (highStrengthProduct) {
+        console.log("🏗️ Selected high-strength concrete for high-rise project");
+        return highStrengthProduct;
+      }
+    }
+
+    // Default to versatile N20
+    const defaultProduct =
+      products.find((p) => p.grade === "N20") || products[0];
+    console.log("🎯 Using default versatile concrete:", defaultProduct?.name);
+    return defaultProduct;
+  }
+
+  return bestMatch.product;
 }
 
 // Enhanced cost calculation with delivery options and recommendations
@@ -736,71 +1122,6 @@ async function getProductsFromDatabase() {
     console.error("❌ Failed to fetch products:", error);
     throw error;
   }
-}
-
-function matchConcreteProduct(labels: string[], products: any[]) {
-  if (!products || products.length === 0) {
-    return null;
-  }
-
-  const labelTexts = labels.map((l) => l.toLowerCase());
-  let bestMatch = { product: null, score: 0 };
-
-  products.forEach((product) => {
-    let score = 0;
-
-    // Parse keywords from the product (assuming it's stored as JSON array)
-    let keywords: string[] = [];
-    if (product.keywords) {
-      try {
-        keywords = Array.isArray(product.keywords)
-          ? product.keywords
-          : JSON.parse(product.keywords);
-      } catch (e) {
-        console.warn(
-          `⚠️ Failed to parse keywords for product ${product.name}:`,
-          e
-        );
-        keywords = [];
-      }
-    }
-
-    // Match against product keywords
-    keywords.forEach((keyword: string) => {
-      if (labelTexts.some((label) => label.includes(keyword.toLowerCase()))) {
-        score += 1;
-      }
-    });
-
-    // Also match against product name and description
-    const productName = product.name?.toLowerCase() || "";
-    const productDesc = product.description?.toLowerCase() || "";
-
-    labelTexts.forEach((label) => {
-      if (
-        productName.includes(label) ||
-        label.includes(productName.replace("concrete ", ""))
-      ) {
-        score += 2; // Higher weight for name matches
-      }
-      if (productDesc.includes(label)) {
-        score += 1;
-      }
-    });
-
-    if (score > bestMatch.score) {
-      bestMatch = { product, score };
-    }
-  });
-
-  // If no match found, return a default product (e.g., most versatile one like N20)
-  if (bestMatch.score === 0) {
-    const defaultProduct =
-      products.find((p) => p.grade === "N20") || products[0];
-    return defaultProduct;
-  }
-
-  return bestMatch.product;
 }
 
 export async function POST(request: NextRequest) {
@@ -931,7 +1252,17 @@ export async function POST(request: NextRequest) {
     const objectAnnotations = objectResult.localizedObjectAnnotations || [];
 
     console.log("🏷️ Detected labels:", labelTexts);
+    console.log("📊 Label count:", labelTexts.length);
     console.log("🎯 Object count:", objectAnnotations.length);
+
+    // Log detailed label information
+    labels.forEach((label, index) => {
+      console.log(
+        `Label ${index + 1}: ${label.description} (${Math.round(
+          (label.score || 0) * 100
+        )}% confidence)`
+      );
+    });
 
     // Enhanced quantity estimation with better algorithms
     const quantityEstimation = estimateConcreteQuantity(
@@ -964,6 +1295,8 @@ export async function POST(request: NextRequest) {
           )
         : 0.5;
 
+    console.log("🎯 Calculated confidence:", Math.round(confidence * 100));
+
     // Project insights based on detected elements
     const projectInsights = {
       complexity:
@@ -983,9 +1316,9 @@ export async function POST(request: NextRequest) {
       ),
     };
 
-    return NextResponse.json({
+    const responseData = {
       success: true,
-      detectedLabels: labelTexts, // Return all detected labels
+      detectedLabels: labelTexts, // This should contain your 10 labels
       matchedProduct,
       confidence: Math.round(confidence * 100),
       message: matchedProduct
@@ -997,7 +1330,7 @@ export async function POST(request: NextRequest) {
       projectInsights,
       analysisMetadata: {
         elementsDetected: objectAnnotations.length,
-        labelsFound: labels.length,
+        labelsFound: labels.length, // This should be 10
         processingTime: new Date().toISOString(),
         aiConfidence: Math.round(confidence * 100),
         // Add detailed label information
@@ -1007,7 +1340,11 @@ export async function POST(request: NextRequest) {
           confidence: label.score || 0,
         })),
       },
-    });
+    };
+
+    console.log("📤 Sending response with", labelTexts.length, "labels");
+
+    return NextResponse.json(responseData);
   } catch (error) {
     console.error("Vision API Error:", error);
 
