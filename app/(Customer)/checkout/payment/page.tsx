@@ -1,7 +1,8 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useUser } from "@supabase/auth-helpers-react";
 import { Button } from "@/components/ui";
@@ -31,6 +32,9 @@ export default function CheckoutPaymentPage() {
   const user = useUser();
   const [addressData, setAddressData] = useState<Address | null>(null);
   const [totalAmount, setTotalAmount] = useState<number>(0);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const paymentProcessedRef = useRef(false);
   const addressId = searchParams?.get("addressId");
   const { cartItems, isLoading } = useCart();
 
@@ -137,9 +141,33 @@ export default function CheckoutPaymentPage() {
     setTotalAmount(stripeAmount);
   }, [cartItems, router, isLoading]);
 
-  const handlePaymentSuccess = (orderId: string) => {
-    localStorage.removeItem("selectedServices");
-    router.push(`/order-success?orderId=${orderId}`);
+  const handlePaymentSuccess = async (orderId: string) => {
+    // Prevent multiple calls
+    if (paymentProcessedRef.current) {
+      return;
+    }
+    paymentProcessedRef.current = true;
+
+    try {
+      localStorage.removeItem("selectedServices");
+      router.push(`/order-success?orderId=${orderId}`);
+    } catch (error) {
+      console.error("Error in payment success handler:", error);
+      setPaymentError(
+        "Payment succeeded but there was an error. Please contact support."
+      );
+    }
+  };
+
+  const handlePaymentStart = () => {
+    setIsProcessingPayment(true);
+    setPaymentError(null);
+  };
+
+  const handlePaymentError = (error: string) => {
+    setIsProcessingPayment(false);
+    setPaymentError(error);
+    paymentProcessedRef.current = false;
   };
 
   if (!addressData || totalAmount === 0 || isLoading) {
@@ -210,8 +238,29 @@ export default function CheckoutPaymentPage() {
 
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
               <h2 className="text-xl font-semibold mb-6">Payment Details</h2>
+
+              {paymentError && (
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-red-800 text-sm">{paymentError}</p>
+                </div>
+              )}
+
+              {isProcessingPayment && (
+                <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                    <p className="text-blue-800 text-sm">
+                      Processing your payment... Please don't refresh the page.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <StripePaymentForm
                 onSuccess={handlePaymentSuccess}
+                onPaymentStart={handlePaymentStart}
+                onPaymentError={handlePaymentError}
+                isProcessing={isProcessingPayment}
                 shippingAddress={addressData}
                 selectedServices={selectedServices}
                 additionalServices={additionalServices}
