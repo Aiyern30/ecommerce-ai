@@ -32,80 +32,254 @@ function initializeVisionClient() {
   });
 }
 
-// Function to estimate concrete quantity from image analysis
+// Enhanced function to estimate concrete quantity with better algorithms
 function estimateConcreteQuantity(labels: string[], objectAnnotations: any[]) {
   const labelTexts = labels.map((l) => l.toLowerCase());
 
-  // Base estimation logic
   let estimatedVolume = 0;
-  let confidenceLevel = "low";
+  let confidenceLevel: "low" | "medium" | "high" = "low";
   let reasoning = "";
+  let projectType = "general";
+  let additionalRecommendations: string[] = [];
 
-  // Estimate based on detected construction elements
-  if (labelTexts.some((label) => label.includes("foundation"))) {
-    estimatedVolume = 25; // Typical small foundation
-    confidenceLevel = "medium";
-    reasoning =
-      "Foundation detected - estimated for typical residential foundation";
-  } else if (
-    labelTexts.some(
-      (label) => label.includes("slab") || label.includes("floor")
-    )
-  ) {
-    estimatedVolume = 15; // Typical slab
-    confidenceLevel = "medium";
-    reasoning = "Floor slab detected - estimated for standard room size";
-  } else if (labelTexts.some((label) => label.includes("driveway"))) {
-    estimatedVolume = 8; // Typical driveway
-    confidenceLevel = "medium";
-    reasoning = "Driveway detected - estimated for single car driveway";
-  } else if (labelTexts.some((label) => label.includes("wall"))) {
-    estimatedVolume = 12; // Wall section
-    confidenceLevel = "medium";
-    reasoning = "Wall structure detected - estimated for standard wall section";
-  } else if (
-    labelTexts.some(
-      (label) => label.includes("column") || label.includes("beam")
-    )
-  ) {
-    estimatedVolume = 3; // Structural element
-    confidenceLevel = "medium";
-    reasoning =
-      "Structural element detected - estimated for typical column/beam";
-  } else if (
-    labelTexts.some(
-      (label) =>
-        label.includes("concrete") ||
-        label.includes("cement") ||
-        label.includes("building") ||
-        label.includes("construction")
-    )
-  ) {
-    estimatedVolume = 10; // General concrete work
-    confidenceLevel = "low";
-    reasoning = "General concrete work detected - basic estimation provided";
-  } else {
-    // Fallback estimation
-    estimatedVolume = 5;
-    confidenceLevel = "low";
-    reasoning = "General construction project - conservative estimate";
-  }
-
-  // Adjust based on image complexity (more objects = potentially larger project)
-  if (objectAnnotations.length > 10) {
-    estimatedVolume *= 1.5; // Increase for complex scenes
-    reasoning += " (adjusted for project complexity)";
-  }
-
-  return {
-    estimatedVolume: Math.round(estimatedVolume * 10) / 10, // Round to 1 decimal
-    confidenceLevel,
-    reasoning,
-    range: {
-      min: Math.round(estimatedVolume * 0.7 * 10) / 10,
-      max: Math.round(estimatedVolume * 1.5 * 10) / 10,
+  // Enhanced detection patterns
+  const patterns = {
+    foundation: {
+      keywords: ["foundation", "footing", "basement", "ground", "excavation"],
+      baseVolume: 35,
+      multiplier: 1.2,
+      confidence: "high" as const,
+      recommendations: [
+        "Consider waterproofing additives",
+        "Allow for extra material due to excavation variations",
+      ],
+    },
+    slab: {
+      keywords: ["slab", "floor", "concrete floor", "ground floor", "patio"],
+      baseVolume: 20,
+      multiplier: 1.0,
+      confidence: "high" as const,
+      recommendations: [
+        "Consider fiber reinforcement",
+        "Plan for proper curing time",
+      ],
+    },
+    driveway: {
+      keywords: ["driveway", "parking", "carport", "vehicle access"],
+      baseVolume: 12,
+      multiplier: 1.1,
+      confidence: "medium" as const,
+      recommendations: [
+        "Use higher strength grade for vehicle loads",
+        "Consider drainage requirements",
+      ],
+    },
+    wall: {
+      keywords: ["wall", "retaining wall", "barrier", "boundary"],
+      baseVolume: 15,
+      multiplier: 1.3,
+      confidence: "medium" as const,
+      recommendations: [
+        "Consider reinforcement requirements",
+        "Plan for formwork",
+      ],
+    },
+    column: {
+      keywords: ["column", "pillar", "post", "support"],
+      baseVolume: 5,
+      multiplier: 1.0,
+      confidence: "high" as const,
+      recommendations: [
+        "High strength concrete recommended",
+        "Precise placement required",
+      ],
+    },
+    beam: {
+      keywords: ["beam", "lintel", "structural beam"],
+      baseVolume: 8,
+      multiplier: 1.2,
+      confidence: "high" as const,
+      recommendations: [
+        "Structural grade required",
+        "Professional engineering review recommended",
+      ],
+    },
+    stairs: {
+      keywords: ["stairs", "steps", "staircase"],
+      baseVolume: 6,
+      multiplier: 1.4,
+      confidence: "medium" as const,
+      recommendations: [
+        "Non-slip surface treatment",
+        "Precise formwork essential",
+      ],
+    },
+    pool: {
+      keywords: ["pool", "swimming", "water feature"],
+      baseVolume: 50,
+      multiplier: 1.5,
+      confidence: "medium" as const,
+      recommendations: [
+        "Waterproof concrete required",
+        "Special additives needed",
+        "Professional installation recommended",
+      ],
     },
   };
+
+  // Detect project type and calculate base estimation
+  let matchedPattern = null;
+  let maxScore = 0;
+
+  for (const [type, pattern] of Object.entries(patterns)) {
+    let score = 0;
+    pattern.keywords.forEach((keyword) => {
+      if (labelTexts.some((label) => label.includes(keyword))) {
+        score += 1;
+      }
+    });
+
+    if (score > maxScore) {
+      maxScore = score;
+      matchedPattern = { type, ...pattern };
+    }
+  }
+
+  if (matchedPattern && maxScore > 0) {
+    estimatedVolume = matchedPattern.baseVolume;
+    confidenceLevel = matchedPattern.confidence;
+    projectType = matchedPattern.type;
+    reasoning = `${
+      matchedPattern.type.charAt(0).toUpperCase() + matchedPattern.type.slice(1)
+    } project detected`;
+    additionalRecommendations = matchedPattern.recommendations;
+
+    // Apply size adjustments based on image complexity
+    if (objectAnnotations.length > 15) {
+      estimatedVolume *= 1.8; // Large complex project
+      reasoning += " - Large scale project detected";
+    } else if (objectAnnotations.length > 8) {
+      estimatedVolume *= 1.4; // Medium project
+      reasoning += " - Medium scale project";
+    } else if (objectAnnotations.length < 4) {
+      estimatedVolume *= 0.7; // Small project
+      reasoning += " - Small scale project";
+    }
+
+    // Apply pattern-specific multiplier
+    estimatedVolume *= matchedPattern.multiplier;
+  } else {
+    // Fallback estimation based on general construction indicators
+    const constructionIndicators = [
+      "building",
+      "construction",
+      "concrete",
+      "cement",
+      "structure",
+      "site",
+      "work",
+      "project",
+      "development",
+    ];
+
+    const hasConstruction = labelTexts.some((label) =>
+      constructionIndicators.some((indicator) => label.includes(indicator))
+    );
+
+    if (hasConstruction) {
+      estimatedVolume = 15;
+      reasoning = "General construction project detected";
+      projectType = "general";
+    } else {
+      estimatedVolume = 8;
+      reasoning = "Basic concrete work estimated";
+      projectType = "basic";
+    }
+  }
+
+  // Safety margin and rounding
+  const finalVolume = Math.round(estimatedVolume * 10) / 10;
+  const safetyMargin = 0.15; // 15% safety margin
+
+  return {
+    estimatedVolume: finalVolume,
+    safetyVolume: Math.round(finalVolume * (1 + safetyMargin) * 10) / 10,
+    confidenceLevel,
+    reasoning,
+    projectType,
+    additionalRecommendations,
+    range: {
+      min: Math.round(finalVolume * 0.8 * 10) / 10,
+      max: Math.round(finalVolume * 1.4 * 10) / 10,
+      recommended: Math.round(finalVolume * 1.15 * 10) / 10, // 15% buffer
+    },
+    breakdown: {
+      baseEstimate: Math.round(estimatedVolume * 10) / 10,
+      safetyMargin: Math.round(finalVolume * safetyMargin * 10) / 10,
+      wastageAllowance: Math.round(finalVolume * 0.05 * 10) / 10, // 5% wastage
+    },
+  };
+}
+
+// Enhanced cost calculation with delivery options and recommendations
+function calculateComprehensiveCosts(matchedProduct: any, quantityData: any) {
+  if (!matchedProduct || !quantityData) return null;
+
+  const deliveryOptions = [
+    {
+      key: "normal_price",
+      label: "Standard Delivery",
+      icon: "🚛",
+      description: "Best for accessible sites",
+    },
+    {
+      key: "pump_price",
+      label: "Pump Delivery",
+      icon: "🏗️",
+      description: "High-rise or restricted access",
+    },
+    {
+      key: "tremie_1_price",
+      label: "Tremie Method 1",
+      icon: "🌊",
+      description: "Underwater/specialized placement",
+    },
+    {
+      key: "tremie_2_price",
+      label: "Tremie Method 2",
+      icon: "🌊",
+      description: "Deep foundation work",
+    },
+    {
+      key: "tremie_3_price",
+      label: "Tremie Method 3",
+      icon: "🌊",
+      description: "Marine construction",
+    },
+  ];
+
+  const costBreakdown: any = {};
+
+  deliveryOptions.forEach((option) => {
+    const price = parseFloat(matchedProduct[option.key]);
+    if (price && price > 0) {
+      costBreakdown[option.key] = {
+        ...option,
+        pricePerUnit: price,
+        costs: {
+          estimated: Math.round(price * quantityData.estimatedVolume),
+          withSafety: Math.round(price * quantityData.safetyVolume),
+          recommended: Math.round(price * quantityData.range.recommended),
+          range: {
+            min: Math.round(price * quantityData.range.min),
+            max: Math.round(price * quantityData.range.max),
+          },
+        },
+      };
+    }
+  });
+
+  return costBreakdown;
 }
 
 // Cache for products to avoid repeated database calls
@@ -333,60 +507,70 @@ export async function POST(request: NextRequest) {
     const labelTexts = labels.map((l) => l.description || "").filter(Boolean);
     const objectAnnotations = objectResult.localizedObjectAnnotations || [];
 
-    // Estimate concrete quantity
+    // Enhanced quantity estimation with better algorithms
     const quantityEstimation = estimateConcreteQuantity(
       labelTexts,
       objectAnnotations
     );
 
-    // Match to concrete product
+    // Match to concrete product with enhanced scoring
     const matchedProduct = matchConcreteProduct(labelTexts, products);
 
-    // Calculate confidence score
+    // Calculate comprehensive costs with all delivery options
+    const comprehensiveCosts = calculateComprehensiveCosts(
+      matchedProduct,
+      quantityEstimation
+    );
+
+    // Enhanced confidence calculation
     const confidence =
       labels.length > 0
-        ? Math.min(0.95, Math.max(0.3, labels[0].score || 0.5))
+        ? Math.min(
+            0.95,
+            Math.max(
+              0.4,
+              (labels[0].score || 0.5) * (labels.length > 3 ? 1.2 : 1.0)
+            )
+          )
         : 0.5;
 
-    // Calculate total cost estimation
-    let costEstimation = null;
-    if (matchedProduct && quantityEstimation.estimatedVolume > 0) {
-      const normalPrice = parseFloat(matchedProduct.normal_price) || 0;
-      const pumpPrice = matchedProduct.pump_price
-        ? parseFloat(matchedProduct.pump_price)
-        : null;
-
-      costEstimation = {
-        normal: {
-          total: Math.round(normalPrice * quantityEstimation.estimatedVolume),
-          range: {
-            min: Math.round(normalPrice * quantityEstimation.range.min),
-            max: Math.round(normalPrice * quantityEstimation.range.max),
-          },
-        },
-        pump: pumpPrice
-          ? {
-              total: Math.round(pumpPrice * quantityEstimation.estimatedVolume),
-              range: {
-                min: Math.round(pumpPrice * quantityEstimation.range.min),
-                max: Math.round(pumpPrice * quantityEstimation.range.max),
-              },
-            }
-          : null,
-      };
-    }
+    // Project insights based on detected elements
+    const projectInsights = {
+      complexity:
+        objectAnnotations.length > 10
+          ? "high"
+          : objectAnnotations.length > 5
+          ? "medium"
+          : "low",
+      recommendedGrades: getRecommendedGrades(quantityEstimation.projectType),
+      timeline: estimateProjectTimeline(
+        quantityEstimation.projectType,
+        quantityEstimation.estimatedVolume
+      ),
+      specialConsiderations: getSpecialConsiderations(
+        labelTexts,
+        quantityEstimation.projectType
+      ),
+    };
 
     return NextResponse.json({
       success: true,
-      detectedLabels: labelTexts.slice(0, 10),
+      detectedLabels: labelTexts.slice(0, 15), // More labels for better analysis
       matchedProduct,
       confidence: Math.round(confidence * 100),
       message: matchedProduct
-        ? `We recommend ${matchedProduct.name}`
-        : "No suitable concrete type detected",
+        ? `${matchedProduct.name} recommended for ${quantityEstimation.projectType} project`
+        : "Analysis complete - see recommendations below",
       totalProducts: products.length,
       quantityEstimation,
-      costEstimation,
+      comprehensiveCosts,
+      projectInsights,
+      analysisMetadata: {
+        elementsDetected: objectAnnotations.length,
+        labelsFound: labels.length,
+        processingTime: new Date().toISOString(),
+        aiConfidence: Math.round(confidence * 100),
+      },
     });
   } catch (error) {
     console.error("Vision API Error:", error);
@@ -415,4 +599,72 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// Helper functions for enhanced analysis
+function getRecommendedGrades(projectType: string) {
+  const gradeRecommendations: { [key: string]: string[] } = {
+    foundation: ["N25", "N30", "S30"],
+    slab: ["N20", "N25"],
+    driveway: ["N20", "N25"],
+    wall: ["N20", "N25", "S30"],
+    column: ["N25", "S30", "S35"],
+    beam: ["S30", "S35"],
+    stairs: ["N20", "N25"],
+    pool: ["N25", "S30"],
+    general: ["N20", "N25"],
+  };
+
+  return gradeRecommendations[projectType] || gradeRecommendations.general;
+}
+
+function estimateProjectTimeline(projectType: string, volume: number) {
+  const baseTimelines: { [key: string]: number } = {
+    foundation: 3, // days per 10m³
+    slab: 2,
+    driveway: 1,
+    wall: 2,
+    column: 1,
+    beam: 2,
+    stairs: 3,
+    pool: 5,
+    general: 2,
+  };
+
+  const daysPerTenCubic = baseTimelines[projectType] || 2;
+  const estimatedDays = Math.ceil((volume / 10) * daysPerTenCubic);
+
+  return {
+    concrete: `${estimatedDays} day${estimatedDays > 1 ? "s" : ""}`,
+    curing: "28 days for full strength",
+    total: `${estimatedDays + 1}-${
+      estimatedDays + 3
+    } days including preparation`,
+  };
+}
+
+function getSpecialConsiderations(labels: string[], projectType: string) {
+  const considerations = [];
+
+  if (labels.some((l) => l.includes("water") || l.includes("pool"))) {
+    considerations.push("Waterproofing additives recommended");
+  }
+
+  if (labels.some((l) => l.includes("outdoor") || l.includes("exterior"))) {
+    considerations.push("Weather-resistant concrete grade suggested");
+  }
+
+  if (labels.some((l) => l.includes("high") || l.includes("tall"))) {
+    considerations.push(
+      "High-strength concrete required for structural integrity"
+    );
+  }
+
+  if (projectType === "foundation") {
+    considerations.push("Consider ground conditions and soil testing");
+  }
+
+  return considerations.length > 0
+    ? considerations
+    : ["Standard concrete application"];
 }
