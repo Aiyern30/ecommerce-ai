@@ -350,51 +350,193 @@ export default function AIInsightsPage() {
       {/* Predictive Alerts */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Zap className="w-5 h-5 text-yellow-600" />
-            Predictive Analytics & Alerts
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Zap className="w-5 h-5 text-yellow-600" />
+              Predictive Analytics & Alerts
+            </div>
+            {predictiveAlerts.length > 0 && (
+              <Badge variant="destructive" className="animate-pulse">
+                {predictiveAlerts.length} Active Alert
+                {predictiveAlerts.length > 1 ? "s" : ""}
+              </Badge>
+            )}
           </CardTitle>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            AI-powered predictions based on recent trends and inventory levels
+          </p>
         </CardHeader>
         <CardContent>
           {loading ? (
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="animate-pulse">
-                  <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                  <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
                 </div>
               ))}
+            </div>
+          ) : predictiveAlerts.length === 0 ? (
+            <div className="text-center py-8 space-y-4">
+              <div className="w-16 h-16 mx-auto bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                <Target className="w-8 h-8 text-green-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  All Clear!
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  No immediate alerts detected. Your operations are running
+                  smoothly.
+                </p>
+              </div>
             </div>
           ) : (
             <div className="space-y-4">
               {predictiveAlerts.map((alert) => (
                 <div
                   key={alert.id}
-                  className={`p-4 rounded-lg border-2 ${getAlertTypeColor(
+                  className={`relative overflow-hidden rounded-xl border-2 ${getAlertTypeColor(
                     alert.type
-                  )}`}
+                  )} hover:shadow-lg transition-all duration-300`}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge className="text-xs">
-                          {alert.probability}% confidence
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          {alert.timeframe}
-                        </Badge>
+                  {/* Priority stripe */}
+                  <div
+                    className={`absolute top-0 left-0 w-1 h-full ${
+                      alert.probability > 80
+                        ? "bg-red-500"
+                        : alert.probability > 60
+                        ? "bg-yellow-500"
+                        : "bg-blue-500"
+                    }`}
+                  ></div>
+
+                  <div className="p-6 pl-8">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 space-y-3">
+                        {/* Header with badges */}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge
+                            className={`text-xs font-semibold ${
+                              alert.probability > 80
+                                ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                                : alert.probability > 60
+                                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+                                : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                            }`}
+                          >
+                            {alert.probability}% Confidence
+                          </Badge>
+                          <Badge variant="outline" className="text-xs">
+                            {alert.timeframe}
+                          </Badge>
+                          <Badge
+                            variant="secondary"
+                            className="text-xs capitalize"
+                          >
+                            {alert.type.replace("_", " ")}
+                          </Badge>
+                        </div>
+
+                        {/* Alert title and product */}
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+                            {alert.type === "demand_spike"
+                              ? "📈 Demand Surge Predicted"
+                              : alert.type === "stockout"
+                              ? "⚠️ Stock Depletion Risk"
+                              : alert.type === "delivery_delay"
+                              ? "🚚 Delivery Delays"
+                              : "🔔 System Alert"}
+                          </h3>
+                          <p className="text-base font-semibold text-blue-600 dark:text-blue-400">
+                            {alert.product}
+                          </p>
+                        </div>
+
+                        {/* Impact description */}
+                        <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-3 border">
+                          <p className="text-sm text-gray-700 dark:text-gray-300">
+                            <span className="font-medium">Impact:</span>{" "}
+                            {alert.impact}
+                          </p>
+                        </div>
+
+                        {/* Recommended action */}
+                        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
+                          <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                            💡{" "}
+                            <span className="font-semibold">
+                              Recommended Action:
+                            </span>
+                          </p>
+                          <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                            {alert.action}
+                          </p>
+                        </div>
+
+                        {/* Quick action buttons */}
+                        <div className="flex gap-2 pt-2">
+                          <Button
+                            size="sm"
+                            variant="default"
+                            className="text-xs"
+                          >
+                            Take Action
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs"
+                          >
+                            View Details
+                          </Button>
+                          <Button size="sm" variant="ghost" className="text-xs">
+                            Dismiss
+                          </Button>
+                        </div>
                       </div>
-                      <h3 className="font-semibold mb-1">
-                        {alert.type.replace("_", " ").toUpperCase()}:{" "}
-                        {alert.product}
-                      </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                        {alert.impact}
-                      </p>
-                      <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                        💡 Recommended Action: {alert.action}
-                      </p>
+
+                      {/* Right side indicator */}
+                      <div className="flex flex-col items-center space-y-2">
+                        <div
+                          className={`relative w-12 h-12 rounded-full flex items-center justify-center ${
+                            alert.probability > 80
+                              ? "bg-red-100 dark:bg-red-900/30"
+                              : alert.probability > 60
+                              ? "bg-yellow-100 dark:bg-yellow-900/30"
+                              : "bg-blue-100 dark:bg-blue-900/30"
+                          }`}
+                        >
+                          <Bell
+                            className={`w-6 h-6 animate-pulse ${
+                              alert.probability > 80
+                                ? "text-red-600"
+                                : alert.probability > 60
+                                ? "text-yellow-600"
+                                : "text-blue-600"
+                            }`}
+                          />
+                        </div>
+                        <div className="text-center">
+                          <div
+                            className={`text-xs font-bold ${
+                              alert.probability > 80
+                                ? "text-red-600"
+                                : alert.probability > 60
+                                ? "text-yellow-600"
+                                : "text-blue-600"
+                            }`}
+                          >
+                            {alert.probability > 80
+                              ? "High"
+                              : alert.probability > 60
+                              ? "Medium"
+                              : "Low"}
+                          </div>
+                          <div className="text-xs text-gray-500">Priority</div>
+                        </div>
+                      </div>
                     </div>
-                    <Bell className="w-5 h-5 text-orange-500 animate-pulse" />
                   </div>
                 </div>
               ))}
