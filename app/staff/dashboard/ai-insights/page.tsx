@@ -31,6 +31,7 @@ import { formatDate } from "@/lib/utils/format";
 import { formatCurrency } from "@/lib/utils/currency";
 import { StatsCards } from "@/components/StatsCards";
 import Link from "next/link";
+import DemandSpikeStockInfo from "@/components/DemandSpikeStockInfo";
 
 interface AIInsight {
   id: string;
@@ -514,7 +515,7 @@ export default function AIInsightsPage() {
                           </p>
                         </div>
 
-                        {/* Enhanced impact description for stock alerts */}
+                        {/* Enhanced impact description for all alert types */}
                         <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-3 border">
                           <p className="text-sm text-gray-700 dark:text-gray-300">
                             <span className="font-medium">Impact:</span>{" "}
@@ -563,20 +564,12 @@ export default function AIInsightsPage() {
                               </div>
                             )}
 
-                          {/* Show enhanced info for demand spike alerts */}
+                          {/* Enhanced info for demand spike alerts with current stock */}
                           {alert.type === "demand_spike" && alert.productId && (
-                            <div className="mt-2 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border-l-4 border-blue-400">
-                              <div className="text-xs">
-                                <p className="text-blue-700 dark:text-blue-300">
-                                  <span className="font-medium">
-                                    📈 Trend Analysis:
-                                  </span>{" "}
-                                  This product shows significant demand growth.
-                                  Consider increasing inventory to meet
-                                  projected demand.
-                                </p>
-                              </div>
-                            </div>
+                            <DemandSpikeStockInfo
+                              productId={alert.productId}
+                              growthRate={extractGrowthRate(alert.impact)}
+                            />
                           )}
                         </div>
 
@@ -760,3 +753,9 @@ export default function AIInsightsPage() {
     </div>
   );
 }
+
+// Helper function to extract growth rate from impact text
+const extractGrowthRate = (impact: string): number => {
+  const match = impact.match(/(\d+\.?\d*)% increase/);
+  return match ? parseFloat(match[1]) : 0;
+};
