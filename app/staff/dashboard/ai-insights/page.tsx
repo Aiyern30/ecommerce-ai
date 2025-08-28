@@ -10,11 +10,9 @@ import {
   Users,
   Calendar,
   Bell,
-  BarChart3,
   Target,
   Zap,
   RefreshCw,
-  Sparkles,
   DollarSign,
 } from "lucide-react";
 import {
@@ -65,9 +63,8 @@ interface PredictiveAlert {
     | "price_optimization";
   product: string;
   productId?: string;
-  currentStock?: number; // Add current stock
+  currentStock?: number;
   suggestedRestock?: {
-    // Add restock suggestion
     amount: number;
     reasoning: string;
     targetLevel: number;
@@ -76,7 +73,7 @@ interface PredictiveAlert {
   timeframe: string;
   impact: string;
   action: string;
-  priority?: number; // Add priority field
+  priority?: number;
 }
 
 export default function AIInsightsPage() {
@@ -91,12 +88,9 @@ export default function AIInsightsPage() {
   const loadAIInsights = useCallback(async () => {
     try {
       setLoading(true);
-      console.log("Starting to fetch AI insights...");
 
-      // Fetch daily summary
       try {
         const summaryResponse = await fetch("/api/ai-insights/daily-summary");
-        console.log("Summary response status:", summaryResponse.status);
 
         if (summaryResponse.ok) {
           const summary = await summaryResponse.json();
@@ -112,7 +106,6 @@ export default function AIInsightsPage() {
         console.error("Error fetching daily summary:", summaryError);
       }
 
-      // Fetch predictive alerts
       try {
         const alertsResponse = await fetch(
           "/api/ai-insights/predictive-alerts"
@@ -136,7 +129,6 @@ export default function AIInsightsPage() {
 
         if (insightsResponse.ok) {
           const generalInsights = await insightsResponse.json();
-          console.log("General insights data:", generalInsights);
           setInsights(generalInsights);
         } else {
           console.error(
@@ -151,10 +143,8 @@ export default function AIInsightsPage() {
       setLastUpdated(new Date());
     } catch (error) {
       console.error("Failed to load AI insights:", error);
-      // Only load mock data if specifically requested or in development
       if (process.env.NODE_ENV === "development") {
         console.log("Loading mock data for development...");
-        loadMockData();
       }
     } finally {
       setLoading(false);
@@ -162,66 +152,9 @@ export default function AIInsightsPage() {
   }, []);
   useEffect(() => {
     loadAIInsights();
-    // Auto-refresh every 5 minutes
     const interval = setInterval(loadAIInsights, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [loadAIInsights]);
-
-  const loadMockData = () => {
-    setDailySummary({
-      date: new Date().toISOString().split("T")[0],
-      topSellingProduct: "N25 Concrete",
-      orderGrowth: 12,
-      contractorActivity: 18,
-      stockRisks: ["Mortar 1:4", "N30 Concrete"],
-      revenue: 45600,
-      newCustomers: 7,
-    });
-
-    setPredictiveAlerts([
-      {
-        id: "1",
-        type: "stockout",
-        product: "N25 Concrete",
-        probability: 85,
-        timeframe: "3-5 days",
-        impact: "High - May affect 15+ pending orders",
-        action: "Increase production order by 200 m³",
-      },
-      {
-        id: "2",
-        type: "demand_spike",
-        product: "Mortar 1:3",
-        probability: 72,
-        timeframe: "Next week",
-        impact: "Medium - Expected 40% demand increase",
-        action: "Prepare additional inventory",
-      },
-    ]);
-
-    setInsights([
-      {
-        id: "1",
-        type: "sales",
-        title: "Contractor Segment Growth",
-        description:
-          "Contractor customers increased orders by 15% this week, primarily for N25 and N30 grades.",
-        impact: "high",
-        confidence: 89,
-        timestamp: new Date().toISOString(),
-      },
-      {
-        id: "2",
-        type: "recommendation",
-        title: "Pricing Optimization",
-        description:
-          "Consider 5% price increase on Mortar 1:4 - demand remains strong and competitors charge 8% more.",
-        impact: "medium",
-        confidence: 76,
-        timestamp: new Date().toISOString(),
-      },
-    ]);
-  };
 
   const getAlertTypeColor = (type: string) => {
     switch (type) {
@@ -236,14 +169,11 @@ export default function AIInsightsPage() {
     }
   };
 
-  // Enhanced helper functions for navigation
   const getProductEditLink = (alert: PredictiveAlert) => {
-    // If we have a specific product ID, go directly to edit
     if (alert.productId) {
       return `/staff/products/${alert.productId}/edit`;
     }
 
-    // For system-wide alerts, go to relevant management pages
     if (
       alert.product === "Multiple Orders" ||
       alert.product === "Order Processing System"
@@ -255,17 +185,14 @@ export default function AIInsightsPage() {
       return "/staff/products";
     }
 
-    // For products without ID, search in products list
     return `/staff/products?search=${encodeURIComponent(alert.product)}`;
   };
 
   const getProductViewLink = (alert: PredictiveAlert) => {
-    // If we have a specific product ID, go directly to view
     if (alert.productId) {
       return `/staff/products/${alert.productId}`;
     }
 
-    // For system-wide alerts
     if (
       alert.product === "Multiple Orders" ||
       alert.product === "Order Processing System"
@@ -277,13 +204,11 @@ export default function AIInsightsPage() {
       return "/staff/products?type=concrete";
     }
 
-    // For products without ID, search in products list
     return `/staff/products?search=${encodeURIComponent(alert.product)}`;
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div>
@@ -304,7 +229,6 @@ export default function AIInsightsPage() {
         </Button>
       </div>
 
-      {/* Daily Summary */}
       {dailySummary && (
         <div className="space-y-4">
           <div className="flex items-center gap-2 mb-4">
@@ -358,7 +282,6 @@ export default function AIInsightsPage() {
             />
           </div>
 
-          {/* Stock Risks Alert */}
           {dailySummary.stockRisks.length > 0 && (
             <Card className="border-l-4 border-l-red-500 bg-red-50/50 dark:bg-red-900/10">
               <CardContent className="p-4">
@@ -377,7 +300,6 @@ export default function AIInsightsPage() {
         </div>
       )}
 
-      {/* Predictive Alerts */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
@@ -429,7 +351,6 @@ export default function AIInsightsPage() {
                     alert.type
                   )} hover:shadow-lg transition-all duration-300`}
                 >
-                  {/* Priority stripe */}
                   <div
                     className={`absolute top-0 left-0 w-1 h-full ${
                       alert.probability > 80
@@ -443,7 +364,6 @@ export default function AIInsightsPage() {
                   <div className="p-6 pl-8">
                     <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                       <div className="flex-1 space-y-3">
-                        {/* Header with badges */}
                         <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                           <Badge
                             className={`text-xs font-semibold ${
@@ -467,7 +387,6 @@ export default function AIInsightsPage() {
                           </Badge>
                         </div>
 
-                        {/* Alert title and product */}
                         <div>
                           <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-1">
                             {alert.type === "demand_spike"
@@ -483,14 +402,12 @@ export default function AIInsightsPage() {
                           </p>
                         </div>
 
-                        {/* Enhanced impact description for all alert types */}
                         <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-3 border">
                           <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                             <span className="font-medium">Impact:</span>{" "}
                             {alert.impact}
                           </p>
 
-                          {/* Show current stock and restock info for stock alerts */}
                           {alert.type === "stockout" &&
                             alert.currentStock !== undefined &&
                             alert.suggestedRestock && (
@@ -532,7 +449,6 @@ export default function AIInsightsPage() {
                               </div>
                             )}
 
-                          {/* Enhanced info for demand spike alerts with current stock */}
                           {alert.type === "demand_spike" && alert.productId && (
                             <DemandSpikeStockInfo
                               productId={alert.productId}
@@ -541,7 +457,6 @@ export default function AIInsightsPage() {
                           )}
                         </div>
 
-                        {/* Recommended action */}
                         <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
                           <p className="text-xs sm:text-sm font-medium text-blue-800 dark:text-blue-200">
                             💡{" "}
@@ -554,7 +469,6 @@ export default function AIInsightsPage() {
                           </p>
                         </div>
 
-                        {/* Quick action buttons */}
                         <div className="flex flex-col sm:flex-row gap-2 pt-2">
                           <Link
                             href={getProductEditLink(alert)}
@@ -590,7 +504,6 @@ export default function AIInsightsPage() {
                         </div>
                       </div>
 
-                      {/* Right side indicator - hidden on mobile, shown as top indicator */}
                       <div className="lg:hidden flex items-center justify-between mb-3">
                         <div
                           className={`flex items-center gap-2 px-3 py-1 rounded-full ${
@@ -631,7 +544,6 @@ export default function AIInsightsPage() {
                         </div>
                       </div>
 
-                      {/* Desktop right side indicator */}
                       <div className="hidden lg:flex flex-col items-center space-y-2">
                         <div
                           className={`relative w-12 h-12 rounded-full flex items-center justify-center ${
@@ -680,7 +592,6 @@ export default function AIInsightsPage() {
         </CardContent>
       </Card>
 
-      {/* General AI Insights */}
       <div className="space-y-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -749,14 +660,7 @@ export default function AIInsightsPage() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {insights.map((insight) => (
-              <InsightCard
-                key={insight.id}
-                insight={insight}
-                onAction={(insight) => {
-                  // Handle insight actions
-                  console.log("Action clicked for insight:", insight.id);
-                }}
-              />
+              <InsightCard key={insight.id} insight={insight} />
             ))}
           </div>
         )}
@@ -790,52 +694,6 @@ export default function AIInsightsPage() {
           </div>
         )}
       </div>
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-purple-600" />
-            AI-Powered Quick Actions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button
-              variant="outline"
-              className="h-auto p-4 flex flex-col items-start"
-            >
-              <BarChart3 className="w-5 h-5 mb-2" />
-              <span className="font-medium">Generate Sales Report</span>
-              <span className="text-xs text-gray-500">
-                AI-powered weekly analysis
-              </span>
-            </Button>
-
-            <Button
-              variant="outline"
-              className="h-auto p-4 flex flex-col items-start"
-            >
-              <Target className="w-5 h-5 mb-2" />
-              <span className="font-medium">Demand Forecast</span>
-              <span className="text-xs text-gray-500">
-                Next 30 days prediction
-              </span>
-            </Button>
-
-            <Button
-              variant="outline"
-              className="h-auto p-4 flex flex-col items-start"
-            >
-              <Package className="w-5 h-5 mb-2" />
-              <span className="font-medium">Inventory Optimization</span>
-              <span className="text-xs text-gray-500">
-                AI stock recommendations
-              </span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
