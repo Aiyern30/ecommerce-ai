@@ -91,16 +91,16 @@ export default function AIInsightsPage() {
   const loadAIInsights = useCallback(async () => {
     try {
       setLoading(true);
-      console.log("Starting to fetch AI insights..."); // Debug log
+      console.log("Starting to fetch AI insights...");
 
       // Fetch daily summary
       try {
         const summaryResponse = await fetch("/api/ai-insights/daily-summary");
-        console.log("Summary response status:", summaryResponse.status); // Debug log
+        console.log("Summary response status:", summaryResponse.status);
 
         if (summaryResponse.ok) {
           const summary = await summaryResponse.json();
-          console.log("Daily summary data:", summary); // Debug log
+          console.log("Daily summary data:", summary);
           setDailySummary(summary);
         } else {
           console.error(
@@ -117,11 +117,9 @@ export default function AIInsightsPage() {
         const alertsResponse = await fetch(
           "/api/ai-insights/predictive-alerts"
         );
-        console.log("Alerts response status:", alertsResponse.status); // Debug log
 
         if (alertsResponse.ok) {
           const alerts = await alertsResponse.json();
-          console.log("Predictive alerts data:", alerts); // Debug log
           setPredictiveAlerts(alerts);
         } else {
           console.error(
@@ -133,14 +131,12 @@ export default function AIInsightsPage() {
         console.error("Error fetching predictive alerts:", alertsError);
       }
 
-      // Fetch general insights
       try {
         const insightsResponse = await fetch("/api/ai-insights/general");
-        console.log("Insights response status:", insightsResponse.status); // Debug log
 
         if (insightsResponse.ok) {
           const generalInsights = await insightsResponse.json();
-          console.log("General insights data:", generalInsights); // Debug log
+          console.log("General insights data:", generalInsights);
           setInsights(generalInsights);
         } else {
           console.error(
@@ -424,9 +420,9 @@ export default function AIInsightsPage() {
               </Badge>
             )}
           </CardTitle>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <TypographyP className="text-sm text-gray-600 dark:text-gray-400">
             AI-powered predictions based on recent trends and inventory levels
-          </p>
+          </TypographyP>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -473,10 +469,10 @@ export default function AIInsightsPage() {
                   ></div>
 
                   <div className="p-6 pl-8">
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                       <div className="flex-1 space-y-3">
                         {/* Header with badges */}
-                        <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                           <Badge
                             className={`text-xs font-semibold ${
                               alert.probability > 80
@@ -501,7 +497,7 @@ export default function AIInsightsPage() {
 
                         {/* Alert title and product */}
                         <div>
-                          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+                          <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-1">
                             {alert.type === "demand_spike"
                               ? "📈 Demand Surge Predicted"
                               : alert.type === "stockout"
@@ -510,14 +506,14 @@ export default function AIInsightsPage() {
                               ? "🚚 Delivery Delays"
                               : "🔔 System Alert"}
                           </h3>
-                          <p className="text-base font-semibold text-blue-600 dark:text-blue-400">
+                          <p className="text-sm sm:text-base font-semibold text-blue-600 dark:text-blue-400 break-words">
                             {alert.product}
                           </p>
                         </div>
 
                         {/* Enhanced impact description for all alert types */}
                         <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-3 border">
-                          <p className="text-sm text-gray-700 dark:text-gray-300">
+                          <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                             <span className="font-medium">Impact:</span>{" "}
                             {alert.impact}
                           </p>
@@ -526,9 +522,9 @@ export default function AIInsightsPage() {
                           {alert.type === "stockout" &&
                             alert.currentStock !== undefined &&
                             alert.suggestedRestock && (
-                              <div className="mt-2 p-3 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-lg border-l-4 border-red-400">
+                              <div className="mt-2 p-2 sm:p-3 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-lg border-l-4 border-red-400">
                                 <div className="text-xs space-y-2">
-                                  <div className="grid grid-cols-2 gap-4">
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
                                     <div className="flex justify-between">
                                       <span className="text-gray-600 dark:text-gray-400">
                                         Current Stock:
@@ -554,7 +550,7 @@ export default function AIInsightsPage() {
                                       {alert.suggestedRestock.targetLevel} m³
                                     </span>
                                   </div>
-                                  <div className="text-gray-500 dark:text-gray-400 italic mt-2 p-2 bg-white/50 dark:bg-gray-800/50 rounded">
+                                  <div className="text-gray-500 dark:text-gray-400 italic mt-2 p-2 bg-white/50 dark:bg-gray-800/50 rounded text-xs leading-relaxed">
                                     <span className="font-medium">
                                       Reasoning:
                                     </span>{" "}
@@ -575,27 +571,27 @@ export default function AIInsightsPage() {
 
                         {/* Recommended action */}
                         <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
-                          <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                          <p className="text-xs sm:text-sm font-medium text-blue-800 dark:text-blue-200">
                             💡{" "}
                             <span className="font-semibold">
                               Recommended Action:
                             </span>
                           </p>
-                          <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                          <p className="text-xs sm:text-sm text-blue-700 dark:text-blue-300 mt-1 leading-relaxed">
                             {alert.action}
                           </p>
                         </div>
 
                         {/* Quick action buttons */}
-                        <div className="flex gap-2 pt-2">
+                        <div className="flex flex-col sm:flex-row gap-2 pt-2">
                           <Link
                             href={getProductEditLink(alert)}
-                            className="inline-block"
+                            className="flex-1 sm:flex-initial"
                           >
                             <Button
                               size="sm"
                               variant="default"
-                              className="text-xs"
+                              className="text-xs w-full sm:w-auto"
                             >
                               {alert.type === "stockout"
                                 ? "Manage Inventory"
@@ -609,12 +605,12 @@ export default function AIInsightsPage() {
 
                           <Link
                             href={getProductViewLink(alert)}
-                            className="inline-block"
+                            className="flex-1 sm:flex-initial"
                           >
                             <Button
                               size="sm"
                               variant="outline"
-                              className="text-xs"
+                              className="text-xs w-full sm:w-auto"
                             >
                               View Details
                             </Button>
@@ -622,8 +618,49 @@ export default function AIInsightsPage() {
                         </div>
                       </div>
 
-                      {/* Right side indicator */}
-                      <div className="flex flex-col items-center space-y-2">
+                      {/* Right side indicator - hidden on mobile, shown as top indicator */}
+                      <div className="lg:hidden flex items-center justify-between mb-3">
+                        <div
+                          className={`flex items-center gap-2 px-3 py-1 rounded-full ${
+                            alert.probability > 80
+                              ? "bg-red-100 dark:bg-red-900/30"
+                              : alert.probability > 60
+                              ? "bg-yellow-100 dark:bg-yellow-900/30"
+                              : "bg-blue-100 dark:bg-blue-900/30"
+                          }`}
+                        >
+                          <Bell
+                            className={`w-4 h-4 ${
+                              alert.probability > 80
+                                ? "text-red-600"
+                                : alert.probability > 60
+                                ? "text-yellow-600"
+                                : "text-blue-600"
+                            }`}
+                          />
+                          <div className="text-center">
+                            <div
+                              className={`text-xs font-bold ${
+                                alert.probability > 80
+                                  ? "text-red-600"
+                                  : alert.probability > 60
+                                  ? "text-yellow-600"
+                                  : "text-blue-600"
+                              }`}
+                            >
+                              {alert.probability > 80
+                                ? "High"
+                                : alert.probability > 60
+                                ? "Medium"
+                                : "Low"}{" "}
+                              Priority
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Desktop right side indicator */}
+                      <div className="hidden lg:flex flex-col items-center space-y-2">
                         <div
                           className={`relative w-12 h-12 rounded-full flex items-center justify-center ${
                             alert.probability > 80

@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    console.log("Starting predictive alerts generation...");
     const alerts = [];
 
     // 1. Stock-out predictions with better error handling
@@ -20,9 +19,6 @@ export async function GET() {
       if (stockError) {
         console.error("Error fetching low stock products:", stockError);
       } else {
-        console.log("Low stock products count:", lowStockProducts?.length);
-
-        // Generate stock-out alerts with different severity levels
         lowStockProducts?.forEach((product, index) => {
           if (product.stock_quantity < 150) {
             const currentStock = product.stock_quantity;
@@ -35,7 +31,6 @@ export async function GET() {
               Math.min(95, 100 - currentStock / 2)
             );
 
-            // Calculate intelligent restock suggestions
             const restockSuggestion = calculateRestockAmount(
               product,
               currentStock
@@ -85,7 +80,6 @@ export async function GET() {
         Date.now() - 14 * 24 * 60 * 60 * 1000
       ).toISOString();
 
-      // Get recent vs previous week data for trend analysis with product IDs
       const [recentOrdersResult, previousOrdersResult] = await Promise.all([
         supabaseAdmin
           .from("order_items")
@@ -110,10 +104,6 @@ export async function GET() {
       }
 
       if (recentOrders && previousOrders) {
-        console.log("Recent orders count:", recentOrders.length);
-        console.log("Previous orders count:", previousOrders.length);
-
-        // Analyze week-over-week growth by product ID
         const recentDemand = recentOrders.reduce((acc, item) => {
           const key = `${item.product_id}:${item.name}`;
           acc[key] = (acc[key] || 0) + item.quantity;
@@ -126,7 +116,6 @@ export async function GET() {
           return acc;
         }, {} as Record<string, number>);
 
-        // Process alerts for significant growth trends - fix async issue
         for (const [productKey, currentWeek] of Object.entries(recentDemand)) {
           try {
             const previousWeek = previousDemand[productKey] || 0;
@@ -135,11 +124,9 @@ export async function GET() {
                 ? ((currentWeek - previousWeek) / previousWeek) * 100
                 : 0;
 
-            // Alert for significant growth trends
             if (growthRate > 30 && currentWeek > 100) {
               const [productId, productName] = productKey.split(":");
 
-              // Get current stock for the product with error handling
               const { data: productInfo, error: productError } =
                 await supabaseAdmin
                   .from("products")
@@ -152,7 +139,7 @@ export async function GET() {
                   `Error fetching product ${productId}:`,
                   productError
                 );
-                continue; // Skip this product if we can't get its info
+                continue;
               }
 
               const currentStock = productInfo?.stock_quantity || 0;
@@ -188,7 +175,7 @@ export async function GET() {
             }
           } catch (itemError) {
             console.error(`Error processing product ${productKey}:`, itemError);
-            continue; // Skip this item and continue with others
+            continue;
           }
         }
       }
@@ -246,7 +233,6 @@ export async function GET() {
       } else if (highDemandLowStock && highDemandLowStock.length > 0) {
         const product = highDemandLowStock[0];
 
-        // Calculate pricing recommendations based on product type and grade
         let priceIncrease = "5-10%";
         if (
           product.product_type === "concrete" &&
@@ -273,7 +259,6 @@ export async function GET() {
       console.error("Price optimization analysis failed:", priceError);
     }
 
-    // 5. Delivery optimization alerts with error handling
     try {
       const { data: processingOrders, error: deliveryError } =
         await supabaseAdmin
@@ -303,7 +288,6 @@ export async function GET() {
       console.error("Delivery analysis failed:", deliveryError);
     }
 
-    // Prioritize and return alerts
     const prioritizedAlerts = alerts
       .map((alert) => ({
         ...alert,
@@ -318,12 +302,10 @@ export async function GET() {
       .sort((a, b) => b.priority - a.priority)
       .slice(0, 5);
 
-    console.log("Generated alerts count:", prioritizedAlerts.length);
     return NextResponse.json(prioritizedAlerts);
   } catch (error) {
     console.error("Error generating predictive alerts:", error);
 
-    // Return a more detailed error response
     return NextResponse.json(
       {
         error: "Failed to generate alerts",
@@ -335,7 +317,6 @@ export async function GET() {
   }
 }
 
-// Helper function to calculate intelligent restock amounts with error handling
 function calculateRestockAmount(
   product: {
     id: any;
@@ -347,7 +328,6 @@ function calculateRestockAmount(
   currentStock: number
 ) {
   try {
-    // Base restock logic with seasonal adjustments
     let baseAmount = 1000;
     let reasoning = "";
 
@@ -355,14 +335,12 @@ function calculateRestockAmount(
     const productType = product.product_type || "";
     const currentMonth = new Date().getMonth() + 1;
 
-    // Seasonal multipliers for Malaysia
     let seasonalMultiplier = 1.0;
     if ([6, 7, 8, 11, 12, 1, 2, 3].includes(currentMonth)) {
       seasonalMultiplier = 1.3;
       reasoning += " + Seasonal demand increase";
     }
 
-    // Product type specific logic with Malaysian market considerations
     if (productType === "concrete") {
       if (grade.includes("N25") || grade.includes("N20")) {
         baseAmount = 1500;
@@ -393,10 +371,8 @@ function calculateRestockAmount(
       }
     }
 
-    // Apply seasonal adjustments
     baseAmount = Math.round(baseAmount * seasonalMultiplier);
 
-    // Stock criticality adjustments
     if (currentStock < 20) {
       baseAmount *= 2.5;
       reasoning += " + CRITICAL emergency restock required";
@@ -408,7 +384,6 @@ function calculateRestockAmount(
       reasoning += " + Standard restock recommended";
     }
 
-    // Market demand adjustments
     const popularGrades = ["N25", "N20", "M054", "M044"];
     if (popularGrades.some((pg) => grade.includes(pg))) {
       baseAmount *= 1.2;
@@ -425,7 +400,6 @@ function calculateRestockAmount(
     };
   } catch (error) {
     console.error("Error calculating restock amount:", error);
-    // Return a safe fallback
     return {
       amount: 1000,
       reasoning: "Standard restock calculation (calculation error occurred)",
