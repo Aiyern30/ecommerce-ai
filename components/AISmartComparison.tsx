@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useState, useEffect } from "react";
+import ProductRecommendations from "./ProductRecommendations";
 
 interface AIComparisonProps {
   comparedProducts: Product[];
@@ -241,6 +242,17 @@ export function AISmartComparison({
     }
   };
 
+  // Convert AI result to ProductRecommendations format
+  const getProductRecommendationsFromAI = () => {
+    if (!aiResult || comparedProducts.length === 0) return null;
+
+    // Pick the first product as the "current product" for the recommendation engine
+    // The ProductRecommendations component needs a current product to base recommendations on
+    const currentProduct = comparedProducts[0];
+
+    return currentProduct;
+  };
+
   if (comparedProducts.length < 2) {
     return (
       <Card className="border border-gray-200 dark:border-gray-700 shadow-lg">
@@ -310,12 +322,12 @@ export function AISmartComparison({
             />
           ) : (
             <div className="p-6 space-y-8">
-              {/* Summary */}
+              {/* AI Summary */}
               <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 rounded-xl p-6 border border-purple-200 dark:border-purple-800/50">
                 <div className="flex items-center gap-2 mb-3">
                   <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                   <h3 className="font-semibold text-purple-900 dark:text-purple-100">
-                    AI Summary
+                    AI Analysis Summary
                   </h3>
                 </div>
                 <div className="text-purple-800 dark:text-purple-200 leading-relaxed">
@@ -325,82 +337,48 @@ export function AISmartComparison({
                 </div>
               </div>
 
-              {/* Key Differences */}
-              {aiResult.keyDifferences.length > 0 && (
-                <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    Key Differences
-                  </h3>
-                  <ul className="space-y-3">
-                    {aiResult.keyDifferences.map((diff, index) => (
-                      <li
-                        key={index}
-                        className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700"
-                      >
-                        <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mt-2 flex-shrink-0" />
-                        <span className="text-gray-700 dark:text-gray-300">
-                          <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none">
-                            {diff}
-                          </ReactMarkdown>
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Use Cases */}
-              {aiResult.useCases.length > 0 && (
-                <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-                    <Lightbulb className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-                    Recommended Use Cases
-                  </h3>
-                  <div className="grid gap-4">
-                    {aiResult.useCases.map((useCase, index) => (
-                      <div
-                        key={index}
-                        className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow"
-                      >
-                        <div className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                          <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none">
-                            {useCase.product}
-                          </ReactMarkdown>
-                        </div>
-                        <div className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                          <strong className="text-green-600 dark:text-green-400">
-                            Best for:
-                          </strong>{" "}
-                          <ReactMarkdown className="inline prose prose-sm dark:prose-invert">
-                            {useCase.useCase}
-                          </ReactMarkdown>
-                        </div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700/50 rounded-lg p-2">
-                          <ReactMarkdown className="prose prose-xs dark:prose-invert max-w-none">
-                            {useCase.reason}
-                          </ReactMarkdown>
-                        </div>
-                      </div>
-                    ))}
+              {/* Key Insights Grid */}
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Key Differences */}
+                {aiResult.keyDifferences.length > 0 && (
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl p-6 border border-blue-200 dark:border-blue-800/50">
+                    <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-4 flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5" />
+                      Key Differences
+                    </h3>
+                    <ul className="space-y-2">
+                      {aiResult.keyDifferences
+                        .slice(0, 3)
+                        .map((diff, index) => (
+                          <li
+                            key={index}
+                            className="flex items-start gap-2 text-sm"
+                          >
+                            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+                            <span className="text-blue-800 dark:text-blue-200">
+                              {diff}
+                            </span>
+                          </li>
+                        ))}
+                    </ul>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Cost Analysis */}
-              {aiResult.costAnalysis && (
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-xl p-6 border border-green-200 dark:border-green-800/50">
-                  <h3 className="font-semibold text-green-900 dark:text-green-100 mb-3 flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5" />
-                    Cost Analysis
-                  </h3>
-                  <div className="text-green-800 dark:text-green-200">
-                    <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none">
-                      {aiResult.costAnalysis}
-                    </ReactMarkdown>
+                {/* Cost Analysis */}
+                {aiResult.costAnalysis && (
+                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-xl p-6 border border-green-200 dark:border-green-800/50">
+                    <h3 className="font-semibold text-green-900 dark:text-green-100 mb-4 flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5" />
+                      Cost Analysis
+                    </h3>
+                    <div className="text-sm text-green-800 dark:text-green-200">
+                      <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none">
+                        {aiResult.costAnalysis}
+                      </ReactMarkdown>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
               {/* AI Insights */}
               {aiResult.insights.length > 0 && (
@@ -417,18 +395,14 @@ export function AISmartComparison({
                           insight.type
                         )}`}
                       >
-                        <div className="flex items-center gap-2 mb-3">
+                        <div className="flex items-center gap-2 mb-2">
                           {getIcon(insight.icon)}
-                          <span className="font-medium">
-                            <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none inline">
-                              {insight.title}
-                            </ReactMarkdown>
+                          <span className="font-medium text-sm">
+                            {insight.title}
                           </span>
                         </div>
-                        <div className="leading-relaxed">
-                          <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none">
-                            {insight.content}
-                          </ReactMarkdown>
+                        <div className="text-sm leading-relaxed">
+                          {insight.content}
                         </div>
                       </div>
                     ))}
@@ -436,28 +410,7 @@ export function AISmartComparison({
                 </div>
               )}
 
-              {/* Recommendations */}
-              {aiResult.recommendations.length > 0 && (
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl p-6 border border-blue-200 dark:border-blue-800/50">
-                  <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-4 flex items-center gap-2">
-                    <Lightbulb className="w-5 h-5" />
-                    AI Recommendations
-                  </h3>
-                  <ul className="space-y-3">
-                    {aiResult.recommendations.map((rec, index) => (
-                      <li key={index} className="flex items-start gap-3">
-                        <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full mt-2 flex-shrink-0" />
-                        <span className="text-blue-800 dark:text-blue-200">
-                          <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none">
-                            {rec}
-                          </ReactMarkdown>
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
+              {/* Action Buttons */}
               <div className="flex justify-center pt-6 gap-3 border-t border-gray-200 dark:border-gray-700">
                 <Button
                   onClick={onGenerate}
@@ -476,6 +429,28 @@ export function AISmartComparison({
           )}
         </CardContent>
       </Card>
+
+      {/* Product Recommendations Section */}
+      {aiResult && comparedProducts.length > 0 && (
+        <div className="mt-8">
+          <div className="text-center space-y-2 mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Related Product Recommendations
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+              Based on your comparison, discover more products that might suit
+              your needs
+            </p>
+          </div>
+
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/10 dark:to-purple-900/10 rounded-3xl p-6 border border-blue-100 dark:border-blue-800">
+            <ProductRecommendations
+              currentProduct={getProductRecommendationsFromAI()!}
+              className="ai-comparison-recommendations"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

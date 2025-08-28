@@ -89,6 +89,9 @@ export default function ProductRecommendations({
   };
 
   const isCartRecommendations = className.includes("cart-recommendations");
+  const isAIComparisonRecommendations = className.includes(
+    "ai-comparison-recommendations"
+  );
 
   if (loading) {
     return (
@@ -118,11 +121,15 @@ export default function ProductRecommendations({
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
             {isCartRecommendations
               ? "No Additional Recommendations"
+              : isAIComparisonRecommendations
+              ? "No Alternative Products"
               : "No Recommendations Available"}
           </h3>
           <p className="text-gray-600 dark:text-gray-400">
             {isCartRecommendations
               ? "You've got great items in your cart! Proceed to checkout when ready."
+              : isAIComparisonRecommendations
+              ? "The compared products cover the main options in this category."
               : "We couldn't find any related products at the moment."}
           </p>
         </div>
@@ -148,6 +155,8 @@ export default function ProductRecommendations({
                   </div>
                   {isCartRecommendations
                     ? `${group.title} for Your Order`
+                    : isAIComparisonRecommendations
+                    ? `${group.title} - Alternative Options`
                     : group.title}
                 </CardTitle>
                 <Badge className="text-xs" variant="secondary">
@@ -157,8 +166,11 @@ export default function ProductRecommendations({
               </div>
               <div className="flex items-start gap-2">
                 <p className="text-gray-600 dark:text-gray-400 text-sm">
+                  {isCartRecommendations}
                   {isCartRecommendations
                     ? `${group.description} - Perfect additions to complement your current selection.`
+                    : isAIComparisonRecommendations
+                    ? `${group.description} - Consider these alternatives to expand your options.`
                     : group.description}
                 </p>
               </div>
@@ -184,10 +196,14 @@ export default function ProductRecommendations({
                           {rec.type === "upsell"
                             ? isCartRecommendations
                               ? "Better Option"
+                              : isAIComparisonRecommendations
+                              ? "Higher Grade"
                               : "Upgrade"
                             : rec.type === "downsell"
                             ? isCartRecommendations
                               ? "Cost Effective"
+                              : isAIComparisonRecommendations
+                              ? "Budget Option"
                               : "Budget"
                             : "Alternative"}
                         </Badge>
@@ -198,6 +214,8 @@ export default function ProductRecommendations({
                         <div className="bg-black/75 text-white text-xs p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                           {isCartRecommendations
                             ? `Great addition: ${rec.reason}`
+                            : isAIComparisonRecommendations
+                            ? `Alternative option: ${rec.reason}`
                             : rec.reason}
                         </div>
                       </div>
@@ -236,6 +254,8 @@ export default function ProductRecommendations({
                     <span className="font-medium">{rec.product.name}:</span>{" "}
                     {isCartRecommendations
                       ? `Great addition - ${rec.reason}`
+                      : isAIComparisonRecommendations
+                      ? `Alternative - ${rec.reason}`
                       : rec.reason}
                   </div>
                 ))}
@@ -251,6 +271,16 @@ export default function ProductRecommendations({
             💡 <strong>Tip:</strong> These recommendations are based on your
             current cart items and what other customers typically order
             together.
+          </p>
+        </div>
+      )}
+
+      {isAIComparisonRecommendations && (
+        <div className="text-center mt-6 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-700">
+          <p className="text-sm text-purple-700 dark:text-purple-300">
+            🧠 <strong>AI Tip:</strong> These recommendations complement your
+            comparison analysis and show alternative products in similar
+            categories.
           </p>
         </div>
       )}
