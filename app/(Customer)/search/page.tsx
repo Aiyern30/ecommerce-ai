@@ -311,26 +311,26 @@ export default function ConcreteDetectorPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50 dark:from-slate-900 dark:via-blue-950/30 dark:to-indigo-950">
-      {/* Enhanced Hero Header */}
+      {/* Enhanced Hero Header - Mobile Responsive */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-indigo-600/5 dark:from-blue-400/5 dark:to-indigo-400/5"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(59,130,246,0.1),transparent_50%)] dark:bg-[radial-gradient(circle_at_30%_40%,rgba(59,130,246,0.05),transparent_50%)]"></div>
 
-        <div className="relative max-w-7xl mx-auto px-6 py-16 text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-500 rounded-3xl mb-8 shadow-lg">
-            <Sparkles className="h-10 w-10 text-white" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-16 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-500 rounded-2xl sm:rounded-3xl mb-6 sm:mb-8 shadow-lg">
+            <Sparkles className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
           </div>
-          <TypographyH1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent mb-6">
+          <TypographyH1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent mb-4 sm:mb-6">
             AI Concrete Detector
           </TypographyH1>
-          <TypographyP className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed mb-8">
+          <TypographyP className="text-base sm:text-lg lg:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed mb-6 sm:mb-8 px-4">
             Revolutionary AI-powered concrete analysis. Upload construction
             photos for instant grade identification, pricing, and professional
             recommendations.
           </TypographyP>
 
-          {/* Feature highlights */}
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500 dark:text-gray-400">
+          {/* Feature highlights - Mobile Responsive */}
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <span>Instant Analysis</span>
@@ -347,23 +347,23 @@ export default function ConcreteDetectorPage() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 pb-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-12">
         {!result ? (
           <Card className="border-0 shadow-2xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm py-0">
             <CardContent className="p-0">
               {!file ? (
-                <div className="p-8 text-center">
-                  <div className="text-center mb-8">
-                    <TypographyH3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                <div className="p-4 sm:p-8 text-center">
+                  <div className="text-center mb-6 sm:mb-8">
+                    <TypographyH3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">
                       Upload Your Construction Photo
                     </TypographyH3>
-                    <TypographyP className="text-gray-600 dark:text-gray-300">
+                    <TypographyP className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
                       Get instant AI-powered concrete recommendations with
                       professional accuracy
                     </TypographyP>
                   </div>
 
-                  {/* Fixed Upload Area - Hidden input positioned absolutely */}
+                  {/* Mobile Responsive Upload Area */}
                   <div className="relative group">
                     <input
                       type="file"
@@ -375,52 +375,51 @@ export default function ConcreteDetectorPage() {
 
                     <div
                       onClick={handleUploadClick}
-                      className="relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-16 
+                      className="relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl sm:rounded-2xl p-8 sm:p-16 
                       hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gradient-to-br hover:from-blue-50/50 hover:to-indigo-50/50 
                       dark:hover:from-blue-950/50 dark:hover:to-indigo-950/50
                       transition-all duration-500 cursor-pointer group-hover:shadow-lg"
                     >
-                      {/* Animated background elements */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/20 to-indigo-50/20 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/20 to-indigo-50/20 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-xl sm:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-                      <div className="relative z-10 space-y-8">
-                        {/* Enhanced upload icon */}
-                        <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-800 dark:to-indigo-800 rounded-full group-hover:from-blue-200 group-hover:to-indigo-200 dark:group-hover:from-blue-700 dark:group-hover:to-indigo-700 transition-all duration-300 shadow-lg group-hover:shadow-xl group-hover:scale-110">
-                          <Upload className="h-12 w-12 text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300" />
+                      <div className="relative z-10 space-y-4 sm:space-y-8">
+                        {/* Mobile Responsive Upload Icon */}
+                        <div className="inline-flex items-center justify-center w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-800 dark:to-indigo-800 rounded-full group-hover:from-blue-200 group-hover:to-indigo-200 dark:group-hover:from-blue-700 dark:group-hover:to-indigo-700 transition-all duration-300 shadow-lg group-hover:shadow-xl group-hover:scale-110">
+                          <Upload className="h-8 w-8 sm:h-12 sm:w-12 text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300" />
                         </div>
 
-                        <div className="space-y-4">
-                          <TypographyH5 className="text-xl font-bold text-gray-900 dark:text-white">
+                        <div className="space-y-2 sm:space-y-4">
+                          <TypographyH5 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
                             Drop your image here or click to browse
                           </TypographyH5>
-                          <TypographyP className="text-gray-600 dark:text-gray-300">
+                          <TypographyP className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
                             Supports JPG, PNG, GIF up to 10MB
                           </TypographyP>
                         </div>
 
-                        {/* Enhanced feature icons */}
-                        <div className="flex items-center justify-center space-x-12 pt-4">
-                          <div className="flex flex-col items-center space-y-2 group/item">
-                            <div className="p-3 bg-blue-100 dark:bg-blue-800 rounded-xl group-hover/item:bg-blue-200 dark:group-hover:item:bg-blue-700 transition-colors">
-                              <Target className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                        {/* Mobile Responsive Feature Icons */}
+                        <div className="flex items-center justify-center space-x-6 sm:space-x-12 pt-2 sm:pt-4">
+                          <div className="flex flex-col items-center space-y-1 sm:space-y-2 group/item">
+                            <div className="p-2 sm:p-3 bg-blue-100 dark:bg-blue-800 rounded-lg sm:rounded-xl group-hover/item:bg-blue-200 dark:group-hover:item:bg-blue-700 transition-colors">
+                              <Target className="h-4 w-4 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
                             </div>
-                            <TypographySmall className="text-gray-600 dark:text-gray-400 font-medium">
+                            <TypographySmall className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium text-center">
                               Construction sites
                             </TypographySmall>
                           </div>
-                          <div className="flex flex-col items-center space-y-2 group/item">
-                            <div className="p-3 bg-emerald-100 dark:bg-emerald-800 rounded-xl group-hover/item:bg-emerald-200 dark:group-hover:item:bg-emerald-700 transition-colors">
-                              <Package className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                          <div className="flex flex-col items-center space-y-1 sm:space-y-2 group/item">
+                            <div className="p-2 sm:p-3 bg-emerald-100 dark:bg-emerald-800 rounded-lg sm:rounded-xl group-hover/item:bg-emerald-200 dark:group-hover:item:bg-emerald-700 transition-colors">
+                              <Package className="h-4 w-4 sm:h-6 sm:w-6 text-emerald-600 dark:text-emerald-400" />
                             </div>
-                            <TypographySmall className="text-gray-600 dark:text-gray-400 font-medium">
+                            <TypographySmall className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium text-center">
                               Building structures
                             </TypographySmall>
                           </div>
-                          <div className="flex flex-col items-center space-y-2 group/item">
-                            <div className="p-3 bg-purple-100 dark:bg-purple-800 rounded-xl group-hover:item:bg-purple-200 dark:group-hover:item:bg-purple-700 transition-colors">
-                              <TrendingUp className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                          <div className="flex flex-col items-center space-y-1 sm:space-y-2 group/item">
+                            <div className="p-2 sm:p-3 bg-purple-100 dark:bg-purple-800 rounded-lg sm:rounded-xl group-hover:item:bg-purple-200 dark:group-hover:item:bg-purple-700 transition-colors">
+                              <TrendingUp className="h-4 w-4 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
                             </div>
-                            <TypographySmall className="text-gray-600 dark:text-gray-400 font-medium">
+                            <TypographySmall className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium text-center">
                               Concrete elements
                             </TypographySmall>
                           </div>
@@ -430,18 +429,18 @@ export default function ConcreteDetectorPage() {
                   </div>
                 </div>
               ) : (
-                /* Enhanced File Selected State */
-                <div className="p-8 space-y-8">
+                /* Mobile Responsive File Selected State */
+                <div className="p-4 sm:p-8 space-y-4 sm:space-y-8">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg">
-                        <ImageIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        <ImageIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
                       </div>
                       <div>
-                        <TypographyH5 className="font-bold text-gray-900 dark:text-white">
+                        <TypographyH5 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
                           Ready for Analysis
                         </TypographyH5>
-                        <TypographySmall className="text-gray-600 dark:text-gray-400">
+                        <TypographySmall className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                           AI will analyze your construction photo
                         </TypographySmall>
                       </div>
@@ -450,23 +449,23 @@ export default function ConcreteDetectorPage() {
                       onClick={resetForm}
                       variant="ghost"
                       size="sm"
-                      className="h-10 w-10 p-0 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                      className="h-8 w-8 sm:h-10 sm:w-10 p-0 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
-                      <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                      <X className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 dark:text-gray-400" />
                     </Button>
                   </div>
 
-                  {/* Enhanced image preview */}
+                  {/* Mobile Responsive Image Preview */}
                   {preview && (
                     <Card className="overflow-hidden border-2 border-blue-100 dark:border-blue-800 shadow-lg">
                       <CardContent className="p-0">
-                        <div className="relative w-full h-80 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 flex items-center justify-center">
+                        <div className="relative w-full h-48 sm:h-80 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 flex items-center justify-center">
                           <Image
                             src={preview}
                             alt="Construction photo preview"
                             fill
                             style={{ objectFit: "contain" }}
-                            sizes="600px"
+                            sizes="(max-width: 768px) 100vw, 600px"
                             className="rounded-lg"
                           />
                         </div>
@@ -474,24 +473,24 @@ export default function ConcreteDetectorPage() {
                     </Card>
                   )}
 
-                  {/* Enhanced file info card */}
+                  {/* Mobile Responsive File Info */}
                   <Card className="bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-800 dark:to-slate-800 border border-gray-200 dark:border-gray-700">
-                    <CardContent className="p-6">
-                      <div className="flex items-center space-x-4">
-                        <div className="p-4 bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-700">
-                          <Camera className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                    <CardContent className="p-4 sm:p-6">
+                      <div className="flex items-center space-x-3 sm:space-x-4">
+                        <div className="p-3 sm:p-4 bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-700">
+                          <Camera className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 dark:text-blue-400" />
                         </div>
-                        <div className="flex-1">
-                          <TypographyH5 className="font-bold text-gray-900 dark:text-white mb-1">
+                        <div className="flex-1 min-w-0">
+                          <TypographyH5 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white mb-1 truncate">
                             {file.name}
                           </TypographyH5>
-                          <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
+                          <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                             <span>
                               {(file.size / (1024 * 1024)).toFixed(2)} MB
                             </span>
                             <Badge
                               variant="secondary"
-                              className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border-green-200 dark:border-green-700"
+                              className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border-green-200 dark:border-green-700 w-fit"
                             >
                               Ready to process
                             </Badge>
@@ -501,11 +500,11 @@ export default function ConcreteDetectorPage() {
                     </CardContent>
                   </Card>
 
-                  {/* Enhanced AI Analysis Button */}
+                  {/* Mobile Responsive AI Analysis Button */}
                   <Button
                     onClick={handleSubmit}
                     disabled={loading}
-                    className="relative w-full h-16 rounded-2xl font-bold text-lg 
+                    className="relative w-full h-12 sm:h-16 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-lg 
     bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 
     dark:from-blue-500 dark:via-indigo-500 dark:to-purple-500 
     text-white overflow-hidden group
@@ -514,15 +513,14 @@ export default function ConcreteDetectorPage() {
     focus:ring-4 focus:ring-indigo-400/50 
     disabled:opacity-50 disabled:scale-100 disabled:shadow-none"
                   >
-                    {/* Animated glow layer */}
                     <span className="absolute inset-0 bg-gradient-to-r from-blue-400/20 via-indigo-400/20 to-purple-400/20 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500" />
 
                     {loading ? (
                       <div className="flex items-center justify-center w-full">
-                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent mr-3"></div>
+                        <div className="animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-2 border-white border-t-transparent mr-2 sm:mr-3"></div>
                         <div className="flex flex-col items-center">
                           <span>AI Analysis in Progress...</span>
-                          <span className="text-sm font-normal opacity-90">
+                          <span className="text-xs sm:text-sm font-normal opacity-90 hidden sm:block">
                             Processing your image with advanced algorithms
                           </span>
                         </div>
@@ -533,7 +531,7 @@ export default function ConcreteDetectorPage() {
                           <span className="tracking-wide">
                             Start AI Analysis
                           </span>
-                          <span className="text-sm font-normal opacity-90">
+                          <span className="text-xs sm:text-sm font-normal opacity-90 hidden sm:block">
                             Get instant concrete recommendations
                           </span>
                         </div>
@@ -543,18 +541,17 @@ export default function ConcreteDetectorPage() {
                 </div>
               )}
 
-              {/* Enhanced Error Display */}
               {error && (
-                <div className="mx-8 mb-8">
+                <div className="mx-4 sm:mx-8 mb-4 sm:mb-8">
                   <Card className="bg-red-50 dark:bg-red-950/50 border-red-200 dark:border-red-800">
                     <CardContent className="p-4">
                       <div className="flex items-start space-x-3">
-                        <AlertCircle className="h-5 w-5 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                        <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0" />
                         <div>
-                          <TypographyH5 className="text-red-800 dark:text-red-300 font-semibold mb-1">
+                          <TypographyH5 className="text-sm sm:text-base text-red-800 dark:text-red-300 font-semibold mb-1">
                             Upload Error
                           </TypographyH5>
-                          <TypographyP className="text-red-700 dark:text-red-400">
+                          <TypographyP className="text-xs sm:text-sm text-red-700 dark:text-red-400">
                             {error}
                           </TypographyP>
                         </div>
@@ -566,42 +563,43 @@ export default function ConcreteDetectorPage() {
             </CardContent>
           </Card>
         ) : (
-          /* Enhanced Results with Comprehensive Analysis */
-          <div className="space-y-8 mt-6">
-            {/* Enhanced Success Header with Metadata */}
+          /* Mobile Responsive Results */
+          <div className="space-y-4 sm:space-y-8 mt-6">
             <Card className="overflow-hidden border-0 shadow-2xl py-0">
               <CardContent className="p-0">
-                <div className="bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 dark:from-emerald-400 dark:via-green-400 dark:to-teal-400 p-8 text-white relative overflow-hidden">
+                <div className="bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 dark:from-emerald-400 dark:via-green-400 dark:to-teal-400 p-4 sm:p-8 text-white relative overflow-hidden">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(255,255,255,0.15),transparent_50%)]"></div>
                   <div className="relative">
-                    <div className="flex items-center justify-between mb-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 space-y-4 sm:space-y-0">
                       <div className="flex items-center">
-                        <div className="p-4 bg-white/20 rounded-2xl mr-4 backdrop-blur-sm">
-                          <CheckCircle className="h-12 w-12" />
+                        <div className="p-3 sm:p-4 bg-white/20 rounded-xl sm:rounded-2xl mr-3 sm:mr-4 backdrop-blur-sm">
+                          <CheckCircle className="h-8 w-8 sm:h-12 sm:w-12" />
                         </div>
                         <div>
-                          <h2 className="text-4xl font-bold mb-2">
+                          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-1 sm:mb-2">
                             {result.message}
                           </h2>
-                          <div className="flex items-center space-x-6 text-green-100">
+                          <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-6 text-green-100">
                             <div className="flex items-center space-x-2">
-                              <Sparkles className="h-5 w-5" />
-                              <span className="text-lg font-semibold">
+                              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
+                              <span className="text-sm sm:text-lg font-semibold">
                                 {result.confidence}% AI Confidence
                               </span>
                             </div>
                             {result.analysisMetadata && (
                               <>
                                 <div className="flex items-center space-x-2">
-                                  <Target className="h-5 w-5" />
-                                  <span>
+                                  <Target className="h-4 w-4 sm:h-5 sm:w-5" />
+                                  <span className="text-sm sm:text-base">
                                     {result.analysisMetadata.elementsDetected}{" "}
                                     Elements Detected
                                   </span>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                  <Clock className="h-5 w-5" />
-                                  <span>Instant Analysis</span>
+                                  <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
+                                  <span className="text-sm sm:text-base">
+                                    Instant Analysis
+                                  </span>
                                 </div>
                               </>
                             )}
@@ -610,9 +608,9 @@ export default function ConcreteDetectorPage() {
                       </div>
 
                       {result.projectInsights && (
-                        <div className="text-right">
+                        <div className="text-left sm:text-right">
                           <Badge
-                            className={`text-lg font-bold px-4 py-2 ${getComplexityBadge(
+                            className={`text-sm sm:text-lg font-bold px-3 sm:px-4 py-1 sm:py-2 ${getComplexityBadge(
                               result.projectInsights.complexity
                             )}`}
                           >
@@ -623,50 +621,52 @@ export default function ConcreteDetectorPage() {
                       )}
                     </div>
 
-                    {/* Project Type Indicator */}
+                    {/* Mobile Responsive Project Type Indicator */}
                     {result.quantityEstimation && (
-                      <div className="flex items-center space-x-4 bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-                        <div className="p-3 bg-white/20 rounded-lg">
+                      <div className="flex items-center space-x-3 sm:space-x-4 bg-white/10 rounded-lg sm:rounded-xl p-3 sm:p-4 backdrop-blur-sm mb-3 sm:mb-0">
+                        <div className="p-2 sm:p-3 bg-white/20 rounded-lg">
                           {(() => {
                             const IconComponent = getProjectTypeIcon(
                               result.quantityEstimation.projectType
                             );
-                            return <IconComponent className="h-6 w-6" />;
+                            return (
+                              <IconComponent className="h-5 w-5 sm:h-6 sm:w-6" />
+                            );
                           })()}
                         </div>
                         <div>
-                          <div className="text-lg font-semibold capitalize">
+                          <div className="text-base sm:text-lg font-semibold capitalize">
                             {result.quantityEstimation.projectType} Project
                             Detected
                           </div>
-                          <div className="text-green-100 text-sm">
+                          <div className="text-green-100 text-xs sm:text-sm">
                             {result.quantityEstimation.reasoning}
                           </div>
                         </div>
                       </div>
                     )}
 
-                    {/* Detected Labels Display */}
+                    {/* Mobile Responsive Detected Labels */}
                     {result.detectedLabels &&
                       result.detectedLabels.length > 0 && (
-                        <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-                          <div className="flex items-center space-x-2 mb-3">
-                            <Target className="h-5 w-5" />
-                            <span className="text-lg font-semibold">
+                        <div className="bg-white/10 rounded-lg sm:rounded-xl p-3 sm:p-4 backdrop-blur-sm">
+                          <div className="flex items-center space-x-2 mb-2 sm:mb-3">
+                            <Target className="h-4 w-4 sm:h-5 sm:w-5" />
+                            <span className="text-sm sm:text-lg font-semibold">
                               AI Detection Results
                             </span>
                           </div>
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex flex-wrap gap-1 sm:gap-2">
                             {result.detectedLabels.map((label, index) => (
                               <Badge
                                 key={index}
-                                className="bg-white/20 text-white border-white/30 hover:bg-white/30 transition-colors"
+                                className="bg-white/20 text-white border-white/30 hover:bg-white/30 transition-colors text-xs sm:text-sm"
                               >
                                 {label}
                               </Badge>
                             ))}
                           </div>
-                          <div className="text-green-100 text-xs mt-2">
+                          <div className="text-green-100 text-xs mt-1 sm:mt-2">
                             {result.detectedLabels.length} elements identified
                             by AI vision
                           </div>
@@ -677,13 +677,13 @@ export default function ConcreteDetectorPage() {
               </CardContent>
             </Card>
 
-            {/* Enhanced Tabbed Content */}
+            {/* Mobile Responsive Tabbed Content */}
             <Card className="border-0 shadow-xl py-0">
               <CardContent className="p-0">
-                {/* Tab Navigation */}
+                {/* Mobile Responsive Tab Navigation - Horizontal Scroll */}
                 <div className="border-b border-gray-200 dark:border-gray-700">
-                  <div className="border-b border-gray-200 dark:border-gray-700">
-                    <div className="flex space-x-8 px-8 pt-6">
+                  <div className="overflow-x-auto scrollbar-hide">
+                    <div className="flex space-x-4 sm:space-x-8 px-4 sm:px-8 pt-4 sm:pt-6 min-w-max">
                       {[
                         {
                           id: "estimation",
@@ -709,24 +709,26 @@ export default function ConcreteDetectorPage() {
                         <button
                           key={tab.id}
                           onClick={() => setActiveTab(tab.id as any)}
-                          className={`flex items-center space-x-2 pb-4 border-b-2 transition-colors ${
+                          className={`flex items-center space-x-1 sm:space-x-2 pb-3 sm:pb-4 border-b-2 transition-colors whitespace-nowrap ${
                             activeTab === tab.id
                               ? "border-blue-500 text-blue-600 dark:text-blue-400"
                               : "border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
                           }`}
                         >
-                          <tab.icon className="h-5 w-5" />
-                          <span className="font-semibold">{tab.label}</span>
+                          <tab.icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                          <span className="font-semibold text-xs sm:text-sm">
+                            {tab.label}
+                          </span>
                         </button>
                       ))}
                     </div>
                   </div>
                 </div>
 
-                <div className="p-8">
-                  {/* Quantity Estimation Tab */}
+                <div className="p-4 sm:p-8">
+                  {/* Mobile Responsive Tab Content */}
                   {activeTab === "estimation" && result.quantityEstimation && (
-                    <div className="space-y-8">
+                    <div className="space-y-4 sm:space-y-8">
                       {/* Main Quantity Display */}
                       <div className="grid md:grid-cols-3 gap-6">
                         <Card className="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-950/50 border-2 border-blue-200 dark:border-blue-700">
@@ -1185,7 +1187,7 @@ export default function ConcreteDetectorPage() {
                             </div>
                             <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center">
                               <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                                {result.confidence}%
+                                {result.confidence}%{result.confidence}%
                               </div>
                               <div className="text-sm text-gray-600 dark:text-gray-400">
                                 AI Confidence
@@ -1409,9 +1411,8 @@ export default function ConcreteDetectorPage() {
                   )}
                 </div>
 
-                {/* Action Buttons */}
                 <div className="border-t border-gray-200 dark:border-gray-700 p-8">
-                  <div className="flex gap-4">
+                  <div className="flex flex-col gap-4 sm:flex-row">
                     <Button
                       onClick={resetForm}
                       variant="outline"
