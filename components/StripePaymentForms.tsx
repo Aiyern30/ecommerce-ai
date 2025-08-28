@@ -11,7 +11,6 @@ import type { StripePaymentElementOptions } from "@stripe/stripe-js";
 import { useState } from "react";
 import { Button } from "@/components/ui";
 import { Loader2, CreditCard, Shield, AlertTriangle } from "lucide-react";
-import { createOrderAPI } from "@/lib/order/api";
 import { useUser } from "@supabase/auth-helpers-react";
 import { useCart } from "@/components/CartProvider";
 import type { Address } from "@/lib/user/address";
@@ -38,6 +37,9 @@ interface BillingDetails {
 
 interface StripePaymentFormProps {
   onSuccess: (orderId: string) => void;
+  onPaymentStart?: () => void;
+  onPaymentError?: (error: string) => void;
+  isProcessing?: boolean;
   billingDetails: BillingDetails;
   shippingAddress: Address;
   selectedServices: { [serviceCode: string]: SelectedServiceDetails | null };
@@ -48,6 +50,8 @@ interface StripePaymentFormProps {
 
 export function StripePaymentForm({
   onSuccess,
+
+  isProcessing = false,
   billingDetails,
   shippingAddress,
   selectedServices,
@@ -59,12 +63,14 @@ export function StripePaymentForm({
   const elements = useElements();
   const user = useUser();
   const { cartItems, refreshCart } = useCart();
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [processingStage, setProcessingStage] = useState<string>("");
-  const [failedPaymentIntentId, setFailedPaymentIntentId] = useState<
-    string | null
-  >(null);
+
+  // Generate idempotency key for this payment attempt
+  const [idempotencyKey] = useState(
+    () => `${user?.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  );
 
   const selectedItems = cartItems.filter((item) => item.selected);
 
@@ -135,89 +141,15 @@ export function StripePaymentForm({
     },
   };
 
-  // Helper function to create failed order record
-  const createFailedOrder = async (paymentIntentId: string, reason: string) => {
-    try {
-      console.log(
-        "Creating failed order record for payment intent:",
-        paymentIntentId
-      );
-      console.log("Reason Order creation failed:", reason);
-
-      const orderResult = await createOrderAPI(
-        user!.id,
-        cartItems,
-        shippingAddress.id,
-        paymentIntentId, // This will be marked as failed payment
-        undefined,
-        selectedServices,
-        additionalServices,
-        freightCharges,
-        totalVolume,
-        true // is_recovery_attempt flag
-      );
-
-      console.log("Failed order recorded:", orderResult?.order_id);
-      return orderResult?.order_id;
-    } catch (error) {
-      console.error("Failed to create failed order record:", error);
-      // Don't throw here, just return null to indicate failure
-      return null;
-    }
-  };
-
-  // Retry order creation for successful payment
-  const retryOrderCreation = async () => {
-    if (!failedPaymentIntentId || !user) {
-      setError("No failed payment to retry");
-      return;
-    }
-
-    setIsProcessing(true);
-    setProcessingStage("Retrying order creation...");
-    setError(null);
-
-    try {
-      const orderResult = await createOrderAPI(
-        user.id,
-        cartItems,
-        shippingAddress.id,
-        failedPaymentIntentId,
-        undefined,
-        selectedServices,
-        additionalServices,
-        freightCharges,
-        totalVolume,
-        true // is_recovery_attempt flag
-      );
-
-      if (orderResult) {
-        clearPaymentSession();
-        await refreshCart();
-        setFailedPaymentIntentId(null);
-        onSuccess(orderResult.order_id);
-      } else {
-        setError("Failed to create order on retry. Please contact support.");
-      }
-    } catch (error) {
-      console.error("Retry order creation failed:", error);
-      setError("Failed to create order on retry. Please contact support.");
-    } finally {
-      setIsProcessing(false);
-      setProcessingStage("");
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsProcessing(true);
+    setLoading(true);
     setError(null);
-    setFailedPaymentIntentId(null);
     setProcessingStage("Validating payment form...");
 
     if (!stripe || !elements || !user) {
       setError("Payment system not ready or user not logged in");
-      setIsProcessing(false);
+      setLoading(false);
       setProcessingStage("");
       return;
     }
@@ -227,31 +159,67 @@ export function StripePaymentForm({
 
       if (submitError) {
         setError(submitError.message || "Payment form validation failed");
-        setIsProcessing(false);
+        setLoading(false);
         setProcessingStage("");
         return;
       }
 
       setProcessingStage("Creating payment intent...");
 
+      // Log the data being sent for debugging
+      console.log("Selected items being sent:", selectedItems);
+      console.log("Subtotal calculated:", subtotal);
+      console.log("Services total:", servicesTotal);
+      console.log("Freight cost:", freightCost);
+      console.log("Tax:", tax);
+      console.log("Total:", total);
+
+      // Send comprehensive order data to create-payment-intent
       const paymentIntentResponse = await fetch("/api/create-payment-intent", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Idempotency-Key": idempotencyKey,
         },
         body: JSON.stringify({
-          amount: total,
-          currency: "myr",
+          items: selectedItems,
+          shippingAddress,
+          selectedServices,
+          additionalServices,
+          freightCharges,
+          totalVolume,
+          userId: user.id,
         }),
       });
 
-      if (!paymentIntentResponse.ok) {
-        throw new Error("Failed to create payment intent");
+      let errorData = null;
+      try {
+        errorData = await paymentIntentResponse.json();
+      } catch (parseError) {
+        console.error("Failed to parse response:", parseError);
       }
 
-      const { clientSecret, paymentIntentId } =
-        await paymentIntentResponse.json();
-      console.log("PaymentIntent created:", paymentIntentId);
+      if (!paymentIntentResponse.ok) {
+        console.error("API Error:", {
+          status: paymentIntentResponse.status,
+          statusText: paymentIntentResponse.statusText,
+          data: errorData,
+        });
+
+        const errorMessage =
+          errorData?.error ||
+          errorData?.details ||
+          "Failed to create payment intent";
+        throw new Error(errorMessage);
+      }
+
+      const { clientSecret, orderId } = errorData;
+
+      if (!clientSecret || !orderId) {
+        throw new Error("Invalid response from payment intent creation");
+      }
+
+      console.log("PaymentIntent created for order:", orderId);
 
       setProcessingStage("Processing payment...");
 
@@ -282,51 +250,37 @@ export function StripePaymentForm({
 
       if (stripeError) {
         setError(stripeError.message || "Payment failed");
-        // Create failed order record
-        await createFailedOrder(
-          paymentIntentId,
-          stripeError.message || "Payment failed"
-        );
-        setIsProcessing(false);
+        setLoading(false);
         setProcessingStage("");
         return;
       }
 
       if (paymentIntent && paymentIntent.status === "succeeded") {
-        setProcessingStage("Payment successful! Creating order...");
+        setProcessingStage("Payment successful! Verifying order...");
 
         try {
-          const orderResult = await createOrderAPI(
-            user.id,
-            cartItems,
-            shippingAddress.id,
-            paymentIntent.id,
-            undefined,
-            selectedServices,
-            additionalServices,
-            freightCharges,
-            totalVolume
-          );
+          // Verify payment and update order status
+          const verifyResponse = await fetch("/api/verify-payment", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              orderId,
+            }),
+          });
 
-          if (!orderResult) {
-            throw new Error("Failed to create order after successful payment");
-          }
-
-          // Check if order was created successfully
-          if (orderResult.order_status === "failed") {
-            setError(
-              "Payment succeeded but order creation failed. A failed order record has been created. Please contact support with payment ID: " +
-                paymentIntent.id
-            );
-            setFailedPaymentIntentId(paymentIntent.id);
-            setIsProcessing(false);
-            setProcessingStage("");
-            return;
+          if (!verifyResponse.ok) {
+            throw new Error("Payment verification failed");
           }
 
           clearPaymentSession();
 
+          // Clear selected services from localStorage
+          localStorage.removeItem("selectedServices");
+
           try {
+            // Force refresh cart to reflect quantity changes
             await refreshCart();
           } catch (refreshError) {
             console.warn("Failed to refresh cart:", refreshError);
@@ -334,22 +288,14 @@ export function StripePaymentForm({
 
           setProcessingStage("Order created successfully!");
           setTimeout(() => {
-            onSuccess(orderResult.order_id);
+            onSuccess(orderId);
           }, 500);
-        } catch (orderError) {
-          console.error("Error creating order after payment:", orderError);
-          // Create failed order record
-          await createFailedOrder(
-            paymentIntent.id,
-            `Order creation failed: ${
-              orderError instanceof Error ? orderError.message : "Unknown error"
-            }`
-          );
+        } catch (verifyError) {
+          console.error("Error verifying payment:", verifyError);
           setError(
-            "Payment succeeded but failed to create order. A failed order record has been created. Please contact support with payment ID: " +
-              paymentIntent.id
+            "Payment succeeded but verification failed. Please contact support with order ID: " +
+              orderId
           );
-          setFailedPaymentIntentId(paymentIntent.id);
         }
       } else if (paymentIntent && paymentIntent.status === "requires_action") {
         setProcessingStage("Additional authentication required...");
@@ -364,20 +310,19 @@ export function StripePaymentForm({
 
         if (confirmError) {
           setError(confirmError.message || "Payment authentication failed");
-          await createFailedOrder(
-            paymentIntentId,
-            confirmError.message || "Payment authentication failed"
-          );
         }
       } else {
         setError("Payment processing failed. Please try again.");
-        await createFailedOrder(paymentIntentId, "Payment processing failed");
       }
     } catch (error) {
       console.error("Payment processing error:", error);
-      setError("An unexpected error occurred. Please try again.");
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred. Please try again.";
+      setError(errorMessage);
     } finally {
-      setIsProcessing(false);
+      setLoading(false);
       setProcessingStage("");
     }
   };
@@ -402,23 +347,6 @@ export function StripePaymentForm({
                 <p className="text-red-700 dark:text-red-300 text-sm font-medium">
                   {error}
                 </p>
-                {failedPaymentIntentId && (
-                  <div className="mt-3">
-                    <Button
-                      type="button"
-                      onClick={retryOrderCreation}
-                      disabled={isProcessing}
-                      size="sm"
-                      className="bg-red-600 hover:bg-red-700"
-                    >
-                      {isProcessing ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      ) : (
-                        "Retry Order Creation"
-                      )}
-                    </Button>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -515,11 +443,11 @@ export function StripePaymentForm({
 
         <Button
           type="submit"
-          disabled={isProcessing || !stripe}
+          disabled={loading || !stripe || selectedItems.length === 0}
           className="w-full h-12 text-base font-semibold"
           size="lg"
         >
-          {isProcessing ? (
+          {loading || isProcessing ? (
             <div className="flex items-center justify-center space-x-2">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span>
