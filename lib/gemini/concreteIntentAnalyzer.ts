@@ -14,7 +14,8 @@ export interface ConcreteIntentAnalysis {
     | "comparison_request"
     | "general_question"
     | "cart_show"
-    | "order_status";
+    | "order_status"
+    | "mortar_inquiry"; // Added mortar_inquiry to the union type
   confidence: number;
   extractedData: {
     query?: string;
@@ -33,6 +34,96 @@ export interface ConcreteIntentAnalysis {
 }
 
 export class ConcreteIntentAnalyzer {
+  private static readonly CONSTRUCTION_KEYWORDS = [
+    // Concrete keywords
+    "concrete",
+    "grade",
+    "n15",
+    "n20",
+    "n25",
+    "n30",
+    "s30",
+    "s35",
+    "s40",
+    "s45",
+    "ready mix",
+    "readymix",
+    "pump",
+    "tremie",
+    "structural",
+    "foundation",
+    "slab",
+    "beam",
+    "column",
+    "footing",
+    "driveway",
+    "walkway",
+    "patio",
+
+    // Mortar keywords
+    "mortar",
+    "ratio",
+    "1:3",
+    "1:4",
+    "1:5",
+    "1:6",
+    "m034",
+    "m044",
+    "m054",
+    "m064",
+    "brickwork",
+    "blockwork",
+    "masonry",
+    "plastering",
+    "rendering",
+    "pointing",
+    "bedding",
+    "brick",
+    "block",
+    "stone",
+    "tile",
+    "wall",
+    "partition",
+
+    // General construction
+    "construction",
+    "building",
+    "project",
+    "site",
+    "delivery",
+    "price",
+    "cost",
+    "cubic meter",
+    "m3",
+    "volume",
+    "quantity",
+    "stock",
+  ];
+
+  private static readonly INTENT_PATTERNS = {
+    product_search: [
+      /(?:show|find|search|look for|need|want)\s+(?:me\s+)?(?:some\s+)?(?:concrete|mortar|products?)/i,
+      /(?:what|which)\s+(?:concrete|mortar|products?)\s+(?:do you have|are available)/i,
+      /(?:concrete|mortar)\s+(?:grades?|types?|options?)/i,
+    ],
+    grade_inquiry: [
+      /(?:what|which|tell me about)\s+(?:is\s+)?(?:grade\s+)?([ns]\d+|m0\d+)/i,
+      /(?:difference|compare)\s+between\s+(?:grades?|[ns]\d+|m0\d+)/i,
+      /(?:grade|ratio)\s+(?:for|suitable for)\s+(\w+)/i,
+    ],
+    mortar_inquiry: [
+      /(?:mortar|ratio)\s+(?:1:[3-6]|m0\d+)/i,
+      /(?:brickwork|blockwork|masonry|plastering)/i,
+      /(?:which|what)\s+(?:mortar|ratio)\s+(?:for|to use)/i,
+    ],
+    application_inquiry: [
+      /(?:what|which)\s+(?:concrete|mortar)\s+(?:for|to use for)\s+(\w+)/i,
+      /(?:suitable|best|recommended)\s+(?:for|to)\s+(\w+)/i,
+      /(?:foundation|slab|beam|column|driveway|wall|brickwork)/i,
+    ],
+    // ...existing patterns...
+  };
+
   // Enhanced product keywords specific to your concrete business
   private static readonly PRODUCT_KEYWORDS = [
     "concrete",
@@ -472,6 +563,32 @@ export class ConcreteIntentAnalyzer {
   static analyzeIntent(message: string): ConcreteIntentAnalysis {
     const lowerMessage = message.toLowerCase();
 
+    // Enhanced mortar detection
+    if (this.isMortarQuery(lowerMessage)) {
+      return {
+        intent: "mortar_inquiry",
+        confidence: 0.9,
+        extractedData: {
+          productType: "mortar",
+          ...this.extractMortarData(lowerMessage),
+          query: message,
+        },
+      };
+    }
+
+    // Enhanced concrete detection
+    if (this.isConcreteQuery(lowerMessage)) {
+      return {
+        intent: "product_search",
+        confidence: 0.85,
+        extractedData: {
+          productType: "concrete",
+          ...this.extractConcreteData(lowerMessage),
+          query: message,
+        },
+      };
+    }
+
     // Calculate confidence scores for each intent
     const scores = {
       product_search:
@@ -906,80 +1023,153 @@ export class ConcreteIntentAnalyzer {
     return null;
   }
 
-  static generateSuggestions(intent: string, extractedData: any): string[] {
-    const suggestions: { [key: string]: string[] } = {
-      product_search: [
-        "Show me N-series grades (N10-N25)",
-        "Show me S-series grades (S30-S45)",
-        "Compare delivery methods",
-      ],
-      grade_inquiry: [
-        "Show N20 products",
-        "Compare N20 vs N25",
-        "What about S-series grades?",
-      ],
-      price_inquiry: [
-        "Compare delivery prices",
-        "Show pump vs normal prices",
-        "Budget options under RM300",
-      ],
-      delivery_inquiry: [
-        "Normal delivery pricing",
-        "Pump delivery options",
-        "Tremie delivery info",
-      ],
-      technical_question: [
-        "Product specifications",
-        "Strength comparisons",
-        "Application guidelines",
-      ],
-      stock_inquiry: [
-        "Check N20 availability",
-        "Check S30 availability",
-        "Current stock levels",
-      ],
-      application_inquiry: [
-        "For foundation work",
-        "For structural work",
-        "For residential projects",
-      ],
-      comparison_request: [
-        "N20 vs N25 comparison",
-        "S30 vs S35 comparison",
-        "Delivery method comparison",
-      ],
-      recommendation: [
-        "For driveway projects",
-        "For commercial buildings",
-        "Budget-friendly options",
-      ],
-      general_question: [
-        "Browse concrete grades",
-        "Popular products",
-        "Price list",
-      ],
+  private static isMortarQuery(message: string): boolean {
+    const mortarKeywords = [
+      "mortar",
+      "ratio",
+      "1:",
+      "brickwork",
+      "blockwork",
+      "masonry",
+      "plastering",
+      "pointing",
+      "rendering",
+      "m034",
+      "m044",
+      "m054",
+      "m064",
+    ];
+    return mortarKeywords.some((keyword) => message.includes(keyword));
+  }
+
+  private static isConcreteQuery(message: string): boolean {
+    const concreteKeywords = [
+      "concrete",
+      "grade",
+      "n15",
+      "n20",
+      "n25",
+      "n30",
+      "s30",
+      "s35",
+      "s40",
+      "s45",
+      "ready mix",
+      "readymix",
+      "pump",
+      "tremie",
+      "structural",
+      "foundation",
+      "slab",
+    ];
+    return concreteKeywords.some((keyword) => message.includes(keyword));
+  }
+
+  private static extractMortarData(message: string): any {
+    const data: any = {};
+
+    // Extract mortar ratio
+    const ratioMatch = message.match(/(1:[3-6])/);
+    if (ratioMatch) {
+      data.mortarRatio = ratioMatch[1];
+    }
+
+    // Extract mortar grade
+    const gradeMatch = message.match(/(m0[3-6][4])/);
+    if (gradeMatch) {
+      data.grade = gradeMatch[1].toUpperCase();
+    }
+
+    // Extract application type
+    const applicationKeywords = {
+      brickwork: ["brick", "brickwork", "brick wall"],
+      blockwork: ["block", "blockwork", "concrete block"],
+      plastering: ["plaster", "plastering", "render", "rendering"],
+      pointing: ["pointing", "repointing", "joint"],
+      bedding: ["bedding", "laying", "setting"],
     };
 
-    let baseSuggestions = suggestions[intent] || suggestions.general_question;
+    for (const [app, keywords] of Object.entries(applicationKeywords)) {
+      if (keywords.some((keyword) => message.includes(keyword))) {
+        data.applicationType = app;
+        break;
+      }
+    }
 
-    // Customize based on extracted data
-    if (extractedData.grade) {
-      const grade = extractedData.grade;
-      baseSuggestions = [
-        `Show ${grade} details`,
-        `${grade} pricing options`,
-        `Compare ${grade} with other grades`,
+    return data;
+  }
+
+  private static extractConcreteData(message: string): any {
+    // ...existing concrete extraction logic...
+    const data: any = {};
+
+    // Extract grade
+    const gradeMatch = message.match(/([ns]\d+)/i);
+    if (gradeMatch) {
+      data.grade = gradeMatch[1].toUpperCase();
+    }
+
+    // Extract delivery method
+    const deliveryKeywords = {
+      pump: ["pump", "pumped", "pumping"],
+      tremie: ["tremie", "underwater", "submerged"],
+      normal: ["normal", "truck", "direct"],
+    };
+
+    for (const [method, keywords] of Object.entries(deliveryKeywords)) {
+      if (keywords.some((keyword) => message.includes(keyword))) {
+        data.deliveryMethod = method;
+        break;
+      }
+    }
+
+    return data;
+  }
+
+  static getMortarRecommendations(applicationType?: string): string[] {
+    const recommendations = {
+      brickwork: ["M044", "M054"],
+      blockwork: ["M054", "M064"],
+      plastering: ["M064"],
+      pointing: ["M034", "M044"],
+      bedding: ["M044", "M054"],
+    };
+
+    if (
+      applicationType &&
+      recommendations[applicationType as keyof typeof recommendations]
+    ) {
+      return recommendations[applicationType as keyof typeof recommendations];
+    }
+
+    return ["M044", "M054", "M064"]; // Default popular mortar grades
+  }
+
+  static generateSuggestions(intent: string, extractedData: any): string[] {
+    if (extractedData.productType === "mortar") {
+      return [
+        "Browse mortar ratios (1:3 to 1:6)",
+        "Compare M034, M044, M054, M064",
+        "Mortar for brickwork vs plastering",
+        "Calculate mortar quantity needed",
       ];
     }
 
-    if (extractedData.projectType) {
-      const projectType = extractedData.projectType;
-      baseSuggestions = baseSuggestions.map((s) =>
-        s.includes("work") ? `For ${projectType} work` : s
-      );
+    if (extractedData.productType === "concrete") {
+      return [
+        "Compare N-series (N15-N25)",
+        "Compare S-series (S30-S45)",
+        "Pump vs normal delivery",
+        "Calculate concrete volume needed",
+      ];
     }
 
-    return baseSuggestions;
+    return [
+      "Browse concrete products",
+      "Browse mortar products",
+      "Compare grades and ratios",
+      "Delivery options available",
+    ];
   }
 
   static isConstructionQuery(message: string): boolean {

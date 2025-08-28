@@ -26,13 +26,15 @@ interface Message {
   metadata?: any;
 }
 
-// Enhanced product search with concrete-specific logic
+// Enhanced product search with mortar-specific logic
 async function searchProducts(
   query: string,
   grade?: string,
   gradeRange?: { min?: string; max?: string },
   deliveryMethod?: string,
   priceRange?: { min?: number; max?: number },
+  productType?: "concrete" | "mortar",
+  mortarRatio?: string,
   limit = 5
 ): Promise<Product[]> {
   const supabase = createRouteHandlerClient({ cookies });
@@ -52,19 +54,22 @@ async function searchProducts(
         )
       `
       )
-      .eq("is_active", true)
       .eq("status", "published")
       .gt("stock_quantity", 0);
+
+    // Product type filtering
+    if (productType) {
+      queryBuilder = queryBuilder.eq("product_type", productType);
+    }
 
     // Grade-specific filtering
     if (grade) {
       queryBuilder = queryBuilder.eq("grade", grade);
-    } else if (gradeRange) {
-      // Handle grade range filtering for N-series and S-series
-      const conditions = [];
-      if (gradeRange.min) conditions.push(`grade.gte.${gradeRange.min}`);
-      if (gradeRange.max) conditions.push(`grade.lte.${gradeRange.max}`);
-      // Note: This might need custom logic for proper grade comparison
+    }
+
+    // Mortar ratio filtering
+    if (mortarRatio) {
+      queryBuilder = queryBuilder.eq("mortar_ratio", mortarRatio);
     }
 
     // Price range filtering based on delivery method
@@ -76,15 +81,16 @@ async function searchProducts(
         queryBuilder = queryBuilder.lte(priceColumn, priceRange.max);
     }
 
-    // Text search in multiple fields
+    // Enhanced text search
     if (query && query.length > 2) {
       queryBuilder = queryBuilder.or(
-        `name.ilike.%${query}%, description.ilike.%${query}%, grade.ilike.%${query}%, keywords.cs.{${query}}`
+        `name.ilike.%${query}%, description.ilike.%${query}%, grade.ilike.%${query}%, mortar_ratio.ilike.%${query}%, keywords.cs.{${query}}`
       );
     }
 
     queryBuilder = queryBuilder
       .order("is_featured", { ascending: false })
+      .order("product_type", { ascending: true }) // Show concrete first, then mortar
       .order("grade", { ascending: true })
       .limit(limit);
 
@@ -102,7 +108,7 @@ async function searchProducts(
   }
 }
 
-// Get recommendations based on intent analysis
+// Enhanced recommendations with mortar support
 async function getSmartRecommendations(
   intentData: any,
   limit = 3
@@ -124,45 +130,33 @@ async function getSmartRecommendations(
         )
       `
       )
-      .eq("is_active", true)
       .eq("status", "published")
       .gt("stock_quantity", 0);
 
-    // Use intent analysis to provide smart recommendations
-    if (intentData.applicationType || intentData.projectType) {
-      const recommendedGrades = ConcreteIntentAnalyzer.getGradeRecommendations(
-        intentData.applicationType,
-        intentData.projectType
-      );
+    // Product type specific recommendations
+    if (intentData.productType === "mortar") {
+      queryBuilder = queryBuilder.eq("product_type", "mortar");
 
-      if (recommendedGrades.length > 0) {
-        queryBuilder = queryBuilder.in("grade", recommendedGrades);
-      }
-    }
-
-    // If specific grade mentioned, include similar grades
-    if (intentData.grade) {
-      const grade = intentData.grade;
-      const gradeNumber = parseInt(grade.substring(1));
-      const gradeSeries = grade.charAt(0);
-
-      // Get similar grades (±5 in same series)
-      const similarGrades = [];
-      for (
-        let i = Math.max(gradeNumber - 5, 10);
-        i <= Math.min(gradeNumber + 5, 45);
-        i += 5
-      ) {
-        if (
-          (gradeSeries === "N" && i <= 25) ||
-          (gradeSeries === "S" && i >= 30 && i <= 45)
-        ) {
-          similarGrades.push(`${gradeSeries}${i}`);
+      if (intentData.applicationType) {
+        const recommendedRatios = getMortarRatioRecommendations(
+          intentData.applicationType
+        );
+        if (recommendedRatios.length > 0) {
+          queryBuilder = queryBuilder.in("mortar_ratio", recommendedRatios);
         }
       }
+    } else if (intentData.productType === "concrete") {
+      queryBuilder = queryBuilder.eq("product_type", "concrete");
 
-      if (similarGrades.length > 0) {
-        queryBuilder = queryBuilder.in("grade", similarGrades);
+      if (intentData.applicationType || intentData.projectType) {
+        const recommendedGrades =
+          ConcreteIntentAnalyzer.getGradeRecommendations(
+            intentData.applicationType,
+            intentData.projectType
+          );
+        if (recommendedGrades.length > 0) {
+          queryBuilder = queryBuilder.in("grade", recommendedGrades);
+        }
       }
     }
 
@@ -183,6 +177,20 @@ async function getSmartRecommendations(
     console.error("Database error:", error);
     return [];
   }
+}
+
+// Helper function for mortar ratio recommendations
+function getMortarRatioRecommendations(applicationType: string): string[] {
+  const recommendations = {
+    brickwork: ["1:4", "1:5"],
+    blockwork: ["1:5", "1:6"],
+    plastering: ["1:6"],
+    pointing: ["1:3", "1:4"],
+    bedding: ["1:4", "1:5"],
+    rendering: ["1:5", "1:6"],
+  };
+
+  return recommendations[applicationType as keyof typeof recommendations] || [];
 }
 
 // Helper function to get the appropriate price column
@@ -208,7 +216,7 @@ function generateSystemPrompt(
 ): string {
   const productContext =
     products.length > 0
-      ? `Here are relevant concrete products from our catalog:\n${products
+      ? `Here are relevant products from our catalog:\n${products
           .map((p) => {
             const prices = [];
             if (p.normal_price) prices.push(`Normal: RM${p.normal_price}`);
@@ -220,11 +228,19 @@ function generateSystemPrompt(
             if (p.tremie_3_price)
               prices.push(`Tremie 3: RM${p.tremie_3_price}`);
 
-            return `- ${p.name} (Grade ${p.grade}): ${
-              p.description
-            }\n  Pricing: ${prices.join(", ")} ${
-              p.unit || "per m³"
-            }\n  Stock: ${p.stock_quantity} units`;
+            const productInfo = `- ${p.name}`;
+            const gradeInfo =
+              p.product_type === "mortar"
+                ? `(${p.mortar_ratio} ratio, Grade ${p.grade})`
+                : `(Grade ${p.grade})`;
+            const description = p.description ? `\n  ${p.description}` : "";
+            const pricing =
+              prices.length > 0
+                ? `\n  Pricing: ${prices.join(", ")} ${p.unit || "per m³"}`
+                : "";
+            const stock = `\n  Stock: ${p.stock_quantity} units`;
+
+            return `${productInfo} ${gradeInfo}${description}${pricing}${stock}`;
           })
           .join("\n\n")}`
       : "No specific products found for this query.";
@@ -235,21 +251,27 @@ Customer Intent Analysis:
 - Confidence: ${Math.round(intentAnalysis.confidence * 100)}%
 - Extracted Data: ${JSON.stringify(intentAnalysis.extractedData, null, 2)}`;
 
-  return `You are an AI assistant for a Malaysian concrete supply company specializing in ready-mix concrete. Our product range includes:
+  return `You are an AI assistant for a Malaysian construction materials company specializing in ready-mix concrete and mortar products. Our comprehensive product range includes:
 
 CONCRETE GRADES AVAILABLE:
-- N-Series: N10, N15, N20, N25 (suitable for residential and light commercial use)
-- S-Series: S30, S35, S40, S45 (suitable for structural and heavy-duty applications)
+- N-Series: N10, N15, N20, N25 (residential and light commercial use)
+- S-Series: S30, S35, S40, S45 (structural and heavy-duty applications)
+
+MORTAR PRODUCTS AVAILABLE:
+- Ratio 1:3 (M034): High strength mortar for structural masonry, pointing
+- Ratio 1:4 (M044): Strong mortar for load-bearing brickwork, heavy-duty applications
+- Ratio 1:5 (M054): General purpose mortar for most brickwork and blockwork
+- Ratio 1:6 (M064): Economical mortar for non-load bearing work, plastering
 
 DELIVERY METHODS & PRICING:
-- Normal Delivery: Standard concrete truck delivery
-- Pump Delivery: Concrete pump for hard-to-reach areas
-- Tremie 1, 2, 3: Specialized delivery methods for underwater/difficult access
+- Normal Delivery: Standard truck delivery for both concrete and mortar
+- Pump Delivery: Concrete pump for hard-to-reach areas (concrete only)
+- Tremie 1, 2, 3: Specialized delivery for underwater/difficult access (concrete only)
 
 BUSINESS CONTEXT:
 - Prices are in Malaysian Ringgit (RM) per cubic meter (m³)
 - We serve the Malaysian construction market
-- Focus on quality ready-mix concrete for various construction needs
+- Focus on quality ready-mix concrete and mortar for various construction needs
 
 ${intentContext}
 
@@ -257,18 +279,36 @@ Current Product Context:
 ${productContext}
 
 RESPONSE GUIDELINES:
-1. Be knowledgeable about concrete grades, applications, and construction needs
-2. Explain grade differences clearly (N-series for general use, S-series for structural)
-3. Mention appropriate delivery methods based on customer needs
-4. Provide pricing information when relevant
-5. Ask clarifying questions about project requirements
-6. Suggest suitable grades based on application type
-7. Keep responses professional but conversational
-8. Always consider Malaysian construction practices and standards
-9. If discussing technical specifications, be accurate and helpful
-10. Recommend appropriate volumes and delivery scheduling
+1. Be knowledgeable about both concrete grades and mortar ratios
+2. For concrete: Explain grade differences clearly (N-series vs S-series)
+3. For mortar: Explain ratio differences and applications (1:3 for strength, 1:6 for economy)
+4. Suggest appropriate delivery methods based on product type and customer needs
+5. Provide pricing information when relevant
+6. Ask clarifying questions about project requirements
+7. Recommend suitable products based on specific applications:
+   - Concrete: foundations, slabs, beams, columns, driveways
+   - Mortar: brickwork, blockwork, plastering, pointing, rendering
+8. Keep responses professional but conversational
+9. Consider Malaysian construction practices and standards
+10. For technical specifications, be accurate and helpful
+11. Recommend appropriate volumes and delivery scheduling
+12. Understand the difference between structural and non-structural applications
 
-Remember: You're helping customers choose the right concrete grade and delivery method for their specific construction projects.`;
+MORTAR APPLICATION GUIDE:
+- Brickwork: Use 1:4 or 1:5 ratio for optimal bond and strength
+- Blockwork: Use 1:5 or 1:6 ratio depending on block type
+- Plastering/Rendering: Use 1:6 ratio for smooth finish
+- Pointing: Use 1:3 or 1:4 ratio for weather resistance
+- Bedding: Use 1:4 or 1:5 ratio for even load distribution
+
+CONCRETE APPLICATION GUIDE:
+- Foundations: N20-N25 or S30+ for load-bearing
+- Slabs: N15-N20 for residential, N25+ for commercial
+- Structural elements: S30-S45 grades required
+- Driveways/walkways: N15-N20 sufficient
+- High-rise buildings: S35-S45 for structural elements
+
+Remember: Help customers choose the right concrete grade OR mortar ratio and delivery method for their specific construction projects.`;
 }
 
 // Enhanced intent-based product filtering
@@ -278,65 +318,48 @@ async function getProductsBasedOnIntent(
   const { intent, extractedData } = intentAnalysis;
   let products: Product[] = [];
 
-  if (
-    extractedData.productType === "mortar" &&
-    !extractedData.grade &&
-    !extractedData.gradeRange
-  ) {
-    // Fetch all mortar products
-    const supabase = createRouteHandlerClient({ cookies });
-    const { data, error } = await supabase
-      .from("products")
-      .select(
-        `
-        *,
-        product_images (
-          id,
-          image_url,
-          alt_text,
-          is_primary,
-          sort_order
-        )
-      `
-      )
-      .eq("product_type", "mortar")
-      .eq("is_active", true)
-      .eq("status", "published")
-      .gt("stock_quantity", 0)
-      .order("is_featured", { ascending: false })
-      .order("grade", { ascending: true })
-      .limit(10);
-
-    if (error) {
-      console.error("Mortar product search error:", error);
-      return [];
-    }
-    return data || [];
-  }
-
   switch (intent) {
+    case "mortar_inquiry":
+      products = await searchProducts(
+        extractedData.query || "",
+        extractedData.grade,
+        undefined,
+        undefined,
+        extractedData.priceRange,
+        "mortar",
+        extractedData.mortarRatio
+      );
+      break;
+
     case "product_search":
       products = await searchProducts(
         extractedData.query || "",
         extractedData.grade,
         extractedData.gradeRange,
         extractedData.deliveryMethod,
-        extractedData.priceRange
+        extractedData.priceRange,
+        extractedData.productType,
+        extractedData.mortarRatio
       );
       break;
 
     case "grade_inquiry":
-      if (extractedData.grade) {
-        products = await searchProducts("", extractedData.grade);
-      } else if (extractedData.gradeRange) {
+      if (extractedData.productType === "mortar") {
         products = await searchProducts(
           "",
+          extractedData.grade,
           undefined,
-          extractedData.gradeRange
+          undefined,
+          undefined,
+          "mortar"
         );
       } else {
-        products = await getSmartRecommendations(extractedData);
+        products = await searchProducts("", extractedData.grade);
       }
+      break;
+
+    case "application_inquiry":
+      products = await getSmartRecommendations(extractedData, 5);
       break;
 
     case "price_inquiry":
@@ -346,12 +369,13 @@ async function getProductsBasedOnIntent(
         undefined,
         extractedData.deliveryMethod,
         extractedData.priceRange,
-        8 // Show more options for price comparisons
+        extractedData.productType,
+        extractedData.mortarRatio,
+        8
       );
       break;
 
     case "recommendation":
-    case "application_inquiry":
       products = await getSmartRecommendations(extractedData, 5);
       break;
 
@@ -383,11 +407,19 @@ async function getProductsBasedOnIntent(
       break;
 
     default:
-      // General search or fallback
-      if (extractedData.query && extractedData.query.length > 2) {
+      if (extractedData.productType === "mortar") {
+        products = await searchProducts(
+          "",
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          "mortar"
+        );
+      } else if (extractedData.query && extractedData.query.length > 2) {
         products = await searchProducts(extractedData.query);
       } else {
-        products = await getSmartRecommendations({}, 3);
+        products = await getSmartRecommendations({}, 6); // Show both concrete and mortar
       }
   }
 
