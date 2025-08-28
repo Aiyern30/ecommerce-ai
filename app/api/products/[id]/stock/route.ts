@@ -3,13 +3,15 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     const { data: product, error } = await supabaseAdmin
       .from("products")
       .select("id, name, stock_quantity, grade, product_type")
-      .eq("id", params.id)
+      .eq("id", id)
       .eq("status", "published")
       .single();
 

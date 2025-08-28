@@ -7,14 +7,12 @@ import {
   CardHeader,
   CardTitle,
   Badge,
-  Button,
 } from "@/components/ui";
 import {
   Brain,
   TrendingUp,
   AlertTriangle,
   Lightbulb,
-  ExternalLink,
   Clock,
   Target,
 } from "lucide-react";
@@ -33,7 +31,6 @@ interface AIInsight {
 interface InsightCardProps {
   insight: AIInsight;
   className?: string;
-  onAction?: (insight: AIInsight) => void;
 }
 
 const typeIcons = {
@@ -65,7 +62,6 @@ const impactColors = {
 export default function InsightCard({
   insight,
   className = "",
-  onAction,
 }: InsightCardProps) {
   const Icon = typeIcons[insight.type] || Brain;
   const typeColor = typeColors[insight.type] || typeColors.analysis;
@@ -82,21 +78,6 @@ export default function InsightCard({
     if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
     if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
     return `${Math.floor(diffInMinutes / 1440)}d ago`;
-  };
-
-  const getActionLabel = (type: string) => {
-    switch (type) {
-      case "recommendation":
-        return "Apply";
-      case "alert":
-        return "Address";
-      case "prediction":
-        return "Prepare";
-      case "sales":
-        return "Analyze";
-      default:
-        return "View";
-    }
   };
 
   return (
@@ -121,7 +102,7 @@ export default function InsightCard({
           </div>
 
           {/* Title */}
-          <CardTitle className="text-base sm:text-lg leading-tight line-clamp-2">
+          <CardTitle className="text-base sm:text-lg leading-tight">
             {insight.title}
           </CardTitle>
 
@@ -140,39 +121,21 @@ export default function InsightCard({
       <CardContent className="pt-0">
         <div className="space-y-4">
           {/* Description with better line height for mobile */}
-          <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300 line-clamp-3 sm:line-clamp-none">
+          <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
             {insight.description}
           </p>
 
-          {/* Action area */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-            {/* Mobile-first timestamp display */}
-            <div className="hidden sm:block text-xs text-gray-500 dark:text-gray-400">
-              {new Date(insight.timestamp).toLocaleString()}
+          {/* Timestamp display for mobile */}
+          <div className="pt-3 border-t border-gray-100 dark:border-gray-700 sm:hidden">
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              Generated: {new Date(insight.timestamp).toLocaleString()}
             </div>
+          </div>
 
-            {/* Action buttons */}
-            <div className="flex gap-2 w-full sm:w-auto">
-              <Button
-                size="sm"
-                variant="outline"
-                className="flex-1 sm:flex-none text-xs h-8 px-3"
-                onClick={() => onAction?.(insight)}
-              >
-                <ExternalLink className="w-3 h-3 mr-1" />
-                View Details
-              </Button>
-
-              {(insight.type === "recommendation" ||
-                insight.type === "alert") && (
-                <Button
-                  size="sm"
-                  className="flex-1 sm:flex-none text-xs h-8 px-3"
-                  onClick={() => onAction?.(insight)}
-                >
-                  {getActionLabel(insight.type)}
-                </Button>
-              )}
+          {/* Timestamp display for desktop */}
+          <div className="hidden sm:block pt-3 border-t border-gray-100 dark:border-gray-700">
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              Generated: {new Date(insight.timestamp).toLocaleString()}
             </div>
           </div>
         </div>
