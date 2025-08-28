@@ -15,7 +15,6 @@ import {
   Zap,
   RefreshCw,
   Sparkles,
-  Lightbulb,
   DollarSign,
 } from "lucide-react";
 import {
@@ -32,6 +31,7 @@ import { formatCurrency } from "@/lib/utils/currency";
 import { StatsCards } from "@/components/StatsCards";
 import Link from "next/link";
 import DemandSpikeStockInfo from "@/components/DemandSpikeStockInfo";
+import InsightCard from "@/components/InsightCard";
 
 interface AIInsight {
   id: string;
@@ -221,34 +221,6 @@ export default function AIInsightsPage() {
         timestamp: new Date().toISOString(),
       },
     ]);
-  };
-
-  const getImpactColor = (impact: string) => {
-    switch (impact) {
-      case "high":
-        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
-      case "medium":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
-      case "low":
-        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300";
-    }
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "sales":
-        return <TrendingUp className="w-4 h-4" />;
-      case "prediction":
-        return <Target className="w-4 h-4" />;
-      case "alert":
-        return <AlertTriangle className="w-4 h-4" />;
-      case "recommendation":
-        return <Lightbulb className="w-4 h-4" />;
-      default:
-        return <Brain className="w-4 h-4" />;
-    }
   };
 
   const getAlertTypeColor = (type: string) => {
@@ -709,37 +681,114 @@ export default function AIInsightsPage() {
       </Card>
 
       {/* General AI Insights */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {insights.map((insight) => (
-          <Card key={insight.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {getTypeIcon(insight.type)}
-                  {insight.title}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    className={`text-xs ${getImpactColor(insight.impact)}`}
-                  >
-                    {insight.impact} impact
-                  </Badge>
-                  <Badge variant="outline" className="text-xs">
-                    {insight.confidence}% confidence
-                  </Badge>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-700 dark:text-gray-300">
-                {insight.description}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Brain className="w-5 h-5 text-purple-600" />
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+              General AI Insights
+            </h2>
+          </div>
+          {insights.length > 0 && (
+            <Badge variant="secondary" className="text-xs">
+              {insights.length} insight{insights.length > 1 ? "s" : ""}
+            </Badge>
+          )}
+        </div>
+
+        {loading && insights.length === 0 ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i} className="animate-pulse">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-2 flex-1">
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-12"></div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-4/6"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : insights.length === 0 ? (
+          <Card className="border-dashed border-2 border-gray-300 dark:border-gray-600">
+            <CardContent className="p-6 sm:p-12 text-center">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center">
+                <Brain className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
+              </div>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                No Insights Available
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 max-w-md mx-auto mb-4 leading-relaxed">
+                AI insights will appear here once sufficient data is collected.
+                Check back later for personalized recommendations.
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
-                Generated: {new Date(insight.timestamp).toLocaleString()}
-              </p>
+              <Button
+                onClick={loadAIInsights}
+                size="sm"
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Refresh
+              </Button>
             </CardContent>
           </Card>
-        ))}
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            {insights.map((insight) => (
+              <InsightCard
+                key={insight.id}
+                insight={insight}
+                onAction={(insight) => {
+                  // Handle insight actions
+                  console.log("Action clicked for insight:", insight.id);
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Insights summary for mobile */}
+        {insights.length > 0 && (
+          <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 rounded-lg border border-purple-200 dark:border-purple-800/50 sm:hidden">
+            <div className="text-center">
+              <p className="text-sm text-purple-700 dark:text-purple-300">
+                💡 <span className="font-medium">Quick Summary:</span>
+                {insights.filter((i) => i.impact === "high").length > 0 &&
+                  ` ${
+                    insights.filter((i) => i.impact === "high").length
+                  } high-impact insight${
+                    insights.filter((i) => i.impact === "high").length > 1
+                      ? "s"
+                      : ""
+                  }`}
+                {insights.filter((i) => i.type === "recommendation").length >
+                  0 &&
+                  `, ${
+                    insights.filter((i) => i.type === "recommendation").length
+                  } recommendation${
+                    insights.filter((i) => i.type === "recommendation").length >
+                    1
+                      ? "s"
+                      : ""
+                  }`}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Quick Actions */}
@@ -791,7 +840,6 @@ export default function AIInsightsPage() {
   );
 }
 
-// Helper function to extract growth rate from impact text
 const extractGrowthRate = (impact: string): number => {
   const match = impact.match(/(\d+\.?\d*)% increase/);
   return match ? parseFloat(match[1]) : 0;
