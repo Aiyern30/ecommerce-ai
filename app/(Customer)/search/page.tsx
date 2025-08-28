@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -177,6 +178,11 @@ interface EnhancedDetectionResult {
     labelsFound: number;
     processingTime: string;
     aiConfidence: number;
+    labelDetails?: {
+      description: string;
+      score: number;
+      confidence: number;
+    }[];
   };
 }
 
@@ -188,7 +194,7 @@ export default function ConcreteDetectorPage() {
   const [error, setError] = useState<string | null>(null);
   const [showGuide, setShowGuide] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    "estimation" | "pricing" | "insights"
+    "estimation" | "pricing" | "insights" | "detection"
   >("estimation");
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -343,7 +349,7 @@ export default function ConcreteDetectorPage() {
 
       <div className="max-w-6xl mx-auto px-6 pb-12">
         {!result ? (
-          <Card className="border-0 shadow-2xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
+          <Card className="border-0 shadow-2xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm py-0">
             <CardContent className="p-0">
               {!file ? (
                 <div className="p-8 text-center">
@@ -563,7 +569,7 @@ export default function ConcreteDetectorPage() {
           /* Enhanced Results with Comprehensive Analysis */
           <div className="space-y-8 mt-6">
             {/* Enhanced Success Header with Metadata */}
-            <Card className="overflow-hidden border-0 shadow-2xl">
+            <Card className="overflow-hidden border-0 shadow-2xl py-0">
               <CardContent className="p-0">
                 <div className="bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 dark:from-emerald-400 dark:via-green-400 dark:to-teal-400 p-8 text-white relative overflow-hidden">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(255,255,255,0.15),transparent_50%)]"></div>
@@ -639,47 +645,81 @@ export default function ConcreteDetectorPage() {
                         </div>
                       </div>
                     )}
+
+                    {/* Detected Labels Display */}
+                    {result.detectedLabels &&
+                      result.detectedLabels.length > 0 && (
+                        <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                          <div className="flex items-center space-x-2 mb-3">
+                            <Target className="h-5 w-5" />
+                            <span className="text-lg font-semibold">
+                              AI Detection Results
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {result.detectedLabels.map((label, index) => (
+                              <Badge
+                                key={index}
+                                className="bg-white/20 text-white border-white/30 hover:bg-white/30 transition-colors"
+                              >
+                                {label}
+                              </Badge>
+                            ))}
+                          </div>
+                          <div className="text-green-100 text-xs mt-2">
+                            {result.detectedLabels.length} elements identified
+                            by AI vision
+                          </div>
+                        </div>
+                      )}
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Enhanced Tabbed Content */}
-            <Card className="border-0 shadow-xl">
+            <Card className="border-0 shadow-xl py-0">
               <CardContent className="p-0">
                 {/* Tab Navigation */}
                 <div className="border-b border-gray-200 dark:border-gray-700">
-                  <div className="flex space-x-8 px-8 pt-6">
-                    {[
-                      {
-                        id: "estimation",
-                        label: "Quantity Analysis",
-                        icon: Calculator,
-                      },
-                      {
-                        id: "pricing",
-                        label: "Cost Breakdown",
-                        icon: DollarSign,
-                      },
-                      {
-                        id: "insights",
-                        label: "Project Insights",
-                        icon: Lightbulb,
-                      },
-                    ].map((tab) => (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id as any)}
-                        className={`flex items-center space-x-2 pb-4 border-b-2 transition-colors ${
-                          activeTab === tab.id
-                            ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                            : "border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                        }`}
-                      >
-                        <tab.icon className="h-5 w-5" />
-                        <span className="font-semibold">{tab.label}</span>
-                      </button>
-                    ))}
+                  <div className="border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex space-x-8 px-8 pt-6">
+                      {[
+                        {
+                          id: "estimation",
+                          label: "Quantity Analysis",
+                          icon: Calculator,
+                        },
+                        {
+                          id: "pricing",
+                          label: "Cost Breakdown",
+                          icon: DollarSign,
+                        },
+                        {
+                          id: "insights",
+                          label: "Project Insights",
+                          icon: Lightbulb,
+                        },
+                        {
+                          id: "detection",
+                          label: "AI Detection",
+                          icon: Target,
+                        },
+                      ].map((tab) => (
+                        <button
+                          key={tab.id}
+                          onClick={() => setActiveTab(tab.id as any)}
+                          className={`flex items-center space-x-2 pb-4 border-b-2 transition-colors ${
+                            activeTab === tab.id
+                              ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                              : "border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                          }`}
+                        >
+                          <tab.icon className="h-5 w-5" />
+                          <span className="font-semibold">{tab.label}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
@@ -1038,32 +1078,47 @@ export default function ConcreteDetectorPage() {
                             </h3>
                           </div>
                           <div className="space-y-3">
-                            {result.projectInsights.specialConsiderations.map(
-                              (consideration, index) => (
-                                <div
-                                  key={index}
-                                  className="flex items-start space-x-3 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg"
-                                >
-                                  <Lightbulb className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
-                                  <span className="text-amber-800 dark:text-amber-300">
-                                    {consideration}
-                                  </span>
-                                </div>
+                            {result.projectInsights.specialConsiderations &&
+                            result.projectInsights.specialConsiderations
+                              .length > 0 ? (
+                              result.projectInsights.specialConsiderations.map(
+                                (consideration, index) => (
+                                  <div
+                                    key={index}
+                                    className="flex items-start space-x-3 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg"
+                                  >
+                                    <Lightbulb className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+                                    <span className="text-amber-800 dark:text-amber-300">
+                                      {consideration}
+                                    </span>
+                                  </div>
+                                )
                               )
+                            ) : (
+                              <div className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-950/30 rounded-lg">
+                                <Lightbulb className="h-5 w-5 text-gray-600 dark:text-gray-400 mt-0.5" />
+                                <span className="text-gray-800 dark:text-gray-300">
+                                  No special considerations detected for this
+                                  project type.
+                                </span>
+                              </div>
                             )}
                           </div>
                         </CardContent>
                       </Card>
 
                       {/* AI Recommendations */}
-                      {result.quantityEstimation?.additionalRecommendations && (
-                        <Card>
-                          <CardContent className="p-6">
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                              AI Professional Recommendations
-                            </h3>
-                            <div className="space-y-3">
-                              {result.quantityEstimation.additionalRecommendations.map(
+                      <Card>
+                        <CardContent className="p-6">
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                            AI Professional Recommendations
+                          </h3>
+                          <div className="space-y-3">
+                            {result.quantityEstimation
+                              ?.additionalRecommendations &&
+                            result.quantityEstimation.additionalRecommendations
+                              .length > 0 ? (
+                              result.quantityEstimation.additionalRecommendations.map(
                                 (rec, index) => (
                                   <div
                                     key={index}
@@ -1075,7 +1130,277 @@ export default function ConcreteDetectorPage() {
                                     </span>
                                   </div>
                                 )
+                              )
+                            ) : (
+                              <div className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-950/30 rounded-lg">
+                                <CheckCircle className="h-5 w-5 text-gray-600 dark:text-gray-400 mt-0.5" />
+                                <span className="text-gray-800 dark:text-gray-300">
+                                  Standard concrete practices apply for this
+                                  project.
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  )}
+
+                  {/* AI Detection Tab */}
+                  {activeTab === "detection" && (
+                    <div className="space-y-8">
+                      {/* Detection Summary */}
+                      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30">
+                        <CardContent className="p-6">
+                          <div className="flex items-center space-x-3 mb-4">
+                            <div className="p-3 bg-blue-100 dark:bg-blue-800 rounded-xl">
+                              <Target className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <div>
+                              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                                AI Vision Analysis
+                              </h3>
+                              <p className="text-gray-600 dark:text-gray-300">
+                                Elements detected in your construction image
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="grid md:grid-cols-3 gap-4 mb-6">
+                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center">
+                              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                                {result.detectedLabels?.length || 0}
+                              </div>
+                              <div className="text-sm text-gray-600 dark:text-gray-400">
+                                Labels Detected
+                              </div>
+                            </div>
+                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center">
+                              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                                {result.analysisMetadata?.elementsDetected || 0}
+                              </div>
+                              <div className="text-sm text-gray-600 dark:text-gray-400">
+                                Objects Found
+                              </div>
+                            </div>
+                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center">
+                              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                                {result.confidence}%
+                              </div>
+                              <div className="text-sm text-gray-600 dark:text-gray-400">
+                                AI Confidence
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Detected Labels with Confidence Scores */}
+                      {result.analysisMetadata?.labelDetails &&
+                      result.analysisMetadata.labelDetails.length > 0 ? (
+                        <Card>
+                          <CardContent className="p-6">
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                              Detected Elements with Confidence Scores
+                            </h3>
+                            <div className="grid gap-3">
+                              {result.analysisMetadata.labelDetails.map(
+                                (label, index) => (
+                                  <div
+                                    key={index}
+                                    className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                  >
+                                    <div className="flex items-center space-x-3">
+                                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                      <span className="font-medium text-gray-900 dark:text-white capitalize text-lg">
+                                        {label.description}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center space-x-3">
+                                      <div className="text-right">
+                                        <div className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                                          {label.score}% confident
+                                        </div>
+                                        <div className="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                          <div
+                                            className={`h-2 rounded-full ${
+                                              label.score >= 80
+                                                ? "bg-green-500"
+                                                : label.score >= 60
+                                                ? "bg-yellow-500"
+                                                : "bg-red-500"
+                                            }`}
+                                            style={{ width: `${label.score}%` }}
+                                          ></div>
+                                        </div>
+                                      </div>
+                                      <Badge
+                                        variant="secondary"
+                                        className={`${
+                                          label.score >= 80
+                                            ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
+                                            : label.score >= 60
+                                            ? "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200"
+                                            : "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200"
+                                        }`}
+                                      >
+                                        {label.score >= 80
+                                          ? "High"
+                                          : label.score >= 60
+                                          ? "Medium"
+                                          : "Low"}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                )
                               )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ) : result.detectedLabels &&
+                        result.detectedLabels.length > 0 ? (
+                        <Card>
+                          <CardContent className="p-6">
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                              Detected Elements & Features
+                            </h3>
+                            <div className="grid gap-3">
+                              {result.detectedLabels.map((label, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                >
+                                  <div className="flex items-center space-x-3">
+                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                    <span className="font-medium text-gray-900 dark:text-white capitalize">
+                                      {label}
+                                    </span>
+                                  </div>
+                                  <Badge
+                                    variant="secondary"
+                                    className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
+                                  >
+                                    Detected
+                                  </Badge>
+                                </div>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <Card>
+                          <CardContent className="p-6">
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                              No Elements Detected
+                            </h3>
+                            <div className="text-center py-8">
+                              <div className="text-gray-500 dark:text-gray-400 mb-4">
+                                The AI couldn't detect specific construction
+                                elements in this image.
+                              </div>
+                              <div className="text-sm text-gray-400 dark:text-gray-500">
+                                Try uploading a clearer image with visible
+                                construction elements.
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {/* Overall Detection Confidence */}
+                      <Card>
+                        <CardContent className="p-6">
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                            Overall Detection Confidence
+                          </h3>
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <span className="text-gray-600 dark:text-gray-400">
+                                AI Confidence Level
+                              </span>
+                              <span className="font-bold text-gray-900 dark:text-white">
+                                {result.confidence}%
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+                              <div
+                                className={`h-4 rounded-full transition-all duration-1000 ${
+                                  result.confidence >= 80
+                                    ? "bg-gradient-to-r from-green-500 to-emerald-500"
+                                    : result.confidence >= 60
+                                    ? "bg-gradient-to-r from-yellow-500 to-orange-500"
+                                    : "bg-gradient-to-r from-red-500 to-pink-500"
+                                }`}
+                                style={{ width: `${result.confidence}%` }}
+                              ></div>
+                            </div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                              {result.confidence >= 80
+                                ? "🎯 High confidence - AI is very certain about the detection"
+                                : result.confidence >= 60
+                                ? "⚠️ Medium confidence - Good detection with some uncertainty"
+                                : "❌ Lower confidence - Consider uploading a clearer image"}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Processing Information */}
+                      {result.analysisMetadata && (
+                        <Card>
+                          <CardContent className="p-6">
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                              Analysis Details
+                            </h3>
+                            <div className="grid md:grid-cols-2 gap-6">
+                              <div>
+                                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                                  Processing Information
+                                </h4>
+                                <div className="space-y-2 text-sm">
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                      Processed:
+                                    </span>
+                                    <span className="text-gray-900 dark:text-white">
+                                      {new Date(
+                                        result.analysisMetadata.processingTime
+                                      ).toLocaleTimeString()}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                      AI Engine:
+                                    </span>
+                                    <span className="text-gray-900 dark:text-white">
+                                      Google Vision API
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                                  Detection Summary
+                                </h4>
+                                <div className="space-y-2 text-sm">
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                      Labels Found:
+                                    </span>
+                                    <span className="text-gray-900 dark:text-white">
+                                      {result.detectedLabels?.length || 0}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                      Objects Detected:
+                                    </span>
+                                    <span className="text-gray-900 dark:text-white">
+                                      {result.analysisMetadata.elementsDetected}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </CardContent>
                         </Card>
