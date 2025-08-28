@@ -8,8 +8,8 @@ export async function GET() {
     // 1. Stock-out predictions
     const { data: lowStockProducts, error: stockError } = await supabaseAdmin
       .from("products")
-      .select("name, stock_quantity, grade")
-      .lt("stock_quantity", 300) // Increased threshold for earlier warning
+      .select("id, name, stock_quantity, grade")
+      .lt("stock_quantity", 300)
       .eq("status", "published")
       .order("stock_quantity", { ascending: true })
       .limit(10);
@@ -18,7 +18,6 @@ export async function GET() {
       console.error("Error fetching low stock products:", stockError);
     }
 
-    // Generate stock-out alerts with different severity levels
     lowStockProducts?.forEach((product, index) => {
       if (product.stock_quantity < 150) {
         const daysUntilStockout = Math.max(
@@ -34,6 +33,7 @@ export async function GET() {
           id: `stockout-${index}`,
           type: "stockout",
           product: product.name,
+          productId: product.id,
           probability: Math.round(probability),
           timeframe:
             daysUntilStockout <= 2
@@ -72,62 +72,77 @@ export async function GET() {
       Date.now() - 14 * 24 * 60 * 60 * 1000
     ).toISOString();
 
-    // Get recent vs previous week data for trend analysis
+    // Get recent vs previous week data for trend analysis with product IDs
     const { data: recentOrders } = await supabaseAdmin
       .from("order_items")
-      .select(`name, quantity, orders!inner(created_at)`)
+      .select(
+        `
+        name, 
+        quantity, 
+        product_id,
+        orders!inner(created_at)
+      `
+      )
       .gte("orders.created_at", sevenDaysAgo);
 
     const { data: previousOrders } = await supabaseAdmin
       .from("order_items")
-      .select(`name, quantity, orders!inner(created_at)`)
+      .select(
+        `
+        name, 
+        quantity, 
+        product_id,
+        orders!inner(created_at)
+      `
+      )
       .gte("orders.created_at", fourteenDaysAgo)
       .lt("orders.created_at", sevenDaysAgo);
 
     if (recentOrders && previousOrders) {
-      // Analyze week-over-week growth
+      // Analyze week-over-week growth by product ID
       const recentDemand = recentOrders.reduce((acc, item) => {
-        acc[item.name] = (acc[item.name] || 0) + item.quantity;
+        const key = `${item.product_id}:${item.name}`;
+        acc[key] = (acc[key] || 0) + item.quantity;
         return acc;
       }, {} as Record<string, number>);
 
       const previousDemand = previousOrders.reduce((acc, item) => {
-        acc[item.name] = (acc[item.name] || 0) + item.quantity;
+        const key = `${item.product_id}:${item.name}`;
+        acc[key] = (acc[key] || 0) + item.quantity;
         return acc;
       }, {} as Record<string, number>);
 
-      Object.entries(recentDemand).forEach(
-        ([productName, currentWeek], index) => {
-          const previousWeek = previousDemand[productName] || 0;
-          const growthRate =
-            previousWeek > 0
-              ? ((currentWeek - previousWeek) / previousWeek) * 100
-              : 0;
+      Object.entries(recentDemand).forEach(([productKey, currentWeek]) => {
+        const previousWeek = previousDemand[productKey] || 0;
+        const growthRate =
+          previousWeek > 0
+            ? ((currentWeek - previousWeek) / previousWeek) * 100
+            : 0;
 
-          // Alert for significant growth trends
-          if (growthRate > 30 && currentWeek > 100) {
-            alerts.push({
-              id: `demand-spike-${index}`,
-              type: "demand_spike",
-              product: productName,
-              probability: Math.min(90, 60 + Math.floor(growthRate / 5)),
-              timeframe: "Next 7-14 days",
-              impact: `High growth trend: ${growthRate.toFixed(
-                1
-              )}% increase (${currentWeek} m³ vs ${previousWeek} m³ last week)`,
-              action: `Increase inventory by ${Math.round(
-                growthRate
-              )}% and alert procurement team about trending demand`,
-            });
-          }
+        // Alert for significant growth trends
+        if (growthRate > 30 && currentWeek > 100) {
+          const [productId, productName] = productKey.split(":");
+
+          alerts.push({
+            id: `demand-spike-${productId}`,
+            type: "demand_spike",
+            product: productName,
+            productId: productId,
+            probability: Math.min(90, 60 + Math.floor(growthRate / 5)),
+            timeframe: "Next 7-14 days",
+            impact: `High growth trend: ${growthRate.toFixed(
+              1
+            )}% increase (${currentWeek} m³ vs ${previousWeek} m³ last week)`,
+            action: `Increase inventory by ${Math.round(
+              growthRate
+            )}% and alert procurement team about trending demand`,
+          });
         }
-      );
+      });
     }
 
-    // 3. Seasonal/weather-based predictions
     const currentMonth = new Date().getMonth() + 1;
     if ([6, 7, 8].includes(currentMonth)) {
-      // Rainy season
       alerts.push({
         id: "weather-seasonal",
         type: "weather_impact",
@@ -141,10 +156,9 @@ export async function GET() {
       });
     }
 
-    // 4. Price volatility alerts
     const { data: highDemandLowStock } = await supabaseAdmin
       .from("products")
-      .select("name, stock_quantity, normal_price")
+      .select("id, name, stock_quantity, normal_price")
       .lt("stock_quantity", 500)
       .order("stock_quantity", { ascending: true })
       .limit(3);
@@ -155,6 +169,7 @@ export async function GET() {
         id: "price-optimization",
         type: "price_optimization",
         product: product.name,
+        productId: product.id,
         probability: 82,
         timeframe: "Immediate",
         impact:
@@ -165,7 +180,6 @@ export async function GET() {
       });
     }
 
-    // 5. Delivery optimization alerts
     const { data: processingOrders } = await supabaseAdmin
       .from("orders")
       .select("id, created_at, status")
@@ -188,7 +202,6 @@ export async function GET() {
       });
     }
 
-    // Sort alerts by priority (probability * impact factor)
     const prioritizedAlerts = alerts
       .map((alert) => ({
         ...alert,
