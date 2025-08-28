@@ -15,7 +15,6 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = createRouteHandlerClient({ cookies });
 
-    // Create service role client for stock updates (bypasses RLS)
     const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -37,9 +36,6 @@ export async function POST(request: NextRequest) {
 
     const { orderId } = await request.json();
 
-    console.log("Processing payment verification for order:", orderId);
-
-    // 1. Get order details first
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .select(
@@ -59,14 +55,11 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (orderError || !order) {
-      console.error("Order fetch error:", orderError);
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
     const typedOrder = order as OrderWithItems;
-    console.log("Order found with items:", typedOrder.order_items.length);
 
-    // 2. Update order status
     const { error: updateError } = await supabase
       .from("orders")
       .update({
@@ -78,29 +71,16 @@ export async function POST(request: NextRequest) {
       .eq("user_id", user.id);
 
     if (updateError) {
-      console.error("Order update error:", updateError);
       return NextResponse.json(
         { error: "Failed to update order" },
         { status: 500 }
       );
     }
 
-    console.log("Order status updated successfully");
-
-    // 3. Update product quantities using service role client (bypasses RLS)
     if (typedOrder.order_items && typedOrder.order_items.length > 0) {
-      console.log("Starting stock quantity updates...");
-
       const quantityUpdates = typedOrder.order_items.map(
-        async (item: OrderItem, index: number) => {
-          console.log(`Processing item ${index + 1}:`, {
-            product_id: item.product_id,
-            quantity: item.quantity,
-            variant_type: item.variant_type,
-          });
-
+        async (item: OrderItem) => {
           try {
-            // First get current stock using admin client
             const { data: product, error: fetchError } = await supabaseAdmin
               .from("products")
               .select("stock_quantity, name")
@@ -115,21 +95,10 @@ export async function POST(request: NextRequest) {
               return { error: fetchError, product_id: item.product_id };
             }
 
-            console.log(
-              `Current stock for ${product.name}:`,
-              product.stock_quantity
-            );
-
-            // Calculate new stock quantity (ensure it doesn't go below 0)
             const currentStock = Number(product.stock_quantity) || 0;
             const quantityToDeduct = Number(item.quantity) || 0;
             const newStock = Math.max(currentStock - quantityToDeduct, 0);
 
-            console.log(
-              `Updating stock: ${currentStock} - ${quantityToDeduct} = ${newStock}`
-            );
-
-            // Update stock quantity using admin client (bypasses RLS)
             const { error: stockError, data: updateResult } =
               await supabaseAdmin
                 .from("products")
@@ -148,10 +117,6 @@ export async function POST(request: NextRequest) {
               return { error: stockError, product_id: item.product_id };
             }
 
-            console.log(
-              `Stock updated successfully for ${product.name}:`,
-              updateResult
-            );
             return {
               error: null,
               product_id: item.product_id,
@@ -168,30 +133,19 @@ export async function POST(request: NextRequest) {
         }
       );
 
-      // Wait for all quantity updates and log results
       const results = await Promise.allSettled(quantityUpdates);
 
-      results.forEach((result, index) => {
+      results.forEach((result) => {
         if (result.status === "fulfilled") {
           const value = result.value;
           if (value.error) {
-            console.error(`Stock update failed for item ${index + 1}:`, value);
           } else {
-            console.log(`Stock update succeeded for item ${index + 1}:`, value);
           }
         } else {
-          console.error(
-            `Stock update promise rejected for item ${index + 1}:`,
-            result.reason
-          );
         }
       });
     }
 
-    // 4. Clear user's cart (remove selected items)
-    console.log("Clearing user's cart...");
-
-    // First get the user's cart ID
     const { data: userCart, error: cartFetchError } = await supabase
       .from("carts")
       .select("id")
@@ -208,23 +162,19 @@ export async function POST(request: NextRequest) {
       if (cartClearError) {
         console.error("Cart clear error:", cartClearError);
       } else {
-        console.log("Cart cleared successfully");
       }
     } else {
       console.error("Failed to fetch user cart:", cartFetchError);
     }
 
-    // 5. Create notification (fire and forget to avoid timeout)
-    console.log("Creating notification...");
-
     supabase
       .from("notifications")
       .insert({
         user_id: user.id,
-        title: "Order Confirmed",
-        message: `Your order #${orderId.slice(
-          -8
-        )} has been confirmed and is being processed.`,
+        title: "Order Placed Successfully!",
+        message: `Your order ${orderId} has been placed successfully and payment confirmed. Total: RM${typedOrder.total.toFixed(
+          2
+        )}`,
         type: "order",
         order_id: orderId,
         created_at: new Date().toISOString(),
@@ -233,11 +183,8 @@ export async function POST(request: NextRequest) {
         if (notificationError) {
           console.error("Notification creation error:", notificationError);
         } else {
-          console.log("Notification created successfully");
         }
       });
-
-    console.log("Payment verification completed successfully");
 
     return NextResponse.json({
       success: true,
