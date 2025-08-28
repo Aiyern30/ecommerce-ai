@@ -43,10 +43,10 @@ export default function DemandSpikeStockInfo({
 
   if (loading) {
     return (
-      <div className="mt-2 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border-l-4 border-blue-400">
-        <div className="animate-pulse">
-          <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
-          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+      <div className="mt-2 p-2 sm:p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border-l-4 border-blue-400">
+        <div className="animate-pulse space-y-2">
+          <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-3/4"></div>
+          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
         </div>
       </div>
     );
@@ -54,9 +54,9 @@ export default function DemandSpikeStockInfo({
 
   if (!productStock) {
     return (
-      <div className="mt-2 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border-l-4 border-blue-400">
+      <div className="mt-2 p-2 sm:p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border-l-4 border-blue-400">
         <div className="text-xs">
-          <p className="text-blue-700 dark:text-blue-300">
+          <p className="text-blue-700 dark:text-blue-300 leading-relaxed">
             <span className="font-medium">📈 Trend Analysis:</span> This product
             shows significant demand growth. Consider increasing inventory to
             meet projected demand.
@@ -80,40 +80,45 @@ export default function DemandSpikeStockInfo({
       return {
         status: "critical",
         color: "text-red-600",
-        bgColor: "bg-red-100",
+        bgColor: "bg-red-100 dark:bg-red-900/30",
       };
     if (stock < 300)
       return {
         status: "low",
         color: "text-yellow-600",
-        bgColor: "bg-yellow-100",
+        bgColor: "bg-yellow-100 dark:bg-yellow-900/30",
       };
     if (stock < 1000)
       return {
         status: "moderate",
         color: "text-blue-600",
-        bgColor: "bg-blue-100",
+        bgColor: "bg-blue-100 dark:bg-blue-900/30",
       };
-    return { status: "good", color: "text-green-600", bgColor: "bg-green-100" };
+    return {
+      status: "good",
+      color: "text-green-600",
+      bgColor: "bg-green-100 dark:bg-green-900/30",
+    };
   };
 
   const stockStatus = getStockStatus(currentStock);
 
   return (
-    <div className="mt-2 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border-l-4 border-blue-400">
+    <div className="mt-2 p-2 sm:p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border-l-4 border-blue-400">
       <div className="space-y-3">
         {/* Header */}
         <div className="flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-blue-600" />
-          <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+          <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 flex-shrink-0" />
+          <span className="text-xs sm:text-sm font-medium text-blue-800 dark:text-blue-200">
             Current Stock & Demand Analysis
           </span>
         </div>
 
-        {/* Stock Information Grid */}
-        <div className="grid grid-cols-2 gap-3 text-xs">
-          <div className="space-y-2">
-            <div className="flex justify-between">
+        {/* Stock Information - Mobile Stacked, Desktop Grid */}
+        <div className="space-y-2 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-3 text-xs">
+          {/* Left Column */}
+          <div className="space-y-1 sm:space-y-2">
+            <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">
                 Current Stock:
               </span>
@@ -121,7 +126,7 @@ export default function DemandSpikeStockInfo({
                 {currentStock} m³
               </span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">
                 Growth Rate:
               </span>
@@ -131,8 +136,9 @@ export default function DemandSpikeStockInfo({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex justify-between">
+          {/* Right Column */}
+          <div className="space-y-1 sm:space-y-2">
+            <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">
                 Suggested Increase:
               </span>
@@ -140,7 +146,7 @@ export default function DemandSpikeStockInfo({
                 +{suggestedIncrease} m³
               </span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">
                 Target Stock:
               </span>
@@ -154,7 +160,7 @@ export default function DemandSpikeStockInfo({
         {/* Stock Status Indicator */}
         <div className="flex items-center justify-between pt-2 border-t border-blue-200 dark:border-blue-700">
           <div className="flex items-center gap-2">
-            <Package className="w-3 h-3 text-gray-500" />
+            <Package className="w-3 h-3 text-gray-500 flex-shrink-0" />
             <span className="text-xs text-gray-600 dark:text-gray-400">
               Stock Status:
             </span>
@@ -169,24 +175,24 @@ export default function DemandSpikeStockInfo({
         {/* Recommendation based on stock level */}
         <div className="text-xs bg-white/70 dark:bg-gray-800/70 rounded p-2 border border-blue-200 dark:border-blue-700">
           {currentStock < 300 ? (
-            <div className="flex items-start gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
               <AlertTriangle className="w-3 h-3 text-orange-500 mt-0.5 flex-shrink-0" />
-              <div>
-                <span className="font-medium text-orange-700 dark:text-orange-300">
+              <div className="space-y-1">
+                <span className="font-medium text-orange-700 dark:text-orange-300 block sm:inline">
                   Priority Action:
                 </span>
-                <span className="text-orange-600 dark:text-orange-400 ml-1">
+                <span className="text-orange-600 dark:text-orange-400 block sm:inline sm:ml-1">
                   Low current stock combined with high demand growth requires
                   immediate restocking.
                 </span>
               </div>
             </div>
           ) : (
-            <div>
-              <span className="font-medium text-blue-700 dark:text-blue-300">
+            <div className="space-y-1">
+              <span className="font-medium text-blue-700 dark:text-blue-300 block sm:inline">
                 Recommendation:
               </span>
-              <span className="text-blue-600 dark:text-blue-400 ml-1">
+              <span className="text-blue-600 dark:text-blue-400 block sm:inline sm:ml-1">
                 Prepare for increased demand by adding {suggestedIncrease} m³ to
                 inventory within next week.
               </span>
