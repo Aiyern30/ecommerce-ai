@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { OrderItem } from "@/type/order";
 
@@ -13,6 +14,18 @@ interface OrderWithItems {
 export async function POST(request: NextRequest) {
   try {
     const supabase = createRouteHandlerClient({ cookies });
+
+    // Create service role client for stock updates (bypasses RLS)
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    );
 
     const {
       data: { user },
@@ -74,7 +87,7 @@ export async function POST(request: NextRequest) {
 
     console.log("Order status updated successfully");
 
-    // 3. Update product quantities using direct SQL updates
+    // 3. Update product quantities using service role client (bypasses RLS)
     if (typedOrder.order_items && typedOrder.order_items.length > 0) {
       console.log("Starting stock quantity updates...");
 
@@ -87,8 +100,8 @@ export async function POST(request: NextRequest) {
           });
 
           try {
-            // First get current stock
-            const { data: product, error: fetchError } = await supabase
+            // First get current stock using admin client
+            const { data: product, error: fetchError } = await supabaseAdmin
               .from("products")
               .select("stock_quantity, name")
               .eq("id", item.product_id)
@@ -116,15 +129,16 @@ export async function POST(request: NextRequest) {
               `Updating stock: ${currentStock} - ${quantityToDeduct} = ${newStock}`
             );
 
-            // Update stock quantity
-            const { error: stockError, data: updateResult } = await supabase
-              .from("products")
-              .update({
-                stock_quantity: newStock,
-                updated_at: new Date().toISOString(),
-              })
-              .eq("id", item.product_id)
-              .select("stock_quantity");
+            // Update stock quantity using admin client (bypasses RLS)
+            const { error: stockError, data: updateResult } =
+              await supabaseAdmin
+                .from("products")
+                .update({
+                  stock_quantity: newStock,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq("id", item.product_id)
+                .select("stock_quantity, name");
 
             if (stockError) {
               console.error(
@@ -142,6 +156,7 @@ export async function POST(request: NextRequest) {
               error: null,
               product_id: item.product_id,
               new_stock: newStock,
+              updated_product: updateResult,
             };
           } catch (itemError) {
             console.error(
