@@ -3,59 +3,111 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
+    const alerts = [];
+
     // Get products with low stock for stockout predictions
     const { data: lowStockProducts } = await supabaseAdmin
       .from("products")
-      .select("name, stock_quantity")
-      .lt("stock_quantity", 100)
+      .select("name, stock_quantity, grade")
+      .lt("stock_quantity", 200) // Alert when stock below 200
+      .eq("status", "published")
+      .eq("is_active", true)
       .order("stock_quantity", { ascending: true })
-      .limit(5);
+      .limit(10);
 
-    // Get recent order trends for demand spike predictions
-    const { data: recentOrders } = await supabaseAdmin
-      .from("order_items")
-      .select("name, quantity, orders!inner(created_at)")
-      .gte(
-        "orders.created_at",
-        new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-      )
-      .order("quantity", { ascending: false });
-
-    const alerts = [];
-
-    // Generate stockout alerts
+    // Generate stockout alerts for critical products
     lowStockProducts?.forEach((product, index) => {
-      if (product.stock_quantity < 50) {
+      if (product.stock_quantity < 100) {
+        const probability = Math.max(
+          60,
+          Math.min(95, 100 - product.stock_quantity)
+        );
+
         alerts.push({
           id: `stockout-${index}`,
           type: "stockout",
           product: product.name,
-          probability: Math.max(60, 90 - product.stock_quantity),
-          timeframe: product.stock_quantity < 20 ? "1-2 days" : "3-5 days",
+          probability,
+          timeframe: product.stock_quantity < 50 ? "1-2 days" : "3-5 days",
           impact: `${
-            product.stock_quantity < 20 ? "Critical" : "High"
-          } - May affect pending orders`,
-          action: `Increase production order by ${
-            Math.ceil((100 - product.stock_quantity) / 50) * 100
-          } m³`,
+            product.stock_quantity < 50 ? "Critical" : "High"
+          } - Current stock: ${product.stock_quantity} m³`,
+          action: `Reorder ${Math.max(
+            500,
+            1000 - product.stock_quantity
+          )} m³ of ${product.grade} grade`,
         });
       }
     });
 
-    // Generate demand spike alerts (mock for now)
+    // Get recent order trends for demand analysis
+    const sevenDaysAgo = new Date(
+      Date.now() - 7 * 24 * 60 * 60 * 1000
+    ).toISOString();
+    const { data: recentOrders } = await supabaseAdmin
+      .from("order_items")
+      .select(
+        `
+        name,
+        quantity,
+        orders!inner(created_at)
+      `
+      )
+      .gte("orders.created_at", sevenDaysAgo)
+      .order("quantity", { ascending: false });
+
+    // Analyze demand patterns
     if (recentOrders && recentOrders.length > 0) {
-      alerts.push({
-        id: "demand-spike-1",
-        type: "demand_spike",
-        product: recentOrders[0].name,
-        probability: 75,
-        timeframe: "Next week",
-        impact: "Medium - Expected 40% demand increase",
-        action: "Prepare additional inventory",
+      const productDemand = recentOrders.reduce((acc, item) => {
+        const productName = item.name;
+        acc[productName] = (acc[productName] || 0) + item.quantity;
+        return acc;
+      }, {} as Record<string, number>);
+
+      // Find products with highest recent demand
+      const sortedDemand = Object.entries(productDemand)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 3);
+
+      sortedDemand.forEach(([productName, totalQuantity], index) => {
+        if (totalQuantity > 50) {
+          // Only alert for significant demand
+          alerts.push({
+            id: `demand-spike-${index}`,
+            type: "demand_spike",
+            product: productName,
+            probability: Math.min(85, 60 + Math.floor(totalQuantity / 10)),
+            timeframe: "Next 7-10 days",
+            impact: `Medium - Recent 7-day demand: ${totalQuantity} m³`,
+            action: `Monitor inventory and consider increasing stock by 30-50%`,
+          });
+        }
       });
     }
 
-    return NextResponse.json(alerts.slice(0, 3));
+    // Generate delivery alerts based on order status
+    const { data: processingOrders } = await supabaseAdmin
+      .from("orders")
+      .select("id, created_at, status")
+      .eq("status", "processing")
+      .lt(
+        "created_at",
+        new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+      ); // Orders older than 3 days
+
+    if (processingOrders && processingOrders.length > 0) {
+      alerts.push({
+        id: "delivery-delay-1",
+        type: "delivery_delay",
+        product: "Multiple Orders",
+        probability: 70,
+        timeframe: "Immediate attention needed",
+        impact: `${processingOrders.length} orders have been processing for 3+ days`,
+        action: "Review processing workflow and contact logistics team",
+      });
+    }
+
+    return NextResponse.json(alerts.slice(0, 5)); // Return top 5 alerts
   } catch (error) {
     console.error("Error generating predictive alerts:", error);
     return NextResponse.json(
