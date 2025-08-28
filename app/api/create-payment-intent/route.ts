@@ -21,7 +21,6 @@ export async function POST(request: NextRequest) {
 
     const supabase = createRouteHandlerClient({ cookies });
 
-    // Check authentication
     const {
       data: { user },
       error: authError,
@@ -41,7 +40,6 @@ export async function POST(request: NextRequest) {
       userId,
     } = body;
 
-    // Validate required data
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: "No items provided" }, { status: 400 });
     }
@@ -53,7 +51,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check for existing order with this payment intent metadata (since no idempotency_key column)
     const { data: existingOrder } = await supabase
       .from("orders")
       .select("id, payment_intent_id")
@@ -64,7 +61,6 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (existingOrder && existingOrder.payment_intent_id) {
-      // Return existing payment intent if it exists and was created recently
       try {
         const paymentIntent = await stripe.paymentIntents.retrieve(
           existingOrder.payment_intent_id
@@ -78,13 +74,10 @@ export async function POST(request: NextRequest) {
         }
       } catch (stripeError) {
         console.error("Error retrieving existing payment intent:", stripeError);
-        // Continue to create new payment intent
       }
     }
 
-    // Calculate totals
     const subtotal = items.reduce((sum: number, item: any) => {
-      // Get the correct price based on variant type
       let itemPrice = 0;
 
       if (item.product) {
@@ -110,7 +103,6 @@ export async function POST(request: NextRequest) {
       return sum + itemPrice * item.quantity;
     }, 0);
 
-    // Calculate services total (this will be stored in additional_services table)
     const servicesTotal = additionalServices.reduce(
       (sum: number, service: any) => {
         if (selectedServices && selectedServices[service.service_code]) {
@@ -121,7 +113,6 @@ export async function POST(request: NextRequest) {
       0
     );
 
-    // Calculate shipping cost
     let shippingCost = 0;
     if (totalVolume > 0 && freightCharges && Array.isArray(freightCharges)) {
       const applicableCharge = freightCharges.find((charge: any) => {
@@ -140,9 +131,8 @@ export async function POST(request: NextRequest) {
 
     const tax = (subtotal + servicesTotal + shippingCost) * 0.06;
     const total = subtotal + servicesTotal + shippingCost + tax;
-    const stripeAmount = Math.round(total * 100); // Convert to cents
+    const stripeAmount = Math.round(total * 100);
 
-    // Create order record without idempotency_key column
     const orderData = {
       user_id: userId,
       subtotal: Number(subtotal),
@@ -170,10 +160,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create order items with correct prices using service role to bypass RLS
     if (items && items.length > 0) {
       const orderItems = items.map((item: any) => {
-        // Calculate the correct price based on variant type
         let itemPrice = 0;
 
         if (item.product) {
@@ -209,7 +197,6 @@ export async function POST(request: NextRequest) {
         };
       });
 
-      // Try inserting order items with retries for RLS issues
       let itemsInserted = false;
       let retryCount = 0;
       const maxRetries = 3;
@@ -229,11 +216,9 @@ export async function POST(request: NextRequest) {
             );
 
             if (itemsError.code === "42501" && retryCount < maxRetries - 1) {
-              // Wait a bit before retrying for permission issues
               await new Promise((resolve) => setTimeout(resolve, 500));
               retryCount++;
             } else {
-              // For other errors or final retry, log and continue
               console.error(
                 "Failed to create order items after retries:",
                 itemsError
@@ -253,14 +238,12 @@ export async function POST(request: NextRequest) {
       }
 
       if (!itemsInserted) {
-        // Don't fail the entire payment process, but log the issue
         console.error(
           "Order created but order items could not be inserted due to permissions"
         );
       }
     }
 
-    // Create additional services using the correct table name
     if (selectedServices && Object.keys(selectedServices).length > 0) {
       const additionalServiceRecords = Object.entries(selectedServices)
         .filter(([, service]) => service !== null)
@@ -289,12 +272,10 @@ export async function POST(request: NextRequest) {
             "Order additional services creation error:",
             servicesError
           );
-          // Don't fail the entire process, just log the error
         }
       }
     }
 
-    // Create Stripe payment intent
     const paymentIntent = await stripe.paymentIntents.create({
       amount: stripeAmount,
       currency: "myr",
@@ -305,7 +286,6 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Update order with payment intent ID
     const { error: updateError } = await supabase
       .from("orders")
       .update({
@@ -319,7 +299,6 @@ export async function POST(request: NextRequest) {
         "Failed to update order with payment intent ID:",
         updateError
       );
-      // Don't fail the process, payment intent is created
     }
 
     return NextResponse.json({
