@@ -16,6 +16,7 @@ import {
   RefreshCw,
   Sparkles,
   Lightbulb,
+  DollarSign,
 } from "lucide-react";
 import {
   Card,
@@ -25,7 +26,10 @@ import {
   Button,
   Badge,
 } from "@/components/ui";
-import { TypographyH1 } from "@/components/ui/Typography";
+import { TypographyH1, TypographyP } from "@/components/ui/Typography";
+import { formatDate } from "@/lib/utils/format";
+import { formatCurrency } from "@/lib/utils/currency";
+import { StatsCards } from "@/components/StatsCards";
 
 interface AIInsight {
   id: string;
@@ -252,14 +256,11 @@ export default function AIInsightsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center">
-            <Brain className="w-6 h-6 text-white" />
-          </div>
           <div>
             <TypographyH1 className="!mb-0">AI Insights Dashboard</TypographyH1>
-            <p className="text-gray-600 dark:text-gray-400 text-sm">
+            <TypographyP className="text-gray-600 dark:text-gray-400 text-sm">
               Last updated: {lastUpdated.toLocaleTimeString()}
-            </p>
+            </TypographyP>
           </div>
         </div>
 
@@ -275,60 +276,75 @@ export default function AIInsightsPage() {
 
       {/* Daily Summary */}
       {dailySummary && (
-        <Card className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 border border-purple-200 dark:border-purple-800">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-purple-600" />
-              Daily AI Summary -{" "}
-              {new Date(dailySummary.date).toLocaleDateString()}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Package className="w-4 h-4 text-green-600" />
-                  <span className="text-sm font-medium">Top Product</span>
-                </div>
-                <p className="font-semibold">
-                  {dailySummary.topSellingProduct}
-                </p>
-              </div>
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Calendar className="w-5 h-5 text-purple-600" />
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Daily AI Summary - {formatDate(dailySummary.date)}
+            </h2>
+          </div>
 
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="w-4 h-4 text-blue-600" />
-                  <span className="text-sm font-medium">Order Growth</span>
-                </div>
-                <p className="font-semibold text-green-600">
-                  +{dailySummary.orderGrowth}%
-                </p>
-              </div>
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <StatsCards
+              title="Top Selling Product"
+              value={dailySummary.topSellingProduct}
+              description="Best performer today"
+              icon={Package}
+              gradient="from-green-500 to-emerald-600"
+              bgGradient="from-white to-green-50/30 dark:from-gray-900 dark:to-green-900/10"
+              hideGrowth={true}
+            />
 
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Users className="w-4 h-4 text-purple-600" />
-                  <span className="text-sm font-medium">
-                    Contractor Activity
-                  </span>
-                </div>
-                <p className="font-semibold text-blue-600">
-                  +{dailySummary.contractorActivity}%
-                </p>
-              </div>
+            <StatsCards
+              title="Order Growth"
+              value={`${dailySummary.orderGrowth > 0 ? "+" : ""}${
+                dailySummary.orderGrowth
+              }%`}
+              description="vs yesterday"
+              growth={dailySummary.orderGrowth}
+              icon={TrendingUp}
+              gradient="from-blue-500 to-blue-600"
+              bgGradient="from-white to-blue-50/30 dark:from-gray-900 dark:to-blue-900/10"
+            />
 
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
+            <StatsCards
+              title="Daily Revenue"
+              value={formatCurrency(dailySummary.revenue)}
+              description="Yesterday's total"
+              icon={DollarSign}
+              gradient="from-purple-500 to-purple-600"
+              bgGradient="from-white to-purple-50/30 dark:from-gray-900 dark:to-purple-900/10"
+              hideGrowth={true}
+            />
+
+            <StatsCards
+              title="New Customers"
+              value={dailySummary.newCustomers.toString()}
+              description="First-time buyers"
+              icon={Users}
+              gradient="from-orange-500 to-red-600"
+              bgGradient="from-white to-orange-50/30 dark:from-gray-900 dark:to-orange-900/10"
+              hideGrowth={true}
+            />
+          </div>
+
+          {/* Stock Risks Alert */}
+          {dailySummary.stockRisks.length > 0 && (
+            <Card className="border-l-4 border-l-red-500 bg-red-50/50 dark:bg-red-900/10">
+              <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <AlertTriangle className="w-4 h-4 text-red-600" />
-                  <span className="text-sm font-medium">Stock Risks</span>
+                  <span className="font-semibold text-red-800 dark:text-red-300">
+                    Stock Risk Alert
+                  </span>
                 </div>
-                <p className="text-sm text-red-600">
-                  {dailySummary.stockRisks.join(", ")}
+                <p className="text-sm text-red-700 dark:text-red-400">
+                  Low inventory detected: {dailySummary.stockRisks.join(", ")}
                 </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       )}
 
       {/* Predictive Alerts */}
