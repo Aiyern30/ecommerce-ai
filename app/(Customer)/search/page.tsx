@@ -8,7 +8,6 @@ import {
   CheckCircle,
   AlertCircle,
   Package,
-  Info,
   Target,
   TrendingUp,
   X,
@@ -20,7 +19,17 @@ import {
   Clock,
   Calculator,
   DollarSign,
-  Ruler,
+  Truck,
+  Building,
+  Waves,
+  BarChart3,
+  Zap,
+  CheckSquare,
+  Calendar,
+  AlertTriangle,
+  Lightbulb,
+  TrendingDown,
+  TrendingUp as TrendingUpIcon,
 } from "lucide-react";
 import Image from "next/image";
 import {
@@ -29,62 +38,10 @@ import {
   TypographyP,
   TypographyH5,
   TypographySmall,
-  TypographyMuted,
 } from "@/components/ui/Typography";
 import { Button } from "@/components/ui/";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/";
+import { Card, CardContent } from "@/components/ui/";
 import { Badge } from "@/components/ui/";
-
-interface QuantityEstimation {
-  estimatedVolume: number;
-  confidenceLevel: "low" | "medium" | "high";
-  reasoning: string;
-  range: {
-    min: number;
-    max: number;
-  };
-}
-
-interface CostEstimation {
-  normal: {
-    total: number;
-    range: {
-      min: number;
-      max: number;
-    };
-  };
-  pump?: {
-    total: number;
-    range: {
-      min: number;
-      max: number;
-    };
-  };
-}
-
-interface DetectionResult {
-  success: boolean;
-  detectedLabels: string[];
-  matchedProduct: {
-    id: string;
-    name: string;
-    description: string;
-    grade: string;
-    normal_price: string;
-    pump_price?: string;
-    tremie_1_price?: string;
-    tremie_2_price?: string;
-    tremie_3_price?: string;
-    unit: string;
-    stock_quantity: number;
-    keywords: string[];
-  } | null;
-  confidence: number;
-  message: string;
-  totalProducts?: number;
-  quantityEstimation?: QuantityEstimation;
-  costEstimation?: CostEstimation;
-}
 
 const concreteProducts = [
   {
@@ -161,13 +118,78 @@ const concreteProducts = [
   },
 ];
 
+interface EnhancedQuantityEstimation {
+  estimatedVolume: number;
+  safetyVolume: number;
+  confidenceLevel: "low" | "medium" | "high";
+  reasoning: string;
+  projectType: string;
+  additionalRecommendations: string[];
+  range: {
+    min: number;
+    max: number;
+    recommended: number;
+  };
+  breakdown: {
+    baseEstimate: number;
+    safetyMargin: number;
+    wastageAllowance: number;
+  };
+}
+
+interface ComprehensiveCosts {
+  [key: string]: {
+    label: string;
+    icon: string;
+    description: string;
+    pricePerUnit: number;
+    costs: {
+      estimated: number;
+      withSafety: number;
+      recommended: number;
+      range: { min: number; max: number };
+    };
+  };
+}
+
+interface ProjectInsights {
+  complexity: "low" | "medium" | "high";
+  recommendedGrades: string[];
+  timeline: {
+    concrete: string;
+    curing: string;
+    total: string;
+  };
+  specialConsiderations: string[];
+}
+
+interface EnhancedDetectionResult {
+  success: boolean;
+  detectedLabels: string[];
+  matchedProduct: any;
+  confidence: number;
+  message: string;
+  quantityEstimation?: EnhancedQuantityEstimation;
+  comprehensiveCosts?: ComprehensiveCosts;
+  projectInsights?: ProjectInsights;
+  analysisMetadata?: {
+    elementsDetected: number;
+    labelsFound: number;
+    processingTime: string;
+    aiConfidence: number;
+  };
+}
+
 export default function ConcreteDetectorPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<DetectionResult | null>(null);
+  const [result, setResult] = useState<EnhancedDetectionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showGuide, setShowGuide] = useState(false);
+  const [activeTab, setActiveTab] = useState<
+    "estimation" | "pricing" | "insights"
+  >("estimation");
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -246,17 +268,6 @@ export default function ConcreteDetectorPage() {
     return product || concreteProducts[2];
   };
 
-  const getConfidenceBadge = (level: string) => {
-    switch (level) {
-      case "high":
-        return "bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 border-green-200 dark:border-green-600";
-      case "medium":
-        return "bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-600";
-      default:
-        return "bg-orange-100 dark:bg-orange-800 text-orange-800 dark:text-orange-200 border-orange-200 dark:border-orange-600";
-    }
-  };
-
   // Fixed click handler for upload area
   const handleUploadClick = () => {
     const fileInput = document.getElementById(
@@ -267,18 +278,29 @@ export default function ConcreteDetectorPage() {
     }
   };
 
-  // Helper to get available price types for a product
-  const getAvailablePrices = (product: any) => {
-    const priceTypes = [
-      { key: "normal_price", label: "Normal Delivery", color: "green" },
-      { key: "pump_price", label: "Pump Delivery", color: "blue" },
-      { key: "tremie_1_price", label: "Tremie 1", color: "purple" },
-      { key: "tremie_2_price", label: "Tremie 2", color: "purple" },
-      { key: "tremie_3_price", label: "Tremie 3", color: "purple" },
-    ];
-    return priceTypes.filter(
-      (type) => product[type.key] !== null && product[type.key] !== undefined
-    );
+  const getComplexityBadge = (complexity: string) => {
+    const badges = {
+      low: "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200",
+      medium:
+        "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200",
+      high: "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200",
+    };
+    return badges[complexity as keyof typeof badges] || badges.low;
+  };
+
+  const getProjectTypeIcon = (projectType: string) => {
+    const icons: { [key: string]: any } = {
+      foundation: Building,
+      slab: CheckSquare,
+      driveway: Truck,
+      wall: BarChart3,
+      column: TrendingUpIcon,
+      beam: TrendingDown,
+      stairs: TrendingUpIcon,
+      pool: Waves,
+      general: Package,
+    };
+    return icons[projectType] || Package;
   };
 
   return (
@@ -319,7 +341,7 @@ export default function ConcreteDetectorPage() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 pb-12">
+      <div className="max-w-6xl mx-auto px-6 pb-12">
         {!result ? (
           <Card className="border-0 shadow-2xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
             <CardContent className="p-0">
@@ -373,7 +395,7 @@ export default function ConcreteDetectorPage() {
                         {/* Enhanced feature icons */}
                         <div className="flex items-center justify-center space-x-12 pt-4">
                           <div className="flex flex-col items-center space-y-2 group/item">
-                            <div className="p-3 bg-blue-100 dark:bg-blue-800 rounded-xl group-hover/item:bg-blue-200 dark:group-hover/item:bg-blue-700 transition-colors">
+                            <div className="p-3 bg-blue-100 dark:bg-blue-800 rounded-xl group-hover/item:bg-blue-200 dark:group-hover:item:bg-blue-700 transition-colors">
                               <Target className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                             </div>
                             <TypographySmall className="text-gray-600 dark:text-gray-400 font-medium">
@@ -381,7 +403,7 @@ export default function ConcreteDetectorPage() {
                             </TypographySmall>
                           </div>
                           <div className="flex flex-col items-center space-y-2 group/item">
-                            <div className="p-3 bg-emerald-100 dark:bg-emerald-800 rounded-xl group-hover/item:bg-emerald-200 dark:group-hover/item:bg-emerald-700 transition-colors">
+                            <div className="p-3 bg-emerald-100 dark:bg-emerald-800 rounded-xl group-hover/item:bg-emerald-200 dark:group-hover:item:bg-emerald-700 transition-colors">
                               <Package className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                             </div>
                             <TypographySmall className="text-gray-600 dark:text-gray-400 font-medium">
@@ -538,382 +560,549 @@ export default function ConcreteDetectorPage() {
             </CardContent>
           </Card>
         ) : (
-          /* Enhanced Results State */
-          <div className="space-y-6 mt-6">
-            {/* Success Header */}
-            <Card className="overflow-hidden border-0 shadow-2xl py-0">
+          /* Enhanced Results with Comprehensive Analysis */
+          <div className="space-y-8 mt-6">
+            {/* Enhanced Success Header with Metadata */}
+            <Card className="overflow-hidden border-0 shadow-2xl">
               <CardContent className="p-0">
-                <div className="bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 dark:from-green-400 dark:via-emerald-400 dark:to-teal-400 p-8 text-white relative overflow-hidden">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(255,255,255,0.1),transparent_50%)]"></div>
-                  <div className="relative flex items-center">
-                    <div className="p-3 bg-white/20 rounded-2xl mr-4 backdrop-blur-sm">
-                      <CheckCircle className="h-10 w-10" />
-                    </div>
-                    <div className="flex-1">
-                      <TypographyH3 className="text-3xl font-bold mb-2">
-                        {result.message}
-                      </TypographyH3>
-                      <div className="flex items-center space-x-6 text-green-100 dark:text-green-200">
-                        <div className="flex items-center space-x-2">
-                          <Sparkles className="h-4 w-4" />
-                          <span>{result.confidence}% confidence</span>
+                <div className="bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 dark:from-emerald-400 dark:via-green-400 dark:to-teal-400 p-8 text-white relative overflow-hidden">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(255,255,255,0.15),transparent_50%)]"></div>
+                  <div className="relative">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center">
+                        <div className="p-4 bg-white/20 rounded-2xl mr-4 backdrop-blur-sm">
+                          <CheckCircle className="h-12 w-12" />
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <Clock className="h-4 w-4" />
-                          <span>Analyzed in seconds</span>
+                        <div>
+                          <h2 className="text-4xl font-bold mb-2">
+                            {result.message}
+                          </h2>
+                          <div className="flex items-center space-x-6 text-green-100">
+                            <div className="flex items-center space-x-2">
+                              <Sparkles className="h-5 w-5" />
+                              <span className="text-lg font-semibold">
+                                {result.confidence}% AI Confidence
+                              </span>
+                            </div>
+                            {result.analysisMetadata && (
+                              <>
+                                <div className="flex items-center space-x-2">
+                                  <Target className="h-5 w-5" />
+                                  <span>
+                                    {result.analysisMetadata.elementsDetected}{" "}
+                                    Elements Detected
+                                  </span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Clock className="h-5 w-5" />
+                                  <span>Instant Analysis</span>
+                                </div>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
+
+                      {result.projectInsights && (
+                        <div className="text-right">
+                          <Badge
+                            className={`text-lg font-bold px-4 py-2 ${getComplexityBadge(
+                              result.projectInsights.complexity
+                            )}`}
+                          >
+                            {result.projectInsights.complexity.toUpperCase()}{" "}
+                            COMPLEXITY
+                          </Badge>
+                        </div>
+                      )}
                     </div>
+
+                    {/* Project Type Indicator */}
+                    {result.quantityEstimation && (
+                      <div className="flex items-center space-x-4 bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                        <div className="p-3 bg-white/20 rounded-lg">
+                          {(() => {
+                            const IconComponent = getProjectTypeIcon(
+                              result.quantityEstimation.projectType
+                            );
+                            return <IconComponent className="h-6 w-6" />;
+                          })()}
+                        </div>
+                        <div>
+                          <div className="text-lg font-semibold capitalize">
+                            {result.quantityEstimation.projectType} Project
+                            Detected
+                          </div>
+                          <div className="text-green-100 text-sm">
+                            {result.quantityEstimation.reasoning}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Product Recommendation */}
-            {result.matchedProduct && (
-              <Card className="border-0 shadow-2xl overflow-hidden py-0">
-                <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 border-b border-blue-100 dark:border-blue-800 py-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                        {result.matchedProduct.name}
-                      </CardTitle>
-                      <TypographyP className="text-gray-600 dark:text-gray-300 text-lg">
-                        {result.matchedProduct.description}
-                      </TypographyP>
-                    </div>
-                    <Badge
-                      className={`text-lg font-bold px-4 py-2 ${
-                        getProductStyle(result.matchedProduct.grade).badgeColor
-                      } border`}
-                    >
-                      {result.matchedProduct.grade}
-                    </Badge>
+            {/* Enhanced Tabbed Content */}
+            <Card className="border-0 shadow-xl">
+              <CardContent className="p-0">
+                {/* Tab Navigation */}
+                <div className="border-b border-gray-200 dark:border-gray-700">
+                  <div className="flex space-x-8 px-8 pt-6">
+                    {[
+                      {
+                        id: "estimation",
+                        label: "Quantity Analysis",
+                        icon: Calculator,
+                      },
+                      {
+                        id: "pricing",
+                        label: "Cost Breakdown",
+                        icon: DollarSign,
+                      },
+                      {
+                        id: "insights",
+                        label: "Project Insights",
+                        icon: Lightbulb,
+                      },
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id as any)}
+                        className={`flex items-center space-x-2 pb-4 border-b-2 transition-colors ${
+                          activeTab === tab.id
+                            ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                            : "border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                        }`}
+                      >
+                        <tab.icon className="h-5 w-5" />
+                        <span className="font-semibold">{tab.label}</span>
+                      </button>
+                    ))}
                   </div>
-                </CardHeader>
+                </div>
 
-                <CardContent className="p-8">
-                  {/* Quantity Estimation Section */}
-                  {result.quantityEstimation && (
-                    <Card className="mb-8 border-2 border-purple-200 dark:border-purple-700 bg-gradient-to-r from-purple-50/50 to-pink-50/50 dark:from-purple-950/30 dark:to-pink-950/30">
-                      <CardContent className="p-6">
-                        <div className="flex items-start space-x-4">
-                          <div className="p-3 bg-purple-100 dark:bg-purple-800 rounded-xl">
-                            <Calculator className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-4">
-                              <TypographyH5 className="font-bold text-gray-900 dark:text-white">
-                                AI Quantity Estimation
-                              </TypographyH5>
-                              <Badge
-                                className={getConfidenceBadge(
-                                  result.quantityEstimation.confidenceLevel
-                                )}
-                              >
-                                {result.quantityEstimation.confidenceLevel}{" "}
-                                confidence
-                              </Badge>
+                <div className="p-8">
+                  {/* Quantity Estimation Tab */}
+                  {activeTab === "estimation" && result.quantityEstimation && (
+                    <div className="space-y-8">
+                      {/* Main Quantity Display */}
+                      <div className="grid md:grid-cols-3 gap-6">
+                        <Card className="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-950/50 border-2 border-blue-200 dark:border-blue-700">
+                          <CardContent className="p-6 text-center">
+                            <div className="p-3 bg-blue-100 dark:bg-blue-800 rounded-xl w-fit mx-auto mb-4">
+                              <Calculator className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                             </div>
-
-                            <div className="grid md:grid-cols-2 gap-6 mb-4">
-                              <div className="space-y-2">
-                                <TypographySmall className="text-gray-600 dark:text-gray-400 font-medium">
-                                  ESTIMATED VOLUME
-                                </TypographySmall>
-                                <div className="flex items-baseline space-x-2">
-                                  <span className="text-4xl font-bold text-purple-700 dark:text-purple-300">
-                                    {result.quantityEstimation.estimatedVolume}
-                                  </span>
-                                  <span className="text-lg text-purple-600 dark:text-purple-400 font-medium">
-                                    m³
-                                  </span>
-                                </div>
-                              </div>
-
-                              <div className="space-y-2">
-                                <TypographySmall className="text-gray-600 dark:text-gray-400 font-medium">
-                                  VOLUME RANGE
-                                </TypographySmall>
-                                <div className="flex items-center space-x-2 text-purple-700 dark:text-purple-300 font-semibold">
-                                  <span>
-                                    {result.quantityEstimation.range.min} m³
-                                  </span>
-                                  <span className="text-gray-400">-</span>
-                                  <span>
-                                    {result.quantityEstimation.range.max} m³
-                                  </span>
-                                </div>
-                              </div>
+                            <div className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-2">
+                              BASE ESTIMATE
                             </div>
-
-                            <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg p-4 border border-purple-200 dark:border-purple-700">
-                              <div className="flex items-start space-x-2">
-                                <Ruler className="h-4 w-4 text-purple-600 dark:text-purple-400 mt-0.5" />
-                                <TypographySmall className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                                  {result.quantityEstimation.reasoning}
-                                </TypographySmall>
-                              </div>
+                            <div className="text-4xl font-bold text-blue-800 dark:text-blue-300 mb-1">
+                              {result.quantityEstimation.estimatedVolume}
                             </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Enhanced Pricing Cards with Cost Estimation */}
-                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    {/* Dynamically render available price types */}
-                    {getAvailablePrices(result.matchedProduct).map((type) => {
-                      // Custom gradient for blue price cards
-                      const isBlue = type.color === "blue";
-                      const cardGradient = isBlue
-                        ? "bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-950"
-                        : `bg-gradient-to-br from-${type.color}-50 to-${
-                            type.color === "green"
-                              ? "emerald-50"
-                              : type.color + "-100"
-                          } dark:from-${type.color}-950/50 dark:to-${
-                            type.color === "green"
-                              ? "emerald-950/50"
-                              : type.color + "-950/50"
-                          }`;
-                      const hoverGradient = isBlue
-                        ? "group-hover:from-blue-100 group-hover:to-indigo-200 dark:group-hover:from-blue-900 dark:group-hover:to-indigo-900"
-                        : `group-hover:from-${type.color}-100 group-hover:to-${
-                            type.color === "green"
-                              ? "emerald-100"
-                              : type.color + "-100"
-                          } dark:group-hover:from-${
-                            type.color
-                          }-950/70 dark:group-hover:to-${
-                            type.color === "green"
-                              ? "emerald-950/70"
-                              : type.color + "-950/70"
-                          }`;
-
-                      return (
-                        <Card
-                          key={type.key}
-                          className={`relative overflow-hidden border-2 border-${type.color}-200 dark:border-${type.color}-700 
-        hover:border-${type.color}-400 dark:hover:border-${type.color}-500 
-        transition-all duration-300 group hover:-translate-y-1 hover:shadow-xl rounded-2xl !py-0`}
-                        >
-                          <CardContent
-                            className={`!p-6 py-0 flex flex-col items-center justify-center text-center ${cardGradient} ${hoverGradient} transition-colors`}
-                          >
-                            <Badge
-                              className={`mb-4 px-3 py-1 rounded-full text-sm font-medium
-            bg-${type.color}-100 dark:bg-${type.color}-800 text-${type.color}-800 dark:text-${type.color}-200 
-            border border-${type.color}-200 dark:border-${type.color}-600`}
-                            >
-                              {type.label}
-                            </Badge>
-                            <TypographyH3
-                              className={`text-4xl font-extrabold text-${type.color}-800 dark:text-${type.color}-300 mb-2`}
-                            >
-                              {result.matchedProduct
-                                ? result.matchedProduct[
-                                    type.key as keyof typeof result.matchedProduct
-                                  ]
-                                : ""}
-                            </TypographyH3>
-                            <TypographyMuted
-                              className={`text-${type.color}-600 dark:text-${type.color}-400 font-medium`}
-                            >
-                              per{" "}
-                              {result.matchedProduct
-                                ? result.matchedProduct.unit
-                                : ""}
-                            </TypographyMuted>
+                            <div className="text-blue-600 dark:text-blue-400 font-medium">
+                              m³
+                            </div>
                           </CardContent>
                         </Card>
-                      );
-                    })}
 
-                    {/* Stock */}
-                    <Card
-                      className="relative overflow-hidden border-2 border-gray-200 dark:border-gray-700 
-    hover:border-gray-400 dark:hover:border-gray-500 
-    transition-all duration-300 group hover:-translate-y-1 hover:shadow-xl rounded-2xl !py-0"
-                    >
-                      <CardContent
-                        className="!p-6 py-0 flex flex-col items-center justify-center text-center 
-      bg-gradient-to-br from-gray-50 to-slate-50 
-      dark:from-gray-950/50 dark:to-slate-950/50 
-      group-hover:from-gray-100 group-hover:to-slate-100 
-      dark:group-hover:from-gray-950/70 dark:group-hover:to-slate-950/70 transition-colors"
-                      >
-                        <Badge
-                          className="mb-4 px-3 py-1 rounded-full text-sm font-medium
-        bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 
-        border border-gray-200 dark:border-gray-600"
-                        >
-                          Available Stock
-                        </Badge>
+                        <Card className="bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950/50 dark:to-emerald-950/50 border-2 border-green-200 dark:border-green-700">
+                          <CardContent className="p-6 text-center">
+                            <div className="p-3 bg-green-100 dark:bg-green-800 rounded-xl w-fit mx-auto mb-4">
+                              <CheckSquare className="h-8 w-8 text-green-600 dark:text-green-400" />
+                            </div>
+                            <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-2">
+                              RECOMMENDED
+                            </div>
+                            <div className="text-4xl font-bold text-green-800 dark:text-green-300 mb-1">
+                              {result.quantityEstimation.range.recommended}
+                            </div>
+                            <div className="text-green-600 dark:text-green-400 font-medium">
+                              m³ (with buffer)
+                            </div>
+                          </CardContent>
+                        </Card>
 
-                        <TypographyH3 className="text-4xl font-extrabold text-gray-800 dark:text-gray-300 mb-2">
-                          {result.matchedProduct.stock_quantity}
-                        </TypographyH3>
+                        <Card className="bg-gradient-to-br from-purple-50 to-violet-100 dark:from-purple-950/50 dark:to-violet-950/50 border-2 border-purple-200 dark:border-purple-700">
+                          <CardContent className="p-6 text-center">
+                            <div className="p-3 bg-purple-100 dark:bg-purple-800 rounded-xl w-fit mx-auto mb-4">
+                              <Zap className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+                            </div>
+                            <div className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-2">
+                              WITH SAFETY MARGIN
+                            </div>
+                            <div className="text-4xl font-bold text-purple-800 dark:text-purple-300 mb-1">
+                              {result.quantityEstimation.safetyVolume}
+                            </div>
+                            <div className="text-purple-600 dark:text-purple-400 font-medium">
+                              m³ (safety + wastage)
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
 
-                        <TypographyMuted className="text-gray-600 dark:text-gray-400 font-medium">
-                          m³ in stock
-                        </TypographyMuted>
-                      </CardContent>
-                    </Card>
-
-                    {/* Estimated Need */}
-                    {result.quantityEstimation && (
-                      <Card
-                        className="relative overflow-hidden border-2 border-purple-200 dark:border-purple-700 
-      hover:border-purple-400 dark:hover:border-purple-500 
-      transition-all duration-300 group hover:-translate-y-1 hover:shadow-xl rounded-2xl !py-0"
-                      >
-                        <CardContent
-                          className="!p-6 py-0 flex flex-col items-center justify-center text-center 
-        bg-gradient-to-br from-purple-50 to-pink-50 
-        dark:from-purple-950/50 dark:to-pink-950/50 
-        group-hover:from-purple-100 group-hover:to-pink-100 
-        dark:group-hover:from-purple-950/70 dark:group-hover:to-pink-950/70 transition-colors"
-                        >
-                          <Badge
-                            className="mb-4 px-3 py-1 rounded-full text-sm font-medium
-          bg-purple-100 dark:bg-purple-800 text-purple-800 dark:text-purple-200 
-          border border-purple-200 dark:border-purple-600"
-                          >
-                            Estimated Need
-                          </Badge>
-
-                          <TypographyH3 className="text-4xl font-extrabold text-purple-800 dark:text-purple-300 mb-2">
-                            {result.quantityEstimation.estimatedVolume}
-                          </TypographyH3>
-
-                          <TypographyMuted className="text-purple-600 dark:text-purple-400 font-medium">
-                            m³ needed
-                          </TypographyMuted>
+                      {/* Volume Range Visualization */}
+                      <Card className="bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-800 dark:to-slate-800">
+                        <CardContent className="p-6">
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                            Volume Range Analysis
+                          </h3>
+                          <div className="space-y-4">
+                            <div className="flex justify-between items-center text-sm">
+                              <span className="text-gray-600 dark:text-gray-400">
+                                Minimum Estimate
+                              </span>
+                              <span className="font-bold text-gray-900 dark:text-white">
+                                {result.quantityEstimation.range.min} m³
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                              <div
+                                className="bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full relative"
+                                style={{ width: "100%" }}
+                              >
+                                <div className="absolute left-1/4 top-0 h-3 w-1 bg-white rounded"></div>
+                                <div className="absolute left-1/2 top-0 h-3 w-1 bg-white rounded"></div>
+                                <div className="absolute left-3/4 top-0 h-3 w-1 bg-white rounded"></div>
+                              </div>
+                            </div>
+                            <div className="flex justify-between items-center text-sm">
+                              <span className="text-gray-600 dark:text-gray-400">
+                                Maximum Estimate
+                              </span>
+                              <span className="font-bold text-gray-900 dark:text-white">
+                                {result.quantityEstimation.range.max} m³
+                              </span>
+                            </div>
+                          </div>
                         </CardContent>
                       </Card>
-                    )}
-                  </div>
 
-                  {/* Total Cost Estimation */}
-                  {result.costEstimation && (
-                    <Card className="mb-8 border-2 border-indigo-200 dark:border-indigo-700 bg-gradient-to-r from-indigo-50/50 to-blue-50/50 dark:from-indigo-950/30 dark:to-blue-950/30">
-                      <CardContent className="p-6">
-                        <div className="flex items-start space-x-4">
-                          <div className="p-3 bg-indigo-100 dark:bg-indigo-800 rounded-xl">
-                            <DollarSign className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                          </div>
-                          <div className="flex-1">
-                            <TypographyH5 className="font-bold text-gray-900 dark:text-white mb-4">
-                              Total Project Cost Estimation
-                            </TypographyH5>
-
-                            <div className="grid md:grid-cols-2 gap-6">
-                              {/* Normal pricing */}
-                              <div className="bg-white/80 dark:bg-gray-800/80 rounded-xl p-6 border border-indigo-200 dark:border-indigo-700">
-                                <div className="text-center space-y-3">
-                                  <Badge className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200">
-                                    Normal Delivery
-                                  </Badge>
-                                  <div>
-                                    <div className="text-3xl font-bold text-indigo-700 dark:text-indigo-300">
-                                      ${result.costEstimation.normal.total}
-                                    </div>
-                                    <TypographySmall className="text-gray-600 dark:text-gray-400">
-                                      Range: $
-                                      {result.costEstimation.normal.range.min} -
-                                      ${result.costEstimation.normal.range.max}
-                                    </TypographySmall>
-                                  </div>
-                                </div>
+                      {/* Breakdown Details */}
+                      <Card>
+                        <CardContent className="p-6">
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                            Estimation Breakdown
+                          </h3>
+                          <div className="grid md:grid-cols-3 gap-6">
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+                                {
+                                  result.quantityEstimation.breakdown
+                                    .baseEstimate
+                                }{" "}
+                                m³
                               </div>
-
-                              {/* Pump pricing if available */}
-                              {result.costEstimation.pump && (
-                                <div className="bg-white/80 dark:bg-gray-800/80 rounded-xl p-6 border border-indigo-200 dark:border-indigo-700">
-                                  <div className="text-center space-y-3">
-                                    <Badge className="bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200">
-                                      Pump Delivery
-                                    </Badge>
-                                    <div>
-                                      <div className="text-3xl font-bold text-indigo-700 dark:text-indigo-300">
-                                        ${result.costEstimation.pump.total}
-                                      </div>
-                                      <TypographySmall className="text-gray-600 dark:text-gray-400">
-                                        Range: $
-                                        {result.costEstimation.pump.range.min} -
-                                        ${result.costEstimation.pump.range.max}
-                                      </TypographySmall>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
+                              <div className="text-sm text-gray-600 dark:text-gray-400">
+                                Base Construction Need
+                              </div>
                             </div>
-
-                            <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-950/50 rounded-lg border border-yellow-200 dark:border-yellow-700">
-                              <div className="flex items-start space-x-2">
-                                <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-400 mt-0.5" />
-                                <TypographySmall className="text-yellow-800 dark:text-yellow-300">
-                                  These are estimates based on AI analysis. For
-                                  accurate quotes, please consult with our
-                                  specialists who can consider site conditions,
-                                  access requirements, and specific project
-                                  details.
-                                </TypographySmall>
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-green-600 dark:text-green-400 mb-2">
+                                +
+                                {
+                                  result.quantityEstimation.breakdown
+                                    .safetyMargin
+                                }{" "}
+                                m³
+                              </div>
+                              <div className="text-sm text-gray-600 dark:text-gray-400">
+                                Safety Buffer (15%)
+                              </div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-2">
+                                +
+                                {
+                                  result.quantityEstimation.breakdown
+                                    .wastageAllowance
+                                }{" "}
+                                m³
+                              </div>
+                              <div className="text-sm text-gray-600 dark:text-gray-400">
+                                Wastage Allowance (5%)
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                        </CardContent>
+                      </Card>
+                    </div>
                   )}
 
-                  {/* Detected Elements */}
-                  {result.detectedLabels &&
-                    result.detectedLabels.length > 0 && (
-                      <Card className="mb-6 border border-blue-200 dark:border-blue-800 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-950/30 dark:to-indigo-950/30">
+                  {/* Comprehensive Pricing Tab */}
+                  {activeTab === "pricing" && result.comprehensiveCosts && (
+                    <div className="space-y-8">
+                      {Object.entries(result.comprehensiveCosts).map(
+                        ([key, option]) => (
+                          <Card
+                            key={key}
+                            className="border-2 border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-colors"
+                          >
+                            <CardContent className="p-6">
+                              <div className="flex items-start justify-between mb-6">
+                                <div className="flex items-center space-x-4">
+                                  <div className="text-4xl">{option.icon}</div>
+                                  <div>
+                                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                      {option.label}
+                                    </h3>
+                                    <p className="text-gray-600 dark:text-gray-400">
+                                      {option.description}
+                                    </p>
+                                    <div className="mt-2">
+                                      <Badge className="bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200">
+                                        RM{option.pricePerUnit}/m³
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="grid md:grid-cols-3 gap-6">
+                                <div className="bg-blue-50 dark:bg-blue-950/30 rounded-xl p-4 text-center">
+                                  <div className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-2">
+                                    BASE ESTIMATE
+                                  </div>
+                                  <div className="text-3xl font-bold text-blue-800 dark:text-blue-300 mb-1">
+                                    RM{option.costs.estimated.toLocaleString()}
+                                  </div>
+                                  <div className="text-blue-600 dark:text-blue-400 text-sm">
+                                    {result.quantityEstimation?.estimatedVolume}{" "}
+                                    m³
+                                  </div>
+                                </div>
+
+                                <div className="bg-green-50 dark:bg-green-950/30 rounded-xl p-4 text-center">
+                                  <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-2">
+                                    RECOMMENDED
+                                  </div>
+                                  <div className="text-3xl font-bold text-green-800 dark:text-green-300 mb-1">
+                                    RM
+                                    {option.costs.recommended.toLocaleString()}
+                                  </div>
+                                  <div className="text-green-600 dark:text-green-400 text-sm">
+                                    {
+                                      result.quantityEstimation?.range
+                                        .recommended
+                                    }{" "}
+                                    m³
+                                  </div>
+                                </div>
+
+                                <div className="bg-purple-50 dark:bg-purple-950/30 rounded-xl p-4 text-center">
+                                  <div className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-2">
+                                    WITH SAFETY
+                                  </div>
+                                  <div className="text-3xl font-bold text-purple-800 dark:text-purple-300 mb-1">
+                                    RM{option.costs.withSafety.toLocaleString()}
+                                  </div>
+                                  <div className="text-purple-600 dark:text-purple-400 text-sm">
+                                    {result.quantityEstimation?.safetyVolume} m³
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                <div className="flex justify-between items-center text-sm">
+                                  <span className="text-gray-600 dark:text-gray-400">
+                                    Price Range:
+                                  </span>
+                                  <span className="font-semibold text-gray-900 dark:text-white">
+                                    RM{option.costs.range.min.toLocaleString()}{" "}
+                                    - RM
+                                    {option.costs.range.max.toLocaleString()}
+                                  </span>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        )
+                      )}
+
+                      {/* Cost Comparison Chart */}
+                      <Card>
                         <CardContent className="p-6">
-                          <div className="flex items-center space-x-3 mb-4">
-                            <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg">
-                              <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                            Cost Comparison Overview
+                          </h3>
+                          <div className="text-center py-4">
+                            <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                              Most Economical Option
                             </div>
-                            <TypographyH5 className="font-bold text-gray-900 dark:text-white">
-                              AI Detected Elements
-                            </TypographyH5>
-                          </div>
-                          <div className="flex flex-wrap gap-3">
-                            {result.detectedLabels.map((label, index) => (
-                              <Badge
-                                key={index}
-                                className="bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-600 px-4 py-2 text-sm font-medium hover:bg-blue-200 dark:hover:bg-blue-700 transition-colors"
-                              >
-                                {label}
-                              </Badge>
-                            ))}
+                            {result.comprehensiveCosts &&
+                              Object.entries(result.comprehensiveCosts).length >
+                                0 && (
+                                <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+                                  RM
+                                  {Math.min(
+                                    ...Object.values(
+                                      result.comprehensiveCosts
+                                    ).map((c) => c.costs.recommended)
+                                  ).toLocaleString()}
+                                </div>
+                              )}
+                            <div className="text-gray-500 text-sm mt-1">
+                              Recommended quantity with standard delivery
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
-                    )}
+                    </div>
+                  )}
 
-                  {/* Enhanced Action Buttons */}
+                  {/* Project Insights Tab */}
+                  {activeTab === "insights" && result.projectInsights && (
+                    <div className="space-y-8">
+                      {/* Timeline */}
+                      <Card>
+                        <CardContent className="p-6">
+                          <div className="flex items-center space-x-3 mb-6">
+                            <Calendar className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                              Project Timeline
+                            </h3>
+                          </div>
+                          <div className="grid md:grid-cols-3 gap-6">
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+                                {result.projectInsights.timeline.concrete}
+                              </div>
+                              <div className="text-sm text-gray-600 dark:text-gray-400">
+                                Concrete Placement
+                              </div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-green-600 dark:text-green-400 mb-2">
+                                {result.projectInsights.timeline.curing}
+                              </div>
+                              <div className="text-sm text-gray-600 dark:text-gray-400">
+                                Full Strength Curing
+                              </div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-2">
+                                {result.projectInsights.timeline.total}
+                              </div>
+                              <div className="text-sm text-gray-600 dark:text-gray-400">
+                                Total Project Time
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Recommended Grades */}
+                      <Card>
+                        <CardContent className="p-6">
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                            Recommended Concrete Grades
+                          </h3>
+                          <div className="grid md:grid-cols-3 gap-4">
+                            {result.projectInsights.recommendedGrades.map(
+                              (grade) => {
+                                const productStyle = getProductStyle(grade);
+                                return (
+                                  <div
+                                    key={grade}
+                                    className={`p-4 rounded-xl border-2 transition-all hover:shadow-lg ${productStyle.color}`}
+                                  >
+                                    <div className="text-center">
+                                      <Badge
+                                        className={`mb-3 text-lg font-bold px-4 py-2 ${productStyle.badgeColor}`}
+                                      >
+                                        {grade}
+                                      </Badge>
+                                      <div
+                                        className={`text-sm ${productStyle.textColor}`}
+                                      >
+                                        {concreteProducts.find(
+                                          (p) => p.grade === grade
+                                        )?.description || "Professional grade"}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              }
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Special Considerations */}
+                      <Card>
+                        <CardContent className="p-6">
+                          <div className="flex items-center space-x-3 mb-4">
+                            <AlertTriangle className="h-6 w-6 text-amber-500" />
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                              Special Considerations
+                            </h3>
+                          </div>
+                          <div className="space-y-3">
+                            {result.projectInsights.specialConsiderations.map(
+                              (consideration, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-start space-x-3 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg"
+                                >
+                                  <Lightbulb className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+                                  <span className="text-amber-800 dark:text-amber-300">
+                                    {consideration}
+                                  </span>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* AI Recommendations */}
+                      {result.quantityEstimation?.additionalRecommendations && (
+                        <Card>
+                          <CardContent className="p-6">
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                              AI Professional Recommendations
+                            </h3>
+                            <div className="space-y-3">
+                              {result.quantityEstimation.additionalRecommendations.map(
+                                (rec, index) => (
+                                  <div
+                                    key={index}
+                                    className="flex items-start space-x-3 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg"
+                                  >
+                                    <CheckCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                                    <span className="text-blue-800 dark:text-blue-300">
+                                      {rec}
+                                    </span>
+                                  </div>
+                                )
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="border-t border-gray-200 dark:border-gray-700 p-8">
                   <div className="flex gap-4">
                     <Button
                       onClick={resetForm}
                       variant="outline"
-                      className="flex-1 h-12 font-semibold border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-white"
+                      className="flex-1 h-12 font-semibold"
                     >
                       <Camera className="h-5 w-5 mr-2" />
                       Analyze Another Photo
                     </Button>
-                    <Button className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 text-white font-semibold hover:from-blue-700 hover:to-indigo-700 dark:hover:from-blue-400 dark:hover:to-indigo-400 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200">
+                    <Button className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold">
                       <ArrowRight className="h-5 w-5 mr-2" />
                       Get Professional Quote
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         )}
 
