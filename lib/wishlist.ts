@@ -1,90 +1,113 @@
 import type { Wishlist, WishlistWithItem } from "@/types/wishlist";
-import { supabase } from "@/lib/supabase/client";
+import { supabase } from "./supabase/browserClient";
 
 export async function addToWishlist(
   itemType: "blog" | "product",
-  itemId: string
-): Promise<Wishlist | null> {
-  const { data, error } = await supabase
-    .from("wishlists")
-    .insert({
-      item_type: itemType,
-      item_id: itemId,
-    })
-    .select()
-    .single();
+  itemId: string,
+  userId: string
+): Promise<{ success: boolean; data?: Wishlist }> {
+  try {
+    const { data, error } = await supabase
+      .from("wishlists")
+      .insert({
+        user_id: userId,
+        item_type: itemType,
+        item_id: itemId,
+      })
+      .select()
+      .single();
 
-  if (error) {
+    if (error) {
+      console.error("Error adding to wishlist:", error);
+      return { success: false };
+    }
+
+    return { success: true, data };
+  } catch (error) {
     console.error("Error adding to wishlist:", error);
-    return null;
+    return { success: false };
   }
-
-  return data;
 }
 
 export async function removeFromWishlist(
   itemType: "blog" | "product",
-  itemId: string
-): Promise<boolean> {
-  const { error } = await supabase
-    .from("wishlists")
-    .delete()
-    .eq("item_type", itemType)
-    .eq("item_id", itemId);
+  itemId: string,
+  userId: string
+): Promise<{ success: boolean }> {
+  try {
+    const { error } = await supabase
+      .from("wishlists")
+      .delete()
+      .eq("user_id", userId)
+      .eq("item_type", itemType)
+      .eq("item_id", itemId);
 
-  if (error) {
+    if (error) {
+      console.error("Error removing from wishlist:", error);
+      return { success: false };
+    }
+
+    return { success: true };
+  } catch (error) {
     console.error("Error removing from wishlist:", error);
-    return false;
+    return { success: false };
   }
-
-  return true;
 }
 
-export async function getUserWishlists(): Promise<WishlistWithItem[]> {
-  const { data, error } = await supabase
-    .from("wishlists")
-    .select(
+export async function getUserWishlists(
+  userId: string
+): Promise<WishlistWithItem[]> {
+  try {
+    const { data, error } = await supabase
+      .from("wishlists")
+      .select(
+        `
+        *,
+        blogs:item_id(
+          id,
+          title,
+          description,
+          image_url,
+          created_at,
+          blog_images(image_url),
+          blog_tags(tags(*))
+        ),
+        products:item_id(
+          id,
+          name,
+          description,
+          grade,
+          normal_price,
+          product_images(image_url, is_primary)
+        )
       `
-      *,
-      blogs:item_id!wishlists_item_id_fkey(
-        id,
-        title,
-        description,
-        image_url,
-        created_at,
-        blog_images(image_url),
-        blog_tags(tags(*))
-      ),
-      products:item_id!wishlists_item_id_fkey(
-        id,
-        name,
-        description,
-        grade,
-        normal_price,
-        product_images(image_url, is_primary)
       )
-    `
-    )
-    .order("created_at", { ascending: false });
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
 
-  if (error) {
+    if (error) {
+      console.error("Error fetching wishlists:", error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
     console.error("Error fetching wishlists:", error);
     return [];
   }
-
-  return data || [];
 }
 
-export async function isItemWishlisted(
+export async function toggleWishlist(
   itemType: "blog" | "product",
-  itemId: string
-): Promise<boolean> {
-  const { data, error } = await supabase
-    .from("wishlists")
-    .select("id")
-    .eq("item_type", itemType)
-    .eq("item_id", itemId)
-    .single();
-
-  return !error && !!data;
+  itemId: string,
+  isCurrentlyWishlisted: boolean,
+  userId: string
+): Promise<{ success: boolean; isWishlisted: boolean }> {
+  if (isCurrentlyWishlisted) {
+    const result = await removeFromWishlist(itemType, itemId, userId);
+    return { success: result.success, isWishlisted: false };
+  } else {
+    const result = await addToWishlist(itemType, itemId, userId);
+    return { success: result.success, isWishlisted: true };
+  }
 }

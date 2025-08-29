@@ -14,6 +14,7 @@ import GeminiChat from "./Chat/GeminiChat";
 import { MessageCircle, X } from "lucide-react";
 import { supabase } from "@/lib/supabase/browserClient";
 import { ChatProvider, useChat } from "./ChatContext";
+import { WishlistProvider } from "./WishlistProvider";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -110,15 +111,17 @@ export function CustomerLayout({ children }: LayoutProps) {
       disableTransitionOnChange
     >
       <CartProvider>
-        <ChatProvider>
-          {needsAuth ? (
-            <AuthGuard>
+        <WishlistProvider>
+          <ChatProvider>
+            {needsAuth ? (
+              <AuthGuard>
+                <RenderContent />
+              </AuthGuard>
+            ) : (
               <RenderContent />
-            </AuthGuard>
-          ) : (
-            <RenderContent />
-          )}
-        </ChatProvider>
+            )}
+          </ChatProvider>
+        </WishlistProvider>
       </CartProvider>
     </ThemeProvider>
   );

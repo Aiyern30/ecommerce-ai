@@ -13,20 +13,60 @@ import {
   CardDescription,
 } from "@/components/ui/";
 import { Button } from "@/components/ui/";
+import { useWishlist } from "@/components/WishlistProvider";
+import { toggleWishlist } from "@/lib/wishlist";
+import { useUser } from "@supabase/auth-helpers-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useState } from "react";
 
 interface BlogCardProps {
   post: Blog;
   onZoomImage?: (imageUrl: string) => void;
-  isWishlisted?: boolean;
-  onToggleWishlist?: (blogId: string) => void;
 }
 
-export function BlogCard({
-  post,
-  onZoomImage,
-  isWishlisted = false,
-  onToggleWishlist,
-}: BlogCardProps) {
+export function BlogCard({ post, onZoomImage }: BlogCardProps) {
+  const { isItemWishlisted } = useWishlist();
+  const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
+  const user = useUser();
+  const router = useRouter();
+
+  const isWishlisted = isItemWishlisted("blog", post.id);
+
+  const handleToggleWishlist = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!user?.id) {
+      toast.error("Please login to manage wishlist", {
+        action: { label: "Login", onClick: () => router.push("/login") },
+      });
+      return;
+    }
+
+    setIsTogglingWishlist(true);
+
+    const result = await toggleWishlist("blog", post.id, isWishlisted, user.id);
+
+    if (result.success) {
+      toast.success(
+        result.isWishlisted ? "Added to wishlist!" : "Removed from wishlist!",
+        {
+          description: `${post.title} has been ${
+            result.isWishlisted ? "added to" : "removed from"
+          } your wishlist.`,
+        }
+      );
+      window.dispatchEvent(new CustomEvent("wishlistUpdated"));
+    } else {
+      toast.error("Failed to update wishlist", {
+        description: "Please try again.",
+      });
+    }
+
+    setIsTogglingWishlist(false);
+  };
+
   const images =
     post.blog_images?.map((img) => img.image_url).filter(Boolean) || [];
   const mainImage = images[0] || "/placeholder.svg?height=300&width=400";
@@ -69,10 +109,11 @@ export function BlogCard({
             <ZoomIn className="h-4 w-4 text-blue-600" />
           </button>
           <button
-            className={`p-2 bg-white rounded-full shadow hover:bg-gray-200 transition-colors ${
+            onClick={handleToggleWishlist}
+            disabled={isTogglingWishlist}
+            className={`p-2 bg-white rounded-full shadow hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
               isWishlisted ? "text-red-500" : "text-gray-400"
             }`}
-            onClick={() => onToggleWishlist?.(post.id)}
             title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
           >
             <Heart
