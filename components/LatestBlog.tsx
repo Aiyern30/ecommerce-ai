@@ -21,7 +21,7 @@ export default function LatestBlog() {
         .from("blogs")
         .select(
           `
-          id, title, description, link, link_name, status, created_at, updated_at,
+          id, title, description, link, link_name, status, created_at, updated_at, image_url,
           blog_images ( image_url ),
           blog_tags ( tags ( id, name ) )
         `
@@ -33,7 +33,7 @@ export default function LatestBlog() {
       if (error) {
         console.error("Failed to fetch blogs:", error.message);
       } else {
-        setBlogs((data ?? []).filter((blog) => blog.title));
+        setBlogs((data ?? []).filter((blog) => blog.title) as Blog[]);
       }
       setLoading(false);
     };
