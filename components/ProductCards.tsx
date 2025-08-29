@@ -1,6 +1,12 @@
 "use client";
 
-import { ShoppingCart, ZoomIn, SlidersHorizontal, Check } from "lucide-react";
+import {
+  ShoppingCart,
+  ZoomIn,
+  SlidersHorizontal,
+  Check,
+  Heart,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -18,6 +24,8 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@supabase/auth-helpers-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/";
+import { useWishlist } from "@/components/WishlistProvider";
+import { toggleWishlist } from "@/lib/wishlist";
 
 interface ProductCardProps {
   id: string;
@@ -71,6 +79,8 @@ export function ProductCard({
   const [zoomImage, setZoomImage] = useState<string | null>(null);
   const [zoomImages, setZoomImages] = useState<string[]>([]);
   const [zoomIndex, setZoomIndex] = useState(0);
+  const { isItemWishlisted } = useWishlist();
+  const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
 
   const deliveryOptions = [
     normal_price != null
@@ -275,6 +285,42 @@ export function ProductCard({
     }
   };
 
+  const isWishlisted = isItemWishlisted("product", id);
+
+  const handleToggleWishlist = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!user?.id) {
+      toast.error("Please login to manage wishlist", {
+        action: { label: "Login", onClick: () => router.push("/login") },
+      });
+      return;
+    }
+
+    setIsTogglingWishlist(true);
+
+    const result = await toggleWishlist("product", id, isWishlisted, user.id);
+
+    if (result.success) {
+      toast.success(
+        result.isWishlisted ? "Added to wishlist!" : "Removed from wishlist!",
+        {
+          description: `${name} has been ${
+            result.isWishlisted ? "added to" : "removed from"
+          } your wishlist.`,
+        }
+      );
+      window.dispatchEvent(new CustomEvent("wishlistUpdated"));
+    } else {
+      toast.error("Failed to update wishlist", {
+        description: "Please try again.",
+      });
+    }
+
+    setIsTogglingWishlist(false);
+  };
+
   return (
     <>
       <Dialog open={!!zoomImage} onOpenChange={() => setZoomImage(null)}>
@@ -376,6 +422,20 @@ export function ProductCard({
                 >
                   <ZoomIn className="h-5 w-5 text-blue-600" />
                 </button>
+                <button
+                  onClick={handleToggleWishlist}
+                  disabled={isTogglingWishlist}
+                  className={`p-2 bg-white rounded-full shadow-md hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                    isWishlisted ? "text-red-500" : "text-gray-400"
+                  }`}
+                  title={
+                    isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"
+                  }
+                >
+                  <Heart
+                    className={`h-5 w-5 ${isWishlisted ? "fill-current" : ""}`}
+                  />
+                </button>
 
                 {showCompare && (
                   <button
@@ -416,6 +476,20 @@ export function ProductCard({
                   title="Zoom In"
                 >
                   <ZoomIn className="h-5 w-5 text-blue-600" />
+                </button>
+                <button
+                  onClick={handleToggleWishlist}
+                  disabled={isTogglingWishlist}
+                  className={`p-2 bg-white rounded-full shadow-md hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                    isWishlisted ? "text-red-500" : "text-gray-400"
+                  }`}
+                  title={
+                    isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"
+                  }
+                >
+                  <Heart
+                    className={`h-5 w-5 ${isWishlisted ? "fill-current" : ""}`}
+                  />
                 </button>
 
                 {showCompare && (
