@@ -112,29 +112,42 @@ export function CartAnalytics() {
         <Card className="bg-white dark:bg-gray-800 shadow-xl border-0">
           <CardHeader>
             <CardTitle className="text-gray-900 dark:text-white">
-              Cart Activity by Hour
+              Cart Activity by Time Period (Last 30 Days)
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data?.cartsByHour}>
+                <BarChart
+                  data={data?.cartsByHour}
+                  margin={{ top: 20, right: 20, left: 20, bottom: 60 }}
+                  barCategoryGap="20%"
+                  maxBarSize={80}
+                >
                   <XAxis
                     dataKey="hour"
-                    label={{
-                      value: "Hour",
-                      position: "insideBottom",
-                      offset: -5,
-                      style: { fill: "#6b7280", fontSize: 13 },
-                    }}
+                    type="category"
+                    interval={0}
+                    tick={{ fontSize: 10 }}
+                    angle={-30}
+                    textAnchor="end"
+                    height={60}
+                    tickLine={false}
+                    axisLine={{ stroke: "#374151", strokeWidth: 1 }}
                   />
                   <YAxis
+                    tick={{ fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={{ stroke: "#374151", strokeWidth: 1 }}
                     label={{
                       value: "Carts",
                       angle: -90,
                       position: "insideLeft",
-                      offset: 10,
-                      style: { fill: "#6b7280", fontSize: 13 },
+                      style: {
+                        fill: "#6b7280",
+                        fontSize: 12,
+                        fontWeight: 500,
+                      },
                     }}
                   />
                   <Tooltip
@@ -142,29 +155,141 @@ export function CartAnalytics() {
                     content={({ active, payload, label }) =>
                       active && payload && payload.length ? (
                         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 px-4 py-3 rounded-xl shadow-xl backdrop-blur-sm">
-                          <div className="font-semibold text-gray-900 dark:text-white text-lg">
-                            {payload.find((p) => p.dataKey === "carts")?.value}{" "}
-                            Carts
-                          </div>
-                          <div className="font-semibold text-red-600 dark:text-red-400 text-lg">
-                            {
-                              payload.find((p) => p.dataKey === "abandoned")
-                                ?.value
-                            }{" "}
-                            Abandoned
-                          </div>
-                          <div className="text-gray-600 dark:text-gray-400 text-sm font-medium">
+                          <div className="font-semibold text-gray-900 dark:text-white text-sm mb-2">
                             {label}
+                          </div>
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 bg-blue-500 rounded"></div>
+                              <span className="text-sm text-gray-700 dark:text-gray-300">
+                                Total:{" "}
+                                <span className="font-semibold">
+                                  {
+                                    payload.find((p) => p.dataKey === "carts")
+                                      ?.value
+                                  }
+                                </span>
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 bg-red-500 rounded"></div>
+                              <span className="text-sm text-gray-700 dark:text-gray-300">
+                                Abandoned:{" "}
+                                <span className="font-semibold">
+                                  {
+                                    payload.find(
+                                      (p) => p.dataKey === "abandoned"
+                                    )?.value
+                                  }
+                                </span>
+                              </span>
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 pt-1 border-t border-gray-200 dark:border-gray-600">
+                              Conversion:{" "}
+                              {payload.find((p) => p.dataKey === "carts")
+                                ?.value &&
+                              (payload.find((p) => p.dataKey === "carts")
+                                ?.value as number) > 0
+                                ? (
+                                    (((payload.find(
+                                      (p) => p.dataKey === "carts"
+                                    )?.value as number) -
+                                      ((payload.find(
+                                        (p) => p.dataKey === "abandoned"
+                                      )?.value as number) || 0)) /
+                                      (payload.find(
+                                        (p) => p.dataKey === "carts"
+                                      )?.value as number)) *
+                                    100
+                                  ).toFixed(1)
+                                : "0"}
+                              %
+                            </div>
                           </div>
                         </div>
                       ) : null
                     }
                   />
-                  <Bar dataKey="carts" fill="#3b82f6" name="Total Carts" />
-                  <Bar dataKey="abandoned" fill="#ef4444" name="Abandoned" />
+                  <Bar
+                    dataKey="carts"
+                    fill="#3b82f6"
+                    name="Total Carts"
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Bar
+                    dataKey="abandoned"
+                    fill="#ef4444"
+                    name="Abandoned"
+                    radius={[4, 4, 0, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
+            {data?.cartsByHour && data.cartsByHour.length === 0 && (
+              <div className="flex items-center justify-center h-[200px] text-gray-500 dark:text-gray-400">
+                <div className="text-center">
+                  <ShoppingCart className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg font-medium">No cart activity</p>
+                  <p className="text-sm">
+                    No carts created in the last 30 days
+                  </p>
+                </div>
+              </div>
+            )}
+            {data?.cartsByHour && data.cartsByHour.length > 0 && (
+              <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                      {data.cartsByHour.reduce(
+                        (sum, item) => sum + item.carts,
+                        0
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                      Total Carts
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-bold text-red-600 dark:text-red-400">
+                      {data.cartsByHour.reduce(
+                        (sum, item) => sum + item.abandoned,
+                        0
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                      Abandoned
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-bold text-green-600 dark:text-green-400">
+                      {data.cartsByHour.length > 0 &&
+                      data.cartsByHour.reduce(
+                        (sum, item) => sum + item.carts,
+                        0
+                      ) > 0
+                        ? (
+                            (data.cartsByHour.reduce(
+                              (sum, item) =>
+                                sum + (item.carts - item.abandoned),
+                              0
+                            ) /
+                              data.cartsByHour.reduce(
+                                (sum, item) => sum + item.carts,
+                                0
+                              )) *
+                            100
+                          ).toFixed(1)
+                        : "0"}
+                      %
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                      Conversion
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
