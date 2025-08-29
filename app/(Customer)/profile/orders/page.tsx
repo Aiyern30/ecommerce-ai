@@ -213,6 +213,47 @@ export default function OrdersPage() {
     return orderDate >= thirtyDaysAgo;
   }).length;
 
+  // Calculate growth trends
+  const calculateTrend = (current: number, previous: number) => {
+    if (previous === 0) return current > 0 ? 100 : 0;
+    return ((current - previous) / previous) * 100;
+  };
+
+  // Calculate previous periods for comparison
+  const previousMonthOrders = orders.filter((order) => {
+    const orderDate = new Date(order.created_at);
+    const sixtyDaysAgo = new Date();
+    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    return orderDate >= sixtyDaysAgo && orderDate < thirtyDaysAgo;
+  }).length;
+
+  const previousMonthSpent = orders
+    .filter((order) => {
+      const orderDate = new Date(order.created_at);
+      const sixtyDaysAgo = new Date();
+      sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      return orderDate >= sixtyDaysAgo && orderDate < thirtyDaysAgo;
+    })
+    .reduce((sum, order) => sum + order.total, 0);
+
+  const currentMonthSpent = orders
+    .filter((order) => {
+      const orderDate = new Date(order.created_at);
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      return orderDate >= thirtyDaysAgo;
+    })
+    .reduce((sum, order) => sum + order.total, 0);
+
+  // Calculate trends
+  const ordersTrend = calculateTrend(recentOrders, previousMonthOrders);
+  const spentTrend = calculateTrend(currentMonthSpent, previousMonthSpent);
+  const recentOrdersTrend = calculateTrend(recentOrders, previousMonthOrders);
+
   const totalOrdersFiltered = filteredOrders.length;
   const totalPages = Math.ceil(totalOrdersFiltered / ordersPerPage);
   const startIndex = (currentPage - 1) * ordersPerPage;
@@ -304,16 +345,27 @@ export default function OrdersPage() {
               icon={ShoppingBag}
               title="Total Orders"
               value={totalOrders.toString()}
+              growth={ordersTrend}
+              gradient="from-emerald-500 to-green-600"
+              bgGradient="from-white to-emerald-50/30 dark:from-gray-900 dark:to-emerald-900/10"
             />
+
             <StatsCards
               icon={DollarSign}
               title="Total Spent"
               value={formatCurrency(totalSpent)}
+              growth={spentTrend}
+              gradient="from-blue-500 to-indigo-600"
+              bgGradient="from-white to-blue-50/30 dark:from-gray-900 dark:to-blue-900/10"
             />
+
             <StatsCards
               icon={TrendingUp}
               title="Recent Orders"
               value={recentOrders.toString()}
+              growth={recentOrdersTrend}
+              gradient="from-orange-500 to-amber-600"
+              bgGradient="from-white to-orange-50/30 dark:from-gray-900 dark:to-orange-900/10"
             />
           </div>
         )}
