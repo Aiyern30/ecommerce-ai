@@ -49,7 +49,7 @@ export default function BlogPost() {
         .select(
           `
     id, title, description, status, created_at, updated_at,
-    link, link_name, content,
+    link, link_name, content, image_url,
     blog_images ( image_url ),
     blog_tags ( tags ( id, name ) )
   `
@@ -63,7 +63,7 @@ export default function BlogPost() {
         return;
       }
 
-      setBlog(current);
+      setBlog(current as Blog);
 
       const { data: prev } = await supabase
         .from("blogs")
