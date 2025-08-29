@@ -36,6 +36,7 @@ import { supabase } from "@/lib/supabase/browserClient";
 import { Product } from "@/type/product";
 import { useProductSearch } from "@/hooks/useProductSearch";
 import { IoCameraOutline } from "react-icons/io5";
+import Wishlist from "./Wishlist";
 function getBestPriceAndLabel(product: Product) {
   const priceFields = [
     { key: "normal", label: "Normal Delivery", price: product.normal_price },
@@ -589,12 +590,11 @@ const Header = () => {
 
               {user && (
                 <>
+                  <Wishlist />
                   <NotificationSheet />
                   <CartSheet />
                 </>
               )}
-
-              {!user && <CartSheet />}
 
               {user && (
                 <DropdownMenu>
