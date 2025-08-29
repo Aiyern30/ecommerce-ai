@@ -2,7 +2,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/browserClient";
 import { Card, CardContent } from "@/components/ui/";
 import { Button } from "@/components/ui/";
 import {
@@ -283,7 +282,7 @@ export function OrdersOverTime() {
   const [loading, setLoading] = useState(true);
   const [totalOrders, setTotalOrders] = useState(0);
   const [previousPeriodOrders, setPreviousPeriodOrders] = useState(0);
-  const [currentPeriodOrders, setCurrentPeriodOrders] = useState(0); // <-- use this state
+  const [currentPeriodOrders, setCurrentPeriodOrders] = useState(0);
   const [dataSpanDays, setDataSpanDays] = useState(0);
   const { isMobile } = useDeviceType();
 
@@ -291,26 +290,32 @@ export function OrdersOverTime() {
     async function fetchOrders() {
       setLoading(true);
       try {
-        // Get all orders first to determine data span
-        const { data: allOrders, error } = await supabase
-          .from("orders")
-          .select("created_at")
-          .order("created_at", { ascending: true });
+        const response = await fetch("/api/admin/orders-analytics", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
 
-        if (error) {
-          console.error("Error fetching orders:", error);
+        if (!response.ok) {
+          console.error(
+            "Error fetching orders analytics:",
+            response.statusText
+          );
           return;
         }
+
+        const { orders: allOrders } = await response.json();
 
         if (!allOrders || allOrders.length === 0) {
           setData([]);
           setTotalOrders(0);
           setPreviousPeriodOrders(0);
+          setCurrentPeriodOrders(0);
           setDataSpanDays(0);
           return;
         }
 
-        // Calculate data span
         const earliestOrder = new Date(allOrders[0].created_at);
         const latestOrder = new Date(
           allOrders[allOrders.length - 1].created_at
@@ -321,7 +326,6 @@ export function OrdersOverTime() {
         );
         setDataSpanDays(daysDiff);
 
-        // Filter orders based on selected filter
         let filteredOrders = allOrders;
         const now = new Date();
 
@@ -329,29 +333,27 @@ export function OrdersOverTime() {
           const startOfDay = new Date(now);
           startOfDay.setHours(0, 0, 0, 0);
           filteredOrders = allOrders.filter(
-            (order) => new Date(order.created_at) >= startOfDay
+            (order: Order) => new Date(order.created_at) >= startOfDay
           );
         } else if (filter === "week") {
           const weekAgo = new Date(now);
           weekAgo.setDate(now.getDate() - 7);
           filteredOrders = allOrders.filter(
-            (order) => new Date(order.created_at) >= weekAgo
+            (order: Order) => new Date(order.created_at) >= weekAgo
           );
         } else if (filter === "30days") {
           const monthAgo = new Date(now);
           monthAgo.setDate(now.getDate() - 30);
           filteredOrders = allOrders.filter(
-            (order) => new Date(order.created_at) >= monthAgo
+            (order: Order) => new Date(order.created_at) >= monthAgo
           );
         }
-        // "all" uses all orders
 
         const periods = generateSmartPeriods(filteredOrders, filter);
         const chartData = groupOrdersByPeriod(filteredOrders, periods);
 
         const total = chartData.reduce((sum, item) => sum + item.orders, 0);
 
-        // Calculate growth - compare first half vs second half of periods
         const midPoint = Math.floor(chartData.length / 2);
         const previousPeriodData = chartData.slice(0, midPoint);
         const currentPeriodData = chartData.slice(midPoint);
@@ -368,7 +370,7 @@ export function OrdersOverTime() {
         setData(chartData);
         setTotalOrders(total);
         setPreviousPeriodOrders(prevTotal);
-        setCurrentPeriodOrders(currentTotal); // <-- set current period orders here
+        setCurrentPeriodOrders(currentTotal);
       } catch (error) {
         console.error("Error fetching orders:", error);
       } finally {
@@ -379,7 +381,6 @@ export function OrdersOverTime() {
     fetchOrders();
   }, [filter]);
 
-  // Smart filter options based on available data
   const getFilterOptions = () => {
     const baseOptions = [
       {
@@ -512,7 +513,6 @@ export function OrdersOverTime() {
     <Card className="col-span-full bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-900 dark:to-blue-900/10 border-0 shadow-xl">
       <CardContent className={isMobile ? "p-4" : "p-8"}>
         <div className="flex flex-col gap-6">
-          {/* Header - Mobile Optimized */}
           <div
             className={`${
               isMobile
@@ -602,7 +602,6 @@ export function OrdersOverTime() {
             </DropdownMenu>
           </div>
 
-          {/* Chart - Mobile Optimized */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
             <div
               className={`${
@@ -631,11 +630,9 @@ export function OrdersOverTime() {
                       top: isMobile ? 10 : 20,
                       right: isMobile ? 10 : 30,
                       left: isMobile ? 0 : 10,
-                      // Reduce bottom margin to move chart down and minimize empty space
                       bottom: isMobile ? 10 : 20,
                     }}
                   >
-                    {/* X Axis */}
                     <XAxis
                       dataKey="period"
                       label={{
@@ -656,7 +653,6 @@ export function OrdersOverTime() {
                       height={isMobile ? 60 : 40}
                       interval={isMobile && data.length > 6 ? 1 : 0}
                     />
-                    {/* Y Axis */}
                     <YAxis
                       label={{
                         value: "Orders",
@@ -707,7 +703,6 @@ export function OrdersOverTime() {
             </div>
           </div>
 
-          {/* Summary Stats - Mobile Optimized */}
           {data.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               <StatCard
@@ -739,7 +734,6 @@ export function OrdersOverTime() {
             </div>
           )}
 
-          {/* Data Status Indicator */}
           <div className="flex items-center justify-center">
             <div
               className={`flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-full ${
