@@ -2,7 +2,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/browserClient";
 import { Card, CardContent } from "@/components/ui/";
 import { Button } from "@/components/ui/";
 import {
@@ -236,8 +235,6 @@ export function RevenueOverTime() {
   const [filter, setFilter] = useState<FilterType>("all");
   const [loading, setLoading] = useState(true);
   const [totalRevenue, setTotalRevenue] = useState(0);
-  const [totalOrders, setTotalOrders] = useState(0);
-  console.log("Revenue data:", totalOrders);
   const [previousPeriodRevenue, setPreviousPeriodRevenue] = useState(0);
   const [currentPeriodRevenue, setCurrentPeriodRevenue] = useState(0);
   const [dataSpanDays, setDataSpanDays] = useState(0);
@@ -247,21 +244,27 @@ export function RevenueOverTime() {
     async function fetchRevenue() {
       setLoading(true);
       try {
-        // Get all orders for the filter
-        const { data: allOrders, error } = await supabase
-          .from("orders")
-          .select("created_at, total, payment_status")
-          .order("created_at", { ascending: true });
+        // Use API endpoint that uses supabaseAdmin instead of direct supabase client
+        const response = await fetch("/api/admin/revenue-analytics", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
 
-        if (error) {
-          console.error("Error fetching revenue:", error);
+        if (!response.ok) {
+          console.error(
+            "Error fetching revenue analytics:",
+            response.statusText
+          );
           return;
         }
+
+        const { orders: allOrders } = await response.json();
 
         if (!allOrders || allOrders.length === 0) {
           setData([]);
           setTotalRevenue(0);
-          setTotalOrders(0);
           setPreviousPeriodRevenue(0);
           setCurrentPeriodRevenue(0);
           setDataSpanDays(0);
@@ -287,19 +290,19 @@ export function RevenueOverTime() {
           const startOfDay = new Date(now);
           startOfDay.setHours(0, 0, 0, 0);
           filteredOrders = allOrders.filter(
-            (order) => new Date(order.created_at) >= startOfDay
+            (order: Order) => new Date(order.created_at) >= startOfDay
           );
         } else if (filter === "week") {
           const weekAgo = new Date(now);
           weekAgo.setDate(now.getDate() - 7);
           filteredOrders = allOrders.filter(
-            (order) => new Date(order.created_at) >= weekAgo
+            (order: Order) => new Date(order.created_at) >= weekAgo
           );
         } else if (filter === "30days") {
           const monthAgo = new Date(now);
           monthAgo.setDate(now.getDate() - 30);
           filteredOrders = allOrders.filter(
-            (order) => new Date(order.created_at) >= monthAgo
+            (order: Order) => new Date(order.created_at) >= monthAgo
           );
         }
         // "all" uses all orders
@@ -308,9 +311,6 @@ export function RevenueOverTime() {
         const chartData = groupRevenueByPeriod(filteredOrders, periods);
 
         const total = chartData.reduce((sum, item) => sum + item.revenue, 0);
-        const paidOrders = filteredOrders.filter(
-          (order) => order.payment_status === "paid"
-        ).length;
 
         // Calculate previous/current period revenue for comparison
         const midPoint = Math.floor(chartData.length / 2);
@@ -328,7 +328,6 @@ export function RevenueOverTime() {
 
         setData(chartData);
         setTotalRevenue(total);
-        setTotalOrders(paidOrders);
         setPreviousPeriodRevenue(prevTotal);
         setCurrentPeriodRevenue(currTotal);
       } catch (error) {
