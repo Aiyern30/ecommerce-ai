@@ -1,4 +1,6 @@
 import type { Wishlist, WishlistWithItem } from "@/types/wishlist";
+import type { Blog } from "@/type/blogs";
+import type { Product } from "@/type/product";
 import { supabase } from "./supabase/browserClient";
 
 export async function addToWishlist(
@@ -58,39 +60,110 @@ export async function getUserWishlists(
   userId: string
 ): Promise<WishlistWithItem[]> {
   try {
-    const { data, error } = await supabase
+    // First get all wishlist items
+    const { data: wishlistData, error: wishlistError } = await supabase
       .from("wishlists")
-      .select(
-        `
-        *,
-        blogs:item_id(
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (wishlistError) {
+      console.error("Error fetching wishlists:", wishlistError);
+      return [];
+    }
+
+    if (!wishlistData || wishlistData.length === 0) {
+      return [];
+    }
+
+    // Separate blog and product IDs
+    const blogIds = wishlistData
+      .filter((item) => item.item_type === "blog")
+      .map((item) => item.item_id);
+
+    const productIds = wishlistData
+      .filter((item) => item.item_type === "product")
+      .map((item) => item.item_id);
+
+    // Fetch blogs if any - include all required fields
+    let blogsData: Blog[] = [];
+    if (blogIds.length > 0) {
+      const { data, error } = await supabase
+        .from("blogs")
+        .select(
+          `
           id,
           title,
           description,
-          image_url,
+          status,
           created_at,
+          updated_at,
+          link,
+          link_name,
+          content,
           blog_images(image_url),
           blog_tags(tags(*))
-        ),
-        products:item_id(
+        `
+        )
+        .in("id", blogIds);
+
+      if (!error && data) {
+        blogsData = data as Blog[];
+      }
+    }
+
+    // Fetch products if any - include all required fields
+    let productsData: Product[] = [];
+    if (productIds.length > 0) {
+      const { data, error } = await supabase
+        .from("products")
+        .select(
+          `
           id,
           name,
           description,
           grade,
+          product_type,
+          mortar_ratio,
+          category,
           normal_price,
-          product_images(image_url, is_primary)
+          pump_price,
+          tremie_1_price,
+          tremie_2_price,
+          tremie_3_price,
+          unit,
+          stock_quantity,
+          status,
+          is_featured,
+          created_at,
+          updated_at,
+          keywords,
+          product_images(id, image_url, alt_text, is_primary, sort_order)
+        `
         )
-      `
-      )
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
+        .in("id", productIds);
 
-    if (error) {
-      console.error("Error fetching wishlists:", error);
-      return [];
+      if (!error && data) {
+        productsData = data as Product[];
+      }
     }
 
-    return data || [];
+    // Combine the data
+    const result: WishlistWithItem[] = wishlistData.map((wishlistItem) => {
+      const item: WishlistWithItem = { ...wishlistItem };
+
+      if (wishlistItem.item_type === "blog") {
+        item.blog = blogsData.find((blog) => blog.id === wishlistItem.item_id);
+      } else if (wishlistItem.item_type === "product") {
+        item.product = productsData.find(
+          (product) => product.id === wishlistItem.item_id
+        );
+      }
+
+      return item;
+    });
+
+    return result;
   } catch (error) {
     console.error("Error fetching wishlists:", error);
     return [];

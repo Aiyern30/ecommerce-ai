@@ -311,6 +311,7 @@ export function ProductCard({
           } your wishlist.`,
         }
       );
+      // Dispatch event to update wishlist context
       window.dispatchEvent(new CustomEvent("wishlistUpdated"));
     } else {
       toast.error("Failed to update wishlist", {
