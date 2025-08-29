@@ -26,7 +26,7 @@ export default function BlogsPage() {
       .select(
         `
         id, title, description, status, created_at, updated_at,
-        link, link_name, content,
+        link, link_name, content, image_url,
         blog_images ( image_url ),
         blog_tags ( tags ( id, name ) )
       `
@@ -48,7 +48,7 @@ export default function BlogsPage() {
       (blog) => blog.title && blog.blog_images && blog.blog_images.length > 0
     );
 
-    return validBlogs;
+    return validBlogs as Blog[];
   };
 
   const loadInitialBlogs = useCallback(async () => {
