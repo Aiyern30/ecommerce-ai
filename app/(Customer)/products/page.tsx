@@ -80,7 +80,7 @@ export default function ProductListPage() {
   const handleCompareToggle = (
     id: string,
     add: boolean,
-    deliveryOptions?: { key: string; label: string }[]
+    selectedDeliveryType?: string
   ) => {
     setSelectedProducts((prev) => {
       if (add) {
@@ -88,10 +88,9 @@ export default function ProductListPage() {
           toast.warning("You can only compare up to 4 products");
           return prev;
         }
-        let priceType = "normal";
-        if (deliveryOptions && deliveryOptions.length === 1) {
-          priceType = deliveryOptions[0].key;
-        }
+
+        const priceType = selectedDeliveryType || "normal";
+
         return [...prev, { id, priceType }];
       } else {
         return prev.filter((item) => item.id !== id);
@@ -192,9 +191,7 @@ export default function ProductListPage() {
                 tremie_3_price={product.tremie_3_price}
                 showCompare
                 isCompared={isSelected}
-                onCompareToggle={(id, add) =>
-                  handleCompareToggle(id, add, deliveryOptions)
-                }
+                onCompareToggle={handleCompareToggle}
                 compareCount={selectedProducts.length}
                 selectedPriceType={
                   selectedProduct?.priceType ||
@@ -202,9 +199,7 @@ export default function ProductListPage() {
                     ? deliveryOptions[0].key
                     : "normal")
                 }
-                onPriceTypeChange={
-                  isSelected ? handlePriceTypeChange : undefined
-                }
+                onPriceTypeChange={handlePriceTypeChange}
               />
             );
           })}

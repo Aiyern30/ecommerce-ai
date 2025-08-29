@@ -37,13 +37,11 @@ interface ProductCardProps {
     selectedDeliveryType?: string
   ) => void;
   compareCount?: number;
-  // Add price fields
   normal_price?: number | null;
   pump_price?: number | null;
   tremie_1_price?: number | null;
   tremie_2_price?: number | null;
   tremie_3_price?: number | null;
-  // New props for compare price type
   selectedPriceType?: string;
   onPriceTypeChange?: (productId: string, priceType: string) => void;
 }
@@ -99,12 +97,10 @@ export function ProductCard({
   const router = useRouter();
   const user = useUser();
 
-  // Set initial selectedDelivery based on available options
   const [selectedDelivery, setSelectedDelivery] = useState(() => {
     if (onlyOneDeliveryType) {
       return deliveryOptions[0].key;
     }
-    // If item is already compared, use selectedPriceType, otherwise use first available
     if (isCompared) {
       const hasSelected = deliveryOptions.find(
         (opt) => opt.key === selectedPriceType
@@ -116,7 +112,6 @@ export function ProductCard({
     return deliveryOptions[0]?.key || "normal";
   });
 
-  // Update selectedDelivery when selectedPriceType changes from parent (only when compared)
   useEffect(() => {
     if (isCompared && selectedPriceType) {
       const validOption = deliveryOptions.find(
@@ -128,7 +123,6 @@ export function ProductCard({
     }
   }, [selectedPriceType, isCompared, deliveryOptions]);
 
-  // Helper for compare/carts: always use the only delivery type if only one is available
   const getValidDeliveryType = () => {
     if (onlyOneDeliveryType) {
       return deliveryOptions[0].key;
@@ -144,21 +138,10 @@ export function ProductCard({
 
     if (onCompareToggle) {
       if (!isCompared) {
-        // When adding to compare, use the user's currently selected delivery option
         const compareDeliveryType = getValidDeliveryType();
-        console.log(
-          "Adding to compare with delivery type:",
-          compareDeliveryType
-        ); // Debug log
 
-        if (onPriceTypeChange) {
-          onPriceTypeChange(id, compareDeliveryType);
-        }
-
-        // Pass the selected delivery type to the parent
         onCompareToggle(id, true, compareDeliveryType);
       } else {
-        // When removing from compare
         onCompareToggle(id, false);
       }
     }
@@ -180,7 +163,6 @@ export function ProductCard({
 
     setIsAddingToCart(true);
 
-    // Always use a valid delivery type for cart
     const cartDeliveryType = getValidDeliveryType();
     const result = await addToCart(user.id, id, 1, cartDeliveryType);
 
@@ -205,12 +187,10 @@ export function ProductCard({
   };
 
   const handleComparePriceTypeChange = (newPriceType: string) => {
-    // Only allow valid price types
     const validType = deliveryOptions.find((opt) => opt.key === newPriceType)
       ? newPriceType
       : deliveryOptions[0]?.key || "normal";
 
-    // Update both local state and parent state
     setSelectedDelivery(validType);
     if (onPriceTypeChange) {
       onPriceTypeChange(id, validType);
@@ -269,7 +249,6 @@ export function ProductCard({
       ? deliveryOptions.find((opt) => opt.key === getBestPrice()!.key)?.label
       : undefined;
 
-  // Fix: Use the correct price type for comparison display
   const effectiveCompareType = isCompared
     ? selectedPriceType
     : selectedDelivery;
@@ -290,21 +269,11 @@ export function ProductCard({
       : undefined;
 
   const handleDeliveryChange = (value: string) => {
-    console.log("Delivery changed to:", value, "isCompared:", isCompared); // Debug log
     setSelectedDelivery(value);
-    // If item is already in compare, update the compare price type immediately
     if (isCompared && onPriceTypeChange) {
       onPriceTypeChange(id, value);
     }
   };
-
-  // Debug log to see current state
-  console.log(`Product ${id}:`, {
-    selectedDelivery,
-    selectedPriceType,
-    isCompared,
-    effectiveCompareType,
-  });
 
   return (
     <>
@@ -362,10 +331,8 @@ export function ProductCard({
         </DialogContent>
       </Dialog>
 
-      {/* 📦 Product Card */}
       <div className="group block relative h-full">
         <Card className="py-0 h-full flex flex-col hover:shadow-lg transition-shadow duration-300 overflow-hidden">
-          {/* Image section with Link */}
           <Link
             href={href}
             className="relative aspect-square overflow-hidden bg-gray-100 block"
@@ -385,7 +352,6 @@ export function ProductCard({
             )}
 
             <div>
-              {/* Mobile Controls */}
               <div className="absolute left-4 bottom-4 flex flex-col gap-2 sm:hidden opacity-100 pointer-events-auto">
                 <button
                   onClick={handleAddToCart}
@@ -427,7 +393,6 @@ export function ProductCard({
                 )}
               </div>
 
-              {/* Desktop Controls */}
               <div className="absolute left-4 bottom-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto hidden sm:flex">
                 <button
                   onClick={handleAddToCart}
@@ -471,9 +436,7 @@ export function ProductCard({
             </div>
           </Link>
 
-          {/* Card content without Link wrapper */}
           <CardContent className="flex-1 p-4 space-y-2">
-            {/* Clickable title */}
             <Link href={href} className="block">
               <h3 className="font-medium text-sm line-clamp-2 hover:text-blue-600 transition-colors">
                 {name}
@@ -568,7 +531,6 @@ export function ProductCard({
                   <span className="text-gray-400">N/A</span>
                 )}
               </span>
-              {/* Show badge only once for single delivery type */}
               {onlyOneDeliveryType ? (
                 <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded">
                   {displayLabel}
