@@ -343,7 +343,7 @@ export default function Wishlist() {
           <div className="flex-1 min-h-0 flex flex-col">
             <div className="flex-1 min-h-0 overflow-y-auto">
               {isLoading ? (
-                <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+                <div className="h-full flex items-center justify-center">
                   <div className="text-center space-y-2">
                     <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
                     <TypographyP className="text-sm text-muted-foreground">
@@ -352,7 +352,7 @@ export default function Wishlist() {
                   </div>
                 </div>
               ) : !user ? (
-                <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-6 text-center space-y-6">
+                <div className="h-full flex flex-col items-center justify-center px-6 text-center space-y-6">
                   <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
                     <Heart className="h-12 w-12 text-gray-400" />
                   </div>
@@ -370,7 +370,7 @@ export default function Wishlist() {
                   </Link>
                 </div>
               ) : wishlistItems.length === 0 ? (
-                <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-6 text-center space-y-6">
+                <div className="h-full flex flex-col items-center justify-center px-6 text-center space-y-6">
                   <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
                     <Heart className="h-12 w-12 text-gray-500" />
                   </div>
@@ -394,63 +394,112 @@ export default function Wishlist() {
                 </div>
               ) : (
                 <ScrollArea className="flex-1">
-                  <Tabs defaultValue="all" className="h-full">
-                    <TabsList className="grid w-full grid-cols-3 mb-4">
-                      <TabsTrigger value="all">
-                        All ({wishlistCount})
-                      </TabsTrigger>
-                      <TabsTrigger value="products">
-                        Products ({productItems.length})
-                      </TabsTrigger>
-                      <TabsTrigger value="blogs">
-                        Blogs ({blogItems.length})
-                      </TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="all" className="mt-0">
-                      <div className="space-y-4">
-                        {wishlistItems.map((item) => (
-                          <div key={item.id}>
-                            {item.item_type === "blog" && item.blog && (
-                              <BlogItem item={item} />
-                            )}
-                            {item.item_type === "product" && item.product && (
-                              <ProductItem item={item} />
-                            )}
+                  <div className="h-full">
+                    <Tabs defaultValue="all" className="h-full flex flex-col">
+                      <TabsList className="grid w-full grid-cols-3 mb-4 flex-shrink-0">
+                        <TabsTrigger value="all">
+                          All ({wishlistCount})
+                        </TabsTrigger>
+                        <TabsTrigger value="products">
+                          Products ({productItems.length})
+                        </TabsTrigger>
+                        <TabsTrigger value="blogs">
+                          Blogs ({blogItems.length})
+                        </TabsTrigger>
+                      </TabsList>
+                      <div className="flex-1 min-h-0">
+                        <TabsContent value="all" className="mt-0 h-full">
+                          <div className="space-y-4">
+                            {wishlistItems.map((item) => (
+                              <div key={item.id}>
+                                {item.item_type === "blog" && item.blog && (
+                                  <BlogItem item={item} />
+                                )}
+                                {item.item_type === "product" &&
+                                  item.product && <ProductItem item={item} />}
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        </TabsContent>
+                        <TabsContent
+                          value="products"
+                          className="mt-0 flex-1 flex items-center justify-center"
+                        >
+                          {productItems.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center px-6 text-center space-y-4 h-[500px]">
+                              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                                <ShoppingCart className="h-8 w-8 text-gray-400" />
+                              </div>
+                              <div className="space-y-2">
+                                <TypographyH4 className="text-gray-700 dark:text-gray-300 text-sm">
+                                  No products in your wishlist yet
+                                </TypographyH4>
+                                <TypographyP className="text-xs text-muted-foreground max-w-xs">
+                                  Start browsing our amazing products and add
+                                  them to your wishlist.
+                                </TypographyP>
+                              </div>
+                              <Link
+                                href="/products"
+                                onClick={() => setIsOpen(false)}
+                              >
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-xs"
+                                >
+                                  Browse Products
+                                </Button>
+                              </Link>
+                            </div>
+                          ) : (
+                            <div className="w-full space-y-4">
+                              {productItems.map((item) => (
+                                <ProductItem key={item.id} item={item} />
+                              ))}
+                            </div>
+                          )}
+                        </TabsContent>
+
+                        <TabsContent value="blogs" className="mt-0 flex-1 flex">
+                          {blogItems.length === 0 ? (
+                            <div className="flex flex-1 flex-col items-center justify-center px-6 text-center space-y-4 h-[500px]">
+                              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                                <Heart className="h-8 w-8 text-gray-400" />
+                              </div>
+                              <div className="space-y-2">
+                                <TypographyH4 className="text-gray-700 dark:text-gray-300 text-sm">
+                                  No blogs in your wishlist yet
+                                </TypographyH4>
+                                <TypographyP className="text-xs text-muted-foreground max-w-xs">
+                                  Discover interesting articles and save them to
+                                  your wishlist.
+                                </TypographyP>
+                              </div>
+                              <Link
+                                href="/blogs"
+                                onClick={() => setIsOpen(false)}
+                              >
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-xs"
+                                >
+                                  Browse Blogs
+                                </Button>
+                              </Link>
+                            </div>
+                          ) : (
+                            <div className="flex-1 overflow-y-auto space-y-4">
+                              {blogItems.map((item) => (
+                                <BlogItem key={item.id} item={item} />
+                              ))}
+                            </div>
+                          )}
+                        </TabsContent>
                       </div>
-                    </TabsContent>
-                    <TabsContent value="products" className="mt-0">
-                      <div className="space-y-4">
-                        {productItems.length === 0 ? (
-                          <div className="text-center py-8">
-                            <TypographyP className="text-gray-500">
-                              No products in your wishlist yet
-                            </TypographyP>
-                          </div>
-                        ) : (
-                          productItems.map((item) => (
-                            <ProductItem key={item.id} item={item} />
-                          ))
-                        )}
-                      </div>
-                    </TabsContent>
-                    <TabsContent value="blogs" className="mt-0">
-                      <div className="space-y-4">
-                        {blogItems.length === 0 ? (
-                          <div className="text-center py-8">
-                            <TypographyP className="text-gray-500">
-                              No blogs in your wishlist yet
-                            </TypographyP>
-                          </div>
-                        ) : (
-                          blogItems.map((item) => (
-                            <BlogItem key={item.id} item={item} />
-                          ))
-                        )}
-                      </div>
-                    </TabsContent>
-                  </Tabs>
+                    </Tabs>
+                  </div>
                 </ScrollArea>
               )}
             </div>
