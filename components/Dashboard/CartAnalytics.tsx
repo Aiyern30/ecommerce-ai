@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/";
 import { ShoppingCart, AlertTriangle, TrendingDown, Clock } from "lucide-react";
+import { StatsCards } from "@/components/StatsCards";
+import { formatCurrency } from "@/lib/utils/currency";
 import {
   Bar,
   BarChart,
@@ -62,86 +64,48 @@ export function CartAnalytics() {
   return (
     <div className="space-y-6">
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="bg-gradient-to-br from-white to-red-50/30 dark:from-gray-900 dark:to-red-900/10 border-0 shadow-xl">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Abandoned Carts
-                </p>
-                <h3 className="text-3xl font-bold text-red-600 dark:text-red-400">
-                  {data?.abandonedCarts}
-                </h3>
-                <p className="text-xs text-gray-500 mt-1">Last 30 days</p>
-              </div>
-              <div className="p-3 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl">
-                <AlertTriangle className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <StatsCards
+          title="Abandoned Carts"
+          value={data?.abandonedCarts?.toString() || "0"}
+          description="Last 30 days"
+          icon={AlertTriangle}
+          gradient="from-red-500 to-red-600"
+          bgGradient="from-white to-red-50/30 dark:from-gray-900 dark:to-red-900/10"
+          hideGrowth={true}
+        />
 
-        <Card className="bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-900 dark:to-blue-900/10 border-0 shadow-xl">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Avg Cart Value
-                </p>
-                <h3 className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                  RM{data?.averageCartValue.toFixed(2)}
-                </h3>
-                <p className="text-xs text-gray-500 mt-1">
-                  Including abandoned
-                </p>
-              </div>
-              <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl">
-                <ShoppingCart className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <StatsCards
+          title="Avg Cart Value"
+          value={formatCurrency(data?.averageCartValue || 0, true)}
+          description="Including abandoned"
+          icon={ShoppingCart}
+          gradient="from-blue-500 to-blue-600"
+          bgGradient="from-white to-blue-50/30 dark:from-gray-900 dark:to-blue-900/10"
+          hideGrowth={true}
+        />
 
-        <Card className="bg-gradient-to-br from-white to-green-50/30 dark:from-gray-900 dark:to-green-900/10 border-0 shadow-xl">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Conversion Rate
-                </p>
-                <h3 className="text-3xl font-bold text-green-600 dark:text-green-400">
-                  {data?.conversionRate}%
-                </h3>
-                <p className="text-xs text-gray-500 mt-1">Cart to order</p>
-              </div>
-              <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl">
-                <TrendingDown className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <StatsCards
+          title="Conversion Rate"
+          value={`${data?.conversionRate || 0}%`}
+          description="Cart to order"
+          icon={TrendingDown}
+          gradient="from-green-500 to-green-600"
+          bgGradient="from-white to-green-50/30 dark:from-gray-900 dark:to-green-900/10"
+          hideGrowth={true}
+        />
 
-        <Card className="bg-gradient-to-br from-white to-purple-50/30 dark:from-gray-900 dark:to-purple-900/10 border-0 shadow-xl">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Recovery Potential
-                </p>
-                <h3 className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-                  RM
-                  {(
-                    (data?.abandonedCarts || 0) * (data?.averageCartValue || 0)
-                  ).toLocaleString()}
-                </h3>
-                <p className="text-xs text-gray-500 mt-1">Lost revenue</p>
-              </div>
-              <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl">
-                <Clock className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <StatsCards
+          title="Recovery Potential"
+          value={formatCurrency(
+            (data?.abandonedCarts || 0) * (data?.averageCartValue || 0),
+            true
+          )}
+          description="Lost revenue"
+          icon={Clock}
+          gradient="from-purple-500 to-purple-600"
+          bgGradient="from-white to-purple-50/30 dark:from-gray-900 dark:to-purple-900/10"
+          hideGrowth={true}
+        />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -273,27 +237,31 @@ export function CartAnalytics() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {data?.topAbandonedProducts.map((product, index) => (
+            {data?.topAbandonedProducts?.map((product, index) => (
               <div
                 key={index}
                 className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl"
               >
                 <div>
                   <h4 className="font-semibold text-gray-900 dark:text-white">
-                    {product.name}
+                    {product.name || "Unknown Product"}
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {product.abandoned_count} times abandoned
+                    {product.abandoned_count || 0} times abandoned
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-red-600 dark:text-red-400">
-                    RM{product.value}
+                    {formatCurrency(product.value)}
                   </p>
                   <p className="text-xs text-gray-500">Lost value</p>
                 </div>
               </div>
-            ))}
+            )) || (
+              <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+                No abandoned products data available
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
