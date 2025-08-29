@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useUser } from "@supabase/auth-helpers-react";
 import { Button } from "@/components/ui";
@@ -48,21 +48,85 @@ export function AddressForm({
     is_default: initialData?.is_default || false,
   });
 
-  const [selectedGoogleAddress, setSelectedGoogleAddress] = useState<
-    AddressComponents | undefined
-  >();
   const [isAddressValid, setIsAddressValid] = useState(false);
-  const [showMap, setShowMap] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [mapAddress, setMapAddress] = useState<AddressComponents | undefined>();
+  const [locationError, setLocationError] = useState<string>("");
 
-  // Convert form data to AddressComponents for map display
-  const formAddressForMap: AddressComponents | undefined =
-    selectedGoogleAddress?.lat && selectedGoogleAddress?.lng
-      ? selectedGoogleAddress
-      : undefined;
+  // Memoize default KL address to fix dependency warning
+  const defaultKLAddress = useMemo(
+    (): AddressComponents => ({
+      lat: 3.139,
+      lng: 101.6869,
+      formatted_address: "Kuala Lumpur, Malaysia",
+      locality: "Kuala Lumpur",
+      administrative_area_level_1: "Kuala Lumpur",
+      country: "Malaysia",
+      postal_code: "50000",
+    }),
+    []
+  );
+
+  // Move getCurrentLocation to useCallback with proper dependencies
+  const getCurrentLocation = useCallback(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const location = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+          setCurrentLocation(location);
+          setMapAddress({
+            ...location,
+            formatted_address: "Your current location",
+          });
+          setLocationError("");
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          setLocationError("Unable to get current location");
+          // Fallback to KL
+          setMapAddress(defaultKLAddress);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000, // 5 minutes
+        }
+      );
+    } else {
+      setLocationError("Geolocation is not supported");
+      // Fallback to KL
+      setMapAddress(defaultKLAddress);
+    }
+  }, [defaultKLAddress]);
+
+  // Get current location on component mount
+  useEffect(() => {
+    if (initialData?.address_line1) {
+      // If editing existing address, show that location on map
+      setMapAddress({
+        lat: 3.139, // You might want to store lat/lng in your address table
+        lng: 101.6869,
+        formatted_address: `${initialData.address_line1}, ${initialData.city}, ${initialData.state}`,
+        locality: initialData.city,
+        administrative_area_level_1: initialData.state,
+        country: initialData.country,
+        postal_code: initialData.postal_code,
+      });
+    } else {
+      // Try to get current location
+      getCurrentLocation();
+    }
+  }, [initialData, getCurrentLocation]);
 
   const handleAddressSelect = (address: AddressComponents) => {
-    setSelectedGoogleAddress(address);
+    setMapAddress(address); // Update map immediately
 
     // Auto-fill form fields from Google Places
     setFormData((prev) => ({
@@ -194,9 +258,32 @@ export function AddressForm({
       country: "Malaysia",
       is_default: false,
     });
-    setSelectedGoogleAddress(undefined);
     setIsAddressValid(false);
     autocompleteRef.current?.clearInput();
+  };
+
+  const handleUseCurrentLocation = () => {
+    if (currentLocation) {
+      setMapAddress({
+        ...currentLocation,
+        formatted_address: "Your current location",
+      });
+      toast.success("Using your current location");
+    } else {
+      getCurrentLocation();
+    }
+  };
+
+  const handleUseKLLocation = () => {
+    setMapAddress(defaultKLAddress);
+    setFormData((prev) => ({
+      ...prev,
+      city: "Kuala Lumpur",
+      state: "Kuala Lumpur",
+      postal_code: "50000",
+      country: "Malaysia",
+    }));
+    toast.success("Using Kuala Lumpur location");
   };
 
   return (
@@ -216,39 +303,57 @@ export function AddressForm({
               className="w-full"
             />
           </div>
-          {selectedGoogleAddress?.lat && selectedGoogleAddress?.lng ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setShowMap(!showMap)}
-              className="flex items-center gap-2"
-            >
-              <Map className="h-4 w-4" />
-              {showMap ? "Hide" : "Show"} Map
-            </Button>
-          ) : null}
         </div>
         {isAddressValid && (
           <p className="text-sm text-green-600">
             ✓ Address found and coordinates saved
           </p>
         )}
+        {locationError && (
+          <p className="text-sm text-orange-600">⚠ {locationError}</p>
+        )}
       </div>
 
-      {/* Map Display */}
-      {showMap &&
-        formAddressForMap &&
-        formAddressForMap.lat &&
-        formAddressForMap.lng && (
-          <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
-            <div className="flex items-center gap-2 mb-3">
-              <MapPin className="h-4 w-4" />
-              <span className="text-sm font-medium">Address Location</span>
-            </div>
-            <MapDisplay address={formAddressForMap} height="300px" zoom={16} />
+      {/* Location Action Buttons */}
+      <div className="flex gap-2 flex-wrap">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={handleUseCurrentLocation}
+          className="flex items-center gap-2"
+        >
+          <MapPin className="h-4 w-4" />
+          Use Current Location
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={handleUseKLLocation}
+          className="flex items-center gap-2"
+        >
+          <Map className="h-4 w-4" />
+          Use KL Default
+        </Button>
+      </div>
+
+      {/* Map Display - Always Visible */}
+      {mapAddress && (
+        <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
+          <div className="flex items-center gap-2 mb-3">
+            <MapPin className="h-4 w-4" />
+            <span className="text-sm font-medium">
+              {mapAddress.formatted_address || "Selected Location"}
+            </span>
           </div>
-        )}
+          <MapDisplay address={mapAddress} height="300px" zoom={16} />
+          <div className="mt-2 text-xs text-gray-500">
+            📍 Lat: {mapAddress.lat?.toFixed(6)}, Lng:{" "}
+            {mapAddress.lng?.toFixed(6)}
+          </div>
+        </div>
+      )}
 
       {/* Manual Address Fields */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
