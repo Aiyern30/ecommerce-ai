@@ -2,6 +2,7 @@ export interface Blog {
   id: string;
   title: string;
   description: string | null;
+  image_url: string | null;
   status: "draft" | "published";
   created_at: string;
   updated_at: string;

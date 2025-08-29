@@ -248,7 +248,7 @@ export default function Wishlist() {
             )}
           </Button>
         </SheetTrigger>
-        <SheetContent className="w-full sm:max-w-lg flex flex-col">
+        <SheetContent className="w-full sm:max-w-lg h-screen flex flex-col">
           <SheetHeader className="space-y-2 pb-4">
             <SheetTitle className="text-lg font-medium text-left">
               My Wishlist
@@ -261,72 +261,74 @@ export default function Wishlist() {
             )}
           </SheetHeader>
 
+          {/* Make this div scrollable like Cart */}
           <div className="flex-1 min-h-0 flex flex-col">
-            {isLoading ? (
-              <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-                <div className="text-center space-y-2">
-                  <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-                  <TypographyP className="text-sm text-muted-foreground">
-                    Loading wishlist...
-                  </TypographyP>
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              {isLoading ? (
+                <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+                  <div className="text-center space-y-2">
+                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+                    <TypographyP className="text-sm text-muted-foreground">
+                      Loading wishlist...
+                    </TypographyP>
+                  </div>
                 </div>
-              </div>
-            ) : !user ? (
-              <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-6 text-center space-y-6">
-                <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-                  <Heart className="h-12 w-12 text-gray-400" />
-                </div>
-                <div className="space-y-3">
-                  <TypographyH4 className="text-gray-900 dark:text-gray-100">
-                    Login Required
-                  </TypographyH4>
-                  <TypographyP className="text-sm text-muted-foreground max-w-sm">
-                    Please login to view your wishlist and save your favorite
-                    items.
-                  </TypographyP>
-                </div>
-                <Link href="/login" onClick={() => setIsOpen(false)}>
-                  <Button>Login to Continue</Button>
-                </Link>
-              </div>
-            ) : wishlistItems.length === 0 ? (
-              <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-6 text-center space-y-6">
-                <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-                  <Heart className="h-12 w-12 text-gray-500" />
-                </div>
-                <div className="space-y-3">
-                  <TypographyH4 className="text-gray-900 dark:text-gray-100">
-                    Your wishlist is empty
-                  </TypographyH4>
-                  <TypographyP className="text-sm text-muted-foreground max-w-sm">
-                    Start adding your favorite products and blogs to your
-                    wishlist.
-                  </TypographyP>
-                </div>
-                <div className="flex gap-2">
-                  <Link href="/products" onClick={() => setIsOpen(false)}>
-                    <Button variant="outline">Browse Products</Button>
-                  </Link>
-                  <Link href="/blogs" onClick={() => setIsOpen(false)}>
-                    <Button variant="outline">Browse Blogs</Button>
+              ) : !user ? (
+                <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-6 text-center space-y-6">
+                  <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                    <Heart className="h-12 w-12 text-gray-400" />
+                  </div>
+                  <div className="space-y-3">
+                    <TypographyH4 className="text-gray-900 dark:text-gray-100">
+                      Login Required
+                    </TypographyH4>
+                    <TypographyP className="text-sm text-muted-foreground max-w-sm">
+                      Please login to view your wishlist and save your favorite
+                      items.
+                    </TypographyP>
+                  </div>
+                  <Link href="/login" onClick={() => setIsOpen(false)}>
+                    <Button>Login to Continue</Button>
                   </Link>
                 </div>
-              </div>
-            ) : (
-              <Tabs defaultValue="all" className="flex-1 flex flex-col">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="all">All ({wishlistCount})</TabsTrigger>
-                  <TabsTrigger value="products">
-                    Products ({productItems.length})
-                  </TabsTrigger>
-                  <TabsTrigger value="blogs">
-                    Blogs ({blogItems.length})
-                  </TabsTrigger>
-                </TabsList>
-
-                <div className="flex-1 min-h-0 mt-4">
-                  <TabsContent value="all" className="h-full mt-0">
-                    <ScrollArea className="h-full">
+              ) : wishlistItems.length === 0 ? (
+                <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-6 text-center space-y-6">
+                  <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                    <Heart className="h-12 w-12 text-gray-500" />
+                  </div>
+                  <div className="space-y-3">
+                    <TypographyH4 className="text-gray-900 dark:text-gray-100">
+                      Your wishlist is empty
+                    </TypographyH4>
+                    <TypographyP className="text-sm text-muted-foreground max-w-sm">
+                      Start adding your favorite products and blogs to your
+                      wishlist.
+                    </TypographyP>
+                  </div>
+                  <div className="flex gap-2">
+                    <Link href="/products" onClick={() => setIsOpen(false)}>
+                      <Button variant="outline">Browse Products</Button>
+                    </Link>
+                    <Link href="/blogs" onClick={() => setIsOpen(false)}>
+                      <Button variant="outline">Browse Blogs</Button>
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <ScrollArea className="flex-1">
+                  <Tabs defaultValue="all" className="h-full">
+                    <TabsList className="grid w-full grid-cols-3 mb-4">
+                      <TabsTrigger value="all">
+                        All ({wishlistCount})
+                      </TabsTrigger>
+                      <TabsTrigger value="products">
+                        Products ({productItems.length})
+                      </TabsTrigger>
+                      <TabsTrigger value="blogs">
+                        Blogs ({blogItems.length})
+                      </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="all" className="mt-0">
                       <div className="space-y-4">
                         {wishlistItems.map((item) => (
                           <div key={item.id}>
@@ -339,11 +341,8 @@ export default function Wishlist() {
                           </div>
                         ))}
                       </div>
-                    </ScrollArea>
-                  </TabsContent>
-
-                  <TabsContent value="products" className="h-full mt-0">
-                    <ScrollArea className="h-full">
+                    </TabsContent>
+                    <TabsContent value="products" className="mt-0">
                       <div className="space-y-4">
                         {productItems.length === 0 ? (
                           <div className="text-center py-8">
@@ -357,11 +356,8 @@ export default function Wishlist() {
                           ))
                         )}
                       </div>
-                    </ScrollArea>
-                  </TabsContent>
-
-                  <TabsContent value="blogs" className="h-full mt-0">
-                    <ScrollArea className="h-full">
+                    </TabsContent>
+                    <TabsContent value="blogs" className="mt-0">
                       <div className="space-y-4">
                         {blogItems.length === 0 ? (
                           <div className="text-center py-8">
@@ -375,10 +371,35 @@ export default function Wishlist() {
                           ))
                         )}
                       </div>
-                    </ScrollArea>
-                  </TabsContent>
+                    </TabsContent>
+                  </Tabs>
+                </ScrollArea>
+              )}
+            </div>
+
+            {/* Wishlist Footer */}
+            {user && wishlistItems.length > 0 && (
+              <div className="border-t p-4 space-y-4 bg-gray-50 dark:bg-gray-900/30">
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-semibold">Total</span>
+                  <span className="text-lg font-bold text-red-500">
+                    {wishlistCount} {wishlistCount === 1 ? "item" : "items"}
+                  </span>
                 </div>
-              </Tabs>
+                <TypographyP className="text-xs text-gray-500 text-center !mt-2">
+                  View and manage your wishlist items
+                </TypographyP>
+                <div className="space-y-3">
+                  <Link href="/wishlists" onClick={() => setIsOpen(false)}>
+                    <Button className="w-full bg-red-500 hover:bg-red-600 text-white">
+                      View & Edit Wishlist ({wishlistCount})
+                    </Button>
+                  </Link>
+                  <TypographyP className="text-xs text-center text-gray-500 !mt-2">
+                    Select items and manage your wishlist before checkout
+                  </TypographyP>
+                </div>
+              </div>
             )}
           </div>
         </SheetContent>
