@@ -2,7 +2,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { ZoomIn } from "lucide-react";
+import { ZoomIn, Heart } from "lucide-react";
 import type { Blog } from "@/type/blogs";
 import {
   Card,
@@ -17,9 +17,16 @@ import { Button } from "@/components/ui/";
 interface BlogCardProps {
   post: Blog;
   onZoomImage?: (imageUrl: string) => void;
+  isWishlisted?: boolean;
+  onToggleWishlist?: (blogId: string) => void;
 }
 
-export function BlogCard({ post, onZoomImage }: BlogCardProps) {
+export function BlogCard({
+  post,
+  onZoomImage,
+  isWishlisted = false,
+  onToggleWishlist,
+}: BlogCardProps) {
   const images =
     post.blog_images?.map((img) => img.image_url).filter(Boolean) || [];
   const mainImage = images[0] || "/placeholder.svg?height=300&width=400";
@@ -60,6 +67,17 @@ export function BlogCard({ post, onZoomImage }: BlogCardProps) {
             title="Zoom In"
           >
             <ZoomIn className="h-4 w-4 text-blue-600" />
+          </button>
+          <button
+            className={`p-2 bg-white rounded-full shadow hover:bg-gray-200 transition-colors ${
+              isWishlisted ? "text-red-500" : "text-gray-400"
+            }`}
+            onClick={() => onToggleWishlist?.(post.id)}
+            title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+          >
+            <Heart
+              className={`h-4 w-4 ${isWishlisted ? "fill-current" : ""}`}
+            />
           </button>
         </div>
       </CardHeader>
