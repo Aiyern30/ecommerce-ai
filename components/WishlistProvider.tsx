@@ -65,6 +65,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for wishlist updates
     const handleWishlistUpdate = () => {
+      console.log("Wishlist update event received, refreshing..."); // Debug log
       refreshWishlist();
     };
 
