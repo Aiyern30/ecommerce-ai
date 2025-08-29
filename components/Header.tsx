@@ -1,8 +1,18 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, Menu, X, ChevronDown, Moon, Sun } from "lucide-react";
+import {
+  Search,
+  Menu,
+  X,
+  ChevronDown,
+  Moon,
+  Sun,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
@@ -42,6 +52,56 @@ function getBestPriceAndLabel(product: Product) {
     : { price: undefined, label: undefined };
 }
 
+// Enhanced helper function to highlight matching text including keywords
+function highlightMatch(text: string, query: string): React.ReactNode {
+  if (!query || !text) return text;
+
+  // Split query into individual terms
+  const queryTerms = query
+    .toLowerCase()
+    .split(" ")
+    .filter((term) => term.length > 0);
+
+  // Create a regex pattern that matches any of the query terms
+  const pattern = queryTerms
+    .map((term) => term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .join("|");
+  const regex = new RegExp(`(${pattern})`, "gi");
+
+  const parts = text.split(regex);
+  return parts.map((part, index) => {
+    const isMatch = queryTerms.some(
+      (term) => part.toLowerCase() === term.toLowerCase()
+    );
+    return isMatch ? (
+      <mark
+        key={index}
+        className="bg-yellow-200 dark:bg-yellow-800 px-0.5 rounded"
+      >
+        {part}
+      </mark>
+    ) : (
+      part
+    );
+  });
+}
+
+// New helper function to show matched keywords
+function getMatchedKeywords(product: Product, query: string): string[] {
+  if (!Array.isArray(product.keywords) || !query) return [];
+
+  const queryTerms = query
+    .toLowerCase()
+    .split(" ")
+    .filter((term) => term.length > 0);
+
+  return product.keywords
+    .filter((keyword) =>
+      queryTerms.some((term) => keyword.toLowerCase().includes(term))
+    )
+    .slice(0, 3); // Show max 3 matched keywords
+}
+
 function ProductSearchBox({
   className = "",
   inputClassName = "",
@@ -54,21 +114,32 @@ function ProductSearchBox({
   const {
     searchResults,
     searchQuery,
-    setSearchQuery,
     showDropdown,
     setShowDropdown,
     setIsSearchFocused,
+    isLoading,
+    searchError,
     searchContainerRef,
     handleSearchChange,
     handleInputFocus,
     handleInputBlur,
+    clearSearch,
   } = useProductSearch();
 
   const handleResultClick = (id: string) => {
     router.push(`/products/${id}`);
     setShowDropdown(false);
-    setSearchQuery("");
-    setIsSearchFocused(false);
+    clearSearch();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") {
+      setShowDropdown(false);
+      setIsSearchFocused(false);
+    }
+    if (e.key === "Enter" && searchResults.length > 0) {
+      handleResultClick(searchResults[0].id);
+    }
   };
 
   return (
@@ -76,14 +147,27 @@ function ProductSearchBox({
       <div className="relative flex items-center">
         <Input
           type="search"
-          placeholder="Search for products..."
+          placeholder="Search products, grades, categories..."
           value={searchQuery}
           onChange={handleSearchChange}
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
-          className={`pl-10 ${inputClassName}`}
+          onKeyDown={handleKeyDown}
+          className={`pl-10 pr-20 ${inputClassName}`}
         />
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 text-gray-400 animate-spin" />
+          ) : (
+            <Search className="h-4 w-4 text-gray-400" />
+          )}
+        </div>
+        {searchQuery && (
+          <button
+            onClick={clearSearch}
+            className="absolute right-12 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+          ></button>
+        )}
         <Button
           type="button"
           size="icon"
@@ -92,82 +176,164 @@ function ProductSearchBox({
           onClick={() => {
             router.push("/search");
           }}
+          title="AI Image Search"
         >
-          <IoCameraOutline size={48} />
+          <IoCameraOutline size={20} />
         </Button>
       </div>
+
       <AnimatePresence>
-        {showDropdown && searchResults.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className={`absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto`}
-          >
-            <ul>
-              {searchResults.map((product) => {
-                const mainImage =
-                  product.product_images?.find((img) => img.is_primary) ||
-                  product.product_images?.[0];
-                const { price, label } = getBestPriceAndLabel(product);
-                return (
-                  <li
-                    key={product.id}
-                    className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors first:rounded-t-lg last:rounded-b-lg"
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      handleResultClick(product.id);
-                    }}
-                  >
-                    <div className="w-10 h-10 rounded bg-gray-100 overflow-hidden flex items-center justify-center border border-gray-200 dark:border-gray-700">
-                      <Image
-                        src={mainImage?.image_url || "/placeholder.svg"}
-                        alt={product.name}
-                        width={40}
-                        height={40}
-                        className="object-cover w-full h-full"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm truncate">
-                        {product.name}
-                      </div>
-                      {product.category && (
-                        <div className="text-xs text-gray-400 truncate">
-                          {product.category}
+        {showDropdown &&
+          (searchResults.length > 0 || searchError || isLoading) && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className={`absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto`}
+            >
+              {isLoading && (
+                <div className="flex items-center justify-center p-4">
+                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Searching...
+                  </span>
+                </div>
+              )}
+
+              {searchError && (
+                <div className="flex items-center p-4 text-red-600 dark:text-red-400">
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  <span className="text-sm">{searchError}</span>
+                </div>
+              )}
+
+              {!isLoading &&
+                !searchError &&
+                searchResults.length === 0 &&
+                searchQuery.length >= 2 && (
+                  <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                    <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">
+                      No products found for "{searchQuery}"
+                    </p>
+                    <p className="text-xs mt-1">
+                      Try different keywords or check spelling
+                    </p>
+                  </div>
+                )}
+
+              {!isLoading && searchResults.length > 0 && (
+                <ul>
+                  {searchResults.map((product, index) => {
+                    const mainImage =
+                      product.product_images?.find((img) => img.is_primary) ||
+                      product.product_images?.[0];
+                    const { price, label } = getBestPriceAndLabel(product);
+                    const matchedKeywords = getMatchedKeywords(
+                      product,
+                      searchQuery
+                    );
+
+                    return (
+                      <li
+                        key={product.id}
+                        className={`flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors ${
+                          index === 0 ? "rounded-t-lg" : ""
+                        } ${
+                          index === searchResults.length - 1
+                            ? "rounded-b-lg"
+                            : ""
+                        }`}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          handleResultClick(product.id);
+                        }}
+                      >
+                        <div className="w-10 h-10 rounded bg-gray-100 overflow-hidden flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                          <Image
+                            src={mainImage?.image_url || "/placeholder.svg"}
+                            alt={product.name}
+                            width={40}
+                            height={40}
+                            className="object-cover w-full h-full"
+                          />
                         </div>
-                      )}
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs text-blue-600 bg-blue-100 dark:bg-blue-800 dark:text-blue-200 px-2 py-0.5 rounded">
-                          {label || "No price"}
-                        </span>
-                        <span className="font-semibold text-sm">
-                          {price !== undefined
-                            ? `RM${price.toFixed(2)}`
-                            : "N/A"}
-                        </span>
-                        {typeof product.stock_quantity === "number" && (
-                          <span
-                            className={`text-xs ml-2 ${
-                              product.stock_quantity > 20
-                                ? "text-green-600"
-                                : product.stock_quantity > 5
-                                ? "text-yellow-600"
-                                : "text-red-600"
-                            }`}
-                          >
-                            {product.stock_quantity} in stock
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </motion.div>
-        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm truncate">
+                            {highlightMatch(product.name, searchQuery)}
+                          </div>
+                          {product.category && (
+                            <div className="text-xs text-gray-400 truncate">
+                              {highlightMatch(product.category, searchQuery)}{" "}
+                              {product.grade && ` • ${product.grade}`}
+                            </div>
+                          )}
+
+                          {/* Show matched keywords */}
+                          {matchedKeywords.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {matchedKeywords.map((keyword, idx) => (
+                                <span
+                                  key={idx}
+                                  className="text-xs bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-200 px-1.5 py-0.5 rounded"
+                                >
+                                  {highlightMatch(keyword, searchQuery)}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs text-blue-600 bg-blue-100 dark:bg-blue-800 dark:text-blue-200 px-2 py-0.5 rounded">
+                              {label || "No price"}
+                            </span>
+                            <span className="font-semibold text-sm">
+                              {price !== undefined
+                                ? `RM${price.toFixed(2)}`
+                                : "N/A"}
+                            </span>
+                            {typeof product.stock_quantity === "number" && (
+                              <span
+                                className={`text-xs ml-2 ${
+                                  product.stock_quantity > 20
+                                    ? "text-green-600"
+                                    : product.stock_quantity > 5
+                                    ? "text-yellow-600"
+                                    : "text-red-600"
+                                }`}
+                              >
+                                {product.stock_quantity} in stock
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })}
+
+                  {searchResults.length >= 10 && (
+                    <li className="px-3 py-2 text-center border-t border-gray-200 dark:border-gray-700">
+                      <button
+                        onClick={() => {
+                          router.push(
+                            `/products?search=${encodeURIComponent(
+                              searchQuery
+                            )}`
+                          );
+                          setShowDropdown(false);
+                          clearSearch();
+                        }}
+                        className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                      >
+                        View all results for "{searchQuery}"
+                      </button>
+                    </li>
+                  )}
+                </ul>
+              )}
+            </motion.div>
+          )}
       </AnimatePresence>
     </div>
   );
