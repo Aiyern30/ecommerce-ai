@@ -33,7 +33,7 @@ export default function CheckoutAddressPage() {
     null
   );
   const [showAddForm, setShowAddForm] = useState(false);
-  const [editingAddress, setEditingAddress] = useState<Address | null>(null);
+  const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Additional services and localStorage state
@@ -155,12 +155,47 @@ export default function CheckoutAddressPage() {
     setSelectedAddressId(addressId);
   };
 
-  const handleAddressAdded = (newAddress: Address) => {
-    setAddresses((prev) => [newAddress, ...prev]);
-    setSelectedAddressId(newAddress.id);
-    setShowAddForm(false);
-    setEditingAddress(null);
-    toast.success("Address added successfully!");
+  const handleEditAddress = (address: Address) => {
+    setEditingAddressId(address.id);
+    setShowAddForm(false); // Close the top form if it's open
+  };
+
+  const handleDeleteAddress = async (addressId: string) => {
+    try {
+      const { error } = await supabase
+        .from("addresses")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", addressId);
+
+      if (error) throw error;
+
+      setAddresses((prev) => prev.filter((addr) => addr.id !== addressId));
+
+      // If the deleted address was selected, select another one
+      if (selectedAddressId === addressId) {
+        const remainingAddresses = addresses.filter(
+          (addr) => addr.id !== addressId
+        );
+        if (remainingAddresses.length > 0) {
+          const defaultAddress = remainingAddresses.find(
+            (addr) => addr.is_default
+          );
+          setSelectedAddressId(defaultAddress?.id || remainingAddresses[0].id);
+        } else {
+          setSelectedAddressId(null);
+        }
+      }
+
+      // Cancel editing if the deleted address was being edited
+      if (editingAddressId === addressId) {
+        setEditingAddressId(null);
+      }
+
+      toast.success("Address deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting address:", error);
+      toast.error("Failed to delete address");
+    }
   };
 
   const handleAddressUpdated = (updatedAddress: Address) => {
@@ -169,38 +204,28 @@ export default function CheckoutAddressPage() {
         addr.id === updatedAddress.id ? updatedAddress : addr
       )
     );
-    setEditingAddress(null);
+    setEditingAddressId(null);
     setShowAddForm(false);
     toast.success("Address updated successfully!");
   };
 
-  const handleEditAddress = (address: Address) => {
-    setEditingAddress(address);
-    setShowAddForm(true);
+  const handleAddressAdded = (newAddress: Address) => {
+    setAddresses((prev) => [newAddress, ...prev]);
+    setSelectedAddressId(newAddress.id);
+    setShowAddForm(false);
+    setEditingAddressId(null);
+    toast.success("Address added successfully!");
   };
 
-  const handleDeleteAddress = (addressId: string) => {
-    setAddresses((prev) => prev.filter((addr) => addr.id !== addressId));
-
-    // If the deleted address was selected, select another one
-    if (selectedAddressId === addressId) {
-      const remainingAddresses = addresses.filter(
-        (addr) => addr.id !== addressId
-      );
-      if (remainingAddresses.length > 0) {
-        const defaultAddress = remainingAddresses.find(
-          (addr) => addr.is_default
-        );
-        setSelectedAddressId(defaultAddress?.id || remainingAddresses[0].id);
-      } else {
-        setSelectedAddressId(null);
-      }
+  const handleCancelEdit = (addressId: string) => {
+    if (editingAddressId === addressId) {
+      setEditingAddressId(null);
     }
   };
 
   const handleCancelForm = () => {
     setShowAddForm(false);
-    setEditingAddress(null);
+    setEditingAddressId(null);
   };
 
   const handleContinueToPayment = () => {
@@ -308,7 +333,7 @@ export default function CheckoutAddressPage() {
             <Button
               variant="outline"
               onClick={() => {
-                setEditingAddress(null);
+                setEditingAddressId(null);
                 setShowAddForm(!showAddForm);
               }}
               className="flex items-center gap-2"
@@ -327,19 +352,13 @@ export default function CheckoutAddressPage() {
             </Button>
           </div>
 
-          {/* Add/Edit Address Form */}
-          {showAddForm && (
+          {/* Add New Address Form (only for new addresses) */}
+          {showAddForm && !editingAddressId && (
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
-              <TypographyH3 className="mb-4">
-                {editingAddress ? "Edit Address" : "Add New Address"}
-              </TypographyH3>
+              <TypographyH3 className="mb-4">Add New Address</TypographyH3>
               <AddressForm
-                onSuccess={
-                  editingAddress ? handleAddressUpdated : handleAddressAdded
-                }
+                onSuccess={handleAddressAdded}
                 onCancel={handleCancelForm}
-                initialData={editingAddress || undefined}
-                isEditing={!!editingAddress}
               />
             </div>
           )}
@@ -363,14 +382,41 @@ export default function CheckoutAddressPage() {
           ) : (
             <div className="space-y-4">
               {addresses.map((address) => (
-                <AddressCard
-                  key={address.id}
-                  address={address}
-                  isSelected={selectedAddressId === address.id}
-                  onSelect={() => handleAddressSelect(address.id)}
-                  onEdit={handleEditAddress}
-                  onDelete={handleDeleteAddress}
-                />
+                <div key={address.id} className="space-y-4">
+                  <AddressCard
+                    address={address}
+                    isSelected={selectedAddressId === address.id}
+                    onSelect={() => handleAddressSelect(address.id)}
+                    onEdit={handleEditAddress}
+                    onDelete={handleDeleteAddress}
+                    isEditing={editingAddressId === address.id}
+                  />
+
+                  {/* Inline Edit Form */}
+                  {editingAddressId === address.id && (
+                    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6 border-l-4 border-blue-500 shadow-sm animate-in slide-in-from-top-2 duration-200">
+                      <div className="flex items-center justify-between mb-4">
+                        <TypographyH3 className="text-blue-600 dark:text-blue-400">
+                          Edit Address
+                        </TypographyH3>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleCancelEdit(address.id)}
+                          className="text-gray-500 hover:text-gray-700"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <AddressForm
+                        onSuccess={handleAddressUpdated}
+                        onCancel={() => handleCancelEdit(address.id)}
+                        initialData={address}
+                        isEditing={true}
+                      />
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           )}
