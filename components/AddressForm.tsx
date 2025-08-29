@@ -15,7 +15,7 @@ import {
 } from "@/components/GoogleMaps/AddressAutocomplete";
 import { MapDisplay } from "@/components/GoogleMaps/MapDisplay";
 import { toast } from "sonner";
-import { MapPin, Map } from "lucide-react";
+import { MapPin } from "lucide-react";
 import type { Address } from "@/lib/user/address";
 
 interface AddressFormProps {
@@ -57,7 +57,7 @@ export function AddressForm({
   const [mapAddress, setMapAddress] = useState<AddressComponents | undefined>();
   const [locationError, setLocationError] = useState<string>("");
 
-  // Memoize default KL address to fix dependency warning
+  // Memoize default KL address (only for error fallback)
   const defaultKLAddress = useMemo(
     (): AddressComponents => ({
       lat: 3.139,
@@ -70,6 +70,30 @@ export function AddressForm({
     }),
     []
   );
+
+  // Get address coordinates from Google Geocoding API
+  const getAddressCoordinates = useCallback(async (address: string) => {
+    try {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+          address
+        )}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
+      );
+      const data = await response.json();
+
+      if (data.results && data.results.length > 0) {
+        const location = data.results[0].geometry.location;
+        return {
+          lat: location.lat,
+          lng: location.lng,
+          formatted_address: data.results[0].formatted_address,
+        };
+      }
+    } catch (error) {
+      console.error("Error geocoding address:", error);
+    }
+    return null;
+  }, []);
 
   // Move getCurrentLocation to useCallback with proper dependencies
   const getCurrentLocation = useCallback(() => {
@@ -90,7 +114,7 @@ export function AddressForm({
         (error) => {
           console.error("Error getting location:", error);
           setLocationError("Unable to get current location");
-          // Fallback to KL
+          // Fallback to KL only on error
           setMapAddress(defaultKLAddress);
         },
         {
@@ -101,29 +125,46 @@ export function AddressForm({
       );
     } else {
       setLocationError("Geolocation is not supported");
-      // Fallback to KL
+      // Fallback to KL only on error
       setMapAddress(defaultKLAddress);
     }
   }, [defaultKLAddress]);
 
-  // Get current location on component mount
+  // Get location on component mount
   useEffect(() => {
     if (initialData?.address_line1) {
-      // If editing existing address, show that location on map
-      setMapAddress({
-        lat: 3.139, // You might want to store lat/lng in your address table
-        lng: 101.6869,
-        formatted_address: `${initialData.address_line1}, ${initialData.city}, ${initialData.state}`,
-        locality: initialData.city,
-        administrative_area_level_1: initialData.state,
-        country: initialData.country,
-        postal_code: initialData.postal_code,
+      // If editing existing address, try to geocode it to get coordinates
+      const fullAddress = `${initialData.address_line1}, ${initialData.city}, ${initialData.state}, ${initialData.postal_code}, ${initialData.country}`;
+
+      getAddressCoordinates(fullAddress).then((coords) => {
+        if (coords) {
+          setMapAddress({
+            lat: coords.lat,
+            lng: coords.lng,
+            formatted_address: coords.formatted_address,
+            locality: initialData.city,
+            administrative_area_level_1: initialData.state,
+            country: initialData.country,
+            postal_code: initialData.postal_code,
+          });
+        } else {
+          // Fallback to approximate location if geocoding fails
+          setMapAddress({
+            lat: 3.139, // Default KL coordinates as fallback
+            lng: 101.6869,
+            formatted_address: fullAddress,
+            locality: initialData.city,
+            administrative_area_level_1: initialData.state,
+            country: initialData.country,
+            postal_code: initialData.postal_code,
+          });
+        }
       });
     } else {
-      // Try to get current location
+      // For new addresses, try to get current location
       getCurrentLocation();
     }
-  }, [initialData, getCurrentLocation]);
+  }, [initialData, getCurrentLocation, getAddressCoordinates]);
 
   const handleAddressSelect = (address: AddressComponents) => {
     setMapAddress(address); // Update map immediately
@@ -274,18 +315,6 @@ export function AddressForm({
     }
   };
 
-  const handleUseKLLocation = () => {
-    setMapAddress(defaultKLAddress);
-    setFormData((prev) => ({
-      ...prev,
-      city: "Kuala Lumpur",
-      state: "Kuala Lumpur",
-      postal_code: "50000",
-      country: "Malaysia",
-    }));
-    toast.success("Using Kuala Lumpur location");
-  };
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Google Places Autocomplete */}
@@ -314,8 +343,8 @@ export function AddressForm({
         )}
       </div>
 
-      {/* Location Action Buttons */}
-      <div className="flex gap-2 flex-wrap">
+      {/* Location Action Button - Only Current Location */}
+      <div className="flex gap-2">
         <Button
           type="button"
           variant="outline"
@@ -326,16 +355,6 @@ export function AddressForm({
           <MapPin className="h-4 w-4" />
           Use Current Location
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={handleUseKLLocation}
-          className="flex items-center gap-2"
-        >
-          <Map className="h-4 w-4" />
-          Use KL Default
-        </Button>
       </div>
 
       {/* Map Display - Always Visible */}
@@ -344,7 +363,9 @@ export function AddressForm({
           <div className="flex items-center gap-2 mb-3">
             <MapPin className="h-4 w-4" />
             <span className="text-sm font-medium">
-              {mapAddress.formatted_address || "Selected Location"}
+              {isEditing && initialData
+                ? `Editing: ${initialData.address_line1}, ${initialData.city}`
+                : mapAddress.formatted_address || "Selected Location"}
             </span>
           </div>
           <MapDisplay address={mapAddress} height="300px" zoom={16} />
