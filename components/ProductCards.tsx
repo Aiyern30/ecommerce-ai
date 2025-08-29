@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { ShoppingCart, ZoomIn, SlidersHorizontal, Check } from "lucide-react";
@@ -32,7 +31,11 @@ interface ProductCardProps {
   href?: string;
   showCompare?: boolean;
   isCompared?: boolean;
-  onCompareToggle?: (id: string, add: boolean, deliveryOptions?: any) => void;
+  onCompareToggle?: (
+    id: string,
+    add: boolean,
+    selectedDeliveryType?: string
+  ) => void;
   compareCount?: number;
   // Add price fields
   normal_price?: number | null;
@@ -101,13 +104,29 @@ export function ProductCard({
     if (onlyOneDeliveryType) {
       return deliveryOptions[0].key;
     }
-    const hasSelected = deliveryOptions.find(
-      (opt) => opt.key === selectedPriceType
-    );
-    return hasSelected
-      ? selectedPriceType
-      : deliveryOptions[0]?.key || "normal";
+    // If item is already compared, use selectedPriceType, otherwise use first available
+    if (isCompared) {
+      const hasSelected = deliveryOptions.find(
+        (opt) => opt.key === selectedPriceType
+      );
+      return hasSelected
+        ? selectedPriceType
+        : deliveryOptions[0]?.key || "normal";
+    }
+    return deliveryOptions[0]?.key || "normal";
   });
+
+  // Update selectedDelivery when selectedPriceType changes from parent (only when compared)
+  useEffect(() => {
+    if (isCompared && selectedPriceType) {
+      const validOption = deliveryOptions.find(
+        (opt) => opt.key === selectedPriceType
+      );
+      if (validOption) {
+        setSelectedDelivery(selectedPriceType);
+      }
+    }
+  }, [selectedPriceType, isCompared, deliveryOptions]);
 
   // Helper for compare/carts: always use the only delivery type if only one is available
   const getValidDeliveryType = () => {
@@ -124,13 +143,24 @@ export function ProductCard({
     e.stopPropagation();
 
     if (onCompareToggle) {
-      // Always use the only available delivery type if only one
-      const compareDeliveryType = getValidDeliveryType();
-      if (!isCompared && onPriceTypeChange) {
-        onPriceTypeChange(id, compareDeliveryType);
+      if (!isCompared) {
+        // When adding to compare, use the user's currently selected delivery option
+        const compareDeliveryType = getValidDeliveryType();
+        console.log(
+          "Adding to compare with delivery type:",
+          compareDeliveryType
+        ); // Debug log
+
+        if (onPriceTypeChange) {
+          onPriceTypeChange(id, compareDeliveryType);
+        }
+
+        // Pass the selected delivery type to the parent
+        onCompareToggle(id, true, compareDeliveryType);
+      } else {
+        // When removing from compare
+        onCompareToggle(id, false);
       }
-      // Pass deliveryOptions to parent for correct priceType selection
-      onCompareToggle(id, !isCompared, deliveryOptions);
     }
     toast[!isCompared ? "success" : "info"](
       `${name} ${!isCompared ? "added to" : "removed from"} comparison`
@@ -179,10 +209,12 @@ export function ProductCard({
     const validType = deliveryOptions.find((opt) => opt.key === newPriceType)
       ? newPriceType
       : deliveryOptions[0]?.key || "normal";
+
+    // Update both local state and parent state
+    setSelectedDelivery(validType);
     if (onPriceTypeChange) {
       onPriceTypeChange(id, validType);
     }
-    setSelectedDelivery(validType);
   };
 
   useEffect(() => {
@@ -238,9 +270,9 @@ export function ProductCard({
       : undefined;
 
   // Fix: Use the correct price type for comparison display
-  const effectiveCompareType = onlyOneDeliveryType
-    ? deliveryOptions[0].key
-    : selectedPriceType;
+  const effectiveCompareType = isCompared
+    ? selectedPriceType
+    : selectedDelivery;
   const compareOption = deliveryOptions.find(
     (opt) => opt.key === effectiveCompareType
   );
@@ -258,11 +290,21 @@ export function ProductCard({
       : undefined;
 
   const handleDeliveryChange = (value: string) => {
+    console.log("Delivery changed to:", value, "isCompared:", isCompared); // Debug log
     setSelectedDelivery(value);
+    // If item is already in compare, update the compare price type immediately
     if (isCompared && onPriceTypeChange) {
       onPriceTypeChange(id, value);
     }
   };
+
+  // Debug log to see current state
+  console.log(`Product ${id}:`, {
+    selectedDelivery,
+    selectedPriceType,
+    isCompared,
+    effectiveCompareType,
+  });
 
   return (
     <>
