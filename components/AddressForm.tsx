@@ -303,15 +303,147 @@ export function AddressForm({
     autocompleteRef.current?.clearInput();
   };
 
-  const handleUseCurrentLocation = () => {
+  // Add reverse geocoding function
+  const reverseGeocode = useCallback(async (lat: number, lng: number) => {
+    try {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
+      );
+      const data = await response.json();
+
+      if (data.results && data.results.length > 0) {
+        const result = data.results[0];
+        const components = result.address_components;
+
+        // Extract address components
+        const addressData: Partial<AddressComponents> = {
+          formatted_address: result.formatted_address,
+        };
+
+        components.forEach((component: any) => {
+          const types = component.types;
+
+          if (types.includes("street_number")) {
+            addressData.street_number = component.long_name;
+          }
+          if (types.includes("route")) {
+            addressData.route = component.long_name;
+          }
+          if (types.includes("locality")) {
+            addressData.locality = component.long_name;
+          }
+          if (types.includes("administrative_area_level_1")) {
+            addressData.administrative_area_level_1 = component.long_name;
+          }
+          if (types.includes("country")) {
+            addressData.country = component.long_name;
+          }
+          if (types.includes("postal_code")) {
+            addressData.postal_code = component.long_name;
+          }
+        });
+
+        return {
+          ...addressData,
+          lat,
+          lng,
+        } as AddressComponents;
+      }
+    } catch (error) {
+      console.error("Error reverse geocoding:", error);
+    }
+    return null;
+  }, []);
+
+  const handleUseCurrentLocation = async () => {
     if (currentLocation) {
-      setMapAddress({
-        ...currentLocation,
-        formatted_address: "Your current location",
-      });
-      toast.success("Using your current location");
+      // Use existing current location
+      const geocoded = await reverseGeocode(
+        currentLocation.lat,
+        currentLocation.lng
+      );
+      if (geocoded) {
+        setMapAddress(geocoded);
+        // Auto-fill form fields
+        setFormData((prev) => ({
+          ...prev,
+          address_line1:
+            [geocoded.street_number, geocoded.route]
+              .filter(Boolean)
+              .join(" ")
+              .trim() || prev.address_line1,
+          city: geocoded.locality || prev.city,
+          state: geocoded.administrative_area_level_1 || prev.state,
+          postal_code: geocoded.postal_code || prev.postal_code,
+          country: geocoded.country || prev.country,
+        }));
+        toast.success("Current location detected and form filled!");
+      } else {
+        setMapAddress({
+          ...currentLocation,
+          formatted_address: "Your current location",
+        });
+        toast.success("Using your current location");
+      }
     } else {
-      getCurrentLocation();
+      // Get new current location
+      if (navigator.geolocation) {
+        toast.loading("Getting your location...");
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const location = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            };
+            setCurrentLocation(location);
+
+            // Reverse geocode to get address details
+            const geocoded = await reverseGeocode(location.lat, location.lng);
+            if (geocoded) {
+              setMapAddress(geocoded);
+              // Auto-fill form fields
+              setFormData((prev) => ({
+                ...prev,
+                address_line1:
+                  [geocoded.street_number, geocoded.route]
+                    .filter(Boolean)
+                    .join(" ")
+                    .trim() || prev.address_line1,
+                city: geocoded.locality || prev.city,
+                state: geocoded.administrative_area_level_1 || prev.state,
+                postal_code: geocoded.postal_code || prev.postal_code,
+                country: geocoded.country || prev.country,
+              }));
+              toast.dismiss();
+              toast.success("Location detected and form filled!");
+            } else {
+              setMapAddress({
+                ...location,
+                formatted_address: "Your current location",
+              });
+              toast.dismiss();
+              toast.success("Location detected!");
+            }
+            setLocationError("");
+          },
+          (error) => {
+            console.error("Error getting location:", error);
+            toast.dismiss();
+            toast.error("Unable to get your current location");
+            setLocationError("Unable to get current location");
+            setMapAddress(defaultKLAddress);
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 300000,
+          }
+        );
+      } else {
+        toast.error("Geolocation is not supported by your browser");
+        setLocationError("Geolocation is not supported");
+        setMapAddress(defaultKLAddress);
+      }
     }
   };
 
