@@ -141,7 +141,7 @@ export default function OrdersPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user?.id]);
 
   useEffect(() => {
     if (!orders.length) {
@@ -198,7 +198,7 @@ export default function OrdersPage() {
     if (user?.id) {
       loadOrders();
     }
-  }, [user, loadOrders]);
+  }, [user?.id, loadOrders]);
 
   const toggleOrderDetails = (orderId: string) => {
     setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
