@@ -52,41 +52,65 @@ function getBestPriceAndLabel(product: Product) {
     : { price: undefined, label: undefined };
 }
 
-// Enhanced helper function to highlight matching text including keywords
+// Enhanced helper function to highlight matching text with better partial matching
 function highlightMatch(text: string, query: string): React.ReactNode {
   if (!query || !text) return text;
 
-  // Split query into individual terms
   const queryTerms = query
     .toLowerCase()
     .split(" ")
     .filter((term) => term.length > 0);
 
-  // Create a regex pattern that matches any of the query terms
-  const pattern = queryTerms
-    .map((term) => term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
-    .join("|");
+  // Create patterns for exact matches and prefix matches
+  const exactPatterns = queryTerms.map((term) =>
+    term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+  );
+
+  // Add prefix patterns for partial matching
+  const prefixPatterns = queryTerms
+    .filter((term) => term.length >= 2)
+    .map((term) => `\\b${term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`);
+
+  const allPatterns = [...exactPatterns, ...prefixPatterns];
+  const pattern = allPatterns.join("|");
   const regex = new RegExp(`(${pattern})`, "gi");
 
   const parts = text.split(regex);
   return parts.map((part, index) => {
-    const isMatch = queryTerms.some(
+    const isExactMatch = queryTerms.some(
       (term) => part.toLowerCase() === term.toLowerCase()
     );
-    return isMatch ? (
-      <mark
-        key={index}
-        className="bg-yellow-200 dark:bg-yellow-800 px-0.5 rounded"
-      >
-        {part}
-      </mark>
-    ) : (
-      part
+    const isPrefixMatch = queryTerms.some(
+      (term) =>
+        part.toLowerCase().startsWith(term.toLowerCase()) &&
+        part.toLowerCase() !== term.toLowerCase()
     );
+
+    if (isExactMatch) {
+      return (
+        <mark
+          key={index}
+          className="bg-yellow-200 dark:bg-yellow-800 px-0.5 rounded font-semibold"
+        >
+          {part}
+        </mark>
+      );
+    } else if (isPrefixMatch) {
+      return (
+        <mark
+          key={index}
+          className="bg-yellow-100 dark:bg-yellow-900 px-0.5 rounded"
+        >
+          {part}
+        </mark>
+      );
+    }
+
+    return part;
   });
 }
 
-// New helper function to show matched keywords
+// Enhanced helper function to show matched keywords with better partial matching
 function getMatchedKeywords(product: Product, query: string): string[] {
   if (!Array.isArray(product.keywords) || !query) return [];
 
@@ -95,11 +119,98 @@ function getMatchedKeywords(product: Product, query: string): string[] {
     .split(" ")
     .filter((term) => term.length > 0);
 
-  return product.keywords
-    .filter((keyword) =>
-      queryTerms.some((term) => keyword.toLowerCase().includes(term))
-    )
-    .slice(0, 3); // Show max 3 matched keywords
+  const matchedKeywords = product.keywords.filter((keyword) => {
+    const lowerKeyword = keyword.toLowerCase();
+
+    return queryTerms.some((term) => {
+      // Direct substring match
+      if (lowerKeyword.includes(term)) return true;
+
+      // Enhanced word-level matching - this is the key fix
+      const keywordWords = lowerKeyword.split(/[\s\-_\.,]+/);
+      return keywordWords.some((word) => {
+        // This is the critical part: "cur" should match "curb"
+        if (term.length >= 2 && word.startsWith(term)) {
+          return true;
+        }
+
+        // Additional substring matching within words
+        if (term.length >= 3 && word.includes(term)) {
+          return true;
+        }
+
+        // Fuzzy matching for typos
+        if (term.length >= 3 && word.length >= 3) {
+          const similarity = calculateSimilarity(word, term);
+          return similarity > 0.6; // More lenient threshold
+        }
+
+        return false;
+      });
+    });
+  });
+
+  // Sort by relevance and return top matches
+  return matchedKeywords
+    .sort((a, b) => {
+      // Prioritize shorter keywords and better matches
+      const aScore = queryTerms.reduce((score, term) => {
+        const words = a.toLowerCase().split(/[\s\-_\.,]+/);
+        if (words.some((word) => word.startsWith(term))) return score + 10;
+        if (a.toLowerCase().includes(term)) return score + 5;
+        return score;
+      }, 0);
+
+      const bScore = queryTerms.reduce((score, term) => {
+        const words = b.toLowerCase().split(/[\s\-_\.,]+/);
+        if (words.some((word) => word.startsWith(term))) return score + 10;
+        if (b.toLowerCase().includes(term)) return score + 5;
+        return score;
+      }, 0);
+
+      if (aScore !== bScore) return bScore - aScore;
+      return a.length - b.length; // Shorter keywords first
+    })
+    .slice(0, 3);
+}
+
+// Helper function for similarity calculation (add this if not already present)
+function calculateSimilarity(str1: string, str2: string): number {
+  const longer = str1.length > str2.length ? str1 : str2;
+  const shorter = str1.length > str2.length ? str2 : str1;
+
+  if (longer.length === 0) return 1.0;
+
+  const distance = levenshteinDistance(longer, shorter);
+  return (longer.length - distance) / longer.length;
+}
+
+function levenshteinDistance(str1: string, str2: string): number {
+  const matrix = [];
+
+  for (let i = 0; i <= str2.length; i++) {
+    matrix[i] = [i];
+  }
+
+  for (let j = 0; j <= str1.length; j++) {
+    matrix[0][j] = j;
+  }
+
+  for (let i = 1; i <= str2.length; i++) {
+    for (let j = 1; j <= str1.length; j++) {
+      if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j] + 1
+        );
+      }
+    }
+  }
+
+  return matrix[str2.length][str1.length];
 }
 
 function ProductSearchBox({
@@ -270,17 +381,22 @@ function ProductSearchBox({
                             </div>
                           )}
 
-                          {/* Show matched keywords */}
+                          {/* Show matched keywords with enhanced highlighting */}
                           {matchedKeywords.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-1">
                               {matchedKeywords.map((keyword, idx) => (
                                 <span
                                   key={idx}
-                                  className="text-xs bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-200 px-1.5 py-0.5 rounded"
+                                  className="text-xs bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-200 px-1.5 py-0.5 rounded border border-green-200 dark:border-green-600"
                                 >
                                   {highlightMatch(keyword, searchQuery)}
                                 </span>
                               ))}
+                              {matchedKeywords.length >= 3 && (
+                                <span className="text-xs text-gray-400 px-1.5 py-0.5">
+                                  +more
+                                </span>
+                              )}
                             </div>
                           )}
 

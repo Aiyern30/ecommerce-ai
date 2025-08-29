@@ -94,31 +94,78 @@ export function useProductSearch() {
 
         return searchTerms.some((term) => {
           if (Array.isArray(product.keywords)) {
-            const keywordMatch = product.keywords.some((keyword) =>
-              keyword.toLowerCase().includes(term)
-            );
+            const keywordMatch = product.keywords.some((keyword) => {
+              const lowerKeyword = keyword.toLowerCase();
+
+              // Direct substring match
+              if (lowerKeyword.includes(term)) return true;
+
+              // Enhanced word splitting and prefix matching
+              const keywordWords = lowerKeyword.split(/[\s\-_\.,]+/);
+              const partialWordMatch = keywordWords.some((word) => {
+                // More aggressive prefix matching for shorter terms
+                if (term.length >= 2 && word.startsWith(term)) return true;
+
+                // Check if term is a meaningful part of the word
+                if (term.length >= 3 && word.length >= 4 && word.includes(term))
+                  return true;
+
+                // Enhanced fuzzy matching with lower threshold
+                if (term.length >= 3 && word.length >= 3) {
+                  return calculateSimilarity(word, term) > 0.7; // Lowered from 0.8
+                }
+
+                return false;
+              });
+
+              if (partialWordMatch) return true;
+
+              // Whole keyword fuzzy matching
+              if (term.length >= 3 && lowerKeyword.length >= 3) {
+                return calculateSimilarity(lowerKeyword, term) > 0.6; // Lowered from 0.7
+              }
+
+              return false;
+            });
             if (keywordMatch) return true;
           }
 
-          if (searchableFields.includes(term)) return true;
-
+          // Enhanced general field matching
           if (searchableFields.includes(term)) return true;
 
           const words = searchableFields.split(/\s+/);
+
+          // Exact word match
           const exactWordMatch = words.some((word) => word === term);
           if (exactWordMatch) return true;
 
+          // More aggressive prefix matching
+          if (term.length >= 2) {
+            const prefixMatch = words.some((word) => word.startsWith(term));
+            if (prefixMatch) return true;
+          }
+
+          // Enhanced partial word matching
           if (term.length >= 3) {
-            const partialMatch = words.some(
-              (word) => word.includes(term) || term.includes(word)
-            );
+            const partialMatch = words.some((word) => {
+              // Direct substring match
+              if (word.includes(term) || term.includes(word)) return true;
+
+              // More lenient fuzzy matching
+              if (word.length >= 4 && term.length >= 3) {
+                return calculateSimilarity(word, term) > 0.7; // Lowered threshold
+              }
+
+              return false;
+            });
             if (partialMatch) return true;
           }
 
+          // Advanced fuzzy matching for longer terms
           if (term.length >= 4) {
             const fuzzyMatch = words.some((word) => {
               if (word.length >= 4) {
-                return calculateSimilarity(word, term) > 0.75;
+                return calculateSimilarity(word, term) > 0.7; // Lowered threshold
               }
               return false;
             });
@@ -129,31 +176,53 @@ export function useProductSearch() {
         });
       })
       .sort((a, b) => {
-        const aKeywordMatch =
-          Array.isArray(a.keywords) &&
-          a.keywords.some((keyword) =>
-            searchTerms.some((term) => keyword.toLowerCase().includes(term))
-          );
-        const bKeywordMatch =
-          Array.isArray(b.keywords) &&
-          b.keywords.some((keyword) =>
-            searchTerms.some((term) => keyword.toLowerCase().includes(term))
-          );
+        const getRelevanceScore = (product: Product) => {
+          let score = 0;
 
-        if (aKeywordMatch && !bKeywordMatch) return -1;
-        if (!aKeywordMatch && bKeywordMatch) return 1;
+          searchTerms.forEach((term) => {
+            if (Array.isArray(product.keywords)) {
+              // Enhanced scoring for keyword matches
+              product.keywords.forEach((keyword) => {
+                const lowerKeyword = keyword.toLowerCase();
+                const keywordWords = lowerKeyword.split(/[\s\-_\.,]+/);
 
-        const aNameMatch = searchTerms.some((term) =>
-          a.name.toLowerCase().includes(term)
-        );
-        const bNameMatch = searchTerms.some((term) =>
-          b.name.toLowerCase().includes(term)
-        );
+                // Highest score for exact keyword match
+                if (lowerKeyword === term) score += 100;
 
-        if (aNameMatch && !bNameMatch) return -1;
-        if (!aNameMatch && bNameMatch) return 1;
+                // High score for prefix match in any word of the keyword
+                keywordWords.forEach((word) => {
+                  if (word.startsWith(term) && term.length >= 2) score += 90;
+                });
 
-        return 0;
+                // Medium score for substring match
+                if (lowerKeyword.includes(term)) score += 70;
+
+                // Lower score for fuzzy match
+                if (
+                  term.length >= 3 &&
+                  calculateSimilarity(lowerKeyword, term) > 0.7
+                ) {
+                  score += 50;
+                }
+              });
+            }
+
+            // Name matches
+            if (product.name.toLowerCase().includes(term)) score += 60;
+            if (product.name.toLowerCase().startsWith(term)) score += 80;
+
+            // Grade/category matches
+            if (product.grade?.toLowerCase().includes(term)) score += 40;
+            if (product.category?.toLowerCase().includes(term)) score += 30;
+
+            // Description matches
+            if (product.description?.toLowerCase().includes(term)) score += 20;
+          });
+
+          return score;
+        };
+
+        return getRelevanceScore(b) - getRelevanceScore(a);
       })
       .slice(0, 10);
   };
