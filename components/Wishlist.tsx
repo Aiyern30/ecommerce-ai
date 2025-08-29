@@ -22,6 +22,11 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
 } from "@/components/ui";
 import { useWishlist } from "./WishlistProvider";
 import { removeFromWishlist } from "@/lib/wishlist";
@@ -45,6 +50,9 @@ export default function Wishlist() {
   const [addingToCart, setAddingToCart] = useState<{ [key: string]: boolean }>(
     {}
   );
+  const [selectedDeliveryTypes, setSelectedDeliveryTypes] = useState<{
+    [key: string]: string;
+  }>({});
 
   const blogItems = wishlistItems.filter(
     (item) => item.item_type === "blog" && item.blog
@@ -79,7 +87,7 @@ export default function Wishlist() {
     }
   };
 
-  const handleAddToCart = async (productId: string) => {
+  const handleAddToCart = async (productId: string, deliveryType?: string) => {
     if (!user?.id) {
       toast.error("Please login to add items to cart");
       return;
@@ -87,7 +95,12 @@ export default function Wishlist() {
 
     setAddingToCart((prev) => ({ ...prev, [productId]: true }));
 
-    const result = await addToCart(user.id, productId, 1, "normal");
+    const result = await addToCart(
+      user.id,
+      productId,
+      1,
+      deliveryType || "normal"
+    );
 
     if (result.success) {
       if (result.isUpdate) {
@@ -177,6 +190,43 @@ export default function Wishlist() {
       "/placeholder.svg";
     const isAddingToCartLoading = addingToCart[product.id];
 
+    // Create delivery options for this product
+    const deliveryOptions = [
+      product.normal_price != null
+        ? {
+            key: "normal",
+            label: "Normal Delivery",
+            price: product.normal_price,
+          }
+        : null,
+      product.pump_price != null
+        ? { key: "pump", label: "Pump Delivery", price: product.pump_price }
+        : null,
+      product.tremie_1_price != null
+        ? { key: "tremie_1", label: "Tremie 1", price: product.tremie_1_price }
+        : null,
+      product.tremie_2_price != null
+        ? { key: "tremie_2", label: "Tremie 2", price: product.tremie_2_price }
+        : null,
+      product.tremie_3_price != null
+        ? { key: "tremie_3", label: "Tremie 3", price: product.tremie_3_price }
+        : null,
+    ].filter(Boolean) as { key: string; label: string; price: number }[];
+
+    const selectedDelivery =
+      selectedDeliveryTypes[product.id] || deliveryOptions[0]?.key || "normal";
+    const selectedOption = deliveryOptions.find(
+      (opt) => opt.key === selectedDelivery
+    );
+    const displayPrice = selectedOption?.price || product.normal_price;
+
+    const handleDeliveryChange = (value: string) => {
+      setSelectedDeliveryTypes((prev) => ({
+        ...prev,
+        [product.id]: value,
+      }));
+    };
+
     return (
       <div className="flex gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-900/30 rounded-lg transition-colors">
         <div className="h-16 w-16 bg-gray-100 rounded-lg overflow-hidden shrink-0">
@@ -195,8 +245,36 @@ export default function Wishlist() {
           <TypographyP className="text-xs text-gray-500 mb-1 !mt-0">
             Grade: {product.grade}
           </TypographyP>
+
+          {/* Delivery Type Selection */}
+          {deliveryOptions.length > 1 && (
+            <div className="flex items-center gap-2 mb-1">
+              <label className="text-xs text-gray-500">Delivery:</label>
+              <Select
+                value={selectedDelivery}
+                onValueChange={handleDeliveryChange}
+              >
+                <SelectTrigger className="w-32 h-6 px-2 py-1 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {deliveryOptions.map((opt) => (
+                    <SelectItem key={opt.key} value={opt.key}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <TypographyP className="text-xs text-gray-500 mb-2 !mt-0">
-            Price: RM{product.normal_price?.toFixed(2) || "N/A"}
+            Price: RM{displayPrice?.toFixed(2) || "N/A"}
+            {deliveryOptions.length === 1 && (
+              <span className="ml-1 text-blue-600">
+                ({deliveryOptions[0].label})
+              </span>
+            )}
           </TypographyP>
           <TypographyP className="text-xs text-gray-400 mb-2 !mt-0">
             Added: {new Date(item.created_at).toLocaleDateString()}
@@ -206,7 +284,7 @@ export default function Wishlist() {
               size="sm"
               variant="outline"
               className="h-7 text-xs"
-              onClick={() => handleAddToCart(product.id)}
+              onClick={() => handleAddToCart(product.id, selectedDelivery)}
               disabled={isAddingToCartLoading}
             >
               <ShoppingCart className="h-3 w-3 mr-1" />
