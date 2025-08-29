@@ -1,4 +1,11 @@
-export const formatCurrency = (amount: number, shortForm?: boolean) => {
+export const formatCurrency = (
+  amount: number | null | undefined,
+  shortForm?: boolean
+) => {
+  if (amount === null || amount === undefined || isNaN(amount)) {
+    return "RM 0.00";
+  }
+
   if (shortForm) {
     if (amount >= 1_000_000) {
       return `RM ${(amount / 1_000_000).toFixed(2)}M`;
