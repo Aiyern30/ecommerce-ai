@@ -489,95 +489,100 @@ export default function GeminiChat({
                 return (
                   <div
                     key={item.id}
-                    className="flex gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-900/30 rounded-lg transition-colors"
+                    className="flex flex-col gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-900/30 rounded-lg transition-colors"
                   >
-                    <div className="h-16 w-16 bg-gray-100 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
-                      <Image
-                        src={
-                          item.product?.product_images?.[0]?.image_url ||
-                          item.product?.image_url ||
-                          "/placeholder.svg"
-                        }
-                        alt={item.product?.name || "Product"}
-                        width={64}
-                        height={64}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm mb-1 line-clamp-2">
-                        {item.product?.name}
+                    {/* Product Info Row */}
+                    <div className="flex gap-3">
+                      <div className="h-16 w-16 bg-gray-100 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
+                        <Image
+                          src={
+                            item.product?.product_images?.[0]?.image_url ||
+                            item.product?.image_url ||
+                            "/placeholder.svg"
+                          }
+                          alt={item.product?.name || "Product"}
+                          width={64}
+                          height={64}
+                          className="h-full w-full object-cover"
+                        />
                       </div>
-                      <div className="text-xs text-gray-500 mb-1">
-                        Unit: {item.product?.unit || "per bag"}
-                      </div>
-                      <div className="text-xs text-blue-600 mb-1">
-                        {getVariantDisplayName(item.variant_type)}
-                      </div>
-                      <div className="text-xs text-gray-500 mb-3 flex items-center gap-2">
-                        <span>Price:</span>
-                        <span className="bg-green-100 text-green-600 font-semibold px-2 py-0.5 rounded">
-                          RM{itemPrice.toFixed(2)}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center border rounded-lg px-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7"
-                            onClick={() => handleQtyStep(item, -1)}
-                          >
-                            <Minus className="h-3 w-3" />
-                          </Button>
-                          <input
-                            type="number"
-                            min={1}
-                            value={qtyInputs[item.id] ?? item.quantity}
-                            onChange={(e) =>
-                              handleQtyInputChange(item.id, e.target.value)
-                            }
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") handleQtyUpdate(item);
-                            }}
-                            className="w-10 text-center text-sm font-medium bg-transparent outline-none"
-                            style={{ appearance: "textfield" }}
-                          />
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7"
-                            onClick={() => handleQtyStep(item, 1)}
-                          >
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7"
-                            onClick={() => handleQtyUpdate(item)}
-                            aria-label="Update quantity"
-                          >
-                            ✓
-                          </Button>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm mb-1 line-clamp-2">
+                          {item.product?.name}
                         </div>
+                        <div className="text-xs text-gray-500 mb-1">
+                          Unit: {item.product?.unit || "per bag"}
+                        </div>
+                        <div className="text-xs text-blue-600 mb-1">
+                          {getVariantDisplayName(item.variant_type)}
+                        </div>
+                        <div className="text-xs text-gray-500 mb-1 flex items-center gap-2">
+                          <span>Price:</span>
+                          <span className="bg-green-100 text-green-600 font-semibold px-2 py-0.5 rounded">
+                            RM{itemPrice.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold text-sm text-green-600 bg-green-50 px-2 py-1 rounded">
+                          RM{(itemPrice * item.quantity).toFixed(2)}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          Qty: {item.quantity}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Controls Row */}
+                    <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
+                      <div className="flex items-center border rounded-lg px-1">
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-7 w-7 p-0 border rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-                          onClick={() => handleRemoveClick(item)}
+                          className="h-7 w-7"
+                          onClick={() => handleQtyStep(item, -1)}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        <input
+                          type="number"
+                          min={1}
+                          value={qtyInputs[item.id] ?? item.quantity}
+                          onChange={(e) =>
+                            handleQtyInputChange(item.id, e.target.value)
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleQtyUpdate(item);
+                          }}
+                          className="w-10 text-center text-sm font-medium bg-transparent outline-none"
+                          style={{ appearance: "textfield" }}
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7"
+                          onClick={() => handleQtyStep(item, 1)}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7"
+                          onClick={() => handleQtyUpdate(item)}
+                          aria-label="Update quantity"
+                        >
+                          ✓
                         </Button>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-semibold text-sm text-green-600 bg-green-50 px-2 py-1 rounded">
-                        RM{(itemPrice * item.quantity).toFixed(2)}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Qty: {item.quantity}
-                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 border rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                        onClick={() => handleRemoveClick(item)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 );

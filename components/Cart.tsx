@@ -173,61 +173,103 @@ export default function Cart() {
                       return (
                         <div
                           key={item.id}
-                          className="flex gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-900/30 rounded-lg transition-colors"
+                          className="flex flex-col gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-900/30 rounded-lg transition-colors"
                         >
-                          <div className="h-16 w-16 bg-gray-100 rounded-lg overflow-hidden shrink-0">
-                            <Image
-                              src={
-                                item.product?.image_url || "/placeholder.svg"
-                              }
-                              alt={item.product?.name || "Product"}
-                              width={64}
-                              height={64}
-                              className="h-full w-full object-cover"
-                            />
+                          {/* Product Info Row */}
+                          <div className="flex gap-3">
+                            <div className="h-16 w-16 bg-gray-100 rounded-lg overflow-hidden shrink-0">
+                              <Image
+                                src={
+                                  item.product?.image_url || "/placeholder.svg"
+                                }
+                                alt={item.product?.name || "Product"}
+                                width={64}
+                                height={64}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <TypographyH4 className="text-sm mb-1 line-clamp-2">
+                                {item.product?.name}
+                              </TypographyH4>
+                              <TypographyP className="text-xs text-gray-500 mb-1 !mt-0">
+                                Unit: {item.product?.unit || "per bag"}
+                              </TypographyP>
+                              {/* Show variant type */}
+                              <TypographyP className="text-xs text-blue-600 mb-1 !mt-0">
+                                {getVariantDisplayName(item.variant_type)}
+                              </TypographyP>
+                              <TypographyP className="text-xs text-gray-500 mb-1 !mt-0">
+                                Price: RM{itemPrice.toFixed(2)}
+                              </TypographyP>
+                            </div>
+                            <div className="text-right">
+                              <TypographyP className="font-semibold text-sm !mt-0">
+                                RM{(itemPrice * item.quantity).toFixed(2)}
+                              </TypographyP>
+                              <TypographyP className="text-xs text-gray-500 !mt-1">
+                                Qty: {item.quantity}
+                              </TypographyP>
+                            </div>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <TypographyH4 className="text-sm mb-1 line-clamp-2">
-                              {item.product?.name}
-                            </TypographyH4>
-                            <TypographyP className="text-xs text-gray-500 mb-1 !mt-0">
-                              Unit: {item.product?.unit || "per bag"}
-                            </TypographyP>
-                            {/* Show variant type */}
-                            <TypographyP className="text-xs text-blue-600 mb-1 !mt-0">
-                              {getVariantDisplayName(item.variant_type)}
-                            </TypographyP>
-                            <TypographyP className="text-xs text-gray-500 mb-3 !mt-0">
-                              Price: RM{itemPrice.toFixed(2)}
-                            </TypographyP>
-                            <div className="flex items-center gap-3">
-                              <div className="flex items-center border rounded-lg">
+
+                          {/* Controls Row */}
+                          <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
+                            <div className="flex items-center border rounded-lg">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0"
+                                onClick={() =>
+                                  updateQuantity(item.id, item.quantity - 1)
+                                }
+                              >
+                                <Minus className="h-3 w-3" />
+                              </Button>
+                              {/* Number input for quantity */}
+                              <input
+                                type="number"
+                                min={1}
+                                value={itemInputQty}
+                                onClick={(e) => e.stopPropagation()}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  if (/^\d*$/.test(val)) {
+                                    setInputQty((prev) => ({
+                                      ...prev,
+                                      [item.id]: val,
+                                    }));
+                                  }
+                                }}
+                                onBlur={() => {
+                                  let val = parseInt(itemInputQty, 10);
+                                  if (isNaN(val) || val < 1) val = 1;
+                                  if (val !== item.quantity) {
+                                    updateQuantity(item.id, val);
+                                  }
+                                  setInputQty((prev) => ({
+                                    ...prev,
+                                    [item.id]: String(val),
+                                  }));
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    (e.target as HTMLInputElement).blur();
+                                  }
+                                }}
+                                className="w-20 px-2 py-1.5 text-xs font-bold text-center text-gray-900 dark:text-gray-100 border-x border-gray-200 dark:border-gray-600 outline-none bg-transparent"
+                                aria-label="Quantity"
+                                style={{
+                                  MozAppearance: "textfield",
+                                }}
+                              />
+                              {/* Tick button for mobile confirmation */}
+                              {isMobile && (
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-7 w-7 p-0"
-                                  onClick={() =>
-                                    updateQuantity(item.id, item.quantity - 1)
-                                  }
-                                >
-                                  <Minus className="h-3 w-3" />
-                                </Button>
-                                {/* Number input for quantity */}
-                                <input
-                                  type="number"
-                                  min={1}
-                                  value={itemInputQty}
-                                  onClick={(e) => e.stopPropagation()}
-                                  onChange={(e) => {
-                                    const val = e.target.value;
-                                    if (/^\d*$/.test(val)) {
-                                      setInputQty((prev) => ({
-                                        ...prev,
-                                        [item.id]: val,
-                                      }));
-                                    }
-                                  }}
-                                  onBlur={() => {
+                                  className="h-7 w-7 p-0 text-green-600"
+                                  onClick={() => {
                                     let val = parseInt(itemInputQty, 10);
                                     if (isNaN(val) || val < 1) val = 1;
                                     if (val !== item.quantity) {
@@ -238,64 +280,30 @@ export default function Cart() {
                                       [item.id]: String(val),
                                     }));
                                   }}
-                                  onKeyDown={(e) => {
-                                    if (e.key === "Enter") {
-                                      (e.target as HTMLInputElement).blur();
-                                    }
-                                  }}
-                                  className="w-20 px-2 py-1.5 text-xs font-bold text-center text-gray-900 dark:text-gray-100 border-x border-gray-200 dark:border-gray-600 outline-none bg-transparent"
-                                  aria-label="Quantity"
-                                  style={{
-                                    MozAppearance: "textfield",
-                                  }}
-                                />
-                                {/* Tick button for mobile confirmation */}
-                                {isMobile && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-7 w-7 p-0 text-green-600"
-                                    onClick={() => {
-                                      let val = parseInt(itemInputQty, 10);
-                                      if (isNaN(val) || val < 1) val = 1;
-                                      if (val !== item.quantity) {
-                                        updateQuantity(item.id, val);
-                                      }
-                                      setInputQty((prev) => ({
-                                        ...prev,
-                                        [item.id]: String(val),
-                                      }));
-                                    }}
-                                    aria-label="Confirm quantity"
-                                  >
-                                    <Check className="h-4 w-4" />
-                                  </Button>
-                                )}
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-7 w-7 p-0"
-                                  onClick={() =>
-                                    updateQuantity(item.id, item.quantity + 1)
-                                  }
+                                  aria-label="Confirm quantity"
                                 >
-                                  <Plus className="h-3 w-3" />
+                                  <Check className="h-4 w-4" />
                                 </Button>
-                              </div>
+                              )}
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-7 w-7 p-0 border rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-                                onClick={() => handleDeleteClick(item)}
+                                className="h-7 w-7 p-0"
+                                onClick={() =>
+                                  updateQuantity(item.id, item.quantity + 1)
+                                }
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Plus className="h-3 w-3" />
                               </Button>
                             </div>
-                          </div>
-                          <div className="text-right">
-                            <TypographyP className="font-semibold text-sm !mt-0">
-                              RM{(itemPrice * item.quantity).toFixed(2)}
-                            </TypographyP>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0 border rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                              onClick={() => handleDeleteClick(item)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
                       );

@@ -228,86 +228,90 @@ export default function Wishlist() {
     };
 
     return (
-      <div className="flex gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-900/30 rounded-lg transition-colors">
-        <div className="h-16 w-16 bg-gray-100 rounded-lg overflow-hidden shrink-0">
-          <Image
-            src={mainImage}
-            alt={product.name}
-            width={64}
-            height={64}
-            className="h-full w-full object-cover"
-          />
-        </div>
-        <div className="flex-1 min-w-0">
-          <TypographyH4 className="text-sm mb-1 line-clamp-2">
-            {product.name}
-          </TypographyH4>
-          <TypographyP className="text-xs text-gray-500 mb-1 !mt-0">
-            Grade: {product.grade}
-          </TypographyP>
-
-          {/* Delivery Type Selection */}
-          {deliveryOptions.length > 1 && (
-            <div className="flex items-center gap-2 mb-1">
-              <label className="text-xs text-gray-500">Delivery:</label>
-              <Select
-                value={selectedDelivery}
-                onValueChange={handleDeliveryChange}
-              >
-                <SelectTrigger className="w-32 h-6 px-2 py-1 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {deliveryOptions.map((opt) => (
-                    <SelectItem key={opt.key} value={opt.key}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          <TypographyP className="text-xs text-gray-500 mb-2 !mt-0">
-            Price: RM{displayPrice?.toFixed(2) || "N/A"}
-            {deliveryOptions.length === 1 && (
-              <span className="ml-1 text-blue-600">
-                ({deliveryOptions[0].label})
-              </span>
-            )}
-          </TypographyP>
-          <TypographyP className="text-xs text-gray-400 mb-2 !mt-0">
-            Added: {new Date(item.created_at).toLocaleDateString()}
-          </TypographyP>
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs"
-              onClick={() => handleAddToCart(product.id, selectedDelivery)}
-              disabled={isAddingToCartLoading}
-            >
-              <ShoppingCart className="h-3 w-3 mr-1" />
-              {isAddingToCartLoading ? "Adding..." : "Add to Cart"}
-            </Button>
-            <Link
-              href={`/products/${product.id}`}
-              onClick={() => setIsOpen(false)}
-            >
-              <Button size="sm" variant="ghost" className="h-7 text-xs">
-                <ExternalLink className="h-3 w-3 mr-1" />
-                View
-              </Button>
-            </Link>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-              onClick={() => handleDeleteClick(item)}
-            >
-              <Trash2 className="h-3 w-3" />
-            </Button>
+      <div className="flex flex-col gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-900/30 rounded-lg transition-colors">
+        {/* Product Info Row */}
+        <div className="flex gap-3">
+          <div className="h-16 w-16 bg-gray-100 rounded-lg overflow-hidden shrink-0">
+            <Image
+              src={mainImage}
+              alt={product.name}
+              width={64}
+              height={64}
+              className="h-full w-full object-cover"
+            />
           </div>
+          <div className="flex-1 min-w-0">
+            <TypographyH4 className="text-sm mb-1 line-clamp-2">
+              {product.name}
+            </TypographyH4>
+            <TypographyP className="text-xs text-gray-500 mb-1 !mt-0">
+              Grade: {product.grade}
+            </TypographyP>
+            <TypographyP className="text-xs text-gray-500 mb-1 !mt-0">
+              Price: RM{displayPrice?.toFixed(2) || "N/A"}
+              {deliveryOptions.length === 1 && (
+                <span className="ml-1 text-blue-600">
+                  ({deliveryOptions[0].label})
+                </span>
+              )}
+            </TypographyP>
+            <TypographyP className="text-xs text-gray-400 mb-1 !mt-0">
+              Added: {new Date(item.created_at).toLocaleDateString()}
+            </TypographyP>
+          </div>
+        </div>
+
+        {/* Delivery Selection Row (if multiple options) */}
+        {deliveryOptions.length > 1 && (
+          <div className="flex items-center gap-2 pb-2 border-b border-gray-100 dark:border-gray-700">
+            <label className="text-xs text-gray-500">Delivery:</label>
+            <Select
+              value={selectedDelivery}
+              onValueChange={handleDeliveryChange}
+            >
+              <SelectTrigger className="flex-1 h-8 px-2 py-1 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {deliveryOptions.map((opt) => (
+                  <SelectItem key={opt.key} value={opt.key}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        {/* Actions Row */}
+        <div className="flex items-center gap-2 pt-1">
+          <Button
+            size="sm"
+            variant="outline"
+            className="flex-1 h-8 text-xs"
+            onClick={() => handleAddToCart(product.id, selectedDelivery)}
+            disabled={isAddingToCartLoading}
+          >
+            <ShoppingCart className="h-3 w-3 mr-1" />
+            {isAddingToCartLoading ? "Adding..." : "Add to Cart"}
+          </Button>
+          <Link
+            href={`/products/${product.id}`}
+            onClick={() => setIsOpen(false)}
+          >
+            <Button size="sm" variant="ghost" className="h-8 text-xs px-3">
+              <ExternalLink className="h-3 w-3 mr-1" />
+              View
+            </Button>
+          </Link>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+            onClick={() => handleDeleteClick(item)}
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
         </div>
       </div>
     );
