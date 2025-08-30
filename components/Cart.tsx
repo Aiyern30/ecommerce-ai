@@ -18,6 +18,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  Separator,
 } from "@/components/ui";
 import { useCart } from "./CartProvider";
 import {
@@ -214,7 +215,7 @@ export default function Cart() {
                           </div>
 
                           {/* Controls Row */}
-                          <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
+                          <div className="flex items-center justify-between pt-2 ">
                             <div className="flex items-center border rounded-lg">
                               <Button
                                 variant="ghost"
@@ -305,6 +306,8 @@ export default function Cart() {
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
+
+                          <Separator className="mt-3" />
                         </div>
                       );
                     })}
