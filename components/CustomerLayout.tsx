@@ -3,7 +3,7 @@
 import type React from "react";
 import Header from "./Header";
 import Footer from "./Footer";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Toaster } from "./ui";
 import { ThemeProvider } from "./ThemeProvider";
 import { CartProvider } from "./CartProvider";
@@ -71,6 +71,40 @@ export function CustomerLayout({ children }: LayoutProps) {
   // Replace renderContent function with a component
   function RenderContent() {
     const { isChatOpen, toggleChat, closeChat } = useChat();
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+      const checkDevice = () => {
+        setIsMobile(window.innerWidth < 768);
+      };
+
+      checkDevice();
+      window.addEventListener("resize", checkDevice);
+      return () => window.removeEventListener("resize", checkDevice);
+    }, []);
+
+    // Prevent scroll when chat is open on mobile
+    useEffect(() => {
+      if (isMobile && isChatOpen) {
+        // Save current scroll position
+        const scrollY = window.scrollY;
+
+        // Apply styles to prevent scrolling
+        document.body.style.position = "fixed";
+        document.body.style.top = `-${scrollY}px`;
+        document.body.style.width = "100%";
+        document.body.style.overflow = "hidden";
+
+        return () => {
+          // Restore scroll position and remove styles
+          document.body.style.position = "";
+          document.body.style.top = "";
+          document.body.style.width = "";
+          document.body.style.overflow = "";
+          window.scrollTo(0, scrollY);
+        };
+      }
+    }, [isMobile, isChatOpen]);
 
     return (
       <div className="flex min-h-screen flex-col">
@@ -79,17 +113,29 @@ export function CustomerLayout({ children }: LayoutProps) {
           {children}
           <Toaster richColors />
         </main>
-        <div className="fixed bottom-0 right-0 z-50 flex items-end p-4">
+        <div
+          className={`fixed z-50 flex items-end ${
+            isMobile ? "bottom-4 right-4" : "bottom-0 right-0 p-4"
+          }`}
+        >
           {/* Floating button toggles GeminiChat open/close */}
           <button
             onClick={toggleChat}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg p-4 flex items-center justify-center"
+            className={`bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 ${
+              isMobile ? "w-14 h-14" : "w-16 h-16"
+            } ${
+              isChatOpen && isMobile
+                ? "scale-0 opacity-0"
+                : "scale-100 opacity-100"
+            }`}
             aria-label={isChatOpen ? "Close AI Chat" : "Open AI Chat"}
           >
             {isChatOpen ? (
-              <X className="w-6 h-6" />
+              <X className={`${isMobile ? "w-5 h-5" : "w-6 h-6"}`} />
             ) : (
-              <MessageCircle className="w-6 h-6" />
+              <MessageCircle
+                className={`${isMobile ? "w-5 h-5" : "w-6 h-6"}`}
+              />
             )}
           </button>
           <GeminiChat
