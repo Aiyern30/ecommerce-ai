@@ -75,6 +75,45 @@ interface GeminiChatProps {
   businessName: string;
 }
 
+// Add custom hook for device detection
+function useDeviceType() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkDevice = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkDevice();
+    window.addEventListener("resize", checkDevice);
+    return () => window.removeEventListener("resize", checkDevice);
+  }, []);
+
+  return { isMobile };
+}
+
+// Add viewport height hook for mobile keyboard handling
+function useViewportHeight() {
+  const [vh, setVh] = useState(0);
+
+  useEffect(() => {
+    const updateVh = () => {
+      setVh(window.innerHeight * 0.01);
+    };
+
+    updateVh();
+    window.addEventListener("resize", updateVh);
+    window.addEventListener("orientationchange", updateVh);
+
+    return () => {
+      window.removeEventListener("resize", updateVh);
+      window.removeEventListener("orientationchange", updateVh);
+    };
+  }, []);
+
+  return vh;
+}
+
 export default function GeminiChat({
   isOpen,
   onClose,
@@ -108,6 +147,12 @@ export default function GeminiChat({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const user = useUser();
+  const { isMobile } = useDeviceType();
+  const vh = useViewportHeight();
+
+  // Add keyboard handling for mobile
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -122,6 +167,54 @@ export default function GeminiChat({
       inputRef.current.focus();
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const handleResize = () => {
+      const currentVh = window.innerHeight * 0.01;
+      setIsKeyboardVisible(currentVh < vh * 0.8); // Keyboard is visible if viewport shrinks significantly
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [vh, isMobile]);
+
+  useEffect(() => {
+    if (isOpen && isMobile && inputRef.current) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+        // Scroll to bottom when keyboard appears
+        if (isKeyboardVisible) {
+          scrollToBottom();
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, isMobile, isKeyboardVisible]);
+
+  // Add scroll lock effect for mobile
+  useEffect(() => {
+    if (isMobile && isOpen) {
+      // Prevent body scroll when chat is open on mobile
+      document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.width = "100%";
+    } else {
+      // Restore body scroll when chat is closed or on desktop
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
+    }
+
+    // Cleanup function to ensure we don't leave body scroll locked
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
+    };
+  }, [isMobile, isOpen]);
 
   function stringSimilarity(a: string, b: string): number {
     a = a.toLowerCase();
@@ -859,16 +952,56 @@ export default function GeminiChat({
 
   if (!isOpen) return null;
 
+  // Dynamic styles based on device and keyboard state
+  const chatStyles = isMobile
+    ? {
+        position: "fixed" as const,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: "100vw",
+        height: isKeyboardVisible ? `${vh * 50}px` : "100vh",
+        maxHeight: "100vh",
+        zIndex: 9999,
+      }
+    : {
+        position: "fixed" as const,
+        bottom: "80px",
+        right: "16px",
+        width: "420px",
+        height: "650px",
+        maxHeight: "80vh",
+        zIndex: 50,
+      };
+
   return (
-    <Card className="fixed bottom-20 right-4 w-[420px] h-[650px] shadow-xl p-0 z-50 flex flex-col">
-      <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 rounded-t-lg">
+    <Card
+      ref={chatContainerRef}
+      className={`shadow-xl p-0 flex flex-col ${
+        isMobile ? "rounded-none" : "rounded-lg"
+      } ${isMobile ? "overscroll-contain" : ""}`}
+      style={chatStyles}
+    >
+      {/* Header */}
+      <div
+        className={`flex items-center justify-between border-b bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 ${
+          isMobile ? "p-3 rounded-none" : "p-4 rounded-t-lg"
+        }`}
+      >
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
             <RiRobot2Line size={16} className="text-white" />
           </div>
           <div>
-            <h3 className="font-semibold text-sm">Concrete Specialist AI</h3>
-            <p className="text-xs text-gray-600 dark:text-gray-400">
+            <h3 className={`font-semibold ${isMobile ? "text-sm" : "text-sm"}`}>
+              Concrete Specialist AI
+            </h3>
+            <p
+              className={`text-gray-600 dark:text-gray-400 ${
+                isMobile ? "text-xs" : "text-xs"
+              }`}
+            >
               {isTyping
                 ? "Analyzing your query..."
                 : "Ready to help with concrete solutions"}
@@ -879,15 +1012,22 @@ export default function GeminiChat({
           variant="ghost"
           size="sm"
           onClick={onClose}
-          className="h-8 w-8 p-0 hover:bg-blue-200"
+          className={`h-8 w-8 p-0 hover:bg-blue-200 ${
+            isMobile ? "hover:bg-red-100 text-red-600" : ""
+          }`}
           aria-label="Close AI Chat"
         >
           <X size={16} />
         </Button>
       </div>
 
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full overflow-y-auto p-4">
+      {/* Messages Area */}
+      <div className="flex-1 overflow-hidden min-h-0">
+        <div
+          className={`h-full overflow-y-auto overscroll-contain ${
+            isMobile ? "p-3" : "p-4"
+          }`}
+        >
           <div className="space-y-4">
             {messages.map((msg) =>
               renderMessage(
@@ -916,33 +1056,48 @@ export default function GeminiChat({
         </div>
       </div>
 
-      <div className="p-4 border-t bg-gray-50 dark:bg-gray-900">
+      {/* Input Area */}
+      <div
+        className={`border-t bg-gray-50 dark:bg-gray-900 ${
+          isMobile ? "p-3" : "p-4"
+        } ${isKeyboardVisible ? "pb-safe" : ""}`}
+      >
         <form onSubmit={handleSubmit} className="flex gap-2">
           <Input
             ref={inputRef}
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Ask about concrete grades, pricing, delivery..."
+            placeholder={
+              isMobile
+                ? "Ask about concrete..."
+                : "Ask about concrete grades, pricing, delivery..."
+            }
             disabled={isLoading}
-            className="flex-1 bg-white dark:bg-gray-800"
+            className={`flex-1 bg-white dark:bg-gray-800 ${
+              isMobile ? "text-base" : ""
+            }`}
+            style={{ fontSize: isMobile ? "16px" : "14px" }} // Prevent zoom on iOS
           />
           <Button
             type="submit"
             disabled={isLoading || !inputMessage.trim()}
             size="sm"
-            className="bg-blue-500 hover:bg-blue-600"
+            className="bg-blue-500 hover:bg-blue-600 flex-shrink-0"
           >
             <Send size={16} />
           </Button>
         </form>
 
-        <div className="mt-2 flex flex-wrap gap-1">
+        {/* Quick Actions */}
+        <div className="mt-2 flex flex-wrap gap-1 max-h-20 overflow-y-auto">
           {getQuickActions().map((suggestion, idx) => (
             <button
               key={idx}
               onClick={() => handleSuggestionClick(suggestion)}
-              className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
+              className={`text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 whitespace-nowrap ${
+                isMobile ? "text-xs" : ""
+              }`}
             >
               {suggestion}
             </button>
