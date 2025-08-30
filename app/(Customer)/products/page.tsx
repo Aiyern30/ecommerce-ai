@@ -127,31 +127,45 @@ export default function ProductListPage() {
     <section className="container mx-auto px-4 pt-0 pb-4">
       <TypographyH1 className="my-8">ALL PRODUCTS</TypographyH1>
 
-      <div className="mb-4 flex gap-2">
-        <Button
-          onClick={handleCompare}
-          disabled={selectedProducts.length < 2}
-          variant="default"
-          className="flex items-center gap-2"
-        >
-          <SlidersHorizontal
-            className={`h-4 w-4 ${
-              selectedProducts.length < 2
-                ? "text-gray-400 dark:text-gray-500"
-                : "text-white dark:text-black"
-            }`}
-          />
-          Compare ({selectedProducts.length})
-        </Button>
-        <Button
-          onClick={clearSelection}
-          disabled={selectedProducts.length === 0}
-          variant="secondary"
-          className="flex items-center gap-2"
-        >
-          <X className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-          Clear
-        </Button>
+      {/* Sticky Compare Controls */}
+      <div className="sticky top-[140px] md:top-[120px] z-40 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg mb-6 p-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-2 items-stretch sm:items-center">
+          <div className="flex-1">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 sm:mb-0">
+              {selectedProducts.length === 0
+                ? "Select products to compare (up to 4)"
+                : `${selectedProducts.length} product${
+                    selectedProducts.length === 1 ? "" : "s"
+                  } selected for comparison`}
+            </p>
+          </div>
+          <div className="flex gap-2 flex-shrink-0">
+            <Button
+              onClick={handleCompare}
+              disabled={selectedProducts.length < 2}
+              variant="default"
+              className="flex items-center gap-2 flex-1 sm:flex-initial"
+            >
+              <SlidersHorizontal
+                className={`h-4 w-4 ${
+                  selectedProducts.length < 2
+                    ? "text-gray-400 dark:text-gray-500"
+                    : "text-white dark:text-black"
+                }`}
+              />
+              Compare ({selectedProducts.length})
+            </Button>
+            <Button
+              onClick={clearSelection}
+              disabled={selectedProducts.length === 0}
+              variant="secondary"
+              className="flex items-center gap-2 flex-1 sm:flex-initial"
+            >
+              <X className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              Clear
+            </Button>
+          </div>
+        </div>
       </div>
 
       {isLoading ? (
