@@ -139,14 +139,6 @@ const Footer = () => {
                     Notifications
                   </Link>
                 </li>
-                <li>
-                  <Link
-                    href="/search"
-                    className="hover:text-gray-900 dark:hover:text-white transition-colors"
-                  >
-                    Search
-                  </Link>
-                </li>
               </ul>
             </div>
           </div>
