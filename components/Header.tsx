@@ -549,6 +549,22 @@ const Header = () => {
     checkUser();
   }, []);
 
+  // Add scroll lock effect
+  useEffect(() => {
+    if (menuOpen) {
+      // Prevent body scroll when menu is open
+      document.body.style.overflow = "hidden";
+    } else {
+      // Restore body scroll when menu is closed
+      document.body.style.overflow = "unset";
+    }
+
+    // Cleanup function to ensure we don't leave body scroll locked
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [menuOpen]);
+
   return (
     <div>
       <header className="fixed top-0 left-0 w-full bg-white dark:bg-gray-900 shadow-md border-b z-50 dark:border-gray-800">
@@ -771,169 +787,183 @@ const Header = () => {
           {menuOpen && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
+              animate={{ opacity: 1, height: "75vh" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="md:hidden bg-white dark:bg-gray-900 border-t dark:border-gray-800 shadow-lg overflow-hidden"
+              className="md:hidden bg-white dark:bg-gray-900 border-t dark:border-gray-800 shadow-lg overflow-hidden fixed left-0 right-0 z-50"
+              style={{
+                height: "75vh",
+                top: "auto",
+              }}
             >
-              <div className="container mx-auto p-4 space-y-4">
-                {/* Primary Navigation */}
-                <motion.nav
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1, duration: 0.3 }}
-                  className="space-y-2"
-                >
-                  {/* Staff Dashboard nav for mobile */}
-                  {isStaff && (
-                    <motion.div
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.15, duration: 0.3 }}
+              <div className="h-full overflow-y-auto overscroll-contain">
+                <div className="container mx-auto">
+                  <div className="p-4 space-y-4">
+                    {/* Primary Navigation */}
+                    <motion.nav
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1, duration: 0.3 }}
+                      className="space-y-2"
                     >
-                      <Link
-                        href="/staff/dashboard"
-                        onClick={() => setMenuOpen(false)}
-                        className={`flex items-center justify-between p-3 rounded-lg transition-all duration-200 ${
-                          isActive("/staff/dashboard")
-                            ? "bg-orange-50 dark:bg-orange-900/20 text-[#ff7a5c] font-semibold border-l-4 border-[#ff7a5c]"
-                            : "hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-gray-300"
-                        }`}
-                      >
-                        <span>Staff Dashboard</span>
-                        {isActive("/staff/dashboard") && (
-                          <motion.div
-                            layoutId="mobileActiveIndicator"
-                            className="w-2 h-2 bg-[#ff7a5c] rounded-full"
-                            initial={false}
-                            transition={{ duration: 0.3 }}
-                          />
-                        )}
-                      </Link>
-                    </motion.div>
-                  )}
-                  {filteredPrimaryNavItems.map(({ name, path }, index) => (
-                    <motion.div
-                      key={path}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.2 + index * 0.1, duration: 0.3 }}
-                    >
-                      <Link
-                        href={path}
-                        onClick={() => setMenuOpen(false)}
-                        className={`flex items-center justify-between p-3 rounded-lg transition-all duration-200 ${
-                          isActive(path)
-                            ? "bg-orange-50 dark:bg-orange-900/20 text-[#ff7a5c] font-semibold border-l-4 border-[#ff7a5c]"
-                            : "hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-gray-300"
-                        }`}
-                      >
-                        <span>{name}</span>
-                        {isActive(path) && (
-                          <motion.div
-                            layoutId="mobileActiveIndicator"
-                            className="w-2 h-2 bg-[#ff7a5c] rounded-full"
-                            initial={false}
-                            transition={{ duration: 0.3 }}
-                          />
-                        )}
-                      </Link>
-                    </motion.div>
-                  ))}
-                </motion.nav>
+                      {/* Staff Dashboard nav for mobile */}
+                      {isStaff && (
+                        <motion.div
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.15, duration: 0.3 }}
+                        >
+                          <Link
+                            href="/staff/dashboard"
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center justify-between p-3 rounded-lg transition-all duration-200 ${
+                              isActive("/staff/dashboard")
+                                ? "bg-orange-50 dark:bg-orange-900/20 text-[#ff7a5c] font-semibold border-l-4 border-[#ff7a5c]"
+                                : "hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-gray-300"
+                            }`}
+                          >
+                            <span>Staff Dashboard</span>
+                            {isActive("/staff/dashboard") && (
+                              <motion.div
+                                layoutId="mobileActiveIndicator"
+                                className="w-2 h-2 bg-[#ff7a5c] rounded-full"
+                                initial={false}
+                                transition={{ duration: 0.3 }}
+                              />
+                            )}
+                          </Link>
+                        </motion.div>
+                      )}
+                      {filteredPrimaryNavItems.map(({ name, path }, index) => (
+                        <motion.div
+                          key={path}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{
+                            delay: 0.2 + index * 0.1,
+                            duration: 0.3,
+                          }}
+                        >
+                          <Link
+                            href={path}
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center justify-between p-3 rounded-lg transition-all duration-200 ${
+                              isActive(path)
+                                ? "bg-orange-50 dark:bg-orange-900/20 text-[#ff7a5c] font-semibold border-l-4 border-[#ff7a5c]"
+                                : "hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-gray-300"
+                            }`}
+                          >
+                            <span>{name}</span>
+                            {isActive(path) && (
+                              <motion.div
+                                layoutId="mobileActiveIndicator"
+                                className="w-2 h-2 bg-[#ff7a5c] rounded-full"
+                                initial={false}
+                                transition={{ duration: 0.3 }}
+                              />
+                            )}
+                          </Link>
+                        </motion.div>
+                      ))}
+                    </motion.nav>
 
-                {/* Secondary Navigation */}
-                <motion.nav
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3, duration: 0.3 }}
-                  className="space-y-2 border-t dark:border-gray-800 pt-4"
-                >
-                  <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
-                    More
-                  </h3>
-                  {secondaryNavItems.map(({ name, path }, index) => (
-                    <motion.div
-                      key={path}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.4 + index * 0.1, duration: 0.3 }}
+                    {/* Secondary Navigation */}
+                    <motion.nav
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3, duration: 0.3 }}
+                      className="space-y-2 border-t dark:border-gray-800 pt-4"
                     >
-                      <Link
-                        href={path}
-                        onClick={() => setMenuOpen(false)}
-                        className={`flex items-center justify-between p-3 rounded-lg transition-all duration-200 ${
-                          isActive(path)
-                            ? "bg-orange-50 dark:bg-orange-900/20 text-[#ff7a5c] font-semibold border-l-4 border-[#ff7a5c]"
-                            : "hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-gray-300"
-                        }`}
-                      >
-                        <span>{name}</span>
-                        {isActive(path) && (
-                          <motion.div
-                            layoutId="mobileActiveIndicator"
-                            className="w-2 h-2 bg-[#ff7a5c] rounded-full"
-                            initial={false}
-                            transition={{ duration: 0.3 }}
-                          />
-                        )}
-                      </Link>
-                    </motion.div>
-                  ))}
-                </motion.nav>
+                      <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                        More
+                      </h3>
+                      {secondaryNavItems.map(({ name, path }, index) => (
+                        <motion.div
+                          key={path}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{
+                            delay: 0.4 + index * 0.1,
+                            duration: 0.3,
+                          }}
+                        >
+                          <Link
+                            href={path}
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center justify-between p-3 rounded-lg transition-all duration-200 ${
+                              isActive(path)
+                                ? "bg-orange-50 dark:bg-orange-900/20 text-[#ff7a5c] font-semibold border-l-4 border-[#ff7a5c]"
+                                : "hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-gray-300"
+                            }`}
+                          >
+                            <span>{name}</span>
+                            {isActive(path) && (
+                              <motion.div
+                                layoutId="mobileActiveIndicator"
+                                className="w-2 h-2 bg-[#ff7a5c] rounded-full"
+                                initial={false}
+                                transition={{ duration: 0.3 }}
+                              />
+                            )}
+                          </Link>
+                        </motion.div>
+                      ))}
+                    </motion.nav>
 
-                {/* User Actions */}
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5, duration: 0.3 }}
-                  className="border-t dark:border-gray-800 pt-4"
-                >
-                  {!user ? (
-                    <Button
-                      onClick={handleLoginClick}
-                      variant="outline"
-                      className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+                    {/* User Actions */}
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5, duration: 0.3 }}
+                      className="border-t dark:border-gray-800 pt-4 pb-8"
                     >
-                      Sign In
-                    </Button>
-                  ) : (
-                    <div className="space-y-2">
-                      <Link
-                        href="/profile"
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-gray-300"
-                      >
-                        <Avatar className="h-8 w-8 mr-3 border border-[#ff7a5c]">
-                          <AvatarImage
-                            src={
-                              user.user_metadata?.picture ||
-                              user.user_metadata?.avatar_url ||
-                              undefined
-                            }
-                          />
-                          <AvatarFallback className="text-xs">
-                            {user.user_metadata?.full_name
-                              ? getInitials(user.user_metadata.full_name)
-                              : user.user_metadata?.name
-                              ? getInitials(user.user_metadata.name)
-                              : user.email
-                              ? getInitials(user.email)
-                              : "U"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span>View Profile</span>
-                      </Link>
-                      <Button
-                        onClick={handleLogout}
-                        variant="outline"
-                        className="w-full border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
-                      >
-                        Logout
-                      </Button>
-                    </div>
-                  )}
-                </motion.div>
+                      {!user ? (
+                        <Button
+                          onClick={handleLoginClick}
+                          variant="outline"
+                          className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+                        >
+                          Sign In
+                        </Button>
+                      ) : (
+                        <div className="space-y-2">
+                          <Link
+                            href="/profile"
+                            onClick={() => setMenuOpen(false)}
+                            className="flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-gray-300"
+                          >
+                            <Avatar className="h-8 w-8 mr-3 border border-[#ff7a5c]">
+                              <AvatarImage
+                                src={
+                                  user.user_metadata?.picture ||
+                                  user.user_metadata?.avatar_url ||
+                                  undefined
+                                }
+                              />
+                              <AvatarFallback className="text-xs">
+                                {user.user_metadata?.full_name
+                                  ? getInitials(user.user_metadata.full_name)
+                                  : user.user_metadata?.name
+                                  ? getInitials(user.user_metadata.name)
+                                  : user.email
+                                  ? getInitials(user.email)
+                                  : "U"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span>View Profile</span>
+                          </Link>
+                          <Button
+                            onClick={handleLogout}
+                            variant="outline"
+                            className="w-full border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+                          >
+                            Logout
+                          </Button>
+                        </div>
+                      )}
+                    </motion.div>
+                  </div>
+                </div>
               </div>
             </motion.div>
           )}
