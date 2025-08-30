@@ -694,83 +694,159 @@ export default function CartPage() {
                                 >
                                   RM{itemPrice.toFixed(2)}
                                 </div>
-                                <div
-                                  className={`flex items-center bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-600 shadow-sm ${
-                                    isMobile ? "scale-90" : ""
-                                  }`}
-                                >
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      if (item.quantity === 1) {
-                                        handleDeleteClick(item);
-                                      } else {
-                                        updateQuantity(
-                                          item.id,
-                                          item.quantity - 1
-                                        );
-                                      }
-                                    }}
-                                    className={`p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-l-lg group${
-                                      item.quantity === 1
-                                        ? " text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                        : ""
-                                    }`}
-                                    aria-label={
-                                      item.quantity === 1
-                                        ? "Remove item"
-                                        : "Decrease quantity"
-                                    }
+                                {!isMobile && (
+                                  <div
+                                    className={`flex items-center bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-600 shadow-sm`}
                                   >
-                                    <Minus
-                                      className={`${
-                                        isMobile ? "h-3 w-3" : "h-3.5 w-3.5"
-                                      } group-hover:scale-110 transition-transform duration-200`}
-                                    />
-                                  </button>
-                                  <input
-                                    type="number"
-                                    min={1}
-                                    value={itemInputQty}
-                                    onClick={(e) => e.stopPropagation()}
-                                    onChange={(e) => {
-                                      const val = e.target.value;
-                                      if (/^\d*$/.test(val)) {
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (item.quantity === 1) {
+                                          handleDeleteClick(item);
+                                        } else {
+                                          updateQuantity(
+                                            item.id,
+                                            item.quantity - 1
+                                          );
+                                        }
+                                      }}
+                                      className={`p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-l-lg group${
+                                        item.quantity === 1
+                                          ? " text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                          : ""
+                                      }`}
+                                      aria-label={
+                                        item.quantity === 1
+                                          ? "Remove item"
+                                          : "Decrease quantity"
+                                      }
+                                    >
+                                      <Minus className="h-3.5 w-3.5 group-hover:scale-110 transition-transform duration-200" />
+                                    </button>
+                                    <input
+                                      type="number"
+                                      min={1}
+                                      value={itemInputQty}
+                                      onClick={(e) => e.stopPropagation()}
+                                      onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (/^\d*$/.test(val)) {
+                                          setInputQty((prev) => ({
+                                            ...prev,
+                                            [item.id]: val,
+                                          }));
+                                        }
+                                      }}
+                                      onBlur={() => {
+                                        let val = parseInt(itemInputQty, 10);
+                                        if (isNaN(val) || val < 1) val = 1;
+                                        if (val !== item.quantity) {
+                                          updateQuantity(item.id, val);
+                                        }
                                         setInputQty((prev) => ({
                                           ...prev,
-                                          [item.id]: val,
+                                          [item.id]: String(val),
                                         }));
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                          (e.target as HTMLInputElement).blur();
+                                        }
+                                      }}
+                                      className="appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none w-20 px-2 py-2 text-sm font-bold text-center text-gray-900 dark:text-gray-100 border-x border-gray-200 dark:border-gray-600 outline-none bg-transparent"
+                                      aria-label="Quantity"
+                                      style={{
+                                        MozAppearance: "textfield",
+                                      }}
+                                    />
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        updateQuantity(
+                                          item.id,
+                                          item.quantity + 1
+                                        );
+                                      }}
+                                      disabled={
+                                        typeof item.product?.stock_quantity ===
+                                          "number" &&
+                                        item.quantity >=
+                                          item.product.stock_quantity
                                       }
-                                    }}
-                                    onBlur={() => {
-                                      let val = parseInt(itemInputQty, 10);
-                                      if (isNaN(val) || val < 1) val = 1;
-                                      if (val !== item.quantity) {
-                                        updateQuantity(item.id, val);
+                                      className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-r-lg group disabled:opacity-50"
+                                      aria-label="Increase quantity"
+                                    >
+                                      <Plus className="h-3.5 w-3.5 group-hover:scale-110 transition-transform duration-200" />
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Mobile Controls Row */}
+                              {isMobile && (
+                                <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700 mt-3">
+                                  <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-600 shadow-sm">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (item.quantity === 1) {
+                                          handleDeleteClick(item);
+                                        } else {
+                                          updateQuantity(
+                                            item.id,
+                                            item.quantity - 1
+                                          );
+                                        }
+                                      }}
+                                      className={`p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-l-lg group${
+                                        item.quantity === 1
+                                          ? " text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                          : ""
+                                      }`}
+                                      aria-label={
+                                        item.quantity === 1
+                                          ? "Remove item"
+                                          : "Decrease quantity"
                                       }
-                                      setInputQty((prev) => ({
-                                        ...prev,
-                                        [item.id]: String(val),
-                                      }));
-                                    }}
-                                    onKeyDown={(e) => {
-                                      if (e.key === "Enter") {
-                                        (e.target as HTMLInputElement).blur();
-                                      }
-                                    }}
-                                    className={`appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none
-                  ${
-                    isMobile
-                      ? "w-16 px-2 py-1.5 text-xs"
-                      : "w-20 px-2 py-2 text-sm"
-                  }
-                  font-bold text-center text-gray-900 dark:text-gray-100 border-x border-gray-200 dark:border-gray-600 outline-none bg-transparent`}
-                                    aria-label="Quantity"
-                                    style={{
-                                      MozAppearance: "textfield",
-                                    }}
-                                  />
-                                  {isMobile && (
+                                    >
+                                      <Minus className="h-3 w-3 group-hover:scale-110 transition-transform duration-200" />
+                                    </button>
+                                    <input
+                                      type="number"
+                                      min={1}
+                                      value={itemInputQty}
+                                      onClick={(e) => e.stopPropagation()}
+                                      onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (/^\d*$/.test(val)) {
+                                          setInputQty((prev) => ({
+                                            ...prev,
+                                            [item.id]: val,
+                                          }));
+                                        }
+                                      }}
+                                      onBlur={() => {
+                                        let val = parseInt(itemInputQty, 10);
+                                        if (isNaN(val) || val < 1) val = 1;
+                                        if (val !== item.quantity) {
+                                          updateQuantity(item.id, val);
+                                        }
+                                        setInputQty((prev) => ({
+                                          ...prev,
+                                          [item.id]: String(val),
+                                        }));
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                          (e.target as HTMLInputElement).blur();
+                                        }
+                                      }}
+                                      className="appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none w-16 px-2 py-1.5 text-xs font-bold text-center text-gray-900 dark:text-gray-100 border-x border-gray-200 dark:border-gray-600 outline-none bg-transparent"
+                                      aria-label="Quantity"
+                                      style={{
+                                        MozAppearance: "textfield",
+                                      }}
+                                    />
                                     <button
                                       type="button"
                                       onClick={(e) => {
@@ -790,32 +866,38 @@ export default function CartPage() {
                                     >
                                       <Check className="h-4 w-4" />
                                     </button>
-                                  )}
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        updateQuantity(
+                                          item.id,
+                                          item.quantity + 1
+                                        );
+                                      }}
+                                      disabled={
+                                        typeof item.product?.stock_quantity ===
+                                          "number" &&
+                                        item.quantity >=
+                                          item.product.stock_quantity
+                                      }
+                                      className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-r-lg group disabled:opacity-50"
+                                      aria-label="Increase quantity"
+                                    >
+                                      <Plus className="h-3 w-3 group-hover:scale-110 transition-transform duration-200" />
+                                    </button>
+                                  </div>
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      updateQuantity(
-                                        item.id,
-                                        item.quantity + 1
-                                      );
+                                      handleDeleteClick(item);
                                     }}
-                                    disabled={
-                                      typeof item.product?.stock_quantity ===
-                                        "number" &&
-                                      item.quantity >=
-                                        item.product.stock_quantity
-                                    }
-                                    className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-r-lg group disabled:opacity-50"
-                                    aria-label="Increase quantity"
+                                    className="text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition-all duration-200"
+                                    aria-label="Remove item"
                                   >
-                                    <Plus
-                                      className={`${
-                                        isMobile ? "h-3 w-3" : "h-3.5 w-3.5"
-                                      } group-hover:scale-110 transition-transform duration-200`}
-                                    />
+                                    <Trash2 className="h-4 w-4" />
                                   </button>
                                 </div>
-                              </div>
+                              )}
                             </div>
                           </div>
                         </div>
