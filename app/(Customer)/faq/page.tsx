@@ -107,11 +107,7 @@ export default function FaqPage() {
         {loading ? (
           <FaqSkeleton />
         ) : (
-          <Accordion
-            type="multiple"
-            defaultValue={Object.keys(grouped)}
-            className="space-y-6"
-          >
+          <Accordion type="single" collapsible className="space-y-6">
             {Object.entries(grouped).map(([section, items]) => (
               <AccordionItem
                 key={section}
