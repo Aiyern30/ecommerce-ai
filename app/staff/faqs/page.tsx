@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search, FileText, Plus } from "lucide-react";
+import { Search, FileText, Plus, Columns } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import {
@@ -30,6 +30,10 @@ import {
   SelectValue,
   SelectContent,
   SelectItem,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Checkbox,
 } from "@/components/ui/";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import { Faq } from "@/type/faqs";
@@ -114,6 +118,13 @@ function NoFaqResultsState({ onClearFilters }: { onClearFilters: () => void }) {
   );
 }
 
+interface ColumnConfig {
+  key: string;
+  label: string;
+  visible: boolean;
+  required?: boolean;
+}
+
 export default function FaqsPage() {
   const router = useRouter();
   const [faqs, setFaqs] = useState<Faq[]>([]);
@@ -122,6 +133,35 @@ export default function FaqsPage() {
   const { isMobile } = useDeviceType();
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [status, setStatus] = useState<"all" | "draft" | "published">("all");
+
+  // Initialize column visibility from localStorage or defaults
+  const [visibleColumns, setVisibleColumns] = useState<ColumnConfig[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("faqTableColumns");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (error) {
+          console.error("Error parsing saved column config:", error);
+        }
+      }
+    }
+
+    // Default configuration if no saved state
+    return [
+      { key: "question", label: "Question", visible: true, required: true },
+      { key: "answer", label: "Answer", visible: true },
+      { key: "status", label: "Status", visible: true },
+      { key: "actions", label: "Actions", visible: true, required: true },
+    ];
+  });
+
+  // Save to localStorage whenever visibleColumns changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("faqTableColumns", JSON.stringify(visibleColumns));
+    }
+  }, [visibleColumns]);
 
   const fetchFaqs = useCallback(async () => {
     setLoading(true);
@@ -161,6 +201,37 @@ export default function FaqsPage() {
     if (!faqsBySection[section]) faqsBySection[section] = [];
     faqsBySection[section].push(faq);
   });
+
+  const toggleColumnVisibility = (columnKey: string) => {
+    setVisibleColumns((prev) => {
+      const newColumns = prev.map((col) =>
+        col.key === columnKey ? { ...col, visible: !col.visible } : col
+      );
+      return newColumns;
+    });
+  };
+
+  const resetColumns = () => {
+    const defaultColumns = [
+      { key: "question", label: "Question", visible: true, required: true },
+      { key: "answer", label: "Answer", visible: true },
+      { key: "status", label: "Status", visible: true },
+      { key: "actions", label: "Actions", visible: true, required: true },
+    ];
+
+    setVisibleColumns(defaultColumns);
+  };
+
+  const clearSavedColumnPreferences = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("faqTableColumns");
+    }
+    resetColumns();
+  };
+
+  const isColumnVisible = (columnKey: string) => {
+    return visibleColumns.find((col) => col.key === columnKey)?.visible ?? true;
+  };
 
   const clearAllFilters = () => {
     setSearch("");
@@ -255,21 +326,107 @@ export default function FaqsPage() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <Select
-            value={status}
-            onValueChange={(value) =>
-              setStatus(value as "all" | "draft" | "published")
-            }
-          >
-            <SelectTrigger className="w-full sm:w-[180px] h-9">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="published">Published</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            <Select
+              value={status}
+              onValueChange={(value) =>
+                setStatus(value as "all" | "draft" | "published")
+              }
+            >
+              <SelectTrigger className="w-full sm:w-[180px] h-9">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="published">Published</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Column Filter Button */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <Columns className="h-4 w-4" />
+                  Columns
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64" align="end">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-sm">Toggle Columns</h4>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={resetColumns}
+                        className="text-xs h-6 px-2"
+                        title="Reset to default"
+                      >
+                        Reset
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearSavedColumnPreferences}
+                        className="text-xs h-6 px-2 text-red-600 hover:text-red-700"
+                        title="Clear saved preferences"
+                      >
+                        Clear
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {visibleColumns.map((column) => (
+                      <div
+                        key={column.key}
+                        className="flex items-center space-x-2"
+                      >
+                        <Checkbox
+                          id={`column-${column.key}`}
+                          checked={column.visible}
+                          onCheckedChange={() =>
+                            toggleColumnVisibility(column.key)
+                          }
+                          disabled={column.required}
+                        />
+                        <label
+                          htmlFor={`column-${column.key}`}
+                          className={`text-sm cursor-pointer flex-1 ${
+                            column.required
+                              ? "text-gray-400"
+                              : "text-gray-700 dark:text-gray-300"
+                          }`}
+                        >
+                          {column.label}
+                          {column.required && (
+                            <span className="text-xs text-gray-400 ml-1">
+                              (required)
+                            </span>
+                          )}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                    <p className="text-xs text-gray-500">
+                      {visibleColumns.filter((col) => col.visible).length} of{" "}
+                      {visibleColumns.length} columns visible
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      💾 Preferences saved automatically
+                    </p>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
       )}
 
@@ -304,18 +461,26 @@ export default function FaqsPage() {
                   <Table className="table-fixed">
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="min-w-[200px] text-left">
-                          Question
-                        </TableHead>
-                        <TableHead className="min-w-[200px] text-left">
-                          Answer
-                        </TableHead>
-                        <TableHead className="w-[110px] min-w-[90px] max-w-[120px] text-left">
-                          Status
-                        </TableHead>
-                        <TableHead className="w-[90px] min-w-[80px] max-w-[100px] text-left">
-                          Actions
-                        </TableHead>
+                        {isColumnVisible("question") && (
+                          <TableHead className="min-w-[200px] text-left">
+                            Question
+                          </TableHead>
+                        )}
+                        {isColumnVisible("answer") && (
+                          <TableHead className="min-w-[200px] text-left">
+                            Answer
+                          </TableHead>
+                        )}
+                        {isColumnVisible("status") && (
+                          <TableHead className="w-[110px] min-w-[90px] max-w-[120px] text-left">
+                            Status
+                          </TableHead>
+                        )}
+                        {isColumnVisible("actions") && (
+                          <TableHead className="w-[90px] min-w-[80px] max-w-[100px] text-left">
+                            Actions
+                          </TableHead>
+                        )}
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -325,48 +490,56 @@ export default function FaqsPage() {
                           onClick={() => router.push(`/staff/faqs/${faq.id}`)}
                           className="cursor-pointer hover:bg-muted/50 transition-colors"
                         >
-                          <TableCell
-                            className="min-w-[200px] font-medium truncate"
-                            title={faq.question}
-                          >
-                            {faq.question}
-                          </TableCell>
-                          <TableCell
-                            className="min-w-[200px] truncate text-gray-600 dark:text-gray-300"
-                            title={faq.answer}
-                          >
-                            {faq.answer}
-                          </TableCell>
-                          <TableCell className="w-[110px] min-w-[90px] max-w-[120px]">
-                            <Badge
-                              variant={
-                                faq.status === "published"
-                                  ? "default"
-                                  : "secondary"
-                              }
-                              className={
-                                faq.status === "published"
-                                  ? "bg-green-100 text-green-800 border-green-200"
-                                  : "bg-yellow-100 text-yellow-800 border-yellow-200"
-                              }
+                          {isColumnVisible("question") && (
+                            <TableCell
+                              className="min-w-[200px] font-medium truncate"
+                              title={faq.question}
                             >
-                              {faq.status === "published"
-                                ? "Published"
-                                : "Draft"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="w-[90px] min-w-[80px] max-w-[100px]">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                router.push(`/staff/faqs/${faq.id}/edit`);
-                              }}
+                              {faq.question}
+                            </TableCell>
+                          )}
+                          {isColumnVisible("answer") && (
+                            <TableCell
+                              className="min-w-[200px] truncate text-gray-600 dark:text-gray-300"
+                              title={faq.answer}
                             >
-                              Edit
-                            </Button>
-                          </TableCell>
+                              {faq.answer}
+                            </TableCell>
+                          )}
+                          {isColumnVisible("status") && (
+                            <TableCell className="w-[110px] min-w-[90px] max-w-[120px]">
+                              <Badge
+                                variant={
+                                  faq.status === "published"
+                                    ? "default"
+                                    : "secondary"
+                                }
+                                className={
+                                  faq.status === "published"
+                                    ? "bg-green-100 text-green-800 border-green-200"
+                                    : "bg-yellow-100 text-yellow-800 border-yellow-200"
+                                }
+                              >
+                                {faq.status === "published"
+                                  ? "Published"
+                                  : "Draft"}
+                              </Badge>
+                            </TableCell>
+                          )}
+                          {isColumnVisible("actions") && (
+                            <TableCell className="w-[90px] min-w-[80px] max-w-[100px]">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  router.push(`/staff/faqs/${faq.id}/edit`);
+                                }}
+                              >
+                                Edit
+                              </Button>
+                            </TableCell>
+                          )}
                         </TableRow>
                       ))}
                     </TableBody>
