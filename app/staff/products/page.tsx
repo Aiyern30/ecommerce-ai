@@ -269,7 +269,7 @@ export default function ProductsPage() {
       }
     }
 
-    // Default configuration if no saved state
+    // Default configuration if no saved state - ALL COLUMNS VISIBLE
     return [
       { key: "select", label: "Select", visible: true, required: true },
       { key: "image", label: "Image", visible: true },

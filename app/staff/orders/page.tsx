@@ -274,7 +274,7 @@ export default function OrdersPage() {
       }
     }
 
-    // Default configuration if no saved state
+    // Default configuration if no saved state - ALL COLUMNS VISIBLE
     return [
       { key: "select", label: "Select", visible: true, required: true },
       { key: "customer", label: "Customer", visible: true, required: true },
@@ -284,12 +284,12 @@ export default function OrdersPage() {
         label: "Additional Services",
         visible: true,
       },
-      { key: "services_total", label: "Services Total", visible: false },
+      { key: "services_total", label: "Services Total", visible: true },
       { key: "subtotal", label: "Subtotal", visible: true },
-      { key: "shipping", label: "Shipping", visible: false },
-      { key: "tax", label: "Tax", visible: false },
+      { key: "shipping", label: "Shipping", visible: true },
+      { key: "tax", label: "Tax", visible: true },
       { key: "total_amount", label: "Total Amount", visible: true },
-      { key: "payment_intent", label: "Payment Intent", visible: false },
+      { key: "payment_intent", label: "Payment Intent", visible: true },
       { key: "status", label: "Status", visible: true },
       { key: "payment", label: "Payment", visible: true },
       { key: "address", label: "Address", visible: true },
@@ -632,12 +632,12 @@ export default function OrdersPage() {
         label: "Additional Services",
         visible: true,
       },
-      { key: "services_total", label: "Services Total", visible: false },
+      { key: "services_total", label: "Services Total", visible: true },
       { key: "subtotal", label: "Subtotal", visible: true },
-      { key: "shipping", label: "Shipping", visible: false },
-      { key: "tax", label: "Tax", visible: false },
+      { key: "shipping", label: "Shipping", visible: true },
+      { key: "tax", label: "Tax", visible: true },
       { key: "total_amount", label: "Total Amount", visible: true },
-      { key: "payment_intent", label: "Payment Intent", visible: false },
+      { key: "payment_intent", label: "Payment Intent", visible: true },
       { key: "status", label: "Status", visible: true },
       { key: "payment", label: "Payment", visible: true },
       { key: "address", label: "Address", visible: true },
