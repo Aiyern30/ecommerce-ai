@@ -86,7 +86,6 @@ export default function BlogsPage() {
         })) || null,
     }));
 
-    console.log("fetchAllBlogs transformed blogs:", transformedBlogs); // Debug log
     return transformedBlogs;
   };
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -57,13 +58,38 @@ export default function BlogPost() {
         .eq("id", id)
         .eq("status", "published")
         .single();
+
       if (currentError) {
         console.error("Failed to fetch blog:", currentError.message);
         router.push("/blogs");
         return;
       }
 
-      setBlog(current as Blog);
+      const transformedBlog: Blog = {
+        id: current.id,
+        title: current.title,
+        description: current.description,
+        status: current.status,
+        created_at: current.created_at,
+        updated_at: current.updated_at,
+        link: current.link,
+        link_name: current.link_name,
+        content: current.content,
+        image_url: current.image_url,
+        blog_images:
+          current.blog_images?.map((img: any) => ({
+            image_url: img.image_url,
+          })) || null,
+        blog_tags:
+          current.blog_tags?.map((blogTag: any) => ({
+            tags: {
+              id: blogTag.tags.id,
+              name: blogTag.tags.name,
+            },
+          })) || null,
+      };
+
+      setBlog(transformedBlog);
 
       const { data: prev } = await supabase
         .from("blogs")
