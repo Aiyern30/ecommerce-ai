@@ -12,6 +12,7 @@ import {
   ExternalLink,
   LinkIcon,
   FileText,
+  Columns,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -51,6 +52,9 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerClose,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import Image from "next/image";
@@ -183,6 +187,13 @@ function PostTableSkeletonEnhanced() {
   );
 }
 
+interface ColumnConfig {
+  key: string;
+  label: string;
+  visible: boolean;
+  required?: boolean;
+}
+
 export default function PostsPage() {
   const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
@@ -201,6 +212,40 @@ export default function PostsPage() {
   const [postsToDelete, setPostsToDelete] = useState<Post[]>([]);
   const { isMobile } = useDeviceType();
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+
+  // Initialize column visibility from localStorage or defaults
+  const [visibleColumns, setVisibleColumns] = useState<ColumnConfig[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("postTableColumns");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (error) {
+          console.error("Error parsing saved column config:", error);
+        }
+      }
+    }
+
+    // Default configuration if no saved state
+    return [
+      { key: "select", label: "Select", visible: true, required: true },
+      { key: "image", label: "Image", visible: true },
+      { key: "title", label: "Title", visible: true, required: true },
+      { key: "description", label: "Description", visible: true },
+      { key: "mobile_desc", label: "Mobile Desc", visible: false },
+      { key: "status", label: "Status", visible: true },
+      { key: "link", label: "Link", visible: true },
+      { key: "created", label: "Created", visible: true },
+      { key: "actions", label: "Actions", visible: true, required: true },
+    ];
+  });
+
+  // Save to localStorage whenever visibleColumns changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("postTableColumns", JSON.stringify(visibleColumns));
+    }
+  }, [visibleColumns]);
 
   const itemsPerPage = 10;
 
@@ -407,6 +452,42 @@ export default function PostsPage() {
         </span>
       </div>
     );
+  };
+
+  const toggleColumnVisibility = (columnKey: string) => {
+    setVisibleColumns((prev) => {
+      const newColumns = prev.map((col) =>
+        col.key === columnKey ? { ...col, visible: !col.visible } : col
+      );
+      return newColumns;
+    });
+  };
+
+  const resetColumns = () => {
+    const defaultColumns = [
+      { key: "select", label: "Select", visible: true, required: true },
+      { key: "image", label: "Image", visible: true },
+      { key: "title", label: "Title", visible: true, required: true },
+      { key: "description", label: "Description", visible: true },
+      { key: "mobile_desc", label: "Mobile Desc", visible: false },
+      { key: "status", label: "Status", visible: true },
+      { key: "link", label: "Link", visible: true },
+      { key: "created", label: "Created", visible: true },
+      { key: "actions", label: "Actions", visible: true, required: true },
+    ];
+
+    setVisibleColumns(defaultColumns);
+  };
+
+  const clearSavedColumnPreferences = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("postTableColumns");
+    }
+    resetColumns();
+  };
+
+  const isColumnVisible = (columnKey: string) => {
+    return visibleColumns.find((col) => col.key === columnKey)?.visible ?? true;
   };
 
   return (
@@ -710,8 +791,94 @@ export default function PostsPage() {
             </>
           )}
         </div>
-        <div className="text-sm text-gray-500">
-          {sortedPosts.length} Results
+        <div className="flex items-center gap-3">
+          <div className="text-sm text-gray-500">
+            {sortedPosts.length} Results
+          </div>
+
+          {/* Column Filter Button */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Columns className="h-4 w-4" />
+                Columns
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64" align="end">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold text-sm">Toggle Columns</h4>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={resetColumns}
+                      className="text-xs h-6 px-2"
+                      title="Reset to default"
+                    >
+                      Reset
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearSavedColumnPreferences}
+                      className="text-xs h-6 px-2 text-red-600 hover:text-red-700"
+                      title="Clear saved preferences"
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {visibleColumns.map((column) => (
+                    <div
+                      key={column.key}
+                      className="flex items-center space-x-2"
+                    >
+                      <Checkbox
+                        id={`column-${column.key}`}
+                        checked={column.visible}
+                        onCheckedChange={() =>
+                          toggleColumnVisibility(column.key)
+                        }
+                        disabled={column.required}
+                      />
+                      <label
+                        htmlFor={`column-${column.key}`}
+                        className={`text-sm cursor-pointer flex-1 ${
+                          column.required
+                            ? "text-gray-400"
+                            : "text-gray-700 dark:text-gray-300"
+                        }`}
+                      >
+                        {column.label}
+                        {column.required && (
+                          <span className="text-xs text-gray-400 ml-1">
+                            (required)
+                          </span>
+                        )}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-xs text-gray-500">
+                    {visibleColumns.filter((col) => col.visible).length} of{" "}
+                    {visibleColumns.length} columns visible
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    💾 Preferences saved automatically
+                  </p>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
@@ -726,32 +893,50 @@ export default function PostsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="min-w-[50px] text-center">
-                  <Checkbox
-                    checked={
-                      selectedPosts.length === currentPageData.length &&
-                      currentPageData.length > 0
-                    }
-                    onCheckedChange={toggleSelectAllPosts}
-                    aria-label="Select all"
-                  />
-                </TableHead>
-                <TableHead className="min-w-[100px] text-center">
-                  Image
-                </TableHead>
-                <TableHead className="min-w-[400px] ">Title</TableHead>
-                <TableHead className="min-w-[500px] ">Description</TableHead>
-                <TableHead className="min-w-[400px] ">Mobile Desc</TableHead>
-                <TableHead className="min-w-[100px] text-center">
-                  Status
-                </TableHead>
-                <TableHead className="min-w-[100px] text-center">
-                  Link
-                </TableHead>
-                <TableHead className="min-w-[200px]">Created</TableHead>
-                <TableHead className="text-center min-w-[80px]">
-                  Actions
-                </TableHead>
+                {isColumnVisible("select") && (
+                  <TableHead className="min-w-[50px] text-center">
+                    <Checkbox
+                      checked={
+                        selectedPosts.length === currentPageData.length &&
+                        currentPageData.length > 0
+                      }
+                      onCheckedChange={toggleSelectAllPosts}
+                      aria-label="Select all"
+                    />
+                  </TableHead>
+                )}
+                {isColumnVisible("image") && (
+                  <TableHead className="min-w-[100px] text-center">
+                    Image
+                  </TableHead>
+                )}
+                {isColumnVisible("title") && (
+                  <TableHead className="min-w-[400px] ">Title</TableHead>
+                )}
+                {isColumnVisible("description") && (
+                  <TableHead className="min-w-[500px] ">Description</TableHead>
+                )}
+                {isColumnVisible("mobile_desc") && (
+                  <TableHead className="min-w-[400px]">Mobile Desc</TableHead>
+                )}
+                {isColumnVisible("status") && (
+                  <TableHead className="min-w-[100px] text-center">
+                    Status
+                  </TableHead>
+                )}
+                {isColumnVisible("link") && (
+                  <TableHead className="min-w-[100px] text-center">
+                    Link
+                  </TableHead>
+                )}
+                {isColumnVisible("created") && (
+                  <TableHead className="min-w-[200px]">Created</TableHead>
+                )}
+                {isColumnVisible("actions") && (
+                  <TableHead className="text-center min-w-[80px]">
+                    Actions
+                  </TableHead>
+                )}
               </TableRow>
             </TableHeader>
 
@@ -769,85 +954,105 @@ export default function PostsPage() {
                     onClick={() => router.push(`/staff/posts/${post.id}`)}
                     className="cursor-pointer max-h-20 h-20"
                   >
-                    <TableCell
-                      onClick={(e) => e.stopPropagation()}
-                      className="text-center"
-                    >
-                      <Checkbox
-                        checked={selectedPosts.includes(post.id)}
-                        onCheckedChange={() => togglePostSelection(post.id)}
-                        aria-label={`Select post ${post.title}`}
-                      />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex items-center justify-center h-full">
-                        <Image
-                          src={
-                            post.image_url ||
-                            "/placeholder.svg?height=48&width=48"
-                          }
-                          alt={post.title}
-                          className="h-12 w-12 rounded-md object-cover"
-                          width={40}
-                          height={40}
+                    {isColumnVisible("select") && (
+                      <TableCell
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-center"
+                      >
+                        <Checkbox
+                          checked={selectedPosts.includes(post.id)}
+                          onCheckedChange={() => togglePostSelection(post.id)}
+                          aria-label={`Select post ${post.title}`}
                         />
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-bold">
-                      <div title={post.title}>{post.title}</div>
-                    </TableCell>
-                    <TableCell className="max-h-20 overflow-hidden">
-                      <div
-                        className="max-w-[500px] leading-relaxed max-h-16 overflow-hidden"
-                        title={post.description || "-"}
+                      </TableCell>
+                    )}
+                    {isColumnVisible("image") && (
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center h-full">
+                          <Image
+                            src={
+                              post.image_url ||
+                              "/placeholder.svg?height=48&width=48"
+                            }
+                            alt={post.title}
+                            className="h-12 w-12 rounded-md object-cover"
+                            width={40}
+                            height={40}
+                          />
+                        </div>
+                      </TableCell>
+                    )}
+                    {isColumnVisible("title") && (
+                      <TableCell className="font-bold">
+                        <div title={post.title}>{post.title}</div>
+                      </TableCell>
+                    )}
+                    {isColumnVisible("description") && (
+                      <TableCell className="max-h-20 overflow-hidden">
+                        <div
+                          className="max-w-[500px] leading-relaxed max-h-16 overflow-hidden"
+                          title={post.description || "-"}
+                        >
+                          {post.description
+                            ? truncateText(post.description, 250, 2)
+                            : "-"}
+                        </div>
+                      </TableCell>
+                    )}
+                    {isColumnVisible("mobile_desc") && (
+                      <TableCell className="max-h-20 overflow-hidden">
+                        <div
+                          className="max-w-[500px] leading-relaxed max-h-16 overflow-hidden"
+                          title={post.mobile_description || "-"}
+                        >
+                          {post.mobile_description
+                            ? truncateText(post.mobile_description, 250, 2)
+                            : "-"}
+                        </div>
+                      </TableCell>
+                    )}
+                    {isColumnVisible("status") && (
+                      <TableCell className="text-center">
+                        <Badge
+                          variant={
+                            post.status === "published"
+                              ? "default"
+                              : "secondary"
+                          }
+                          className={
+                            post.status === "published"
+                              ? "bg-green-500 hover:bg-green-600 text-white"
+                              : "bg-yellow-500 hover:bg-yellow-600 text-white"
+                          }
+                        >
+                          {post.status === "published" ? "Published" : "Draft"}
+                        </Badge>
+                      </TableCell>
+                    )}
+                    {isColumnVisible("link") && (
+                      <TableCell>
+                        {renderLinkDisplay(post.link, post.link_name)}
+                      </TableCell>
+                    )}
+                    {isColumnVisible("created") && (
+                      <TableCell>{formatDate(post.created_at)}</TableCell>
+                    )}
+                    {isColumnVisible("actions") && (
+                      <TableCell
+                        className="text-center"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        {post.description
-                          ? truncateText(post.description, 250, 2)
-                          : "-"}
-                      </div>
-                    </TableCell>
-                    <TableCell className="max-h-20 overflow-hidden">
-                      <div
-                        className="max-w-[500px] leading-relaxed max-h-16 overflow-hidden"
-                        title={post.mobile_description || "-"}
-                      >
-                        {post.mobile_description
-                          ? truncateText(post.mobile_description, 250, 2)
-                          : "-"}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge
-                        variant={
-                          post.status === "published" ? "default" : "secondary"
-                        }
-                        className={
-                          post.status === "published"
-                            ? "bg-green-500 hover:bg-green-600 text-white"
-                            : "bg-yellow-500 hover:bg-yellow-600 text-white"
-                        }
-                      >
-                        {post.status === "published" ? "Published" : "Draft"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {renderLinkDisplay(post.link, post.link_name)}
-                    </TableCell>
-                    <TableCell>{formatDate(post.created_at)}</TableCell>
-                    <TableCell
-                      className="text-center"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() =>
-                          router.push(`/staff/posts/${post.id}/edit`)
-                        }
-                      >
-                        Edit
-                      </Button>
-                    </TableCell>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() =>
+                            router.push(`/staff/posts/${post.id}/edit`)
+                          }
+                        >
+                          Edit
+                        </Button>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))
               )}
