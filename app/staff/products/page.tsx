@@ -10,6 +10,7 @@ import {
   Search,
   Trash2,
   Package,
+  Columns,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -49,6 +50,9 @@ import {
   DrawerTitle,
   DrawerClose,
   Skeleton,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/";
 import {
   TypographyH2,
@@ -225,6 +229,13 @@ function NoProductResultsState({
   );
 }
 
+interface ColumnConfig {
+  key: string;
+  label: string;
+  visible: boolean;
+  required?: boolean;
+}
+
 export default function ProductsPage() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
@@ -245,6 +256,26 @@ export default function ProductsPage() {
   const [productsToDelete, setProductsToDelete] = useState<Product[]>([]);
   const { isMobile } = useDeviceType();
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const [visibleColumns, setVisibleColumns] = useState<ColumnConfig[]>([
+    { key: "select", label: "Select", visible: true, required: true },
+    { key: "image", label: "Image", visible: true },
+    { key: "name", label: "Product Name", visible: true, required: true },
+    { key: "description", label: "Description", visible: true },
+    { key: "category", label: "Category", visible: true },
+    { key: "grade", label: "Grade", visible: true },
+    { key: "product_type", label: "Product Type", visible: true },
+    { key: "mortar_ratio", label: "Mortar Ratio", visible: true },
+    { key: "normal_price", label: "Normal Price", visible: true },
+    { key: "pump_price", label: "Pump Price", visible: true },
+    { key: "tremie_1_price", label: "Tremie 1 Price", visible: true },
+    { key: "tremie_2_price", label: "Tremie 2 Price", visible: true },
+    { key: "tremie_3_price", label: "Tremie 3 Price", visible: true },
+    { key: "unit", label: "Unit", visible: true },
+    { key: "stock", label: "Stock", visible: true },
+    { key: "status", label: "Status", visible: true },
+    { key: "keywords", label: "Keywords", visible: true },
+    { key: "actions", label: "Actions", visible: true, required: true },
+  ]);
 
   const itemsPerPage = 10;
 
@@ -450,6 +481,27 @@ export default function ProductsPage() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  const toggleColumnVisibility = (columnKey: string) => {
+    setVisibleColumns((prev) =>
+      prev.map((col) =>
+        col.key === columnKey ? { ...col, visible: !col.visible } : col
+      )
+    );
+  };
+
+  const resetColumns = () => {
+    setVisibleColumns((prev) =>
+      prev.map((col) => ({
+        ...col,
+        visible: true, // Set all columns to visible when resetting
+      }))
+    );
+  };
+
+  const isColumnVisible = (columnKey: string) => {
+    return visibleColumns.find((col) => col.key === columnKey)?.visible ?? true;
+  };
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
@@ -823,8 +875,79 @@ export default function ProductsPage() {
             </>
           )}
         </div>
-        <div className="text-sm text-gray-500">
-          {sortedProducts.length} Results
+        <div className="flex items-center gap-3">
+          <div className="text-sm text-gray-500">
+            {sortedProducts.length} Results
+          </div>
+
+          {/* Column Filter Button */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Columns className="h-4 w-4" />
+                Columns
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64" align="end">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold text-sm">Toggle Columns</h4>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={resetColumns}
+                    className="text-xs h-6 px-2"
+                  >
+                    Reset
+                  </Button>
+                </div>
+
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {visibleColumns.map((column) => (
+                    <div
+                      key={column.key}
+                      className="flex items-center space-x-2"
+                    >
+                      <Checkbox
+                        id={`column-${column.key}`}
+                        checked={column.visible}
+                        onCheckedChange={() =>
+                          toggleColumnVisibility(column.key)
+                        }
+                        disabled={column.required}
+                      />
+                      <label
+                        htmlFor={`column-${column.key}`}
+                        className={`text-sm cursor-pointer flex-1 ${
+                          column.required
+                            ? "text-gray-400"
+                            : "text-gray-700 dark:text-gray-300"
+                        }`}
+                      >
+                        {column.label}
+                        {column.required && (
+                          <span className="text-xs text-gray-400 ml-1">
+                            (required)
+                          </span>
+                        )}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-xs text-gray-500">
+                    {visibleColumns.filter((col) => col.visible).length} of{" "}
+                    {visibleColumns.length} columns visible
+                  </p>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
@@ -839,39 +962,81 @@ export default function ProductsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="min-w-[50px] text-center">
-                  <Checkbox
-                    checked={
-                      selectedProducts.length === currentPageData.length &&
-                      currentPageData.length > 0
-                    }
-                    onCheckedChange={toggleSelectAllProducts}
-                    aria-label="Select all"
-                  />
-                </TableHead>
-                <TableHead className="min-w-[100px] text-center">
-                  Image
-                </TableHead>
-                <TableHead className="min-w-[160px]">Product Name</TableHead>
-                <TableHead className="min-w-[500px]">Description</TableHead>
-                <TableHead className="min-w-[120px]">productType</TableHead>
-                <TableHead className="min-w-[100px]">Grade</TableHead>
-                <TableHead className="min-w-[120px]">Product Type</TableHead>
-                <TableHead className="min-w-[120px] text-center">
-                  Mortar Ratio
-                </TableHead>
-                <TableHead className="min-w-[120px]">Normal Price</TableHead>
-                <TableHead className="min-w-[120px]">Pump Price</TableHead>
-                <TableHead className="min-w-[120px]">Tremie 1 Price</TableHead>
-                <TableHead className="min-w-[120px]">Tremie 2 Price</TableHead>
-                <TableHead className="min-w-[120px]">Tremie 3 Price</TableHead>
-                <TableHead className="min-w-[80px]">Unit</TableHead>
-                <TableHead className="min-w-[80px]">Stock</TableHead>
-                <TableHead className="min-w-[100px]">Status</TableHead>
-                <TableHead className="min-w-[350px]">Keywords</TableHead>
-                <TableHead className="min-w-[100px] text-center">
-                  Actions
-                </TableHead>
+                {isColumnVisible("select") && (
+                  <TableHead className="min-w-[50px] text-center">
+                    <Checkbox
+                      checked={
+                        selectedProducts.length === currentPageData.length &&
+                        currentPageData.length > 0
+                      }
+                      onCheckedChange={toggleSelectAllProducts}
+                      aria-label="Select all"
+                    />
+                  </TableHead>
+                )}
+                {isColumnVisible("image") && (
+                  <TableHead className="min-w-[100px] text-center">
+                    Image
+                  </TableHead>
+                )}
+                {isColumnVisible("name") && (
+                  <TableHead className="min-w-[160px]">Product Name</TableHead>
+                )}
+                {isColumnVisible("description") && (
+                  <TableHead className="min-w-[500px]">Description</TableHead>
+                )}
+                {isColumnVisible("category") && (
+                  <TableHead className="min-w-[120px]">Category</TableHead>
+                )}
+                {isColumnVisible("grade") && (
+                  <TableHead className="min-w-[100px]">Grade</TableHead>
+                )}
+                {isColumnVisible("product_type") && (
+                  <TableHead className="min-w-[120px]">Product Type</TableHead>
+                )}
+                {isColumnVisible("mortar_ratio") && (
+                  <TableHead className="min-w-[120px] text-center">
+                    Mortar Ratio
+                  </TableHead>
+                )}
+                {isColumnVisible("normal_price") && (
+                  <TableHead className="min-w-[120px]">Normal Price</TableHead>
+                )}
+                {isColumnVisible("pump_price") && (
+                  <TableHead className="min-w-[120px]">Pump Price</TableHead>
+                )}
+                {isColumnVisible("tremie_1_price") && (
+                  <TableHead className="min-w-[120px]">
+                    Tremie 1 Price
+                  </TableHead>
+                )}
+                {isColumnVisible("tremie_2_price") && (
+                  <TableHead className="min-w-[120px]">
+                    Tremie 2 Price
+                  </TableHead>
+                )}
+                {isColumnVisible("tremie_3_price") && (
+                  <TableHead className="min-w-[120px]">
+                    Tremie 3 Price
+                  </TableHead>
+                )}
+                {isColumnVisible("unit") && (
+                  <TableHead className="min-w-[80px]">Unit</TableHead>
+                )}
+                {isColumnVisible("stock") && (
+                  <TableHead className="min-w-[80px]">Stock</TableHead>
+                )}
+                {isColumnVisible("status") && (
+                  <TableHead className="min-w-[100px]">Status</TableHead>
+                )}
+                {isColumnVisible("keywords") && (
+                  <TableHead className="min-w-[350px]">Keywords</TableHead>
+                )}
+                {isColumnVisible("actions") && (
+                  <TableHead className="min-w-[100px] text-center">
+                    Actions
+                  </TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -881,142 +1046,182 @@ export default function ProductsPage() {
                   onClick={() => router.push(`/staff/products/${product.id}`)}
                   className="cursor-pointer max-h-20 h-20"
                 >
-                  <TableCell
-                    onClick={(e) => e.stopPropagation()}
-                    className="text-center"
-                  >
-                    <Checkbox
-                      checked={selectedProducts.includes(product.id)}
-                      onCheckedChange={() => toggleProductSelection(product.id)}
-                      aria-label={`Select product ${product.name}`}
-                    />
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <div className="flex items-center justify-center h-full">
-                      {product.product_images &&
-                      product.product_images.length > 0 ? (
-                        <Image
-                          src={product.product_images[0].image_url}
-                          alt={product.name}
-                          className="w-10 h-10 rounded-md object-cover border border-white shadow-sm"
-                          width={40}
-                          height={40}
-                        />
-                      ) : (
-                        <Image
-                          src="/placeholder.svg?height=48&width=48"
-                          alt="No image"
-                          className="w-10 h-10 rounded-md object-cover border border-white shadow-sm"
-                          width={40}
-                          height={40}
-                        />
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-bold">{product.name}</TableCell>
-                  <TableCell className="max-h-20 overflow-hidden">
-                    <div
-                      className="max-w-[500px] leading-relaxed max-h-16 overflow-hidden"
-                      title={product.description || "-"}
+                  {isColumnVisible("select") && (
+                    <TableCell
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-center"
                     >
-                      {product.description
-                        ? truncateText(product.description, 150, 2)
+                      <Checkbox
+                        checked={selectedProducts.includes(product.id)}
+                        onCheckedChange={() =>
+                          toggleProductSelection(product.id)
+                        }
+                        aria-label={`Select product ${product.name}`}
+                      />
+                    </TableCell>
+                  )}
+                  {isColumnVisible("image") && (
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center h-full">
+                        {product.product_images &&
+                        product.product_images.length > 0 ? (
+                          <Image
+                            src={product.product_images[0].image_url}
+                            alt={product.name}
+                            className="w-10 h-10 rounded-md object-cover border border-white shadow-sm"
+                            width={40}
+                            height={40}
+                          />
+                        ) : (
+                          <Image
+                            src="/placeholder.svg?height=48&width=48"
+                            alt="No image"
+                            className="w-10 h-10 rounded-md object-cover border border-white shadow-sm"
+                            width={40}
+                            height={40}
+                          />
+                        )}
+                      </div>
+                    </TableCell>
+                  )}
+                  {isColumnVisible("name") && (
+                    <TableCell className="font-bold">{product.name}</TableCell>
+                  )}
+                  {isColumnVisible("description") && (
+                    <TableCell className="max-h-20 overflow-hidden">
+                      <div
+                        className="max-w-[500px] leading-relaxed max-h-16 overflow-hidden"
+                        title={product.description || "-"}
+                      >
+                        {product.description
+                          ? truncateText(product.description, 150, 2)
+                          : "-"}
+                      </div>
+                    </TableCell>
+                  )}
+                  {isColumnVisible("category") && (
+                    <TableCell>{product.category || "-"}</TableCell>
+                  )}
+                  {isColumnVisible("grade") && (
+                    <TableCell>{product.grade || "-"}</TableCell>
+                  )}
+                  {isColumnVisible("product_type") && (
+                    <TableCell>{product.product_type || "-"}</TableCell>
+                  )}
+                  {isColumnVisible("mortar_ratio") && (
+                    <TableCell>{product.mortar_ratio || "-"}</TableCell>
+                  )}
+                  {isColumnVisible("normal_price") && (
+                    <TableCell>
+                      {product.normal_price !== null &&
+                      product.normal_price !== undefined
+                        ? formatCurrency(Number(product.normal_price))
                         : "-"}
-                    </div>
-                  </TableCell>
-                  <TableCell>{product.category || "-"}</TableCell>
-                  <TableCell>{product.grade || "-"}</TableCell>
-                  <TableCell>{product.product_type || "-"}</TableCell>
-                  <TableCell>{product.mortar_ratio || "-"}</TableCell>
-                  <TableCell>
-                    {product.normal_price !== null &&
-                    product.normal_price !== undefined
-                      ? formatCurrency(Number(product.normal_price))
-                      : "-"}
-                  </TableCell>
-                  <TableCell>
-                    {product.pump_price !== null &&
-                    product.pump_price !== undefined
-                      ? formatCurrency(Number(product.pump_price))
-                      : "-"}
-                  </TableCell>
-                  <TableCell>
-                    {product.tremie_1_price !== null &&
-                    product.tremie_1_price !== undefined
-                      ? formatCurrency(Number(product.tremie_1_price))
-                      : "-"}
-                  </TableCell>
-                  <TableCell>
-                    {product.tremie_2_price !== null &&
-                    product.tremie_2_price !== undefined
-                      ? formatCurrency(Number(product.tremie_2_price))
-                      : "-"}
-                  </TableCell>
-                  <TableCell>
-                    {product.tremie_3_price !== null &&
-                    product.tremie_3_price !== undefined
-                      ? formatCurrency(Number(product.tremie_3_price))
-                      : "-"}
-                  </TableCell>
-                  <TableCell>{product.unit || "-"}</TableCell>
-                  <TableCell>{product.stock_quantity ?? "-"}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        product.status === "published" ? "default" : "secondary"
-                      }
-                      className={
-                        product.status === "published"
-                          ? "bg-green-100 text-green-800 border-green-200"
-                          : "bg-yellow-100 text-yellow-800 border-yellow-200"
-                      }
+                    </TableCell>
+                  )}
+                  {isColumnVisible("pump_price") && (
+                    <TableCell>
+                      {product.pump_price !== null &&
+                      product.pump_price !== undefined
+                        ? formatCurrency(Number(product.pump_price))
+                        : "-"}
+                    </TableCell>
+                  )}
+                  {isColumnVisible("tremie_1_price") && (
+                    <TableCell>
+                      {product.tremie_1_price !== null &&
+                      product.tremie_1_price !== undefined
+                        ? formatCurrency(Number(product.tremie_1_price))
+                        : "-"}
+                    </TableCell>
+                  )}
+                  {isColumnVisible("tremie_2_price") && (
+                    <TableCell>
+                      {product.tremie_2_price !== null &&
+                      product.tremie_2_price !== undefined
+                        ? formatCurrency(Number(product.tremie_2_price))
+                        : "-"}
+                    </TableCell>
+                  )}
+                  {isColumnVisible("tremie_3_price") && (
+                    <TableCell>
+                      {product.tremie_3_price !== null &&
+                      product.tremie_3_price !== undefined
+                        ? formatCurrency(Number(product.tremie_3_price))
+                        : "-"}
+                    </TableCell>
+                  )}
+                  {isColumnVisible("unit") && (
+                    <TableCell>{product.unit || "-"}</TableCell>
+                  )}
+                  {isColumnVisible("stock") && (
+                    <TableCell>{product.stock_quantity ?? "-"}</TableCell>
+                  )}
+                  {isColumnVisible("status") && (
+                    <TableCell>
+                      <Badge
+                        variant={
+                          product.status === "published"
+                            ? "default"
+                            : "secondary"
+                        }
+                        className={
+                          product.status === "published"
+                            ? "bg-green-100 text-green-800 border-green-200"
+                            : "bg-yellow-100 text-yellow-800 border-yellow-200"
+                        }
+                      >
+                        {product.status === "published"
+                          ? "Published"
+                          : product.status.charAt(0).toUpperCase() +
+                            product.status.slice(1)}
+                      </Badge>
+                    </TableCell>
+                  )}
+                  {isColumnVisible("keywords") && (
+                    <TableCell className="max-h-20 overflow-hidden">
+                      <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto">
+                        {Array.isArray(product.keywords) &&
+                        product.keywords.length > 0 ? (
+                          <>
+                            {product.keywords.slice(0, 3).map((kw, idx) => (
+                              <Badge
+                                key={idx}
+                                className="bg-blue-100 text-blue-800 border-blue-200 px-2 py-1 text-xs font-medium"
+                              >
+                                {kw}
+                              </Badge>
+                            ))}
+                            {product.keywords.length > 3 && (
+                              <Badge className="bg-gray-100 text-gray-800 border-gray-200 px-2 py-1 text-xs font-medium">
+                                +{product.keywords.length - 3} more
+                              </Badge>
+                            )}
+                          </>
+                        ) : (
+                          <span className="text-gray-400 text-xs">
+                            No keywords
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                  )}
+                  {isColumnVisible("actions") && (
+                    <TableCell
+                      className="text-center"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      {product.status === "published"
-                        ? "Published"
-                        : product.status.charAt(0).toUpperCase() +
-                          product.status.slice(1)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="max-h-20 overflow-hidden">
-                    <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto">
-                      {Array.isArray(product.keywords) &&
-                      product.keywords.length > 0 ? (
-                        <>
-                          {product.keywords.slice(0, 3).map((kw, idx) => (
-                            <Badge
-                              key={idx}
-                              className="bg-blue-100 text-blue-800 border-blue-200 px-2 py-1 text-xs font-medium"
-                            >
-                              {kw}
-                            </Badge>
-                          ))}
-                          {product.keywords.length > 3 && (
-                            <Badge className="bg-gray-100 text-gray-800 border-gray-200 px-2 py-1 text-xs font-medium">
-                              +{product.keywords.length - 3} more
-                            </Badge>
-                          )}
-                        </>
-                      ) : (
-                        <span className="text-gray-400 text-xs">
-                          No keywords
-                        </span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell
-                    className="text-center"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() =>
-                        router.push(`/staff/products/${product.id}/edit`)
-                      }
-                    >
-                      Edit
-                    </Button>
-                  </TableCell>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() =>
+                          router.push(`/staff/products/${product.id}/edit`)
+                        }
+                      >
+                        Edit
+                      </Button>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
