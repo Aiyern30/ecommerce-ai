@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -33,7 +34,33 @@ export default function LatestBlog() {
       if (error) {
         console.error("Failed to fetch blogs:", error.message);
       } else {
-        setBlogs((data ?? []).filter((blog) => blog.title) as Blog[]);
+        // Transform the data to match our Blog type
+        const transformedBlogs: Blog[] = (data ?? [])
+          .filter((blog) => blog.title)
+          .map((blog: any) => ({
+            id: blog.id,
+            title: blog.title,
+            description: blog.description,
+            status: blog.status,
+            created_at: blog.created_at,
+            updated_at: blog.updated_at,
+            link: blog.link,
+            link_name: blog.link_name,
+            image_url: blog.image_url,
+            blog_images:
+              blog.blog_images?.map((img: any) => ({
+                image_url: img.image_url,
+              })) || null,
+            blog_tags:
+              blog.blog_tags?.map((blogTag: any) => ({
+                tags: {
+                  id: blogTag.tags.id,
+                  name: blogTag.tags.name,
+                },
+              })) || null,
+          }));
+
+        setBlogs(transformedBlogs);
       }
       setLoading(false);
     };
