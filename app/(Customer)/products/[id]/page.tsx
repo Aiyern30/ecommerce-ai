@@ -628,16 +628,31 @@ export default function ProductDetailClient() {
               </div>
             </div>
 
-            {/* Additional Info */}
-            <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
-              <div>Product ID: {product.id}</div>
-              <div>
-                Created: {new Date(product.created_at).toLocaleDateString()}
-              </div>
-              <div>
-                Last Updated:{" "}
-                {new Date(product.updated_at).toLocaleDateString()}
-              </div>
+            {/* Keywords and Additional Info */}
+            <div className="space-y-4">
+              {/* Product Keywords */}
+              {product.keywords &&
+                Array.isArray(product.keywords) &&
+                product.keywords.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Keywords
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {product.keywords.map(
+                        (keyword: string, index: number) => (
+                          <Badge
+                            key={index}
+                            variant="outline"
+                            className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-default"
+                          >
+                            {keyword}
+                          </Badge>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
             </div>
           </div>
         </div>
