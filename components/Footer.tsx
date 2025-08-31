@@ -159,18 +159,18 @@ const Footer = () => {
               </div>
 
               {/* Navigation Links */}
-              <div className="lg:col-span-3 grid sm:grid-cols-3 gap-8">
+              <div className="lg:col-span-3 grid grid-cols-3 sm:grid-cols-3 gap-4 sm:gap-8">
                 {/* Company */}
                 <div>
-                  <h4 className="text-gray-900 dark:text-white font-semibold mb-4 text-sm uppercase tracking-wider">
+                  <h4 className="text-gray-900 dark:text-white font-semibold mb-4 text-xs sm:text-sm uppercase tracking-wider">
                     Company
                   </h4>
-                  <ul className="space-y-3">
+                  <ul className="space-y-2 sm:space-y-3">
                     {companyLinks.map((link) => (
                       <li key={link.name}>
                         <Link
                           href={link.href}
-                          className="text-gray-600 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors text-sm flex items-center gap-2 group"
+                          className="text-gray-600 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors text-xs sm:text-sm flex items-center gap-2 group"
                         >
                           <span className="group-hover:translate-x-1 transition-transform duration-200">
                             {link.name}
@@ -183,15 +183,15 @@ const Footer = () => {
 
                 {/* Products */}
                 <div>
-                  <h4 className="text-gray-900 dark:text-white font-semibold mb-4 text-sm uppercase tracking-wider">
+                  <h4 className="text-gray-900 dark:text-white font-semibold mb-4 text-xs sm:text-sm uppercase tracking-wider">
                     Products
                   </h4>
-                  <ul className="space-y-3">
+                  <ul className="space-y-2 sm:space-y-3">
                     {productLinks.map((link) => (
                       <li key={link.name}>
                         <Link
                           href={link.href}
-                          className="text-gray-600 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors text-sm flex items-center gap-2 group"
+                          className="text-gray-600 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors text-xs sm:text-sm flex items-center gap-2 group"
                         >
                           <span className="group-hover:translate-x-1 transition-transform duration-200">
                             {link.name}
@@ -204,15 +204,15 @@ const Footer = () => {
 
                 {/* Support */}
                 <div>
-                  <h4 className="text-gray-900 dark:text-white font-semibold mb-4 text-sm uppercase tracking-wider">
+                  <h4 className="text-gray-900 dark:text-white font-semibold mb-4 text-xs sm:text-sm uppercase tracking-wider">
                     Support
                   </h4>
-                  <ul className="space-y-3">
+                  <ul className="space-y-2 sm:space-y-3">
                     {supportLinks.map((link) => (
                       <li key={link.name}>
                         <Link
                           href={link.href}
-                          className="text-gray-600 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors text-sm flex items-center gap-2 group"
+                          className="text-gray-600 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors text-xs sm:text-sm flex items-center gap-2 group"
                         >
                           <span className="group-hover:translate-x-1 transition-transform duration-200">
                             {link.name}
