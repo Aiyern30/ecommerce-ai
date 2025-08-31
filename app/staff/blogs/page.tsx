@@ -12,6 +12,7 @@ import {
   ExternalLink,
   BookOpen,
   LinkIcon,
+  Columns,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -50,6 +51,9 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerClose,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/";
 import {
   TypographyH2,
@@ -67,6 +71,13 @@ interface BlogFilters {
   sortBy: "title-asc" | "title-desc" | "date-new" | "date-old";
   hasImage: "all" | "with-image" | "without-image";
   hasLink: "all" | "with-link" | "without-link";
+}
+
+interface ColumnConfig {
+  key: string;
+  label: string;
+  visible: boolean;
+  required?: boolean;
 }
 
 function BlogTableSkeleton() {
@@ -209,6 +220,41 @@ export default function Page() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [blogsToDelete, setBlogsToDelete] = useState<Blog[]>([]);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+
+  // Initialize column visibility from localStorage or defaults
+  const [visibleColumns, setVisibleColumns] = useState<ColumnConfig[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("blogTableColumns");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (error) {
+          console.error("Error parsing saved column config:", error);
+        }
+      }
+    }
+
+    // Default configuration if no saved state
+    return [
+      { key: "select", label: "Select", visible: true, required: true },
+      { key: "image", label: "Image", visible: true },
+      { key: "title", label: "Title", visible: true, required: true },
+      { key: "description", label: "Description", visible: true },
+      { key: "content", label: "Content", visible: false },
+      { key: "status", label: "Status", visible: true },
+      { key: "tags", label: "Tags", visible: true },
+      { key: "link", label: "Link", visible: true },
+      { key: "created", label: "Created", visible: true },
+      { key: "actions", label: "Actions", visible: true, required: true },
+    ];
+  });
+
+  // Save to localStorage whenever visibleColumns changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("blogTableColumns", JSON.stringify(visibleColumns));
+    }
+  }, [visibleColumns]);
 
   const itemsPerPage = 10;
 
@@ -410,6 +456,43 @@ export default function Page() {
         </span>
       </div>
     );
+  };
+
+  const toggleColumnVisibility = (columnKey: string) => {
+    setVisibleColumns((prev) => {
+      const newColumns = prev.map((col) =>
+        col.key === columnKey ? { ...col, visible: !col.visible } : col
+      );
+      return newColumns;
+    });
+  };
+
+  const resetColumns = () => {
+    const defaultColumns = [
+      { key: "select", label: "Select", visible: true, required: true },
+      { key: "image", label: "Image", visible: true },
+      { key: "title", label: "Title", visible: true, required: true },
+      { key: "description", label: "Description", visible: true },
+      { key: "content", label: "Content", visible: false },
+      { key: "status", label: "Status", visible: true },
+      { key: "tags", label: "Tags", visible: true },
+      { key: "link", label: "Link", visible: true },
+      { key: "created", label: "Created", visible: true },
+      { key: "actions", label: "Actions", visible: true, required: true },
+    ];
+
+    setVisibleColumns(defaultColumns);
+  };
+
+  const clearSavedColumnPreferences = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("blogTableColumns");
+    }
+    resetColumns();
+  };
+
+  const isColumnVisible = (columnKey: string) => {
+    return visibleColumns.find((col) => col.key === columnKey)?.visible ?? true;
   };
 
   return (
@@ -714,9 +797,163 @@ export default function Page() {
         </Card>
       )}
 
-      <div className="flex items-center justify-end">
-        <div className="text-sm text-gray-500">
-          {sortedBlogs.length} Results
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {selectedBlogs.length > 0 && (
+            <>
+              <span className="text-sm text-gray-500">
+                {selectedBlogs.length} selected
+              </span>
+              <Dialog
+                open={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}
+              >
+                <DialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={openDeleteDialog}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete Selected ({selectedBlogs.length})
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Confirm Deletion</DialogTitle>
+                    <DialogDescription>
+                      Are you sure you want to delete the following{" "}
+                      {blogsToDelete.length} blog(s)? This action cannot be
+                      undone.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="max-h-60 overflow-y-auto space-y-2">
+                    {blogsToDelete.map((blog) => (
+                      <div
+                        key={blog.id}
+                        className="flex items-center gap-3 p-2 border rounded-md"
+                      >
+                        <Image
+                          src={
+                            blog.blog_images?.[0]?.image_url ||
+                            "/placeholder.svg?height=48&width=48"
+                          }
+                          alt={blog.title}
+                          width={48}
+                          height={48}
+                          className="rounded-md object-cover"
+                        />
+                        <span className="font-medium">{blog.title}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsDeleteDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button variant="destructive" onClick={handleDeleteBlogs}>
+                      Delete
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              <Button variant="outline" size="sm" onClick={clearBlogSelection}>
+                Clear Selection
+              </Button>
+            </>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="text-sm text-gray-500">
+            {sortedBlogs.length} Results
+          </div>
+
+          {/* Column Filter Button */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Columns className="h-4 w-4" />
+                Columns
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64" align="end">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold text-sm">Toggle Columns</h4>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={resetColumns}
+                      className="text-xs h-6 px-2"
+                      title="Reset to default"
+                    >
+                      Reset
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearSavedColumnPreferences}
+                      className="text-xs h-6 px-2 text-red-600 hover:text-red-700"
+                      title="Clear saved preferences"
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {visibleColumns.map((column) => (
+                    <div
+                      key={column.key}
+                      className="flex items-center space-x-2"
+                    >
+                      <Checkbox
+                        id={`column-${column.key}`}
+                        checked={column.visible}
+                        onCheckedChange={() =>
+                          toggleColumnVisibility(column.key)
+                        }
+                        disabled={column.required}
+                      />
+                      <label
+                        htmlFor={`column-${column.key}`}
+                        className={`text-sm cursor-pointer flex-1 ${
+                          column.required
+                            ? "text-gray-400"
+                            : "text-gray-700 dark:text-gray-300"
+                        }`}
+                      >
+                        {column.label}
+                        {column.required && (
+                          <span className="text-xs text-gray-400 ml-1">
+                            (required)
+                          </span>
+                        )}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-xs text-gray-500">
+                    {visibleColumns.filter((col) => col.visible).length} of{" "}
+                    {visibleColumns.length} columns visible
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    💾 Preferences saved automatically
+                  </p>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
@@ -731,35 +968,55 @@ export default function Page() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="min-w-[50px] text-center">
-                  <Checkbox
-                    checked={
-                      selectedBlogs.length === currentPageData.length &&
-                      currentPageData.length > 0
-                    }
-                    onCheckedChange={toggleSelectAllBlogs}
-                    aria-label="Select all"
-                  />
-                </TableHead>
-                <TableHead className="min-w-[100px] text-center">
-                  Image
-                </TableHead>
-                <TableHead className="min-w-[400px] ">Title</TableHead>
-                <TableHead className="min-w-[500px] ">Description</TableHead>
-                <TableHead className="min-w-[400px]">Content</TableHead>
-                <TableHead className="min-w-[100px] text-center">
-                  Status
-                </TableHead>
-                <TableHead className="min-w-[200px] text-center">
-                  Tags
-                </TableHead>
-                <TableHead className="min-w-[100px] text-center">
-                  Link
-                </TableHead>
-                <TableHead className="min-w-[200px]">Created</TableHead>
-                <TableHead className="text-center min-w-[80px]">
-                  Actions
-                </TableHead>
+                {isColumnVisible("select") && (
+                  <TableHead className="min-w-[50px] text-center">
+                    <Checkbox
+                      checked={
+                        selectedBlogs.length === currentPageData.length &&
+                        currentPageData.length > 0
+                      }
+                      onCheckedChange={toggleSelectAllBlogs}
+                      aria-label="Select all"
+                    />
+                  </TableHead>
+                )}
+                {isColumnVisible("image") && (
+                  <TableHead className="min-w-[100px] text-center">
+                    Image
+                  </TableHead>
+                )}
+                {isColumnVisible("title") && (
+                  <TableHead className="min-w-[400px] ">Title</TableHead>
+                )}
+                {isColumnVisible("description") && (
+                  <TableHead className="min-w-[500px] ">Description</TableHead>
+                )}
+                {isColumnVisible("content") && (
+                  <TableHead className="min-w-[400px]">Content</TableHead>
+                )}
+                {isColumnVisible("status") && (
+                  <TableHead className="min-w-[100px] text-center">
+                    Status
+                  </TableHead>
+                )}
+                {isColumnVisible("tags") && (
+                  <TableHead className="min-w-[200px] text-center">
+                    Tags
+                  </TableHead>
+                )}
+                {isColumnVisible("link") && (
+                  <TableHead className="min-w-[100px] text-center">
+                    Link
+                  </TableHead>
+                )}
+                {isColumnVisible("created") && (
+                  <TableHead className="min-w-[200px]">Created</TableHead>
+                )}
+                {isColumnVisible("actions") && (
+                  <TableHead className="text-center min-w-[80px]">
+                    Actions
+                  </TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -769,150 +1026,173 @@ export default function Page() {
                   onClick={() => router.push(`/staff/blogs/${blog.id}`)}
                   className="cursor-pointer max-h-20 h-20"
                 >
-                  <TableCell
-                    onClick={(e) => e.stopPropagation()}
-                    className="text-center"
-                  >
-                    <Checkbox
-                      checked={selectedBlogs.includes(blog.id)}
-                      onCheckedChange={() => toggleBlogSelection(blog.id)}
-                      aria-label={`Select blog ${blog.title}`}
-                    />
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <div className="flex items-center justify-center h-full w-full min-h-[3rem]">
-                      <div
-                        className="relative flex"
-                        style={{
-                          width: `${
-                            40 +
-                            (Math.min(blog.blog_images?.length || 0, 4) - 1) *
-                              12
-                          }px`,
-                          height: "40px",
-                        }}
-                      >
-                        {(blog.blog_images || [])
-                          .map((img) => img.image_url)
-                          .filter(
-                            (src, i, arr) => src && arr.indexOf(src) === i
-                          )
-                          .slice(0, 4)
-                          .map((src, index) => (
+                  {isColumnVisible("select") && (
+                    <TableCell
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-center"
+                    >
+                      <Checkbox
+                        checked={selectedBlogs.includes(blog.id)}
+                        onCheckedChange={() => toggleBlogSelection(blog.id)}
+                        aria-label={`Select blog ${blog.title}`}
+                      />
+                    </TableCell>
+                  )}
+                  {isColumnVisible("image") && (
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center h-full w-full min-h-[3rem]">
+                        <div
+                          className="relative flex"
+                          style={{
+                            width: `${
+                              40 +
+                              (Math.min(blog.blog_images?.length || 0, 4) - 1) *
+                                12
+                            }px`,
+                            height: "40px",
+                          }}
+                        >
+                          {(blog.blog_images || [])
+                            .map((img) => img.image_url)
+                            .filter(
+                              (src, i, arr) => src && arr.indexOf(src) === i
+                            )
+                            .slice(0, 4)
+                            .map((src, index) => (
+                              <Image
+                                key={index}
+                                src={src}
+                                alt={`${blog.title} ${index + 1}`}
+                                className="absolute top-0 left-0 w-10 h-10 rounded-md object-cover border border-white shadow-sm transition-all"
+                                style={{
+                                  zIndex: 10 - index,
+                                  transform: `translateX(${index * 12}px)`,
+                                }}
+                                width={40}
+                                height={40}
+                              />
+                            ))}
+
+                          {(!blog.blog_images ||
+                            blog.blog_images.length === 0) && (
                             <Image
-                              key={index}
-                              src={src}
-                              alt={`${blog.title} ${index + 1}`}
-                              className="absolute top-0 left-0 w-10 h-10 rounded-md object-cover border border-white shadow-sm transition-all"
-                              style={{
-                                zIndex: 10 - index,
-                                transform: `translateX(${index * 12}px)`,
-                              }}
+                              src="/placeholder.svg?height=40&width=40"
+                              alt="No image"
+                              className="w-10 h-10 rounded-md object-cover border border-white shadow-sm"
                               width={40}
                               height={40}
                             />
-                          ))}
-
-                        {(!blog.blog_images ||
-                          blog.blog_images.length === 0) && (
-                          <Image
-                            src="/placeholder.svg?height=40&width=40"
-                            alt="No image"
-                            className="w-10 h-10 rounded-md object-cover border border-white shadow-sm"
-                            width={40}
-                            height={40}
-                          />
-                        )}
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </TableCell>
-
-                  <TableCell className="max-h-20 overflow-hidden">
-                    <div
-                      className="max-w-[500px] leading-relaxed max-h-16 overflow-hidden"
-                      title={blog.title || "-"}
-                    >
-                      {blog.title ? truncateText(blog.title, 250, 2) : "-"}
-                    </div>
-                  </TableCell>
-                  <TableCell className="max-h-20 overflow-hidden">
-                    <div
-                      className="max-w-[500px] leading-relaxed max-h-16 overflow-hidden"
-                      title={blog.description || "-"}
-                    >
-                      {blog.description
-                        ? truncateText(blog.description, 250, 2)
-                        : "-"}
-                    </div>
-                  </TableCell>
-                  <TableCell className="max-h-20 overflow-hidden">
-                    <div
-                      className="max-w-[500px] leading-relaxed max-h-16 overflow-hidden"
-                      title={blog.content || "-"}
-                    >
-                      {blog.content ? truncateText(blog.content, 250, 2) : "-"}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Badge
-                      variant={
-                        blog.status === "published" ? "default" : "secondary"
-                      }
-                      className={
-                        blog.status === "published"
-                          ? "bg-green-100 text-green-800 border-green-200"
-                          : "bg-yellow-100 text-yellow-800 border-yellow-200"
-                      }
-                    >
-                      {blog.status === "published" ? "Published" : "Draft"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <div className="flex flex-wrap gap-1">
-                      {blog.blog_tags && blog.blog_tags.length > 0 ? (
-                        blog.blog_tags
-                          .flatMap((bt) => bt.tags)
-                          .slice(0, 3)
-                          .map((tag) => (
-                            <Badge
-                              key={tag.id}
-                              variant="secondary"
-                              className="text-xs"
-                            >
-                              {tag.name}
-                            </Badge>
-                          ))
-                      ) : (
-                        <span className="text-gray-400 text-sm">No tags</span>
-                      )}
-
-                      {blog.blog_tags &&
-                        blog.blog_tags.flatMap((bt) => bt.tags).length > 2 && (
-                          <Badge variant="outline" className="text-xs">
-                            +
-                            {blog.blog_tags.flatMap((bt) => bt.tags).length - 2}
-                          </Badge>
+                    </TableCell>
+                  )}
+                  {isColumnVisible("title") && (
+                    <TableCell className="max-h-20 overflow-hidden">
+                      <div
+                        className="max-w-[500px] leading-relaxed max-h-16 overflow-hidden"
+                        title={blog.title || "-"}
+                      >
+                        {blog.title ? truncateText(blog.title, 250, 2) : "-"}
+                      </div>
+                    </TableCell>
+                  )}
+                  {isColumnVisible("description") && (
+                    <TableCell className="max-h-20 overflow-hidden">
+                      <div
+                        className="max-w-[500px] leading-relaxed max-h-16 overflow-hidden"
+                        title={blog.description || "-"}
+                      >
+                        {blog.description
+                          ? truncateText(blog.description, 250, 2)
+                          : "-"}
+                      </div>
+                    </TableCell>
+                  )}
+                  {isColumnVisible("content") && (
+                    <TableCell className="max-h-20 overflow-hidden">
+                      <div
+                        className="max-w-[500px] leading-relaxed max-h-16 overflow-hidden"
+                        title={blog.content || "-"}
+                      >
+                        {blog.content
+                          ? truncateText(blog.content, 250, 2)
+                          : "-"}
+                      </div>
+                    </TableCell>
+                  )}
+                  {isColumnVisible("status") && (
+                    <TableCell className="text-center">
+                      <Badge
+                        variant={
+                          blog.status === "published" ? "default" : "secondary"
+                        }
+                        className={
+                          blog.status === "published"
+                            ? "bg-green-100 text-green-800 border-green-200"
+                            : "bg-yellow-100 text-yellow-800 border-yellow-200"
+                        }
+                      >
+                        {blog.status === "published" ? "Published" : "Draft"}
+                      </Badge>
+                    </TableCell>
+                  )}
+                  {isColumnVisible("tags") && (
+                    <TableCell className="text-center">
+                      <div className="flex flex-wrap gap-1">
+                        {blog.blog_tags && blog.blog_tags.length > 0 ? (
+                          blog.blog_tags
+                            .flatMap((bt) => bt.tags)
+                            .slice(0, 3)
+                            .map((tag) => (
+                              <Badge
+                                key={tag.id}
+                                variant="secondary"
+                                className="text-xs"
+                              >
+                                {tag.name}
+                              </Badge>
+                            ))
+                        ) : (
+                          <span className="text-gray-400 text-sm">No tags</span>
                         )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {renderLinkDisplay(blog.link, blog.link_name)}
-                  </TableCell>
-                  <TableCell>{formatDate(blog.created_at)}</TableCell>
-                  <TableCell
-                    className="text-center"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() =>
-                        router.push(`/staff/blogs/${blog.id}/edit`)
-                      }
+
+                        {blog.blog_tags &&
+                          blog.blog_tags.flatMap((bt) => bt.tags).length >
+                            2 && (
+                            <Badge variant="outline" className="text-xs">
+                              +
+                              {blog.blog_tags.flatMap((bt) => bt.tags).length -
+                                2}
+                            </Badge>
+                          )}
+                      </div>
+                    </TableCell>
+                  )}
+                  {isColumnVisible("link") && (
+                    <TableCell>
+                      {renderLinkDisplay(blog.link, blog.link_name)}
+                    </TableCell>
+                  )}
+                  {isColumnVisible("created") && (
+                    <TableCell>{formatDate(blog.created_at)}</TableCell>
+                  )}
+                  {isColumnVisible("actions") && (
+                    <TableCell
+                      className="text-center"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      Edit
-                    </Button>
-                  </TableCell>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() =>
+                          router.push(`/staff/blogs/${blog.id}/edit`)
+                        }
+                      >
+                        Edit
+                      </Button>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
