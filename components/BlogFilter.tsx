@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Filter, X, Search } from "lucide-react";
 import {
   Button,
@@ -45,122 +45,145 @@ export function BlogFilter({
   const [isOpen, setIsOpen] = useState(false);
   const [tagSearchQuery, setTagSearchQuery] = useState("");
 
-  // Filter tags based on search query
-  const filteredTags = tags.filter((tag) =>
-    tag.name.toLowerCase().includes(tagSearchQuery.toLowerCase())
+  // Memoize filtered tags to prevent unnecessary recalculations
+  const filteredTags = useMemo(
+    () =>
+      tags.filter((tag) =>
+        tag.name.toLowerCase().includes(tagSearchQuery.toLowerCase())
+      ),
+    [tags, tagSearchQuery]
   );
 
-  const handleTagToggle = (tagId: string) => {
-    const newSelectedTags = selectedTags.includes(tagId)
-      ? selectedTags.filter((id) => id !== tagId)
-      : [...selectedTags, tagId];
+  const handleTagToggle = useCallback(
+    (tagId: string) => {
+      const newSelectedTags = selectedTags.includes(tagId)
+        ? selectedTags.filter((id) => id !== tagId)
+        : [...selectedTags, tagId];
 
-    onTagsChange(newSelectedTags);
-  };
+      onTagsChange(newSelectedTags);
+    },
+    [selectedTags, onTagsChange]
+  );
 
-  const handleClearAll = () => {
+  const handleClearAll = useCallback(() => {
     onTagsChange([]);
     onSearchChange("");
     setTagSearchQuery("");
-  };
+  }, [onTagsChange, onSearchChange]);
 
-  const handleSelectAll = () => {
+  const handleSelectAll = useCallback(() => {
     onTagsChange(tags.map((tag) => tag.id));
-  };
+  }, [onTagsChange, tags]);
 
-  const FilterContent = () => (
-    <div className="space-y-6">
-      {/* Search Bar */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Search Blogs</label>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+  // Memoize FilterContent to prevent recreation on every render
+  const FilterContent = useMemo(
+    () => (
+      <div className="space-y-4 lg:space-y-6 px-4">
+        {/* Search Bar */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Search Blogs</label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search blog titles and content..."
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="pl-10 text-sm"
+            />
+          </div>
+        </div>
+
+        {/* Tags Filter */}
+        <div className="space-y-3 lg:space-y-4">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium">Filter by Tags</label>
+            <div className="flex gap-1 lg:gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSelectAll}
+                className="text-xs h-6 lg:h-7 px-2 lg:px-3"
+              >
+                Select All
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearAll}
+                className="text-xs h-6 lg:h-7 px-2 lg:px-3"
+              >
+                Clear All
+              </Button>
+            </div>
+          </div>
+
+          {/* Tag Search */}
           <Input
-            placeholder="Search blog titles and content..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10"
+            placeholder="Search tags..."
+            value={tagSearchQuery}
+            onChange={(e) => setTagSearchQuery(e.target.value)}
+            className="text-sm h-8 lg:h-9"
           />
-        </div>
-      </div>
 
-      {/* Tags Filter */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium">Filter by Tags</label>
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSelectAll}
-              className="text-xs h-7"
-            >
-              Select All
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClearAll}
-              className="text-xs h-7"
-            >
-              Clear All
-            </Button>
-          </div>
-        </div>
-
-        {/* Tag Search */}
-        <Input
-          placeholder="Search tags..."
-          value={tagSearchQuery}
-          onChange={(e) => setTagSearchQuery(e.target.value)}
-          className="text-sm"
-        />
-
-        {/* Tags List */}
-        <ScrollArea className="h-64">
-          <div className="space-y-2">
-            {filteredTags.length === 0 ? (
-              <p className="text-sm text-gray-500 text-center py-4">
-                No tags found
-              </p>
-            ) : (
-              filteredTags.map((tag) => (
-                <div
-                  key={tag.id}
-                  className="flex items-center space-x-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg cursor-pointer"
-                  onClick={() => handleTagToggle(tag.id)}
-                >
-                  <Checkbox
-                    id={`tag-${tag.id}`}
-                    checked={selectedTags.includes(tag.id)}
-                    onCheckedChange={() => handleTagToggle(tag.id)}
-                  />
-                  <label
-                    htmlFor={`tag-${tag.id}`}
-                    className="flex-1 text-sm cursor-pointer"
+          {/* Tags List */}
+          <ScrollArea className="h-48 h-[75%]">
+            <div className="space-y-1 lg:space-y-2 pr-2">
+              {filteredTags.length === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-4">
+                  No tags found
+                </p>
+              ) : (
+                filteredTags.map((tag) => (
+                  <div
+                    key={tag.id}
+                    className="flex items-center space-x-2 lg:space-x-3 p-1.5 lg:p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md lg:rounded-lg cursor-pointer transition-colors"
+                    onClick={() => handleTagToggle(tag.id)}
                   >
-                    {tag.name}
-                  </label>
-                  {tag.count !== undefined && (
-                    <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
-                      {tag.count}
-                    </span>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
-        </ScrollArea>
-      </div>
+                    <Checkbox
+                      id={`tag-${tag.id}`}
+                      checked={selectedTags.includes(tag.id)}
+                      onCheckedChange={() => handleTagToggle(tag.id)}
+                      className="h-3.5 w-3.5 lg:h-4 lg:w-4"
+                    />
+                    <label
+                      htmlFor={`tag-${tag.id}`}
+                      className="flex-1 text-xs lg:text-sm cursor-pointer leading-tight"
+                    >
+                      {tag.name}
+                    </label>
+                    {tag.count !== undefined && (
+                      <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 lg:px-2 py-0.5 lg:py-1 rounded-full min-w-[1.25rem] lg:min-w-[1.5rem] text-center">
+                        {tag.count}
+                      </span>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </ScrollArea>
+        </div>
 
-      {/* Results Summary */}
-      <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-        <p className="text-sm text-blue-700 dark:text-blue-300">
-          Showing <span className="font-medium">{filteredBlogs}</span> of{" "}
-          <span className="font-medium">{totalBlogs}</span> blogs
-        </p>
+        {/* Results Summary */}
+        <div className="p-2.5 lg:p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+          <p className="text-xs lg:text-sm text-blue-700 dark:text-blue-300">
+            Showing <span className="font-medium">{filteredBlogs}</span> of{" "}
+            <span className="font-medium">{totalBlogs}</span> blogs
+          </p>
+        </div>
       </div>
-    </div>
+    ),
+    [
+      searchQuery,
+      onSearchChange,
+      handleSelectAll,
+      handleClearAll,
+      tagSearchQuery,
+      filteredTags,
+      selectedTags,
+      handleTagToggle,
+      filteredBlogs,
+      totalBlogs,
+    ]
   );
 
   if (isMobile) {
@@ -183,9 +206,7 @@ export function BlogFilter({
             <SheetHeader>
               <SheetTitle>Filter Blogs</SheetTitle>
             </SheetHeader>
-            <div className="mt-6">
-              <FilterContent />
-            </div>
+            <div className="mt-6">{FilterContent}</div>
           </SheetContent>
         </Sheet>
 
@@ -229,43 +250,47 @@ export function BlogFilter({
 
   // Desktop Layout
   return (
-    <div className="w-full max-w-sm">
-      <div className="bg-white dark:bg-gray-800 rounded-lg border p-6 sticky top-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Filter Blogs</h3>
+    <div className="w-full">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border p-4 lg:p-6 sticky top-4 lg:top-6">
+        <div className="flex items-center justify-between mb-3 lg:mb-4">
+          <h3 className="text-base lg:text-lg font-semibold">Filter Blogs</h3>
           {selectedTags.length > 0 && (
-            <Badge variant="secondary">{selectedTags.length} selected</Badge>
+            <Badge variant="secondary" className="text-xs">
+              {selectedTags.length} selected
+            </Badge>
           )}
         </div>
-        <FilterContent />
+        {FilterContent}
       </div>
 
       {/* Selected Tags Display for Desktop */}
       {selectedTags.length > 0 && (
-        <div className="mt-4 bg-white dark:bg-gray-800 rounded-lg border p-4">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium">Selected Tags:</span>
+        <div className="mt-3 lg:mt-4 bg-white dark:bg-gray-800 rounded-lg border p-3 lg:p-4">
+          <div className="flex items-center justify-between mb-2 lg:mb-3">
+            <span className="text-xs lg:text-sm font-medium">
+              Selected Tags:
+            </span>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onTagsChange([])}
-              className="text-xs h-6"
+              className="text-xs h-5 lg:h-6 px-2"
             >
               Clear All
             </Button>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5 lg:gap-2">
             {selectedTags.map((tagId) => {
               const tag = tags.find((t) => t.id === tagId);
               return tag ? (
                 <Badge
                   key={tagId}
                   variant="secondary"
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1 text-xs py-0.5 px-2"
                 >
                   {tag.name}
                   <X
-                    className="h-3 w-3 cursor-pointer"
+                    className="h-2.5 w-2.5 lg:h-3 lg:w-3 cursor-pointer"
                     onClick={() => handleTagToggle(tagId)}
                   />
                 </Badge>
