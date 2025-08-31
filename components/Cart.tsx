@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ShoppingCart, Plus, Minus, Trash2, Check } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2 } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -167,9 +167,6 @@ export default function Cart() {
                       );
                       const itemInputQty =
                         inputQty[item.id] ?? String(item.quantity);
-                      const isMobile =
-                        typeof window !== "undefined" &&
-                        window.innerWidth < 640;
 
                       return (
                         <div
@@ -264,28 +261,6 @@ export default function Cart() {
                                   MozAppearance: "textfield",
                                 }}
                               />
-                              {/* Tick button for mobile confirmation */}
-                              {isMobile && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-7 w-7 p-0 text-green-600"
-                                  onClick={() => {
-                                    let val = parseInt(itemInputQty, 10);
-                                    if (isNaN(val) || val < 1) val = 1;
-                                    if (val !== item.quantity) {
-                                      updateQuantity(item.id, val);
-                                    }
-                                    setInputQty((prev) => ({
-                                      ...prev,
-                                      [item.id]: String(val),
-                                    }));
-                                  }}
-                                  aria-label="Confirm quantity"
-                                >
-                                  <Check className="h-4 w-4" />
-                                </Button>
-                              )}
                               <Button
                                 variant="ghost"
                                 size="sm"
