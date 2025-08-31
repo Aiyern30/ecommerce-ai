@@ -10,6 +10,7 @@ import {
   Trash2,
   Package,
   DollarSign,
+  Columns,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -52,6 +53,9 @@ import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import {
@@ -82,6 +86,13 @@ interface OrderFilters {
     | "cancelled";
   paymentStatus: "all" | "pending" | "paid" | "failed" | "refunded";
   dateRange: "all" | "today" | "week" | "month" | "year";
+}
+
+interface ColumnConfig {
+  key: string;
+  label: string;
+  visible: boolean;
+  required?: boolean;
 }
 
 function EmptyOrdersState() {
@@ -249,6 +260,50 @@ export default function OrdersPage() {
   const [ordersToDelete, setOrdersToDelete] = useState<Order[]>([]);
   const { isMobile } = useDeviceType();
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+
+  // Initialize column visibility from localStorage or defaults
+  const [visibleColumns, setVisibleColumns] = useState<ColumnConfig[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("orderTableColumns");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (error) {
+          console.error("Error parsing saved column config:", error);
+        }
+      }
+    }
+
+    // Default configuration if no saved state
+    return [
+      { key: "select", label: "Select", visible: true, required: true },
+      { key: "customer", label: "Customer", visible: true, required: true },
+      { key: "items", label: "Items", visible: true },
+      {
+        key: "additional_services",
+        label: "Additional Services",
+        visible: true,
+      },
+      { key: "services_total", label: "Services Total", visible: false },
+      { key: "subtotal", label: "Subtotal", visible: true },
+      { key: "shipping", label: "Shipping", visible: false },
+      { key: "tax", label: "Tax", visible: false },
+      { key: "total_amount", label: "Total Amount", visible: true },
+      { key: "payment_intent", label: "Payment Intent", visible: false },
+      { key: "status", label: "Status", visible: true },
+      { key: "payment", label: "Payment", visible: true },
+      { key: "address", label: "Address", visible: true },
+      { key: "created", label: "Created", visible: true },
+      { key: "actions", label: "Actions", visible: true, required: true },
+    ];
+  });
+
+  // Save to localStorage whenever visibleColumns changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("orderTableColumns", JSON.stringify(visibleColumns));
+    }
+  }, [visibleColumns]);
 
   const itemsPerPage = 10;
 
@@ -556,6 +611,52 @@ export default function OrdersPage() {
       console.error(err);
       toast.error("Failed to export orders");
     }
+  };
+
+  const toggleColumnVisibility = (columnKey: string) => {
+    setVisibleColumns((prev) => {
+      const newColumns = prev.map((col) =>
+        col.key === columnKey ? { ...col, visible: !col.visible } : col
+      );
+      return newColumns;
+    });
+  };
+
+  const resetColumns = () => {
+    const defaultColumns = [
+      { key: "select", label: "Select", visible: true, required: true },
+      { key: "customer", label: "Customer", visible: true, required: true },
+      { key: "items", label: "Items", visible: true },
+      {
+        key: "additional_services",
+        label: "Additional Services",
+        visible: true,
+      },
+      { key: "services_total", label: "Services Total", visible: false },
+      { key: "subtotal", label: "Subtotal", visible: true },
+      { key: "shipping", label: "Shipping", visible: false },
+      { key: "tax", label: "Tax", visible: false },
+      { key: "total_amount", label: "Total Amount", visible: true },
+      { key: "payment_intent", label: "Payment Intent", visible: false },
+      { key: "status", label: "Status", visible: true },
+      { key: "payment", label: "Payment", visible: true },
+      { key: "address", label: "Address", visible: true },
+      { key: "created", label: "Created", visible: true },
+      { key: "actions", label: "Actions", visible: true, required: true },
+    ];
+
+    setVisibleColumns(defaultColumns);
+  };
+
+  const clearSavedColumnPreferences = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("orderTableColumns");
+    }
+    resetColumns();
+  };
+
+  const isColumnVisible = (columnKey: string) => {
+    return visibleColumns.find((col) => col.key === columnKey)?.visible ?? true;
   };
 
   return (
@@ -876,8 +977,94 @@ export default function OrdersPage() {
             </>
           )}
         </div>
-        <div className="text-sm text-gray-500">
-          {sortedOrders.length} Results
+        <div className="flex items-center gap-3">
+          <div className="text-sm text-gray-500">
+            {sortedOrders.length} Results
+          </div>
+
+          {/* Column Filter Button */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Columns className="h-4 w-4" />
+                Columns
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64" align="end">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold text-sm">Toggle Columns</h4>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={resetColumns}
+                      className="text-xs h-6 px-2"
+                      title="Reset to default"
+                    >
+                      Reset
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearSavedColumnPreferences}
+                      className="text-xs h-6 px-2 text-red-600 hover:text-red-700"
+                      title="Clear saved preferences"
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {visibleColumns.map((column) => (
+                    <div
+                      key={column.key}
+                      className="flex items-center space-x-2"
+                    >
+                      <Checkbox
+                        id={`column-${column.key}`}
+                        checked={column.visible}
+                        onCheckedChange={() =>
+                          toggleColumnVisibility(column.key)
+                        }
+                        disabled={column.required}
+                      />
+                      <label
+                        htmlFor={`column-${column.key}`}
+                        className={`text-sm cursor-pointer flex-1 ${
+                          column.required
+                            ? "text-gray-400"
+                            : "text-gray-700 dark:text-gray-300"
+                        }`}
+                      >
+                        {column.label}
+                        {column.required && (
+                          <span className="text-xs text-gray-400 ml-1">
+                            (required)
+                          </span>
+                        )}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-xs text-gray-500">
+                    {visibleColumns.filter((col) => col.visible).length} of{" "}
+                    {visibleColumns.length} columns visible
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    💾 Preferences saved automatically
+                  </p>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
@@ -892,40 +1079,72 @@ export default function OrdersPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="min-w-[50px] text-center">
-                  <Checkbox
-                    checked={
-                      selectedOrders.length === currentPageData.length &&
-                      currentPageData.length > 0
-                    }
-                    onCheckedChange={toggleSelectAllOrders}
-                    aria-label="Select all"
-                  />
-                </TableHead>
-                <TableHead className="min-w-[150px]">Customer</TableHead>
-                <TableHead className="min-w-[100px]">Items</TableHead>
-                <TableHead className="min-w-[350px]">
-                  Additional Services
-                </TableHead>
-                <TableHead className="min-w-[120px]">Services Total</TableHead>
-
-                <TableHead className="min-w-[150px]">Subtotal</TableHead>
-                <TableHead className="min-w-[150px]">Shipping</TableHead>
-                <TableHead className="min-w-[150px]">Tax</TableHead>
-                <TableHead className="min-w-[180px]">Total Amount</TableHead>
-                <TableHead className="min-w-[200px]">Payment Intent</TableHead>
-                <TableHead className="min-w-[100px] text-center">
-                  Status
-                </TableHead>
-                <TableHead className="min-w-[120px] text-center">
-                  Payment
-                </TableHead>
-                <TableHead className="min-w-[200px]">Address</TableHead>
-                <TableHead className="min-w-[200px]">Created</TableHead>
-
-                <TableHead className="text-center min-w-[80px]">
-                  Actions
-                </TableHead>
+                {isColumnVisible("select") && (
+                  <TableHead className="min-w-[50px] text-center">
+                    <Checkbox
+                      checked={
+                        selectedOrders.length === currentPageData.length &&
+                        currentPageData.length > 0
+                      }
+                      onCheckedChange={toggleSelectAllOrders}
+                      aria-label="Select all"
+                    />
+                  </TableHead>
+                )}
+                {isColumnVisible("customer") && (
+                  <TableHead className="min-w-[150px]">Customer</TableHead>
+                )}
+                {isColumnVisible("items") && (
+                  <TableHead className="min-w-[100px]">Items</TableHead>
+                )}
+                {isColumnVisible("additional_services") && (
+                  <TableHead className="min-w-[350px]">
+                    Additional Services
+                  </TableHead>
+                )}
+                {isColumnVisible("services_total") && (
+                  <TableHead className="min-w-[120px]">
+                    Services Total
+                  </TableHead>
+                )}
+                {isColumnVisible("subtotal") && (
+                  <TableHead className="min-w-[150px]">Subtotal</TableHead>
+                )}
+                {isColumnVisible("shipping") && (
+                  <TableHead className="min-w-[150px]">Shipping</TableHead>
+                )}
+                {isColumnVisible("tax") && (
+                  <TableHead className="min-w-[150px]">Tax</TableHead>
+                )}
+                {isColumnVisible("total_amount") && (
+                  <TableHead className="min-w-[180px]">Total Amount</TableHead>
+                )}
+                {isColumnVisible("payment_intent") && (
+                  <TableHead className="min-w-[200px]">
+                    Payment Intent
+                  </TableHead>
+                )}
+                {isColumnVisible("status") && (
+                  <TableHead className="min-w-[100px] text-center">
+                    Status
+                  </TableHead>
+                )}
+                {isColumnVisible("payment") && (
+                  <TableHead className="min-w-[120px] text-center">
+                    Payment
+                  </TableHead>
+                )}
+                {isColumnVisible("address") && (
+                  <TableHead className="min-w-[200px]">Address</TableHead>
+                )}
+                {isColumnVisible("created") && (
+                  <TableHead className="min-w-[200px]">Created</TableHead>
+                )}
+                {isColumnVisible("actions") && (
+                  <TableHead className="text-center min-w-[80px]">
+                    Actions
+                  </TableHead>
+                )}
               </TableRow>
             </TableHeader>
 
@@ -943,251 +1162,289 @@ export default function OrdersPage() {
                     onClick={() => router.push(`/staff/orders/${order.id}`)}
                     className="cursor-pointer max-h-20 h-20"
                   >
-                    <TableCell
-                      onClick={(e) => e.stopPropagation()}
-                      className="text-center"
-                    >
-                      <Checkbox
-                        checked={selectedOrders.includes(order.id)}
-                        onCheckedChange={() => toggleOrderSelection(order.id)}
-                        aria-label={`Select order ${order.id}`}
-                      />
-                    </TableCell>
-                    <TableCell className="max-w-xs max-h-20 overflow-hidden">
-                      <div className="space-y-1 max-h-16 overflow-hidden">
-                        <div
-                          className="font-medium truncate text-blue-700 hover:underline cursor-pointer"
-                          title={order.addresses?.full_name}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (order.user_id) {
-                              router.push(`/staff/customers/${order.user_id}`);
-                            }
-                          }}
-                          tabIndex={0}
-                          role="button"
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && order.user_id) {
-                              router.push(`/staff/customers/${order.user_id}`);
-                            }
-                          }}
-                          style={{ outline: "none" }}
-                        >
-                          {order.addresses?.full_name || "N/A"}
-                        </div>
-
-                        {order.addresses?.phone ? (
-                          <a
-                            href={`tel:${order.addresses.phone}`}
-                            className="text-sm text-gray-500 underline hover:text-gray-700 truncate"
-                            title={order.addresses.phone}
-                            onClick={(e) => e.stopPropagation()}
+                    {isColumnVisible("select") && (
+                      <TableCell
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-center"
+                      >
+                        <Checkbox
+                          checked={selectedOrders.includes(order.id)}
+                          onCheckedChange={() => toggleOrderSelection(order.id)}
+                          aria-label={`Select order ${order.id}`}
+                        />
+                      </TableCell>
+                    )}
+                    {isColumnVisible("customer") && (
+                      <TableCell className="max-w-xs max-h-20 overflow-hidden">
+                        <div className="space-y-1 max-h-16 overflow-hidden">
+                          <div
+                            className="font-medium truncate text-blue-700 hover:underline cursor-pointer"
+                            title={order.addresses?.full_name}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (order.user_id) {
+                                router.push(
+                                  `/staff/customers/${order.user_id}`
+                                );
+                              }
+                            }}
+                            tabIndex={0}
+                            role="button"
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && order.user_id) {
+                                router.push(
+                                  `/staff/customers/${order.user_id}`
+                                );
+                              }
+                            }}
+                            style={{ outline: "none" }}
                           >
-                            {order.addresses.phone}
-                          </a>
-                        ) : (
-                          <div className="text-sm text-gray-500 truncate">
-                            No phone
+                            {order.addresses?.full_name || "N/A"}
                           </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <HoverCard>
-                        <HoverCardTrigger asChild>
-                          <div className="flex items-center gap-1 cursor-pointer">
-                            <Package className="h-4 w-4 text-gray-400" />
-                            <span className="text-sm font-medium">
-                              {order.order_items?.length || 0}
-                            </span>
-                          </div>
-                        </HoverCardTrigger>
-                        <HoverCardContent className="w-96 p-4">
-                          <div className="space-y-2">
-                            {order.order_items &&
-                            order.order_items.length > 0 ? (
-                              order.order_items.map((item) => (
-                                <div
-                                  key={item.id}
-                                  className="flex gap-3 items-center border-b pb-2 last:border-b-0 last:pb-0"
-                                >
-                                  <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center relative">
-                                    <Image
-                                      src={item.image_url || "/placeholder.svg"}
-                                      alt={item.name}
-                                      fill
-                                      className="object-cover"
-                                      priority
-                                    />
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <div className="font-medium text-sm truncate">
-                                      {item.name}
-                                    </div>
-                                    <div className="text-xs text-gray-500">
-                                      Grade: {item.grade}
-                                      {item.variant_type && (
-                                        <span className="ml-2">
-                                          Type: {item.variant_type}
-                                        </span>
-                                      )}
-                                    </div>
-                                    <div className="text-xs text-gray-500">
-                                      Qty: {item.quantity} &nbsp;|&nbsp;{" "}
-                                      {formatCurrency(item.price)}
-                                    </div>
-                                  </div>
-                                </div>
-                              ))
-                            ) : (
-                              <div className="text-xs text-gray-400">
-                                No items
-                              </div>
-                            )}
-                          </div>
-                        </HoverCardContent>
-                      </HoverCard>
-                    </TableCell>
-                    <TableCell className="max-h-20 overflow-hidden">
-                      {order.additional_services &&
-                      order.additional_services.length > 0 ? (
-                        <div className="space-y-1 max-h-16 overflow-y-auto">
-                          {order.additional_services.map((service) => (
-                            <div key={service.id} className="text-xs">
-                              <span className="font-medium">
-                                {service.service_name}
-                              </span>
-                              <span>
-                                {" "}
-                                × {service.quantity} @{" "}
-                                {formatCurrency(service.rate_per_m3)}
-                              </span>
-                              <span className="ml-2 text-green-600 font-semibold">
-                                {formatCurrency(service.total_price)}
+
+                          {order.addresses?.phone ? (
+                            <a
+                              href={`tel:${order.addresses.phone}`}
+                              className="text-sm text-gray-500 underline hover:text-gray-700 truncate"
+                              title={order.addresses.phone}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {order.addresses.phone}
+                            </a>
+                          ) : (
+                            <div className="text-sm text-gray-500 truncate">
+                              No phone
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                    )}
+                    {isColumnVisible("items") && (
+                      <TableCell>
+                        <HoverCard>
+                          <HoverCardTrigger asChild>
+                            <div className="flex items-center gap-1 cursor-pointer">
+                              <Package className="h-4 w-4 text-gray-400" />
+                              <span className="text-sm font-medium">
+                                {order.order_items?.length || 0}
                               </span>
                             </div>
-                          ))}
+                          </HoverCardTrigger>
+                          <HoverCardContent className="w-96 p-4">
+                            <div className="space-y-2">
+                              {order.order_items &&
+                              order.order_items.length > 0 ? (
+                                order.order_items.map((item) => (
+                                  <div
+                                    key={item.id}
+                                    className="flex gap-3 items-center border-b pb-2 last:border-b-0 last:pb-0"
+                                  >
+                                    <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center relative">
+                                      <Image
+                                        src={
+                                          item.image_url || "/placeholder.svg"
+                                        }
+                                        alt={item.name}
+                                        fill
+                                        className="object-cover"
+                                        priority
+                                      />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="font-medium text-sm truncate">
+                                        {item.name}
+                                      </div>
+                                      <div className="text-xs text-gray-500">
+                                        Grade: {item.grade}
+                                        {item.variant_type && (
+                                          <span className="ml-2">
+                                            Type: {item.variant_type}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="text-xs text-gray-500">
+                                        Qty: {item.quantity} &nbsp;|&nbsp;{" "}
+                                        {formatCurrency(item.price)}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="text-xs text-gray-400">
+                                  No items
+                                </div>
+                              )}
+                            </div>
+                          </HoverCardContent>
+                        </HoverCard>
+                      </TableCell>
+                    )}
+                    {isColumnVisible("additional_services") && (
+                      <TableCell className="max-h-20 overflow-hidden">
+                        {order.additional_services &&
+                        order.additional_services.length > 0 ? (
+                          <div className="space-y-1 max-h-16 overflow-y-auto">
+                            {order.additional_services.map((service) => (
+                              <div key={service.id} className="text-xs">
+                                <span className="font-medium">
+                                  {service.service_name}
+                                </span>
+                                <span>
+                                  {" "}
+                                  × {service.quantity} @{" "}
+                                  {formatCurrency(service.rate_per_m3)}
+                                </span>
+                                <span className="ml-2 text-green-600 font-semibold">
+                                  {formatCurrency(service.total_price)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-400">-</span>
+                        )}
+                      </TableCell>
+                    )}
+                    {isColumnVisible("services_total") && (
+                      <TableCell>
+                        {order.additional_services &&
+                        order.additional_services.length > 0
+                          ? formatCurrency(
+                              order.additional_services.reduce(
+                                (sum: number, s) =>
+                                  sum + Number(s.total_price || 0),
+                                0
+                              )
+                            )
+                          : formatCurrency(0)}
+                      </TableCell>
+                    )}
+                    {isColumnVisible("subtotal") && (
+                      <TableCell>{formatCurrency(order.subtotal)}</TableCell>
+                    )}
+                    {isColumnVisible("shipping") && (
+                      <TableCell>
+                        {formatCurrency(order.shipping_cost)}
+                      </TableCell>
+                    )}
+                    {isColumnVisible("tax") && (
+                      <TableCell>{formatCurrency(order.tax)}</TableCell>
+                    )}
+                    {isColumnVisible("total_amount") && (
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-1">
+                          <DollarSign className="h-4 w-4 text-green-600" />
+                          {formatCurrency(order.total)}
                         </div>
-                      ) : (
-                        <span className="text-xs text-gray-400">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {order.additional_services &&
-                      order.additional_services.length > 0
-                        ? formatCurrency(
-                            order.additional_services.reduce(
-                              (sum: number, s) =>
-                                sum + Number(s.total_price || 0),
-                              0
-                            )
-                          )
-                        : formatCurrency(0)}
-                    </TableCell>
-                    <TableCell>{formatCurrency(order.subtotal)}</TableCell>
-                    <TableCell>{formatCurrency(order.shipping_cost)}</TableCell>
-                    <TableCell>{formatCurrency(order.tax)}</TableCell>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-1">
-                        <DollarSign className="h-4 w-4 text-green-600" />
-                        {formatCurrency(order.total)}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {order.payment_intent_id ? (
-                        <a
-                          href={`https://dashboard.stripe.com/payments/${order.payment_intent_id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 underline hover:text-blue-800 text-xs font-mono break-all"
-                          onClick={(e) => e.stopPropagation()}
-                          title="View in Stripe"
+                      </TableCell>
+                    )}
+                    {isColumnVisible("payment_intent") && (
+                      <TableCell>
+                        {order.payment_intent_id ? (
+                          <a
+                            href={`https://dashboard.stripe.com/payments/${order.payment_intent_id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 underline hover:text-blue-800 text-xs font-mono break-all"
+                            onClick={(e) => e.stopPropagation()}
+                            title="View in Stripe"
+                          >
+                            {order.payment_intent_id}
+                          </a>
+                        ) : (
+                          <span className="text-xs font-mono break-all">-</span>
+                        )}
+                      </TableCell>
+                    )}
+                    {isColumnVisible("status") && (
+                      <TableCell className="text-center">
+                        {(() => {
+                          const config = getStatusBadgeConfig(order.status);
+                          return (
+                            <Badge
+                              variant={config.variant}
+                              className={config.className}
+                            >
+                              {config.label}
+                            </Badge>
+                          );
+                        })()}
+                      </TableCell>
+                    )}
+                    {isColumnVisible("payment") && (
+                      <TableCell className="text-center">
+                        {(() => {
+                          const config = getPaymentStatusConfig(
+                            order.payment_status
+                          );
+                          return (
+                            <Badge
+                              variant={config.variant}
+                              className={config.className}
+                            >
+                              {config.label}
+                            </Badge>
+                          );
+                        })()}
+                      </TableCell>
+                    )}
+                    {isColumnVisible("address") && (
+                      <TableCell>
+                        <div
+                          className="text-xs text-gray-700 dark:text-gray-300 max-w-[180px]"
+                          title={
+                            order.addresses
+                              ? [
+                                  order.addresses.address_line1,
+                                  order.addresses.address_line2,
+                                  order.addresses.city,
+                                  order.addresses.state,
+                                  order.addresses.postal_code,
+                                  order.addresses.country,
+                                ]
+                                  .filter(Boolean)
+                                  .join(", ")
+                              : "N/A"
+                          }
                         >
-                          {order.payment_intent_id}
-                        </a>
-                      ) : (
-                        <span className="text-xs font-mono break-all">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {(() => {
-                        const config = getStatusBadgeConfig(order.status);
-                        return (
-                          <Badge
-                            variant={config.variant}
-                            className={config.className}
-                          >
-                            {config.label}
-                          </Badge>
-                        );
-                      })()}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {(() => {
-                        const config = getPaymentStatusConfig(
-                          order.payment_status
-                        );
-                        return (
-                          <Badge
-                            variant={config.variant}
-                            className={config.className}
-                          >
-                            {config.label}
-                          </Badge>
-                        );
-                      })()}
-                    </TableCell>
-                    <TableCell>
-                      <div
-                        className="text-xs text-gray-700 dark:text-gray-300 max-w-[180px]"
-                        title={
-                          order.addresses
-                            ? [
-                                order.addresses.address_line1,
-                                order.addresses.address_line2,
-                                order.addresses.city,
-                                order.addresses.state,
-                                order.addresses.postal_code,
-                                order.addresses.country,
-                              ]
-                                .filter(Boolean)
-                                .join(", ")
-                            : "N/A"
-                        }
+                          {order.addresses
+                            ? truncateText(
+                                [
+                                  order.addresses.address_line1,
+                                  order.addresses.address_line2,
+                                  order.addresses.city,
+                                  order.addresses.state,
+                                  order.addresses.postal_code,
+                                  order.addresses.country,
+                                ]
+                                  .filter(Boolean)
+                                  .join(", "),
+                                80,
+                                2
+                              )
+                            : "N/A"}
+                        </div>
+                      </TableCell>
+                    )}
+                    {isColumnVisible("created") && (
+                      <TableCell>{formatDate(order.created_at)}</TableCell>
+                    )}
+                    {isColumnVisible("actions") && (
+                      <TableCell
+                        className="text-center"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        {order.addresses
-                          ? truncateText(
-                              [
-                                order.addresses.address_line1,
-                                order.addresses.address_line2,
-                                order.addresses.city,
-                                order.addresses.state,
-                                order.addresses.postal_code,
-                                order.addresses.country,
-                              ]
-                                .filter(Boolean)
-                                .join(", "),
-                              80,
-                              2
-                            )
-                          : "N/A"}
-                      </div>
-                    </TableCell>
-                    <TableCell>{formatDate(order.created_at)}</TableCell>
-                    <TableCell
-                      className="text-center"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() =>
-                          router.push(`/staff/orders/${order.id}/edit`)
-                        }
-                      >
-                        Edit
-                      </Button>
-                    </TableCell>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() =>
+                            router.push(`/staff/orders/${order.id}/edit`)
+                          }
+                        >
+                          Edit
+                        </Button>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))
               )}
