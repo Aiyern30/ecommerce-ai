@@ -23,7 +23,6 @@ export default function BlogsPage() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [allBlogs, setAllBlogs] = useState<Blog[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
-  console.log("tags", tags);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -46,8 +45,6 @@ export default function BlogsPage() {
       .eq("status", "published")
       .order("created_at", { ascending: false });
 
-    console.log("fetchAllBlogs raw data:", data); // Debug log
-
     if (error) {
       console.error("Failed to fetch blogs:", error.message);
       return [];
@@ -61,7 +58,6 @@ export default function BlogsPage() {
       (blog) => blog.title && blog.blog_images && blog.blog_images.length > 0
     );
 
-    // Transform the data to match our Blog type
     const transformedBlogs: Blog[] = validBlogs.map((blog: any) => ({
       id: blog.id,
       title: blog.title,
@@ -107,9 +103,6 @@ export default function BlogsPage() {
       return [];
     }
 
-    console.log("blogsWithTags from supabase:", blogsWithTags); // Debug log
-
-    // Count how many blogs each tag appears in
     const tagCounts: {
       [key: string]: { id: string; name: string; count: number };
     } = {};
@@ -117,7 +110,6 @@ export default function BlogsPage() {
     blogsWithTags?.forEach((blog: any) => {
       if (blog.blog_tags && Array.isArray(blog.blog_tags)) {
         blog.blog_tags.forEach((blogTag: any) => {
-          // blogTag.tags is now a single tag object
           const tag = blogTag.tags;
           if (tag && tag.id && tag.name) {
             if (!tagCounts[tag.id]) {
@@ -133,7 +125,6 @@ export default function BlogsPage() {
       }
     });
 
-    console.log("Processed tagCounts:", tagCounts); // Debug log
     return Object.values(tagCounts).filter((tag) => tag.count > 0);
   };
 
@@ -157,21 +148,9 @@ export default function BlogsPage() {
     }
   }, []);
 
-  // Filter blogs based on selected tags and search query
   const filteredBlogs = useMemo(() => {
-    console.log("Filtering blogs with selectedTags:", selectedTags);
-    console.log(
-      "All blogs structure:",
-      allBlogs.map((blog) => ({
-        id: blog.id,
-        title: blog.title,
-        blog_tags: blog.blog_tags,
-      }))
-    );
-
     let filtered = allBlogs;
 
-    // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -182,40 +161,30 @@ export default function BlogsPage() {
       );
     }
 
-    // Filter by selected tags - Fixed structure to match single tag object
     if (selectedTags.length > 0) {
       filtered = filtered.filter((blog) => {
         if (!blog.blog_tags || blog.blog_tags.length === 0) {
-          console.log(`Blog ${blog.id} has no blog_tags`);
           return false;
         }
 
-        // Get all tag IDs from the blog
         const blogTagIds: string[] = [];
         blog.blog_tags.forEach((blogTag) => {
-          // blogTag.tags is now a single tag object
           if (blogTag.tags && blogTag.tags.id) {
             blogTagIds.push(blogTag.tags.id);
           }
         });
 
-        console.log(`Blog ${blog.id} has tag IDs:`, blogTagIds);
-
-        // Check if any selected tag matches any blog tag
         const hasMatch = selectedTags.some((selectedTagId) =>
           blogTagIds.includes(selectedTagId)
         );
 
-        console.log(`Blog ${blog.id} matches selected tags:`, hasMatch);
         return hasMatch;
       });
     }
 
-    console.log("Filtered blogs result:", filtered.length);
     return filtered;
   }, [allBlogs, selectedTags, searchQuery]);
 
-  // Update displayed blogs when filters change
   useEffect(() => {
     const initialBlogs = filteredBlogs.slice(0, LIMIT);
     setBlogs(initialBlogs);
@@ -252,10 +221,13 @@ export default function BlogsPage() {
         <h2 className="mb-8 text-center text-3xl font-bold">All Blogs</h2>
 
         <div
-          className={`${isMobile ? "space-y-6" : "grid gap-8 lg:grid-cols-4"}`}
+          className={`${
+            isMobile
+              ? "space-y-6"
+              : "grid gap-6 lg:gap-8 grid-cols-1 xl:grid-cols-4"
+          }`}
         >
-          {/* Filter Sidebar */}
-          <div className={isMobile ? "" : "lg:col-span-1"}>
+          <div className={isMobile ? "" : "xl:col-span-1"}>
             <BlogFilter
               tags={tags}
               selectedTags={selectedTags}
@@ -267,9 +239,7 @@ export default function BlogsPage() {
             />
           </div>
 
-          {/* Blogs Grid */}
-          <div className={isMobile ? "" : "lg:col-span-3"}>
-            {/* Results header */}
+          <div className={isMobile ? "" : "xl:col-span-3"}>
             {!loading && (selectedTags.length > 0 || searchQuery.trim()) && (
               <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                 <p className="text-sm text-blue-700 dark:text-blue-300">
@@ -283,10 +253,10 @@ export default function BlogsPage() {
             )}
 
             <div
-              className={`grid gap-6 ${
+              className={`grid gap-4 lg:gap-6 ${
                 isMobile
                   ? "grid-cols-1"
-                  : "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+                  : "grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3"
               }`}
             >
               {blogs.map((post) => (
@@ -384,7 +354,7 @@ export default function BlogsPage() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
+                      d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m-2 13a2 2 0 002-2V9.5a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
                     />
                   </svg>
                 </div>
