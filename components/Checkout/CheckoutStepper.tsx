@@ -69,7 +69,7 @@ export function CheckoutStepper({ currentStep }: CheckoutStepperProps) {
       <ol
         className={cn(
           "flex items-center w-full",
-          isMobile ? "max-w-full justify-between" : "max-w-3xl"
+          isMobile ? "max-w-full" : "max-w-3xl"
         )}
       >
         {steps.map((step, stepIdx) => {
@@ -118,21 +118,26 @@ export function CheckoutStepper({ currentStep }: CheckoutStepperProps) {
               {isMobile && stepIdx < steps.length - 1 && (
                 <div
                   className={cn(
-                    "absolute right-0 top-5 h-0.5 w-[calc(100%-2rem)] z-0",
+                    "absolute top-1/2 h-0.5 z-0",
                     isCompleted
                       ? "bg-green-600"
                       : isActive
                       ? "bg-primary"
                       : "bg-gray-200"
                   )}
+                  style={{
+                    left: "calc(50% + 8px)",
+                    right: "calc(-50% + 8px)",
+                  }}
                 />
               )}
 
+              {/* Step Button */}
               <button
                 onClick={() => handleStepClick(step)}
                 disabled={!isClickable}
                 className={cn(
-                  "relative z-10 flex items-center justify-center rounded-full border-2 transition-all duration-200",
+                  "relative z-10 flex items-center justify-center rounded-full border-2 transition-all duration-200", // ✅ ensure above lines
                   isMobile ? "h-8 w-8" : "h-10 w-10",
                   isCompleted
                     ? "border-green-600 bg-green-600 text-white"
@@ -163,10 +168,11 @@ export function CheckoutStepper({ currentStep }: CheckoutStepperProps) {
                 )}
               </button>
 
+              {/* Labels */}
               <div
                 className={cn(
-                  "mt-2 text-center mx-auto",
-                  isMobile ? "w-16" : "w-24",
+                  "mt-2 text-center mx-auto relative z-10",
+                  isMobile ? "w-16 px-1" : "w-24",
                   isClickable && "cursor-pointer"
                 )}
                 onClick={() => isClickable && handleStepClick(step)}
@@ -174,7 +180,7 @@ export function CheckoutStepper({ currentStep }: CheckoutStepperProps) {
                 <span
                   className={cn(
                     "font-semibold block transition-colors",
-                    isMobile ? "text-xs" : "text-sm",
+                    isMobile ? "text-xs leading-tight" : "text-sm",
                     isCompleted
                       ? "text-green-600"
                       : isActive
