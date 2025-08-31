@@ -559,6 +559,20 @@ export default function ProductsPage() {
     return types.map((type) => type.charAt(0).toUpperCase() + type.slice(1));
   }, [products]);
 
+  // Get unique status values from the data
+  const uniqueStatuses = useMemo(() => {
+    const statuses = products
+      .map((product) => product.status)
+      .filter((status) => status && status.trim() !== "") // Remove null, undefined, and empty strings
+      .map((status) => status.toLowerCase()) // Normalize for comparison
+      .filter((status, index, arr) => arr.indexOf(status) === index) // Remove duplicates
+      .sort(); // Sort alphabetically
+
+    return statuses.map(
+      (status) => status.charAt(0).toUpperCase() + status.slice(1) // Capitalize first letter
+    );
+  }, [products]);
+
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex items-center justify-between">
@@ -648,8 +662,14 @@ export default function ProductsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="draft">Draft</SelectItem>
-                    <SelectItem value="published">Published</SelectItem>
+                    {uniqueStatuses.map((status) => (
+                      <SelectItem
+                        key={status.toLowerCase()}
+                        value={status.toLowerCase()}
+                      >
+                        {status}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <Select
@@ -795,8 +815,14 @@ export default function ProductsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="published">Published</SelectItem>
+                {uniqueStatuses.map((status) => (
+                  <SelectItem
+                    key={status.toLowerCase()}
+                    value={status.toLowerCase()}
+                  >
+                    {status}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Select
