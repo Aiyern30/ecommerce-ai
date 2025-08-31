@@ -256,26 +256,51 @@ export default function ProductsPage() {
   const [productsToDelete, setProductsToDelete] = useState<Product[]>([]);
   const { isMobile } = useDeviceType();
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-  const [visibleColumns, setVisibleColumns] = useState<ColumnConfig[]>([
-    { key: "select", label: "Select", visible: true, required: true },
-    { key: "image", label: "Image", visible: true },
-    { key: "name", label: "Product Name", visible: true, required: true },
-    { key: "description", label: "Description", visible: true },
-    { key: "category", label: "Category", visible: true },
-    { key: "grade", label: "Grade", visible: true },
-    { key: "product_type", label: "Product Type", visible: true },
-    { key: "mortar_ratio", label: "Mortar Ratio", visible: true },
-    { key: "normal_price", label: "Normal Price", visible: true },
-    { key: "pump_price", label: "Pump Price", visible: true },
-    { key: "tremie_1_price", label: "Tremie 1 Price", visible: true },
-    { key: "tremie_2_price", label: "Tremie 2 Price", visible: true },
-    { key: "tremie_3_price", label: "Tremie 3 Price", visible: true },
-    { key: "unit", label: "Unit", visible: true },
-    { key: "stock", label: "Stock", visible: true },
-    { key: "status", label: "Status", visible: true },
-    { key: "keywords", label: "Keywords", visible: true },
-    { key: "actions", label: "Actions", visible: true, required: true },
-  ]);
+  // Initialize column visibility from localStorage or defaults
+  const [visibleColumns, setVisibleColumns] = useState<ColumnConfig[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("productTableColumns");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (error) {
+          console.error("Error parsing saved column config:", error);
+        }
+      }
+    }
+
+    // Default configuration if no saved state
+    return [
+      { key: "select", label: "Select", visible: true, required: true },
+      { key: "image", label: "Image", visible: true },
+      { key: "name", label: "Product Name", visible: true, required: true },
+      { key: "description", label: "Description", visible: true },
+      { key: "category", label: "Category", visible: true },
+      { key: "grade", label: "Grade", visible: true },
+      { key: "product_type", label: "Product Type", visible: true },
+      { key: "mortar_ratio", label: "Mortar Ratio", visible: true },
+      { key: "normal_price", label: "Normal Price", visible: true },
+      { key: "pump_price", label: "Pump Price", visible: true },
+      { key: "tremie_1_price", label: "Tremie 1 Price", visible: true },
+      { key: "tremie_2_price", label: "Tremie 2 Price", visible: true },
+      { key: "tremie_3_price", label: "Tremie 3 Price", visible: true },
+      { key: "unit", label: "Unit", visible: true },
+      { key: "stock", label: "Stock", visible: true },
+      { key: "status", label: "Status", visible: true },
+      { key: "keywords", label: "Keywords", visible: true },
+      { key: "actions", label: "Actions", visible: true, required: true },
+    ];
+  });
+
+  // Save to localStorage whenever visibleColumns changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        "productTableColumns",
+        JSON.stringify(visibleColumns)
+      );
+    }
+  }, [visibleColumns]);
 
   const itemsPerPage = 10;
 
@@ -483,20 +508,45 @@ export default function ProductsPage() {
   );
 
   const toggleColumnVisibility = (columnKey: string) => {
-    setVisibleColumns((prev) =>
-      prev.map((col) =>
+    setVisibleColumns((prev) => {
+      const newColumns = prev.map((col) =>
         col.key === columnKey ? { ...col, visible: !col.visible } : col
-      )
-    );
+      );
+      return newColumns;
+    });
   };
 
   const resetColumns = () => {
-    setVisibleColumns((prev) =>
-      prev.map((col) => ({
-        ...col,
-        visible: true, // Set all columns to visible when resetting
-      }))
-    );
+    const defaultColumns = [
+      { key: "select", label: "Select", visible: true, required: true },
+      { key: "image", label: "Image", visible: true },
+      { key: "name", label: "Product Name", visible: true, required: true },
+      { key: "description", label: "Description", visible: true },
+      { key: "category", label: "Category", visible: true },
+      { key: "grade", label: "Grade", visible: true },
+      { key: "product_type", label: "Product Type", visible: true },
+      { key: "mortar_ratio", label: "Mortar Ratio", visible: true },
+      { key: "normal_price", label: "Normal Price", visible: true },
+      { key: "pump_price", label: "Pump Price", visible: true },
+      { key: "tremie_1_price", label: "Tremie 1 Price", visible: true },
+      { key: "tremie_2_price", label: "Tremie 2 Price", visible: true },
+      { key: "tremie_3_price", label: "Tremie 3 Price", visible: true },
+      { key: "unit", label: "Unit", visible: true },
+      { key: "stock", label: "Stock", visible: true },
+      { key: "status", label: "Status", visible: true },
+      { key: "keywords", label: "Keywords", visible: true },
+      { key: "actions", label: "Actions", visible: true, required: true },
+    ];
+
+    setVisibleColumns(defaultColumns);
+  };
+
+  // Add function to clear saved preferences
+  const clearSavedColumnPreferences = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("productTableColumns");
+    }
+    resetColumns();
   };
 
   const isColumnVisible = (columnKey: string) => {
@@ -896,14 +946,26 @@ export default function ProductsPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h4 className="font-semibold text-sm">Toggle Columns</h4>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={resetColumns}
-                    className="text-xs h-6 px-2"
-                  >
-                    Reset
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={resetColumns}
+                      className="text-xs h-6 px-2"
+                      title="Reset to default"
+                    >
+                      Reset
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearSavedColumnPreferences}
+                      className="text-xs h-6 px-2 text-red-600 hover:text-red-700"
+                      title="Clear saved preferences"
+                    >
+                      Clear
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -943,6 +1005,9 @@ export default function ProductsPage() {
                   <p className="text-xs text-gray-500">
                     {visibleColumns.filter((col) => col.visible).length} of{" "}
                     {visibleColumns.length} columns visible
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    💾 Preferences saved automatically
                   </p>
                 </div>
               </div>
