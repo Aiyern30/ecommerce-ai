@@ -7,7 +7,6 @@ import {
   ChevronRight,
   Filter,
   Search,
-  Trash2,
   Users,
   Mail,
   Calendar as CalendarIcon,
@@ -32,19 +31,7 @@ import { toast } from "sonner";
 import {
   Button,
   Input,
-  Checkbox,
   Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
   Skeleton,
   Drawer,
   DrawerContent,
@@ -66,6 +53,12 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import { formatDate } from "@/lib/utils/format";
@@ -431,8 +424,6 @@ function BanUserDialog({
 // Customer Card Component
 function CustomerCard({
   customer,
-  isSelected,
-  onSelect,
   onViewDetails,
   onBanUser,
   onUnbanUser,
@@ -441,8 +432,6 @@ function CustomerCard({
   currentUserRole,
 }: {
   customer: Customer;
-  isSelected: boolean;
-  onSelect: (id: string) => void;
   onViewDetails: (id: string) => void;
   onBanUser: (id: string) => void;
   onUnbanUser: (id: string) => void;
@@ -501,19 +490,6 @@ function CustomerCard({
             Active
           </Badge>
         )}
-      </div>
-
-      {/* Checkbox */}
-      <div
-        className="absolute top-4 left-4 z-10"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <Checkbox
-          checked={isSelected}
-          onCheckedChange={() => onSelect(customer.id)}
-          aria-label={`Select customer ${customer.full_name || customer.email}`}
-          className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-        />
       </div>
 
       <div className="flex items-center space-x-4 mb-4">
@@ -744,10 +720,6 @@ export default function CustomersPage() {
     status: "all",
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [showFilters, setShowFilters] = useState(false);
-  const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [customersToDelete, setCustomersToDelete] = useState<Customer[]>([]);
   const [isBanDialogOpen, setIsBanDialogOpen] = useState(false);
   const [customerToBan, setCustomerToBan] = useState<Customer | null>(null);
   const { isMobile } = useDeviceType();
@@ -821,58 +793,6 @@ export default function CustomersPage() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-  };
-
-  const toggleCustomerSelection = (customerId: string) => {
-    setSelectedCustomers((prev) =>
-      prev.includes(customerId)
-        ? prev.filter((id) => id !== customerId)
-        : [...prev, customerId]
-    );
-  };
-
-  const toggleSelectAllCustomers = () => {
-    if (
-      selectedCustomers.length === currentPageData.length &&
-      currentPageData.length > 0
-    ) {
-      setSelectedCustomers([]);
-    } else {
-      setSelectedCustomers(currentPageData.map((customer) => customer.id));
-    }
-  };
-
-  const clearCustomerSelection = () => {
-    setSelectedCustomers([]);
-  };
-
-  const openDeleteDialog = () => {
-    const customersToConfirm = customers.filter((c) =>
-      selectedCustomers.includes(c.id)
-    );
-    setCustomersToDelete(customersToConfirm);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const handleDeleteCustomers = async () => {
-    if (selectedCustomers.length === 0) return;
-
-    setLoading(true);
-    try {
-      toast.info("User deletion requires admin API. Not implemented.");
-      clearCustomerSelection();
-      fetchCustomers();
-    } catch (error) {
-      console.error("Error deleting customers:", error);
-      toast.error(
-        error instanceof Error
-          ? `Error deleting customers: ${error.message}`
-          : "An unexpected error occurred. Please try again."
-      );
-    } finally {
-      setLoading(false);
-      setIsDeleteDialogOpen(false);
-    }
   };
 
   const handleBanUser = async (customerId: string) => {
@@ -1116,6 +1036,24 @@ export default function CustomersPage() {
                     <SelectItem value="banned">Banned Users</SelectItem>
                   </SelectContent>
                 </Select>
+                <Select
+                  value={filters.sortBy}
+                  onValueChange={(value) =>
+                    updateFilter("sortBy", value as CustomerFilters["sortBy"])
+                  }
+                >
+                  <SelectTrigger className="border-border bg-background">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="date-new">Newest First</SelectItem>
+                    <SelectItem value="date-old">Oldest First</SelectItem>
+                    <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                    <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+                    <SelectItem value="email-asc">Email (A-Z)</SelectItem>
+                    <SelectItem value="email-desc">Email (Z-A)</SelectItem>
+                  </SelectContent>
+                </Select>
                 <div className="flex gap-2 mt-2">
                   <Button
                     variant="outline"
@@ -1167,138 +1105,30 @@ export default function CustomersPage() {
                 <SelectItem value="banned">Banned</SelectItem>
               </SelectContent>
             </Select>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-1 w-full sm:w-auto bg-transparent h-9 border-border hover:bg-accent"
-              onClick={() => setShowFilters(!showFilters)}
+            <Select
+              value={filters.sortBy}
+              onValueChange={(value) =>
+                updateFilter("sortBy", value as CustomerFilters["sortBy"])
+              }
             >
-              <Filter className="h-4 w-4" />
-              Filter
-              {showFilters ? (
-                <ChevronLeft className="ml-1 h-4 w-4" />
-              ) : (
-                <ChevronRight className="ml-1 h-4 w-4" />
-              )}
-            </Button>
+              <SelectTrigger className="w-[160px] border-border bg-background">
+                <SelectValue placeholder="Sort By" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="date-new">Newest First</SelectItem>
+                <SelectItem value="date-old">Oldest First</SelectItem>
+                <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+                <SelectItem value="email-asc">Email (A-Z)</SelectItem>
+                <SelectItem value="email-desc">Email (Z-A)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       )}
 
-      {showFilters && (
-        <Card className="p-4">
-          <CardHeader className="p-0 pb-4">
-            <CardTitle className="text-lg">Advanced Filters</CardTitle>
-            <CardDescription>Refine your customer search.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-0">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="selectAll"
-                checked={
-                  selectedCustomers.length === currentPageData.length &&
-                  currentPageData.length > 0
-                }
-                onCheckedChange={toggleSelectAllCustomers}
-              />
-              <label
-                htmlFor="selectAll"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Select all on this page ({currentPageData.length})
-              </label>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Selection Actions */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {selectedCustomers.length > 0 && (
-            <>
-              <span className="text-sm text-gray-500">
-                {selectedCustomers.length} selected
-              </span>
-              <Dialog
-                open={isDeleteDialogOpen}
-                onOpenChange={setIsDeleteDialogOpen}
-              >
-                <DialogTrigger asChild>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={openDeleteDialog}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete Selected ({selectedCustomers.length})
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="bg-card border-border">
-                  <DialogHeader>
-                    <DialogTitle className="text-foreground">
-                      Confirm Deletion
-                    </DialogTitle>
-                    <DialogDescription className="text-muted-foreground">
-                      Are you sure you want to delete the following{" "}
-                      {customersToDelete.length} customer(s)? This action cannot
-                      be undone.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="max-h-60 overflow-y-auto space-y-2">
-                    {customersToDelete.map((customer) => (
-                      <div
-                        key={customer.id}
-                        className="flex items-center gap-3 p-2 border border-border rounded-md bg-muted/50"
-                      >
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage
-                            src={customer.avatar_url || "/placeholder.svg"}
-                          />
-                          <AvatarFallback className="bg-muted text-muted-foreground">
-                            {customer.full_name?.charAt(0) ||
-                              customer.email.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <span className="font-medium text-foreground">
-                            {customer.full_name || "No name"}
-                          </span>
-                          <div className="text-sm text-muted-foreground">
-                            {customer.email}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <DialogFooter>
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsDeleteDialogOpen(false)}
-                      className="border-border hover:bg-accent"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={handleDeleteCustomers}
-                    >
-                      Delete
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearCustomerSelection}
-                className="border-border hover:bg-accent bg-transparent"
-              >
-                Clear Selection
-              </Button>
-            </>
-          )}
-        </div>
+      {/* Results Count */}
+      <div className="flex items-center justify-end">
         <div className="text-sm text-gray-500">
           {sortedCustomers.length} Results
         </div>
@@ -1316,8 +1146,6 @@ export default function CustomersPage() {
             <CustomerCard
               key={customer.id}
               customer={customer}
-              isSelected={selectedCustomers.includes(customer.id)}
-              onSelect={toggleCustomerSelection}
               onViewDetails={(id) => router.push(`/staff/customers/${id}`)}
               onBanUser={handleBanUser}
               onUnbanUser={handleUnbanUser}
