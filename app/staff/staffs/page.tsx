@@ -32,10 +32,6 @@ import {
   Input,
   Checkbox,
   Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -701,7 +697,6 @@ export default function StaffsPage() {
     status: "all",
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [showFilters, setShowFilters] = useState(false);
   const [selectedStaffs, setSelectedStaffs] = useState<string[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [staffsToDelete, setStaffsToDelete] = useState<Customer[]>([]);
@@ -799,17 +794,6 @@ export default function StaffsPage() {
         ? prev.filter((id) => id !== staffId)
         : [...prev, staffId]
     );
-  };
-
-  const toggleSelectAllStaffs = () => {
-    if (
-      selectedStaffs.length === currentPageData.length &&
-      currentPageData.length > 0
-    ) {
-      setSelectedStaffs([]);
-    } else {
-      setSelectedStaffs(currentPageData.map((staff) => staff.id));
-    }
   };
 
   const clearStaffSelection = () => {
@@ -1052,6 +1036,24 @@ export default function StaffsPage() {
                     <SelectItem value="banned">Banned Staff</SelectItem>
                   </SelectContent>
                 </Select>
+                <Select
+                  value={filters.sortBy}
+                  onValueChange={(value) =>
+                    updateFilter("sortBy", value as StaffFilters["sortBy"])
+                  }
+                >
+                  <SelectTrigger className="border-border bg-background">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="date-new">Newest First</SelectItem>
+                    <SelectItem value="date-old">Oldest First</SelectItem>
+                    <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                    <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+                    <SelectItem value="email-asc">Email (A-Z)</SelectItem>
+                    <SelectItem value="email-desc">Email (Z-A)</SelectItem>
+                  </SelectContent>
+                </Select>
                 <div className="flex gap-2 mt-2">
                   <Button
                     variant="outline"
@@ -1103,49 +1105,26 @@ export default function StaffsPage() {
                 <SelectItem value="banned">Banned</SelectItem>
               </SelectContent>
             </Select>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-1 w-full sm:w-auto bg-transparent h-9 border-border hover:bg-accent"
-              onClick={() => setShowFilters(!showFilters)}
+            <Select
+              value={filters.sortBy}
+              onValueChange={(value) =>
+                updateFilter("sortBy", value as StaffFilters["sortBy"])
+              }
             >
-              <Filter className="h-4 w-4" />
-              Filter
-              {showFilters ? (
-                <ChevronLeft className="ml-1 h-4 w-4" />
-              ) : (
-                <ChevronRight className="ml-1 h-4 w-4" />
-              )}
-            </Button>
+              <SelectTrigger className="w-[160px] border-border bg-background">
+                <SelectValue placeholder="Sort By" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="date-new">Newest First</SelectItem>
+                <SelectItem value="date-old">Oldest First</SelectItem>
+                <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+                <SelectItem value="email-asc">Email (A-Z)</SelectItem>
+                <SelectItem value="email-desc">Email (Z-A)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
-      )}
-
-      {showFilters && (
-        <Card className="p-4">
-          <CardHeader className="p-0 pb-4">
-            <CardTitle className="text-lg">Advanced Filters</CardTitle>
-            <CardDescription>Refine your staff search.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-0">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="selectAll"
-                checked={
-                  selectedStaffs.length === currentPageData.length &&
-                  currentPageData.length > 0
-                }
-                onCheckedChange={toggleSelectAllStaffs}
-              />
-              <label
-                htmlFor="selectAll"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Select all on this page ({currentPageData.length})
-              </label>
-            </div>
-          </CardContent>
-        </Card>
       )}
 
       {/* Selection Actions */}
