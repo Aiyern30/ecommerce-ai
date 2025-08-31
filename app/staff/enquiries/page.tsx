@@ -272,13 +272,6 @@ export default function EnquiriesPage() {
     setVisibleColumns(defaultColumns);
   };
 
-  const clearSavedColumnPreferences = () => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("enquiryTableColumns");
-    }
-    resetColumns();
-  };
-
   const isColumnVisible = (columnKey: string) => {
     return visibleColumns.find((col) => col.key === columnKey)?.visible ?? true;
   };
@@ -308,26 +301,15 @@ export default function EnquiriesPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h4 className="font-semibold text-sm">Toggle Columns</h4>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={resetColumns}
-                      className="text-xs h-6 px-2"
-                      title="Reset to default"
-                    >
-                      Reset
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={clearSavedColumnPreferences}
-                      className="text-xs h-6 px-2 text-red-600 hover:text-red-700"
-                      title="Clear saved preferences"
-                    >
-                      Clear
-                    </Button>
-                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={resetColumns}
+                    className="text-xs h-6 px-2"
+                    title="Reset to default"
+                  >
+                    Reset
+                  </Button>
                 </div>
 
                 <div className="space-y-2 max-h-64 overflow-y-auto">
