@@ -23,6 +23,7 @@ export default function BlogsPage() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [allBlogs, setAllBlogs] = useState<Blog[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
+  console.log("tags", tags);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -45,6 +46,8 @@ export default function BlogsPage() {
       .eq("status", "published")
       .order("created_at", { ascending: false });
 
+    console.log("fetchAllBlogs raw data:", data); // Debug log
+
     if (error) {
       console.error("Failed to fetch blogs:", error.message);
       return [];
@@ -58,47 +61,80 @@ export default function BlogsPage() {
       (blog) => blog.title && blog.blog_images && blog.blog_images.length > 0
     );
 
-    return validBlogs as Blog[];
+    // Transform the data to match our Blog type
+    const transformedBlogs: Blog[] = validBlogs.map((blog: any) => ({
+      id: blog.id,
+      title: blog.title,
+      description: blog.description,
+      status: blog.status,
+      created_at: blog.created_at,
+      updated_at: blog.updated_at,
+      link: blog.link,
+      link_name: blog.link_name,
+      content: blog.content,
+      image_url: blog.image_url,
+      blog_images:
+        blog.blog_images?.map((img: any) => ({
+          image_url: img.image_url,
+        })) || null,
+      blog_tags:
+        blog.blog_tags?.map((blogTag: any) => ({
+          tags: {
+            id: blogTag.tags.id,
+            name: blogTag.tags.name,
+          },
+        })) || null,
+    }));
+
+    console.log("fetchAllBlogs transformed blogs:", transformedBlogs); // Debug log
+    return transformedBlogs;
   };
 
   const fetchTags = async () => {
-    const { data, error } = await supabase
-      .from("tags")
+    // First, get all blogs with their tags
+    const { data: blogsWithTags, error: blogsError } = await supabase
+      .from("blogs")
       .select(
         `
         id,
-        name,
-        blog_tags!inner (
-          blogs!inner (
-            id,
-            status
-          )
-        )
+        status,
+        blog_tags ( tags ( id, name ) )
       `
       )
-      .eq("blog_tags.blogs.status", "published");
+      .eq("status", "published");
 
-    if (error) {
-      console.error("Failed to fetch tags:", error.message);
+    if (blogsError) {
+      console.error("Failed to fetch blogs with tags:", blogsError.message);
       return [];
     }
 
-    // Process tags with counts
+    console.log("blogsWithTags from supabase:", blogsWithTags); // Debug log
+
+    // Count how many blogs each tag appears in
     const tagCounts: {
       [key: string]: { id: string; name: string; count: number };
     } = {};
 
-    data?.forEach((tag: any) => {
-      if (!tagCounts[tag.id]) {
-        tagCounts[tag.id] = {
-          id: tag.id,
-          name: tag.name,
-          count: 0,
-        };
+    blogsWithTags?.forEach((blog: any) => {
+      if (blog.blog_tags && Array.isArray(blog.blog_tags)) {
+        blog.blog_tags.forEach((blogTag: any) => {
+          // blogTag.tags is now a single tag object
+          const tag = blogTag.tags;
+          if (tag && tag.id && tag.name) {
+            if (!tagCounts[tag.id]) {
+              tagCounts[tag.id] = {
+                id: tag.id,
+                name: tag.name,
+                count: 0,
+              };
+            }
+            tagCounts[tag.id].count += 1;
+          }
+        });
       }
-      tagCounts[tag.id].count += tag.blog_tags?.length || 0;
     });
 
+    console.log("Processed tagCounts:", tagCounts); // Debug log
     return Object.values(tagCounts).filter((tag) => tag.count > 0);
   };
 
@@ -124,6 +160,16 @@ export default function BlogsPage() {
 
   // Filter blogs based on selected tags and search query
   const filteredBlogs = useMemo(() => {
+    console.log("Filtering blogs with selectedTags:", selectedTags);
+    console.log(
+      "All blogs structure:",
+      allBlogs.map((blog) => ({
+        id: blog.id,
+        title: blog.title,
+        blog_tags: blog.blog_tags,
+      }))
+    );
+
     let filtered = allBlogs;
 
     // Filter by search query
@@ -137,21 +183,36 @@ export default function BlogsPage() {
       );
     }
 
-    // Filter by selected tags - Fix the structure to match BlogCard data
+    // Filter by selected tags - Fixed structure to match single tag object
     if (selectedTags.length > 0) {
       filtered = filtered.filter((blog) => {
-        if (!blog.blog_tags || blog.blog_tags.length === 0) return false;
-
-        return blog.blog_tags.some((blogTag) => {
-          // blogTag.tags is an array of tag objects
-          if (Array.isArray(blogTag.tags)) {
-            return blogTag.tags.some((tag) => selectedTags.includes(tag.id));
-          }
+        if (!blog.blog_tags || blog.blog_tags.length === 0) {
+          console.log(`Blog ${blog.id} has no blog_tags`);
           return false;
+        }
+
+        // Get all tag IDs from the blog
+        const blogTagIds: string[] = [];
+        blog.blog_tags.forEach((blogTag) => {
+          // blogTag.tags is now a single tag object
+          if (blogTag.tags && blogTag.tags.id) {
+            blogTagIds.push(blogTag.tags.id);
+          }
         });
+
+        console.log(`Blog ${blog.id} has tag IDs:`, blogTagIds);
+
+        // Check if any selected tag matches any blog tag
+        const hasMatch = selectedTags.some((selectedTagId) =>
+          blogTagIds.includes(selectedTagId)
+        );
+
+        console.log(`Blog ${blog.id} matches selected tags:`, hasMatch);
+        return hasMatch;
       });
     }
 
+    console.log("Filtered blogs result:", filtered.length);
     return filtered;
   }, [allBlogs, selectedTags, searchQuery]);
 

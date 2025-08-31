@@ -149,7 +149,7 @@ export default function Wishlist() {
           {blog.blog_tags && blog.blog_tags.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-2">
               {blog.blog_tags
-                .flatMap((bt) => bt.tags)
+                .map((bt) => bt.tags) // Now bt.tags is a single object
                 .slice(0, 2)
                 .map((tag) => (
                   <span
