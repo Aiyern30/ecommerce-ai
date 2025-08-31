@@ -131,7 +131,7 @@ export function BlogCard({ post, onZoomImage }: BlogCardProps) {
           {post.blog_tags && post.blog_tags.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {post.blog_tags
-                .flatMap((bt) => bt.tags)
+                .map((bt) => bt.tags) // Now bt.tags is a single object, not an array
                 .slice(0, 2)
                 .map((tag) => (
                   <span
@@ -141,9 +141,9 @@ export function BlogCard({ post, onZoomImage }: BlogCardProps) {
                     {tag.name}
                   </span>
                 ))}
-              {post.blog_tags.flatMap((bt) => bt.tags).length > 2 && (
+              {post.blog_tags.length > 2 && (
                 <span className="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 px-2 py-0.5 rounded text-xs font-medium">
-                  +{post.blog_tags.flatMap((bt) => bt.tags).length - 2}
+                  +{post.blog_tags.length - 2}
                 </span>
               )}
             </div>

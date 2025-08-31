@@ -133,7 +133,7 @@ export function BlogFilter({
                   <Checkbox
                     id={`tag-${tag.id}`}
                     checked={selectedTags.includes(tag.id)}
-                    onChange={() => handleTagToggle(tag.id)}
+                    onCheckedChange={() => handleTagToggle(tag.id)}
                   />
                   <label
                     htmlFor={`tag-${tag.id}`}
