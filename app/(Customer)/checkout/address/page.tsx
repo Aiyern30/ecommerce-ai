@@ -36,7 +36,6 @@ export default function CheckoutAddressPage() {
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Additional services and localStorage state
   const [additionalServices, setAdditionalServices] = useState<
     AdditionalService[]
   >([]);
@@ -47,24 +46,20 @@ export default function CheckoutAddressPage() {
 
   const selectedItems = cartItems.filter((item) => item.selected);
 
-  // Calculate total volume of selected items
   const totalVolume = selectedItems.reduce(
     (sum, item) => sum + item.quantity,
     0
   );
 
-  // Fetch additional services and freight charges
   useEffect(() => {
     const fetchServicesAndCharges = async () => {
       try {
-        // Fetch additional services
         const { data: services, error: servicesError } = await supabase
           .from("additional_services")
           .select("*")
           .eq("is_active", true)
           .order("service_name");
 
-        // Fetch freight charges
         const { data: charges, error: chargesError } = await supabase
           .from("freight_charges")
           .select("*")
@@ -83,7 +78,6 @@ export default function CheckoutAddressPage() {
           setFreightCharges(charges || []);
         }
 
-        // Load selected services from localStorage (use SelectedServiceDetails type)
         const savedServices = localStorage.getItem("selectedServices");
         if (savedServices) {
           try {
@@ -120,7 +114,6 @@ export default function CheckoutAddressPage() {
 
       setAddresses(data || []);
 
-      // Auto-select default address or first address
       const defaultAddress = data?.find((addr) => addr.is_default);
       if (defaultAddress) {
         setSelectedAddressId(defaultAddress.id);
@@ -141,7 +134,6 @@ export default function CheckoutAddressPage() {
       return;
     }
 
-    // Check if user has selected items
     if (!cartLoading && selectedItems.length === 0) {
       toast.error("Please select items from your cart first");
       router.push("/cart");
@@ -157,7 +149,7 @@ export default function CheckoutAddressPage() {
 
   const handleEditAddress = (address: Address) => {
     setEditingAddressId(address.id);
-    setShowAddForm(false); // Close the top form if it's open
+    setShowAddForm(false);
   };
 
   const handleDeleteAddress = async (addressId: string) => {
@@ -171,7 +163,6 @@ export default function CheckoutAddressPage() {
 
       setAddresses((prev) => prev.filter((addr) => addr.id !== addressId));
 
-      // If the deleted address was selected, select another one
       if (selectedAddressId === addressId) {
         const remainingAddresses = addresses.filter(
           (addr) => addr.id !== addressId
@@ -186,7 +177,6 @@ export default function CheckoutAddressPage() {
         }
       }
 
-      // Cancel editing if the deleted address was being edited
       if (editingAddressId === addressId) {
         setEditingAddressId(null);
       }
@@ -311,21 +301,21 @@ export default function CheckoutAddressPage() {
     <div className="container mx-auto px-4 pt-0 pb-4">
       <div className="flex items-center justify-between">
         <TypographyH1 className="my-8">SHIPPING ADDRESS</TypographyH1>
-        <Link href="/cart">
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Cart
-          </Button>
-        </Link>
+        <div className="hidden md:block">
+          <Link href="/cart">
+            <Button variant="outline" size="sm">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Cart
+            </Button>
+          </Link>
+        </div>
       </div>
       <div className="mb-8">
         <CheckoutStepper currentStep={2} />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Address Selection */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Add New Address Button */}
-          <div className="flex justify-between items-center">
+          <div className="space-y-4">
             <TypographyH3 className="flex items-center gap-2">
               <MapPin className="h-5 w-5" />
               Choose Shipping Address
@@ -336,7 +326,7 @@ export default function CheckoutAddressPage() {
                 setEditingAddressId(null);
                 setShowAddForm(!showAddForm);
               }}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-2 w-full md:w-auto md:ml-auto"
             >
               {showAddForm ? (
                 <>
@@ -352,7 +342,6 @@ export default function CheckoutAddressPage() {
             </Button>
           </div>
 
-          {/* Add New Address Form (only for new addresses) */}
           {showAddForm && !editingAddressId && (
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
               <TypographyH3 className="mb-4">Add New Address</TypographyH3>
@@ -363,7 +352,6 @@ export default function CheckoutAddressPage() {
             </div>
           )}
 
-          {/* Address List */}
           {addresses.length === 0 ? (
             <div className="bg-white dark:bg-gray-800 rounded-lg p-8 shadow-sm border text-center">
               <MapPin className="h-12 w-12 mx-auto mb-4 text-gray-400" />
@@ -392,7 +380,6 @@ export default function CheckoutAddressPage() {
                     isEditing={editingAddressId === address.id}
                   />
 
-                  {/* Inline Edit Form */}
                   {editingAddressId === address.id && (
                     <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6 border-l-4 border-blue-500 shadow-sm animate-in slide-in-from-top-2 duration-200">
                       <div className="flex items-center justify-between mb-4">
@@ -421,7 +408,6 @@ export default function CheckoutAddressPage() {
             </div>
           )}
 
-          {/* Continue Button (desktop only) */}
           {addresses.length > 0 && (
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border hidden lg:block">
               <Button
@@ -440,7 +426,6 @@ export default function CheckoutAddressPage() {
             </div>
           )}
         </div>
-        {/* Order Summary */}
         <div className="lg:col-span-1">
           <div className="sticky top-6 z-10">
             <CheckoutSummary
@@ -449,7 +434,6 @@ export default function CheckoutAddressPage() {
               additionalServices={additionalServices}
               freightCharges={freightCharges}
             />
-            {/* Continue Button (mobile only) */}
             {addresses.length > 0 && (
               <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border mt-6 block lg:hidden">
                 <Button

@@ -41,7 +41,6 @@ export default function Cart() {
   const [itemToDelete, setItemToDelete] = useState<CartItem | null>(null);
   const [inputQty, setInputQty] = useState<{ [id: string]: string }>({});
 
-  // Sync inputQty state with cartItems when cartItems change
   useEffect(() => {
     const qtyState: { [id: string]: string } = {};
     cartItems.forEach((item) => {
@@ -52,7 +51,6 @@ export default function Cart() {
 
   const updateQuantity = async (itemId: string, newQuantity: number) => {
     if (newQuantity < 1) {
-      // If quantity would be 0, show delete confirmation instead
       const item = cartItems.find((item) => item.id === itemId);
       if (item) {
         handleDeleteClick(item);
@@ -77,7 +75,6 @@ export default function Cart() {
     }
   };
 
-  // Calculate subtotal using the correct prices based on variant_type
   const subtotal = cartItems.reduce((sum, item) => {
     const price = getProductPrice(item.product, item.variant_type);
     return sum + price * item.quantity;
@@ -108,7 +105,6 @@ export default function Cart() {
             )}
           </SheetHeader>
 
-          {/* Make this div scrollable */}
           <div className="flex-1 min-h-0 flex flex-col">
             <div className="flex-1 min-h-0 overflow-y-auto">
               <ScrollArea className="flex-1">
@@ -160,7 +156,6 @@ export default function Cart() {
                 ) : (
                   <div className="space-y-4">
                     {cartItems.map((item) => {
-                      // Get the correct price based on variant_type
                       const itemPrice = getProductPrice(
                         item.product,
                         item.variant_type
@@ -173,7 +168,6 @@ export default function Cart() {
                           key={item.id}
                           className="flex flex-col gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-900/30 rounded-lg transition-colors"
                         >
-                          {/* Product Info Row */}
                           <div className="flex gap-3">
                             <div className="h-16 w-16 bg-gray-100 rounded-lg overflow-hidden shrink-0">
                               <Image
@@ -211,7 +205,6 @@ export default function Cart() {
                             </div>
                           </div>
 
-                          {/* Controls Row */}
                           <div className="flex items-center justify-between pt-2 ">
                             <div className="flex items-center border rounded-lg">
                               <Button
@@ -224,7 +217,6 @@ export default function Cart() {
                               >
                                 <Minus className="h-3 w-3" />
                               </Button>
-                              {/* Number input for quantity */}
                               <input
                                 type="number"
                                 min={1}
@@ -291,7 +283,6 @@ export default function Cart() {
               </ScrollArea>
             </div>
 
-            {/* Cart Footer */}
             {user && cartItems.length > 0 && (
               <div className="border-t p-4 space-y-4 bg-gray-50 dark:bg-gray-900/30">
                 <div className="flex justify-between items-center">
@@ -319,7 +310,6 @@ export default function Cart() {
         </SheetContent>
       </Sheet>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
