@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Minus, Plus, Trash2, ShoppingCart, Info, Check } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingCart, Info } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -847,25 +847,7 @@ export default function CartPage() {
                                         MozAppearance: "textfield",
                                       }}
                                     />
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        let val = parseInt(itemInputQty, 10);
-                                        if (isNaN(val) || val < 1) val = 1;
-                                        if (val !== item.quantity) {
-                                          updateQuantity(item.id, val);
-                                        }
-                                        setInputQty((prev) => ({
-                                          ...prev,
-                                          [item.id]: String(val),
-                                        }));
-                                      }}
-                                      className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-all duration-200"
-                                      aria-label="Confirm quantity"
-                                    >
-                                      <Check className="h-4 w-4" />
-                                    </button>
+
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
