@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/";
 import { BlogCard } from "@/components/BlogCards";
 import { BlogFilter } from "@/components/BlogFilter";
 import { useDeviceType } from "@/utils/useDeviceTypes";
+import { TypographyH1 } from "@/components/ui/Typography";
 
 interface Tag {
   id: string;
@@ -216,9 +217,9 @@ export default function BlogsPage() {
   }, [loadInitialData]);
 
   return (
-    <section className="py-16">
+    <div className="min-h-screen mb-4">
       <div className="container mx-auto px-4">
-        <h2 className="mb-8 text-center text-3xl font-bold">All Blogs</h2>
+        <TypographyH1 className="my-8">ALL BLOGS</TypographyH1>
 
         <div
           className={`${
@@ -384,6 +385,6 @@ export default function BlogsPage() {
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
