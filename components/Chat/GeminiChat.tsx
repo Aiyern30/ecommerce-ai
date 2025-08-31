@@ -554,6 +554,7 @@ export default function GeminiChat({
                           onKeyDown={(e) => {
                             if (e.key === "Enter") handleQtyUpdate(item);
                           }}
+                          onBlur={() => handleQtyUpdate(item)}
                           className="w-10 text-center text-sm font-medium bg-transparent outline-none"
                           style={{ appearance: "textfield" }}
                         />
@@ -564,15 +565,6 @@ export default function GeminiChat({
                           onClick={() => handleQtyStep(item, 1)}
                         >
                           <Plus className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7"
-                          onClick={() => handleQtyUpdate(item)}
-                          aria-label="Update quantity"
-                        >
-                          ✓
                         </Button>
                       </div>
                       <Button
