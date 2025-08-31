@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Wishlist, WishlistWithItem } from "@/types/wishlist";
 import type { Blog } from "@/type/blogs";
 import type { Product } from "@/type/product";
@@ -85,7 +86,7 @@ export async function getUserWishlists(
       .filter((item) => item.item_type === "product")
       .map((item) => item.item_id);
 
-    // Fetch blogs if any - include all required fields
+    // Fetch blogs if any - include all required fields and transform data structure
     let blogsData: Blog[] = [];
     if (blogIds.length > 0) {
       const { data, error } = await supabase
@@ -101,14 +102,37 @@ export async function getUserWishlists(
           link,
           link_name,
           content,
+          image_url,
           blog_images(image_url),
-          blog_tags(tags(*))
+          blog_tags(tags(id, name))
         `
         )
         .in("id", blogIds);
 
       if (!error && data) {
-        blogsData = data as Blog[];
+        blogsData = data.map((blog: any) => ({
+          id: blog.id,
+          title: blog.title,
+          description: blog.description,
+          status: blog.status,
+          created_at: blog.created_at,
+          updated_at: blog.updated_at,
+          link: blog.link,
+          link_name: blog.link_name,
+          content: blog.content,
+          image_url: blog.image_url,
+          blog_images:
+            blog.blog_images?.map((img: any) => ({
+              image_url: img.image_url,
+            })) || null,
+          blog_tags:
+            blog.blog_tags?.map((blogTag: any) => ({
+              tags: {
+                id: blogTag.tags.id,
+                name: blogTag.tags.name,
+              },
+            })) || null,
+        }));
       }
     }
 
