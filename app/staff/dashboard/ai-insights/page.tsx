@@ -320,12 +320,173 @@ export default function AIInsightsPage() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+            <div className="space-y-6">
+              {/* AI Processing Header */}
+              <div className="text-center py-4">
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <div className="relative">
+                    <Brain className="w-8 h-8 text-blue-600 animate-pulse" />
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-ping"></div>
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      AI is Analyzing Your Data
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Generating predictive insights and recommendations...
+                    </p>
+                  </div>
                 </div>
-              ))}
+
+                {/* Progress Indicator */}
+                <div className="w-64 mx-auto bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-4">
+                  <div
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full animate-pulse"
+                    style={{ width: "70%" }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* AI Processing Steps */}
+              <div className="grid gap-4">
+                {[
+                  {
+                    step: "Analyzing inventory patterns...",
+                    icon: "📊",
+                    delay: "0s",
+                  },
+                  {
+                    step: "Processing sales trends...",
+                    icon: "📈",
+                    delay: "1s",
+                  },
+                  {
+                    step: "Generating predictions...",
+                    icon: "🔮",
+                    delay: "2s",
+                  },
+                ].map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 rounded-lg border border-blue-200 dark:border-blue-800/50"
+                    style={{ animationDelay: item.delay }}
+                  >
+                    <div
+                      className="text-2xl animate-bounce"
+                      style={{ animationDelay: item.delay }}
+                    >
+                      {item.icon}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {item.step}
+                        </span>
+                        <div className="flex gap-1">
+                          <div
+                            className="w-1 h-1 bg-blue-500 rounded-full animate-pulse"
+                            style={{ animationDelay: "0s" }}
+                          ></div>
+                          <div
+                            className="w-1 h-1 bg-blue-500 rounded-full animate-pulse"
+                            style={{ animationDelay: "0.2s" }}
+                          ></div>
+                          <div
+                            className="w-1 h-1 bg-blue-500 rounded-full animate-pulse"
+                            style={{ animationDelay: "0.4s" }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Mock Alert Cards Being Generated */}
+              <div className="space-y-4 mt-6">
+                <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-yellow-500 animate-pulse" />
+                  Generating alerts...
+                </div>
+
+                {[1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="relative overflow-hidden rounded-xl border-2 border-dashed border-blue-300 dark:border-blue-700 bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-950/20 dark:to-purple-950/20"
+                  >
+                    <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500 to-purple-600 animate-pulse"></div>
+
+                    <div className="p-6 pl-8">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 space-y-3">
+                          {/* Badges skeleton */}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <div className="h-5 bg-gradient-to-r from-blue-300 to-purple-300 rounded-full w-20 animate-pulse"></div>
+                            <div className="h-5 bg-gradient-to-r from-gray-300 to-gray-400 rounded-full w-16 animate-pulse"></div>
+                            <div className="h-5 bg-gradient-to-r from-yellow-300 to-orange-300 rounded-full w-24 animate-pulse"></div>
+                          </div>
+
+                          {/* Title skeleton */}
+                          <div className="space-y-2">
+                            <div className="h-6 bg-gradient-to-r from-gray-400 to-gray-500 rounded w-3/4 animate-pulse"></div>
+                            <div className="h-4 bg-gradient-to-r from-blue-400 to-blue-500 rounded w-1/2 animate-pulse"></div>
+                          </div>
+
+                          {/* Content skeleton */}
+                          <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-3 border border-dashed border-gray-300 dark:border-gray-600">
+                            <div className="space-y-2">
+                              <div className="h-3 bg-gradient-to-r from-gray-300 to-gray-400 rounded w-full animate-pulse"></div>
+                              <div className="h-3 bg-gradient-to-r from-gray-300 to-gray-400 rounded w-5/6 animate-pulse"></div>
+                              <div className="h-3 bg-gradient-to-r from-gray-300 to-gray-400 rounded w-4/6 animate-pulse"></div>
+                            </div>
+                          </div>
+
+                          {/* Action buttons skeleton */}
+                          <div className="flex gap-2 pt-2">
+                            <div className="h-8 bg-gradient-to-r from-blue-400 to-blue-500 rounded w-24 animate-pulse"></div>
+                            <div className="h-8 bg-gradient-to-r from-gray-400 to-gray-500 rounded w-20 animate-pulse"></div>
+                          </div>
+                        </div>
+
+                        {/* Priority indicator skeleton */}
+                        <div className="flex flex-col items-center space-y-2">
+                          <div className="relative w-12 h-12 rounded-full bg-gradient-to-r from-yellow-300 to-orange-300 animate-pulse flex items-center justify-center">
+                            <Bell className="w-6 h-6 text-white animate-pulse" />
+                          </div>
+                          <div className="text-center">
+                            <div className="h-3 bg-gradient-to-r from-gray-400 to-gray-500 rounded w-12 animate-pulse mb-1"></div>
+                            <div className="h-2 bg-gradient-to-r from-gray-300 to-gray-400 rounded w-10 animate-pulse"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* AI Processing Footer */}
+              <div className="text-center py-4 border-t border-dashed border-gray-300 dark:border-gray-600">
+                <div className="flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <div className="flex gap-1">
+                    <div
+                      className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"
+                      style={{ animationDelay: "0s" }}
+                    ></div>
+                    <div
+                      className="w-2 h-2 bg-purple-500 rounded-full animate-bounce"
+                      style={{ animationDelay: "0.2s" }}
+                    ></div>
+                    <div
+                      className="w-2 h-2 bg-green-500 rounded-full animate-bounce"
+                      style={{ animationDelay: "0.4s" }}
+                    ></div>
+                  </div>
+                  <span className="font-medium">
+                    AI processing complete in a few moments
+                  </span>
+                </div>
+              </div>
             </div>
           ) : predictiveAlerts.length === 0 ? (
             <div className="text-center py-8 space-y-4">
