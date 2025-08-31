@@ -1,26 +1,37 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react/no-unescaped-entities */
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { supabase } from "@/lib/supabase/client";
 import type { Blog } from "@/type/blogs";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/";
 import { Skeleton } from "@/components/ui/";
 import { Button } from "@/components/ui/";
 import { BlogCard } from "@/components/BlogCards";
+import { BlogFilter } from "@/components/BlogFilter";
+import { useDeviceType } from "@/utils/useDeviceTypes";
+
+interface Tag {
+  id: string;
+  name: string;
+  count: number;
+}
 
 export default function BlogsPage() {
+  const { isMobile } = useDeviceType();
   const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [allBlogs, setAllBlogs] = useState<Blog[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const LIMIT = 4;
+  const LIMIT = 8;
 
-  const fetchBlogs = async (pageNumber: number) => {
-    const from = pageNumber * LIMIT;
-    const to = from + LIMIT - 1;
-
+  const fetchAllBlogs = async () => {
     const { data, error } = await supabase
       .from("blogs")
       .select(
@@ -32,8 +43,7 @@ export default function BlogsPage() {
       `
       )
       .eq("status", "published")
-      .order("created_at", { ascending: false })
-      .range(from, to);
+      .order("created_at", { ascending: false });
 
     if (error) {
       console.error("Failed to fetch blogs:", error.message);
@@ -51,119 +61,298 @@ export default function BlogsPage() {
     return validBlogs as Blog[];
   };
 
-  const loadInitialBlogs = useCallback(async () => {
+  const fetchTags = async () => {
+    const { data, error } = await supabase
+      .from("tags")
+      .select(
+        `
+        id,
+        name,
+        blog_tags!inner (
+          blogs!inner (
+            id,
+            status
+          )
+        )
+      `
+      )
+      .eq("blog_tags.blogs.status", "published");
+
+    if (error) {
+      console.error("Failed to fetch tags:", error.message);
+      return [];
+    }
+
+    // Process tags with counts
+    const tagCounts: {
+      [key: string]: { id: string; name: string; count: number };
+    } = {};
+
+    data?.forEach((tag: any) => {
+      if (!tagCounts[tag.id]) {
+        tagCounts[tag.id] = {
+          id: tag.id,
+          name: tag.name,
+          count: 0,
+        };
+      }
+      tagCounts[tag.id].count += tag.blog_tags?.length || 0;
+    });
+
+    return Object.values(tagCounts).filter((tag) => tag.count > 0);
+  };
+
+  const loadInitialData = useCallback(async () => {
     setLoading(true);
-    const newBlogs = await fetchBlogs(0);
-    setBlogs(newBlogs);
-    setHasMore(newBlogs.length === LIMIT);
-    setLoading(false);
-  }, [LIMIT]);
+    try {
+      const [blogsData, tagsData] = await Promise.all([
+        fetchAllBlogs(),
+        fetchTags(),
+      ]);
+
+      setAllBlogs(blogsData);
+      setBlogs(blogsData.slice(0, LIMIT));
+      setTags(tagsData);
+      setHasMore(blogsData.length > LIMIT);
+      setPage(0);
+    } catch (error) {
+      console.error("Error loading initial data:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Filter blogs based on selected tags and search query
+  const filteredBlogs = useMemo(() => {
+    let filtered = allBlogs;
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (blog) =>
+          blog.title.toLowerCase().includes(query) ||
+          blog.description?.toLowerCase().includes(query) ||
+          (blog.content && blog.content.toLowerCase().includes(query))
+      );
+    }
+
+    // Filter by selected tags - Fix the structure to match BlogCard data
+    if (selectedTags.length > 0) {
+      filtered = filtered.filter((blog) => {
+        if (!blog.blog_tags || blog.blog_tags.length === 0) return false;
+
+        return blog.blog_tags.some((blogTag) => {
+          // blogTag.tags is an array of tag objects
+          if (Array.isArray(blogTag.tags)) {
+            return blogTag.tags.some((tag) => selectedTags.includes(tag.id));
+          }
+          return false;
+        });
+      });
+    }
+
+    return filtered;
+  }, [allBlogs, selectedTags, searchQuery]);
+
+  // Update displayed blogs when filters change
+  useEffect(() => {
+    const initialBlogs = filteredBlogs.slice(0, LIMIT);
+    setBlogs(initialBlogs);
+    setHasMore(filteredBlogs.length > LIMIT);
+    setPage(0);
+  }, [filteredBlogs]);
 
   const loadMore = async () => {
     if (loadingMore || !hasMore) return;
 
     setLoadingMore(true);
     const nextPage = page + 1;
-    const newBlogs = await fetchBlogs(nextPage);
+    const from = nextPage * LIMIT;
+    const to = from + LIMIT;
+
+    const newBlogs = filteredBlogs.slice(from, to);
 
     if (newBlogs.length > 0) {
-      setBlogs((prev) => {
-        const existingIds = new Set(prev.map((b) => b.id));
-        const uniqueNew = newBlogs.filter((b) => !existingIds.has(b.id));
-        return [...prev, ...uniqueNew];
-      });
+      setBlogs((prev) => [...prev, ...newBlogs]);
       setPage(nextPage);
     }
 
-    setHasMore(newBlogs.length === LIMIT);
+    setHasMore(filteredBlogs.length > to);
     setLoadingMore(false);
   };
 
   useEffect(() => {
-    loadInitialBlogs();
-  }, [loadInitialBlogs]);
+    loadInitialData();
+  }, [loadInitialData]);
 
   return (
     <section className="py-16">
       <div className="container mx-auto px-4">
         <h2 className="mb-8 text-center text-3xl font-bold">All Blogs</h2>
 
-        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {blogs.map((post) => (
-            <BlogCard key={post.id} post={post} />
-          ))}
+        <div
+          className={`${isMobile ? "space-y-6" : "grid gap-8 lg:grid-cols-4"}`}
+        >
+          {/* Filter Sidebar */}
+          <div className={isMobile ? "" : "lg:col-span-1"}>
+            <BlogFilter
+              tags={tags}
+              selectedTags={selectedTags}
+              onTagsChange={setSelectedTags}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              totalBlogs={allBlogs.length}
+              filteredBlogs={filteredBlogs.length}
+            />
+          </div>
+
+          {/* Blogs Grid */}
+          <div className={isMobile ? "" : "lg:col-span-3"}>
+            {/* Results header */}
+            {!loading && (selectedTags.length > 0 || searchQuery.trim()) && (
+              <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  Showing{" "}
+                  <span className="font-medium">{filteredBlogs.length}</span> of{" "}
+                  <span className="font-medium">{allBlogs.length}</span> blogs
+                  {selectedTags.length > 0 && <span> with selected tags</span>}
+                  {searchQuery.trim() && <span> matching "{searchQuery}"</span>}
+                </p>
+              </div>
+            )}
+
+            <div
+              className={`grid gap-6 ${
+                isMobile
+                  ? "grid-cols-1"
+                  : "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+              }`}
+            >
+              {blogs.map((post) => (
+                <BlogCard key={post.id} post={post} />
+              ))}
+            </div>
+
+            {/* Initial loading skeleton */}
+            {loading && (
+              <div
+                className={`grid gap-6 ${
+                  isMobile
+                    ? "grid-cols-1"
+                    : "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+                } mt-6`}
+              >
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <Card key={i} className="overflow-hidden p-0">
+                    <CardHeader className="p-0 relative h-52">
+                      <Skeleton className="absolute inset-0 w-full h-full rounded-t-lg" />
+                    </CardHeader>
+                    <CardContent className="p-4 space-y-2">
+                      <Skeleton className="h-4 w-1/3" />
+                      <Skeleton className="h-5 w-3/4" />
+                      <Skeleton className="h-3 w-full" />
+                      <Skeleton className="h-3 w-5/6" />
+                    </CardContent>
+                    <CardFooter className="px-4 pb-4">
+                      <Skeleton className="h-4 w-24" />
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            )}
+
+            {/* Load more skeleton */}
+            {loadingMore && (
+              <div
+                className={`grid gap-6 ${
+                  isMobile
+                    ? "grid-cols-1"
+                    : "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+                } mt-6`}
+              >
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Card key={`loading-${i}`} className="overflow-hidden p-0">
+                    <CardHeader className="p-0 relative h-52">
+                      <Skeleton className="absolute inset-0 w-full h-full rounded-t-lg" />
+                    </CardHeader>
+                    <CardContent className="p-4 space-y-2">
+                      <Skeleton className="h-4 w-1/3" />
+                      <Skeleton className="h-5 w-3/4" />
+                      <Skeleton className="h-3 w-full" />
+                      <Skeleton className="h-3 w-5/6" />
+                    </CardContent>
+                    <CardFooter className="px-4 pb-4">
+                      <Skeleton className="h-4 w-24" />
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            )}
+
+            {/* Load More Button */}
+            {!loading && !loadingMore && hasMore && blogs.length > 0 && (
+              <div className="mt-8 text-center">
+                <Button onClick={loadMore} className="bg-blue-700 text-white">
+                  Load More ({filteredBlogs.length - blogs.length} remaining)
+                </Button>
+              </div>
+            )}
+
+            {/* No more blogs message */}
+            {!loading && !loadingMore && !hasMore && blogs.length > 0 && (
+              <div className="mt-8 text-center">
+                <p className="text-gray-500 dark:text-gray-400">
+                  {filteredBlogs.length === allBlogs.length
+                    ? "You've reached the end of our blog posts."
+                    : `Showing all ${filteredBlogs.length} filtered results.`}
+                </p>
+              </div>
+            )}
+
+            {/* No blogs found */}
+            {!loading && filteredBlogs.length === 0 && (
+              <div className="text-center py-12">
+                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg
+                    className="h-12 w-12 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  No blogs found
+                </h3>
+                <p className="text-gray-600 max-w-md mx-auto">
+                  {selectedTags.length > 0 || searchQuery.trim()
+                    ? "Try adjusting your filters or search query to find more blogs."
+                    : "No blog posts are available at the moment. Check back later!"}
+                </p>
+                {(selectedTags.length > 0 || searchQuery.trim()) && (
+                  <div className="mt-4 space-x-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedTags([]);
+                        setSearchQuery("");
+                      }}
+                    >
+                      Clear Filters
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-
-        {/* Initial loading skeleton */}
-        {loading && (
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-6">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i} className="overflow-hidden p-0">
-                <CardHeader className="p-0 relative h-52">
-                  <Skeleton className="absolute inset-0 w-full h-full rounded-t-lg" />
-                </CardHeader>
-                <CardContent className="p-4 space-y-2">
-                  <Skeleton className="h-4 w-1/3" />
-                  <Skeleton className="h-5 w-3/4" />
-                  <Skeleton className="h-3 w-full" />
-                  <Skeleton className="h-3 w-5/6" />
-                </CardContent>
-                <CardFooter className="px-4 pb-4">
-                  <Skeleton className="h-4 w-24" />
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {/* Load more skeleton */}
-        {loadingMore && (
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-6">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Card key={`loading-${i}`} className="overflow-hidden p-0">
-                <CardHeader className="p-0 relative h-52">
-                  <Skeleton className="absolute inset-0 w-full h-full rounded-t-lg" />
-                </CardHeader>
-                <CardContent className="p-4 space-y-2">
-                  <Skeleton className="h-4 w-1/3" />
-                  <Skeleton className="h-5 w-3/4" />
-                  <Skeleton className="h-3 w-full" />
-                  <Skeleton className="h-3 w-5/6" />
-                </CardContent>
-                <CardFooter className="px-4 pb-4">
-                  <Skeleton className="h-4 w-24" />
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {/* Load More Button - Only show if not loading initially, not loading more, and has more blogs */}
-        {!loading && !loadingMore && hasMore && blogs.length > 0 && (
-          <div className="mt-8 text-center">
-            <Button onClick={loadMore} className="bg-blue-700 text-white">
-              Load More
-            </Button>
-          </div>
-        )}
-
-        {/* No more blogs message */}
-        {!loading && !loadingMore && !hasMore && blogs.length > 0 && (
-          <div className="mt-8 text-center">
-            <p className="text-gray-500 dark:text-gray-400">
-              You've reached the end of our blog posts.
-            </p>
-          </div>
-        )}
-
-        {/* No blogs found */}
-        {!loading && blogs.length === 0 && (
-          <div className="mt-8 text-center">
-            <p className="text-gray-500 dark:text-gray-400">
-              No blog posts found.
-            </p>
-          </div>
-        )}
       </div>
     </section>
   );
