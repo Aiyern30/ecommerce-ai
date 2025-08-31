@@ -226,13 +226,13 @@ export default function PostsPage() {
       }
     }
 
-    // Default configuration if no saved state
+    // Default configuration if no saved state - ALL COLUMNS VISIBLE
     return [
       { key: "select", label: "Select", visible: true, required: true },
       { key: "image", label: "Image", visible: true },
       { key: "title", label: "Title", visible: true, required: true },
       { key: "description", label: "Description", visible: true },
-      { key: "mobile_desc", label: "Mobile Desc", visible: false },
+      { key: "mobile_desc", label: "Mobile Desc", visible: true },
       { key: "status", label: "Status", visible: true },
       { key: "link", label: "Link", visible: true },
       { key: "created", label: "Created", visible: true },
@@ -469,7 +469,7 @@ export default function PostsPage() {
       { key: "image", label: "Image", visible: true },
       { key: "title", label: "Title", visible: true, required: true },
       { key: "description", label: "Description", visible: true },
-      { key: "mobile_desc", label: "Mobile Desc", visible: false },
+      { key: "mobile_desc", label: "Mobile Desc", visible: true },
       { key: "status", label: "Status", visible: true },
       { key: "link", label: "Link", visible: true },
       { key: "created", label: "Created", visible: true },

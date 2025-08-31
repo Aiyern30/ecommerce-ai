@@ -234,13 +234,13 @@ export default function Page() {
       }
     }
 
-    // Default configuration if no saved state
+    // Default configuration if no saved state - ALL COLUMNS VISIBLE
     return [
       { key: "select", label: "Select", visible: true, required: true },
       { key: "image", label: "Image", visible: true },
       { key: "title", label: "Title", visible: true, required: true },
       { key: "description", label: "Description", visible: true },
-      { key: "content", label: "Content", visible: false },
+      { key: "content", label: "Content", visible: true },
       { key: "status", label: "Status", visible: true },
       { key: "tags", label: "Tags", visible: true },
       { key: "link", label: "Link", visible: true },
@@ -473,7 +473,7 @@ export default function Page() {
       { key: "image", label: "Image", visible: true },
       { key: "title", label: "Title", visible: true, required: true },
       { key: "description", label: "Description", visible: true },
-      { key: "content", label: "Content", visible: false },
+      { key: "content", label: "Content", visible: true },
       { key: "status", label: "Status", visible: true },
       { key: "tags", label: "Tags", visible: true },
       { key: "link", label: "Link", visible: true },
