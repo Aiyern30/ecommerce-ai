@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import {
   ChevronLeft,
@@ -125,6 +125,9 @@ function ProductTableSkeleton() {
                 </TableCell>
                 <TableCell>
                   <Skeleton className="h-4 w-16 rounded" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-20 rounded" />
                 </TableCell>
                 <TableCell>
                   <Skeleton className="h-4 w-20 rounded" />
@@ -545,6 +548,17 @@ export default function ProductsPage() {
     return visibleColumns.find((col) => col.key === columnKey)?.visible ?? true;
   };
 
+  const uniqueProductTypes = useMemo(() => {
+    const types = products
+      .map((product) => product.product_type)
+      .filter((type) => type && type.trim() !== "")
+      .map((type) => type.toLowerCase())
+      .filter((type, index, arr) => arr.indexOf(type) === index)
+      .sort();
+
+    return types.map((type) => type.charAt(0).toUpperCase() + type.slice(1));
+  }, [products]);
+
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex items-center justify-between">
@@ -588,12 +602,18 @@ export default function ProductsPage() {
                   onValueChange={(value) => updateFilter("productType", value)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="productType" />
+                    <SelectValue placeholder="Product Type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Product Type</SelectItem>
-                    <SelectItem value="bagged">Cement</SelectItem>
-                    <SelectItem value="mortar">Mortar</SelectItem>
+                    <SelectItem value="all">All Product Types</SelectItem>
+                    {uniqueProductTypes.map((type) => (
+                      <SelectItem
+                        key={type.toLowerCase()}
+                        value={type.toLowerCase()}
+                      >
+                        {type}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <Select
@@ -732,12 +752,18 @@ export default function ProductsPage() {
               }}
             >
               <SelectTrigger className="w-full sm:w-[180px] h-9">
-                <SelectValue placeholder="productType" />
+                <SelectValue placeholder="Product Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Product Type</SelectItem>
-                <SelectItem value="concrete">Concrete</SelectItem>
-                <SelectItem value="mortar">Mortar</SelectItem>
+                <SelectItem value="all">All Product Types</SelectItem>
+                {uniqueProductTypes.map((type) => (
+                  <SelectItem
+                    key={type.toLowerCase()}
+                    value={type.toLowerCase()}
+                  >
+                    {type}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Select
@@ -922,7 +948,6 @@ export default function ProductsPage() {
             {sortedProducts.length} Results
           </div>
 
-          {/* Column Filter Button */}
           <Popover>
             <PopoverTrigger asChild>
               <Button
