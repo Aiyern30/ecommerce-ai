@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search, FileText } from "lucide-react";
+import { Search, FileText, Columns } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   Button,
@@ -19,6 +19,10 @@ import {
   SelectValue,
   SelectContent,
   SelectItem,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Checkbox,
 } from "@/components/ui/";
 import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import { Enquiry } from "@/type/enquiries";
@@ -110,6 +114,13 @@ function NoEnquiryResultsState({
   );
 }
 
+interface ColumnConfig {
+  key: string;
+  label: string;
+  visible: boolean;
+  required?: boolean;
+}
+
 export default function EnquiriesPage() {
   const router = useRouter();
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
@@ -119,7 +130,41 @@ export default function EnquiriesPage() {
   const [status, setStatus] = useState<"all" | "open" | "pending" | "closed">(
     "all"
   );
-  const itemsPerPage = 10;
+
+  // Initialize column visibility from localStorage or defaults
+  const [visibleColumns, setVisibleColumns] = useState<ColumnConfig[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("enquiryTableColumns");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (error) {
+          console.error("Error parsing saved column config:", error);
+        }
+      }
+    }
+
+    // Default configuration if no saved state
+    return [
+      { key: "name", label: "Name", visible: true, required: true },
+      { key: "subject", label: "Subject", visible: true },
+      { key: "message", label: "Message", visible: true },
+      { key: "status", label: "Status", visible: true },
+      { key: "staff_reply", label: "Staff Reply", visible: true },
+      { key: "created", label: "Created", visible: true },
+      { key: "actions", label: "Actions", visible: true, required: true },
+    ];
+  });
+
+  // Save to localStorage whenever visibleColumns changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        "enquiryTableColumns",
+        JSON.stringify(visibleColumns)
+      );
+    }
+  }, [visibleColumns]);
 
   const fetchEnquiries = useCallback(async () => {
     setLoading(true);
@@ -187,6 +232,7 @@ export default function EnquiriesPage() {
     );
   };
 
+  const itemsPerPage = 10;
   const totalPages = Math.ceil(filteredEnquiries.length / itemsPerPage);
   const currentPageData = filteredEnquiries.slice(
     (currentPage - 1) * itemsPerPage,
@@ -203,11 +249,135 @@ export default function EnquiriesPage() {
     setCurrentPage(1);
   };
 
+  const toggleColumnVisibility = (columnKey: string) => {
+    setVisibleColumns((prev) => {
+      const newColumns = prev.map((col) =>
+        col.key === columnKey ? { ...col, visible: !col.visible } : col
+      );
+      return newColumns;
+    });
+  };
+
+  const resetColumns = () => {
+    const defaultColumns = [
+      { key: "name", label: "Name", visible: true, required: true },
+      { key: "subject", label: "Subject", visible: true },
+      { key: "message", label: "Message", visible: true },
+      { key: "status", label: "Status", visible: true },
+      { key: "staff_reply", label: "Staff Reply", visible: true },
+      { key: "created", label: "Created", visible: true },
+      { key: "actions", label: "Actions", visible: true, required: true },
+    ];
+
+    setVisibleColumns(defaultColumns);
+  };
+
+  const clearSavedColumnPreferences = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("enquiryTableColumns");
+    }
+    resetColumns();
+  };
+
+  const isColumnVisible = (columnKey: string) => {
+    return visibleColumns.find((col) => col.key === columnKey)?.visible ?? true;
+  };
+
   return (
     <div className="flex flex-col gap-6 w-full max-w-full">
       <div className="flex items-center justify-between">
         <TypographyH2 className="border-none pb-0">Enquiries</TypographyH2>
+        <div className="flex items-center gap-3">
+          <div className="text-sm text-gray-500">
+            {filteredEnquiries.length} Results
+          </div>
+
+          {/* Column Filter Button */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Columns className="h-4 w-4" />
+                Columns
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64" align="end">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold text-sm">Toggle Columns</h4>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={resetColumns}
+                      className="text-xs h-6 px-2"
+                      title="Reset to default"
+                    >
+                      Reset
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearSavedColumnPreferences}
+                      className="text-xs h-6 px-2 text-red-600 hover:text-red-700"
+                      title="Clear saved preferences"
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {visibleColumns.map((column) => (
+                    <div
+                      key={column.key}
+                      className="flex items-center space-x-2"
+                    >
+                      <Checkbox
+                        id={`column-${column.key}`}
+                        checked={column.visible}
+                        onCheckedChange={() =>
+                          toggleColumnVisibility(column.key)
+                        }
+                        disabled={column.required}
+                      />
+                      <label
+                        htmlFor={`column-${column.key}`}
+                        className={`text-sm cursor-pointer flex-1 ${
+                          column.required
+                            ? "text-gray-400"
+                            : "text-gray-700 dark:text-gray-300"
+                        }`}
+                      >
+                        {column.label}
+                        {column.required && (
+                          <span className="text-xs text-gray-400 ml-1">
+                            (required)
+                          </span>
+                        )}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-xs text-gray-500">
+                    {visibleColumns.filter((col) => col.visible).length} of{" "}
+                    {visibleColumns.length} columns visible
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    💾 Preferences saved automatically
+                  </p>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
+
       <div className="flex flex-col sm:flex-row flex-wrap gap-2">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
@@ -239,6 +409,7 @@ export default function EnquiriesPage() {
           </SelectContent>
         </Select>
       </div>
+
       {loading ? (
         <EnquiryTableSkeleton />
       ) : enquiries.length === 0 ? (
@@ -250,13 +421,17 @@ export default function EnquiriesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Subject</TableHead>
-                <TableHead>Message</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Staff Reply</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                {isColumnVisible("name") && <TableHead>Name</TableHead>}
+                {isColumnVisible("subject") && <TableHead>Subject</TableHead>}
+                {isColumnVisible("message") && <TableHead>Message</TableHead>}
+                {isColumnVisible("status") && <TableHead>Status</TableHead>}
+                {isColumnVisible("staff_reply") && (
+                  <TableHead>Staff Reply</TableHead>
+                )}
+                {isColumnVisible("created") && <TableHead>Created</TableHead>}
+                {isColumnVisible("actions") && (
+                  <TableHead className="text-right">Actions</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -266,38 +441,52 @@ export default function EnquiriesPage() {
                   onClick={() => router.push(`/staff/enquiries/${enq.id}`)}
                   className="cursor-pointer"
                 >
-                  <TableCell className="font-medium max-w-xs truncate">
-                    {enq.name}
-                  </TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    {enq.subject}
-                  </TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    {enq.message}
-                  </TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    {getStatusBadge(enq.status)}
-                  </TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    {enq.staff_reply || "-"}
-                  </TableCell>
-                  <TableCell>
-                    {enq.created_at
-                      ? new Date(enq.created_at).toLocaleDateString()
-                      : "-"}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(`/staff/enquiries/${enq.id}/edit`);
-                      }}
-                    >
-                      Edit
-                    </Button>
-                  </TableCell>
+                  {isColumnVisible("name") && (
+                    <TableCell className="font-medium max-w-xs truncate">
+                      {enq.name}
+                    </TableCell>
+                  )}
+                  {isColumnVisible("subject") && (
+                    <TableCell className="max-w-xs truncate">
+                      {enq.subject}
+                    </TableCell>
+                  )}
+                  {isColumnVisible("message") && (
+                    <TableCell className="max-w-xs truncate">
+                      {enq.message}
+                    </TableCell>
+                  )}
+                  {isColumnVisible("status") && (
+                    <TableCell className="max-w-xs truncate">
+                      {getStatusBadge(enq.status)}
+                    </TableCell>
+                  )}
+                  {isColumnVisible("staff_reply") && (
+                    <TableCell className="max-w-xs truncate">
+                      {enq.staff_reply || "-"}
+                    </TableCell>
+                  )}
+                  {isColumnVisible("created") && (
+                    <TableCell>
+                      {enq.created_at
+                        ? new Date(enq.created_at).toLocaleDateString()
+                        : "-"}
+                    </TableCell>
+                  )}
+                  {isColumnVisible("actions") && (
+                    <TableCell className="text-right">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/staff/enquiries/${enq.id}/edit`);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
