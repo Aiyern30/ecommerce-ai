@@ -30,6 +30,7 @@ export default function BlogsPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const [isBelowXL, setIsBelowXL] = useState(false);
   const LIMIT = 8;
 
   const fetchAllBlogs = async () => {
@@ -87,7 +88,6 @@ export default function BlogsPage() {
   };
 
   const fetchTags = async () => {
-    // First, get all blogs with their tags
     const { data: blogsWithTags, error: blogsError } = await supabase
       .from("blogs")
       .select(
@@ -216,6 +216,16 @@ export default function BlogsPage() {
     loadInitialData();
   }, [loadInitialData]);
 
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsBelowXL(window.innerWidth < 1280);
+    };
+
+    checkScreenSize();
+    window.addEventListener("resize", checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
+  }, []);
+
   return (
     <div className="min-h-screen mb-4">
       <div className="container mx-auto px-4">
@@ -223,12 +233,12 @@ export default function BlogsPage() {
 
         <div
           className={`${
-            isMobile
+            isMobile || isBelowXL
               ? "space-y-6"
               : "grid gap-6 lg:gap-8 grid-cols-1 xl:grid-cols-4"
           }`}
         >
-          <div className={isMobile ? "" : "xl:col-span-1"}>
+          <div className={isMobile || isBelowXL ? "" : "xl:col-span-1"}>
             <BlogFilter
               tags={tags}
               selectedTags={selectedTags}
@@ -237,10 +247,11 @@ export default function BlogsPage() {
               onSearchChange={setSearchQuery}
               totalBlogs={allBlogs.length}
               filteredBlogs={filteredBlogs.length}
+              forceMobileUI={isBelowXL}
             />
           </div>
 
-          <div className={isMobile ? "" : "xl:col-span-3"}>
+          <div className={isMobile || isBelowXL ? "" : "xl:col-span-3"}>
             {!loading && (selectedTags.length > 0 || searchQuery.trim()) && (
               <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                 <p className="text-sm text-blue-700 dark:text-blue-300">
@@ -265,7 +276,6 @@ export default function BlogsPage() {
               ))}
             </div>
 
-            {/* Initial loading skeleton */}
             {loading && (
               <div
                 className={`grid gap-6 ${
@@ -293,7 +303,6 @@ export default function BlogsPage() {
               </div>
             )}
 
-            {/* Load more skeleton */}
             {loadingMore && (
               <div
                 className={`grid gap-6 ${
@@ -321,7 +330,6 @@ export default function BlogsPage() {
               </div>
             )}
 
-            {/* Load More Button */}
             {!loading && !loadingMore && hasMore && blogs.length > 0 && (
               <div className="mt-8 text-center">
                 <Button onClick={loadMore} className="bg-blue-700 text-white">
@@ -330,7 +338,6 @@ export default function BlogsPage() {
               </div>
             )}
 
-            {/* No more blogs message */}
             {!loading && !loadingMore && !hasMore && blogs.length > 0 && (
               <div className="mt-8 text-center">
                 <p className="text-gray-500 dark:text-gray-400">
@@ -341,7 +348,6 @@ export default function BlogsPage() {
               </div>
             )}
 
-            {/* No blogs found */}
             {!loading && filteredBlogs.length === 0 && (
               <div className="text-center py-12">
                 <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">

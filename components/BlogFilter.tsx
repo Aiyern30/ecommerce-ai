@@ -30,6 +30,7 @@ interface BlogFilterProps {
   onSearchChange: (query: string) => void;
   totalBlogs: number;
   filteredBlogs: number;
+  forceMobileUI?: boolean;
 }
 
 export function BlogFilter({
@@ -40,12 +41,12 @@ export function BlogFilter({
   onSearchChange,
   totalBlogs,
   filteredBlogs,
+  forceMobileUI = false,
 }: BlogFilterProps) {
   const { isMobile } = useDeviceType();
   const [isOpen, setIsOpen] = useState(false);
   const [tagSearchQuery, setTagSearchQuery] = useState("");
 
-  // Memoize filtered tags to prevent unnecessary recalculations
   const filteredTags = useMemo(
     () =>
       tags.filter((tag) =>
@@ -75,11 +76,9 @@ export function BlogFilter({
     onTagsChange(tags.map((tag) => tag.id));
   }, [onTagsChange, tags]);
 
-  // Memoize FilterContent to prevent recreation on every render
   const FilterContent = useMemo(
     () => (
       <div className="space-y-4 lg:space-y-6 px-4">
-        {/* Search Bar */}
         <div className="space-y-2">
           <label className="text-sm font-medium">Search Blogs</label>
           <div className="relative">
@@ -93,7 +92,6 @@ export function BlogFilter({
           </div>
         </div>
 
-        {/* Tags Filter */}
         <div className="space-y-3 lg:space-y-4">
           <div className="flex items-center justify-between">
             <label className="text-sm font-medium">Filter by Tags</label>
@@ -117,7 +115,6 @@ export function BlogFilter({
             </div>
           </div>
 
-          {/* Tag Search */}
           <Input
             placeholder="Search tags..."
             value={tagSearchQuery}
@@ -125,7 +122,6 @@ export function BlogFilter({
             className="text-sm h-8 lg:h-9"
           />
 
-          {/* Tags List */}
           <ScrollArea className="h-48 h-[75%]">
             <div className="space-y-1 lg:space-y-2 pr-2">
               {filteredTags.length === 0 ? (
@@ -163,7 +159,6 @@ export function BlogFilter({
           </ScrollArea>
         </div>
 
-        {/* Results Summary */}
         <div className="p-2.5 lg:p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
           <p className="text-xs lg:text-sm text-blue-700 dark:text-blue-300">
             Showing <span className="font-medium">{filteredBlogs}</span> of{" "}
@@ -186,7 +181,9 @@ export function BlogFilter({
     ]
   );
 
-  if (isMobile) {
+  const shouldUseMobileUI = isMobile || forceMobileUI;
+
+  if (shouldUseMobileUI) {
     return (
       <>
         {/* Mobile Filter Button */}
@@ -210,7 +207,6 @@ export function BlogFilter({
           </SheetContent>
         </Sheet>
 
-        {/* Selected Tags Display */}
         {selectedTags.length > 0 && (
           <div className="mt-4">
             <div className="flex items-center justify-between mb-2">
@@ -248,7 +244,6 @@ export function BlogFilter({
     );
   }
 
-  // Desktop Layout
   return (
     <div className="w-full">
       <div className="bg-white dark:bg-gray-800 rounded-lg border p-4 lg:p-6 sticky top-4 lg:top-6">
@@ -263,7 +258,6 @@ export function BlogFilter({
         {FilterContent}
       </div>
 
-      {/* Selected Tags Display for Desktop */}
       {selectedTags.length > 0 && (
         <div className="mt-3 lg:mt-4 bg-white dark:bg-gray-800 rounded-lg border p-3 lg:p-4">
           <div className="flex items-center justify-between mb-2 lg:mb-3">
