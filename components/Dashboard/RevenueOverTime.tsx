@@ -728,7 +728,13 @@ export function RevenueOverTime() {
                       tickLine={false}
                       axisLine={false}
                       tickFormatter={(value) =>
-                        typeof value === "number"
+                        isMobile
+                          ? value >= 1_000_000
+                            ? `${(value / 1_000_000).toFixed(1)}m`
+                            : value >= 1_000
+                            ? `${(value / 1_000).toFixed(1)}k`
+                            : value
+                          : typeof value === "number"
                           ? new Intl.NumberFormat("en-MY", {
                               style: "currency",
                               currency: "MYR",
