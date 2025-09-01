@@ -12,6 +12,16 @@ import {
   Sun,
   Loader2,
   AlertCircle,
+  Home,
+  Package,
+  FileText,
+  ShoppingCart,
+  Receipt,
+  HelpCircle,
+  Mail,
+  Info,
+  Settings,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -27,6 +37,9 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
+  Sheet,
+  SheetContent,
+  SheetTrigger,
 } from "@/components/ui/";
 import NotificationSheet from "./Notification";
 import { useTheme } from "./ThemeProvider";
@@ -350,7 +363,7 @@ function ProductSearchBox({
                     return (
                       <li
                         key={product.id}
-                        className={`flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors ${
+                        className={`flex items-center gap-1 px-3 py-2 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors ${
                           index === 0 ? "rounded-t-lg" : ""
                         } ${
                           index === searchResults.length - 1
@@ -565,6 +578,22 @@ const Header = () => {
     };
   }, [menuOpen]);
 
+  // Add icon mapping for navigation items
+  const getNavigationIcon = (path: string) => {
+    const iconMap: { [key: string]: React.ReactNode } = {
+      "/": <Home className="h-5 w-5" />,
+      "/products": <Package className="h-5 w-5" />,
+      "/blogs": <FileText className="h-5 w-5" />,
+      "/cart": <ShoppingCart className="h-5 w-5" />,
+      "/profile/orders": <Receipt className="h-5 w-5" />,
+      "/faq": <HelpCircle className="h-5 w-5" />,
+      "/contact": <Mail className="h-5 w-5" />,
+      "/about": <Info className="h-5 w-5" />,
+      "/staff/dashboard": <Users className="h-5 w-5" />,
+    };
+    return iconMap[path] || <Settings className="h-5 w-5" />;
+  };
+
   return (
     <div>
       <header className="fixed top-0 left-0 w-full bg-white dark:bg-gray-900 shadow-md border-b z-50 dark:border-gray-800">
@@ -572,7 +601,7 @@ const Header = () => {
           <div className="container mx-auto flex items-center justify-between p-4">
             <Link
               href="/"
-              className="flex items-center gap-3 text-xl font-bold dark:text-white hover:opacity-80 transition-opacity"
+              className="flex items-center gap-1 text-xl font-bold dark:text-white hover:opacity-80 transition-opacity"
             >
               <Image
                 src="/favicon.svg"
@@ -589,7 +618,7 @@ const Header = () => {
               <ProductSearchBox />
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
                 size="icon"
@@ -783,191 +812,170 @@ const Header = () => {
         </div>
 
         {/* Mobile Navigation Dropdown */}
-        <AnimatePresence>
-          {menuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "75vh" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="md:hidden bg-white dark:bg-gray-900 border-t dark:border-gray-800 shadow-lg overflow-hidden fixed left-0 right-0 z-50"
-              style={{
-                height: "75vh",
-                top: "auto",
-              }}
+        <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+          <SheetTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
-              <div className="h-full overflow-y-auto overscroll-contain">
-                <div className="container mx-auto">
-                  <div className="p-4 space-y-4">
-                    {/* Primary Navigation */}
-                    <motion.nav
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1, duration: 0.3 }}
-                      className="space-y-2"
-                    >
-                      {/* Staff Dashboard nav for mobile */}
-                      {isStaff && (
-                        <motion.div
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.15, duration: 0.3 }}
-                        >
-                          <Link
-                            href="/staff/dashboard"
-                            onClick={() => setMenuOpen(false)}
-                            className={`flex items-center justify-between p-3 rounded-lg transition-all duration-200 ${
-                              isActive("/staff/dashboard")
-                                ? "bg-orange-50 dark:bg-orange-900/20 text-[#ff7a5c] font-semibold border-l-4 border-[#ff7a5c]"
-                                : "hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-gray-300"
-                            }`}
-                          >
-                            <span>Staff Dashboard</span>
-                            {isActive("/staff/dashboard") && (
-                              <motion.div
-                                layoutId="mobileActiveIndicator"
-                                className="w-2 h-2 bg-[#ff7a5c] rounded-full"
-                                initial={false}
-                                transition={{ duration: 0.3 }}
-                              />
-                            )}
-                          </Link>
-                        </motion.div>
-                      )}
-                      {filteredPrimaryNavItems.map(({ name, path }, index) => (
-                        <motion.div
-                          key={path}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{
-                            delay: 0.2 + index * 0.1,
-                            duration: 0.3,
-                          }}
-                        >
-                          <Link
-                            href={path}
-                            onClick={() => setMenuOpen(false)}
-                            className={`flex items-center justify-between p-3 rounded-lg transition-all duration-200 ${
-                              isActive(path)
-                                ? "bg-orange-50 dark:bg-orange-900/20 text-[#ff7a5c] font-semibold border-l-4 border-[#ff7a5c]"
-                                : "hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-gray-300"
-                            }`}
-                          >
-                            <span>{name}</span>
-                            {isActive(path) && (
-                              <motion.div
-                                layoutId="mobileActiveIndicator"
-                                className="w-2 h-2 bg-[#ff7a5c] rounded-full"
-                                initial={false}
-                                transition={{ duration: 0.3 }}
-                              />
-                            )}
-                          </Link>
-                        </motion.div>
-                      ))}
-                    </motion.nav>
+              <Menu className="h-6 w-6" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-[300px] sm:w-[350px] p-0">
+            <div className="flex flex-col h-full">
+              {/* User Profile Section */}
+              {user ? (
+                <div className="p-6 border-b bg-white dark:bg-gray-900">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <Avatar className="h-12 w-12 border-2 border-[#ff7a5c]">
+                      <AvatarImage
+                        src={
+                          user.user_metadata?.picture ||
+                          user.user_metadata?.avatar_url ||
+                          undefined
+                        }
+                      />
+                      <AvatarFallback className="text-sm font-semibold bg-[#ff7a5c] text-white">
+                        {user.user_metadata?.full_name
+                          ? getInitials(user.user_metadata.full_name)
+                          : user.user_metadata?.name
+                          ? getInitials(user.user_metadata.name)
+                          : user.email
+                          ? getInitials(user.email)
+                          : "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                        {user.user_metadata?.full_name ||
+                          user.user_metadata?.name ||
+                          "User"}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
 
-                    {/* Secondary Navigation */}
-                    <motion.nav
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3, duration: 0.3 }}
-                      className="space-y-2 border-t dark:border-gray-800 pt-4"
+                  {/* Profile Actions */}
+                  <div className="flex gap-2">
+                    <Link
+                      href={`/profile/${user.id}`}
+                      onClick={() => setMenuOpen(false)}
+                      className="flex-1 px-2 py-1 rounded-lg text-center text-sm font-medium border dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      style={{ minWidth: 0 }}
                     >
-                      <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
-                        More
-                      </h3>
-                      {secondaryNavItems.map(({ name, path }, index) => (
-                        <motion.div
-                          key={path}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{
-                            delay: 0.4 + index * 0.1,
-                            duration: 0.3,
-                          }}
-                        >
-                          <Link
-                            href={path}
-                            onClick={() => setMenuOpen(false)}
-                            className={`flex items-center justify-between p-3 rounded-lg transition-all duration-200 ${
-                              isActive(path)
-                                ? "bg-orange-50 dark:bg-orange-900/20 text-[#ff7a5c] font-semibold border-l-4 border-[#ff7a5c]"
-                                : "hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-gray-300"
-                            }`}
-                          >
-                            <span>{name}</span>
-                            {isActive(path) && (
-                              <motion.div
-                                layoutId="mobileActiveIndicator"
-                                className="w-2 h-2 bg-[#ff7a5c] rounded-full"
-                                initial={false}
-                                transition={{ duration: 0.3 }}
-                              />
-                            )}
-                          </Link>
-                        </motion.div>
-                      ))}
-                    </motion.nav>
-
-                    {/* User Actions */}
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.5, duration: 0.3 }}
-                      className="border-t dark:border-gray-800 pt-4 pb-8"
+                      Profile
+                    </Link>
+                    <Button
+                      onClick={handleLogout}
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 px-2 py-1 rounded-lg border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                      style={{ minWidth: 0 }}
                     >
-                      {!user ? (
-                        <Button
-                          onClick={handleLoginClick}
-                          variant="outline"
-                          className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
-                        >
-                          Sign In
-                        </Button>
-                      ) : (
-                        <div className="space-y-2">
-                          <Link
-                            href="/profile"
-                            onClick={() => setMenuOpen(false)}
-                            className="flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-gray-300"
-                          >
-                            <Avatar className="h-8 w-8 mr-3 border border-[#ff7a5c]">
-                              <AvatarImage
-                                src={
-                                  user.user_metadata?.picture ||
-                                  user.user_metadata?.avatar_url ||
-                                  undefined
-                                }
-                              />
-                              <AvatarFallback className="text-xs">
-                                {user.user_metadata?.full_name
-                                  ? getInitials(user.user_metadata.full_name)
-                                  : user.user_metadata?.name
-                                  ? getInitials(user.user_metadata.name)
-                                  : user.email
-                                  ? getInitials(user.email)
-                                  : "U"}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span>View Profile</span>
-                          </Link>
-                          <Button
-                            onClick={handleLogout}
-                            variant="outline"
-                            className="w-full border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
-                          >
-                            Logout
-                          </Button>
-                        </div>
-                      )}
-                    </motion.div>
+                      Logout
+                    </Button>
                   </div>
                 </div>
+              ) : (
+                <div className="p-6 border-b bg-white dark:bg-gray-900">
+                  <div className="text-center">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                      Welcome
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                      Sign in to access your account
+                    </p>
+                    <Button
+                      onClick={handleLoginClick}
+                      className="w-full bg-[#ff7a5c] hover:bg-[#e06847] text-white"
+                    >
+                      Sign In
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Navigation Menu */}
+              <div className="flex-1 overflow-y-auto">
+                <div className="p-4 space-y-1">
+                  {/* Staff Dashboard */}
+                  {isStaff && (
+                    <Link
+                      href="/staff/dashboard"
+                      onClick={() => setMenuOpen(false)}
+                      className={`flex items-center space-x-3 w-full p-2 rounded-lg transition-colors ${
+                        isActive("/staff/dashboard")
+                          ? "bg-[#ff7a5c]/10 text-[#ff7a5c]"
+                          : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      }`}
+                    >
+                      {getNavigationIcon("/staff/dashboard")}
+                      <span className="font-medium">Staff Dashboard</span>
+                    </Link>
+                  )}
+
+                  {/* Primary Navigation */}
+                  {filteredPrimaryNavItems.map(({ name, path }) => (
+                    <Link
+                      key={path}
+                      href={path}
+                      onClick={() => setMenuOpen(false)}
+                      className={`flex items-center space-x-3 w-full p-2 rounded-lg transition-colors ${
+                        isActive(path)
+                          ? "bg-[#ff7a5c]/10 text-[#ff7a5c]"
+                          : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      }`}
+                    >
+                      {getNavigationIcon(path)}
+                      <span className="font-medium">{name}</span>
+                    </Link>
+                  ))}
+
+                  {/* Secondary Navigation */}
+                  {secondaryNavItems.map(({ name, path }) => (
+                    <Link
+                      key={path}
+                      href={path}
+                      onClick={() => setMenuOpen(false)}
+                      className={`flex items-center space-x-3 w-full p-2 rounded-lg transition-colors ${
+                        isActive(path)
+                          ? "bg-[#ff7a5c]/10 text-[#ff7a5c]"
+                          : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      }`}
+                    >
+                      {getNavigationIcon(path)}
+                      <span className="font-medium">{name}</span>
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+
+              {/* Footer */}
+              <div className="border-t dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800/50">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    © 2024 YTL Concrete Hub
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={toggleTheme}
+                    className="h-8 w-8 p-0"
+                  >
+                    {theme === "dark" ? (
+                      <Sun className="h-4 w-4" />
+                    ) : (
+                      <Moon className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
       </header>
     </div>
   );
