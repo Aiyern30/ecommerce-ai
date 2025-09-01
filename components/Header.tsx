@@ -39,7 +39,6 @@ import {
   AvatarImage,
   Sheet,
   SheetContent,
-  SheetTrigger,
 } from "@/components/ui/";
 import NotificationSheet from "./Notification";
 import { useTheme } from "./ThemeProvider";
@@ -813,15 +812,6 @@ const Header = () => {
 
         {/* Mobile Navigation Dropdown */}
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-          <SheetTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            >
-              <Menu className="h-6 w-6" />
-            </Button>
-          </SheetTrigger>
           <SheetContent side="right" className="w-[300px] sm:w-[350px] p-0">
             <div className="flex flex-col h-full">
               {/* User Profile Section */}
