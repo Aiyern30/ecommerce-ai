@@ -162,129 +162,133 @@ A comprehensive concrete and construction materials ecommerce platform powered b
 - **Touch-Friendly Interface**: Designed for tablet and mobile construction use
 - **Accessibility Features**: WCAG compliant design
 
-## 📄 Complete Page Structure
+## 📁 Project Structure
 
-### 🏠 Customer Pages
+```
+ecommerce-ai/
+├── app/                          # Next.js App Router
+│   ├── (dashboard)/             # Dashboard routes
+│   ├── ai/                      # AI-powered pages
+│   ├── api/                     # API routes
+│   └── globals.css              # Global styles
+├── components/                   # React components
+│   ├── ui/                      # shadcn/ui components
+│   ├── dashboard/               # Dashboard components
+│   ├── charts/                  # Chart components
+│   ├── ai/                      # AI-related components
+│   └── layout/                  # Layout components
+├── lib/                         # Utility libraries
+│   ├── supabase/               # Supabase client & queries
+│   ├── ai/                     # AI service integrations
+│   ├── utils/                  # General utilities
+│   └── validations/            # Form validations
+├── hooks/                       # Custom React hooks
+├── types/                       # TypeScript type definitions
+├── public/                      # Static assets
+├── styles/                      # Additional stylesheets
+└── docs/                        # Documentation
+    └── DATABASE.md              # Comprehensive database documentation
+```
 
-#### Main Shopping Experience
+## 📚 Documentation
 
-- [`/`](app/page.tsx) - Homepage with AI-powered services showcase
-- [`/products`](<app/(Customer)/products/page.tsx>) - Product catalog with smart filtering
-- [`/products/[id]`](<app/(Customer)/products/[id]/page.tsx>) - Detailed product pages with AI recommendations
-- [`/search`](<app/(Customer)/search/page.tsx>) - AI-powered image detection and product search
-- [`/compare`](<app/(Customer)/compare/page.tsx>) - Intelligent product comparison with AI insights
+### Database Documentation
 
-#### Shopping & Orders
+For detailed information about the database schema, tables, relationships, and policies, see:
 
-- [`/cart`](<app/(Customer)/cart/page.tsx>) - Smart shopping cart with recommendations
-- [`/checkout`](<app/(Customer)/checkout/page.tsx>) - Streamlined checkout process
-- [`/profile/orders`](<app/(Customer)/profile/orders/page.tsx>) - Order history and tracking
-- [`/profile/wishlist`](<app/(Customer)/profile/wishlist/page.tsx>) - Saved products and favorites
+- [Database Documentation](docs/DATABASE.md) - Complete database schema and usage guide
 
-#### Information & Support
+### API Documentation
 
-- [`/blogs`](<app/(Customer)/blogs/page.tsx>) - Construction industry insights and guides
-- [`/blogs/[id]`](<app/(Customer)/blogs/[id]/page.tsx>) - Detailed blog articles
-- [`/faq`](<app/(Customer)/faq/page.tsx>) - Frequently asked questions
-- [`/contact`](<app/(Customer)/contact/page.tsx>) - Contact information and support
-- [`/about`](<app/(Customer)/about/page.tsx>) - Company information and values
-- [`/terms`](<app/(Customer)/terms/page.tsx>) - Terms and conditions
-- [`/privacy`](<app/(Customer)/privacy/page.tsx>) - Privacy policy and data protection
+- [API Reference](docs/API.md) - Complete API endpoint documentation (coming soon)
+- [AI Services](docs/AI.md) - AI and machine learning features guide (coming soon)
 
-### 👨‍💼 Staff Management Portal
+## 🚀 Getting Started
 
-#### Dashboard & Analytics
+### 📋 Prerequisites
 
-- [`/staff/dashboard`](app/staff/dashboard/page.tsx) - Main staff dashboard with KPIs
-- [`/staff/dashboard/ai-insights`](app/staff/dashboard/ai-insights/page.tsx) - AI-powered business insights and predictions
+- Node.js: v18+ (recommended v20+)
+- Package Manager: npm or yarn
+- Database: Supabase project setup
+- AI Services: Google Cloud Project with Vision API enabled
+- Environment: Modern browser with ES2020+ support
 
-#### Product Management
+### ⚙️ Environment Configuration
 
-- [`/staff/products`](app/staff/products/page.tsx) - Product catalog management
-- [`/staff/products/new`](app/staff/products/new/page.tsx) - Add new products
-- [`/staff/products/[id]/edit`](app/staff/products/[id]/edit/page.tsx) - Edit existing products
+```typescript
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
-#### Content Management
+# Google AI Configuration
+GOOGLE_AI_API_KEY=your-google-ai-api-key
+GOOGLE_APPLICATION_CREDENTIALS=path/to/service-account.json
 
-- [`/staff/blogs`](app/staff/blogs/page.tsx) - Blog post management
-- [`/staff/blogs/new`](app/staff/blogs/new/page.tsx) - Create new blog posts
-- [`/staff/blogs/[id]/edit`](app/staff/blogs/[id]/edit/page.tsx) - Edit blog posts
-- [`/staff/faqs`](app/staff/faqs/page.tsx) - FAQ management
-- [`/staff/faqs/new`](app/staff/faqs/new/page.tsx) - Create new FAQs
-- [`/staff/faqs/[id]/edit`](app/staff/faqs/[id]/edit/page.tsx) - Edit FAQs
+# Google Cloud Vision API
+GOOGLE_CLOUD_PROJECT_ID=your-project-id
+GOOGLE_CLOUD_PRIVATE_KEY=your-private-key
+GOOGLE_CLOUD_CLIENT_EMAIL=your-client-email
 
-#### Order & Customer Management
+# Application Configuration
+NEXTAUTH_SECRET=your-nextauth-secret
+NEXTAUTH_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-- [`/staff/orders`](app/staff/orders/page.tsx) - Order processing and management
-- [`/staff/customers`](app/staff/customers/page.tsx) - Customer database and analytics
+# Feature Flags
+NEXT_PUBLIC_ENABLE_AI_FEATURES=true
+NEXT_PUBLIC_ENABLE_ANALYTICS=true
+NEXT_PUBLIC_ENABLE_CHAT=true
+```
 
-## 🛠️ Technology Stack
+### 🛠️ Installation Steps
 
-### 🎯 Frontend Technologies
+#### 1. Clone the Repository
 
-- **Framework**: Next.js 14 with App Router
-- **Language**: TypeScript for type safety
-- **UI Library**: React 18 with Hooks
-- **Styling**: Tailwind CSS with custom design system
-- **Component Library**: shadcn/ui with custom components
-- **Icons**: Lucide React Icons
-- **Animations**: Framer Motion for smooth interactions
-- **State Management**: React Context and custom hooks
+```bash
+git clone https://github.com/yourusername/ytl-concrete-hub.git
+cd ytl-concrete-hub
+```
 
-### 🤖 AI & Machine Learning
+#### 2. Install Dependencies
 
-- **Primary AI**: Google Gemini 1.5 Flash for conversational AI
-- **Computer Vision**: Google Cloud Vision API for image analysis
-- **Intent Analysis**: Custom [`ConcreteIntentAnalyzer`](lib/gemini/concreteIntentAnalyzer.ts) for NLP
-- **Recommendation Engine**: Custom ML algorithms in [`RecommendationEngine`](lib/recommendations/recommendationEngine.ts)
-- **Predictive Analytics**: Custom algorithms for demand forecasting
+```bash
+npm install
+# or
+yarn install
+```
 
-### 📊 Data Visualization & Charts
+#### 3. Set Up the Database
 
-- **Charts**: Recharts for responsive data visualization
-- **Analytics Components**: Custom chart components in [`components/`](components/)
-- **Real-time Updates**: Dynamic data visualization with live updates
-- **Export Capabilities**: PDF and CSV export functionality
+- Import the database schema from Supabase dashboard
+- Or use the provided SQL scripts
 
-### 🗄️ Backend & Database
+```bash
+npm run db:setup
+```
 
-- **Database**: Supabase (PostgreSQL) with real-time capabilities
-- **Authentication**: Supabase Auth with row-level security
-- **Storage**: Supabase Storage for images and files
-- **API**: Next.js API Routes with TypeScript
-- **Real-time**: Supabase Realtime for live updates
+#### 4. Configure Google Cloud Services
 
-### 🔧 Development Tools
+- Enable Vision API in Google Cloud Console
+- Create a service account and download credentials
+- Set up authentication using the credentials
 
-- **Package Manager**: npm/yarn
-- **Code Quality**: ESLint and Prettier
-- **Type Checking**: TypeScript strict mode
-- **Build Tool**: Next.js built-in bundler
-- **Development**: Hot reload and fast refresh
+#### 5. Run the Development Server
 
-## 🎨 UI Components & Design System
+```bash
+npm run dev
+# or
+yarn dev
+```
 
-### 📦 Core UI Components
+#### 6. Access the Application
 
-- **Layout Components**: [`Header`](components/Header.tsx), [`Footer`](components/Footer.tsx)
-- **Form Components**: [`Input`](components/ui/Input.tsx), [`Button`](components/ui/Button.tsx), [`Select`](components/ui/Select.tsx)
-- **Data Display**: [`Card`](components/ui/Card.tsx), [`Badge`](components/ui/Badge.tsx), [`Table`](components/ui/Table.tsx)
-- **Navigation**: [`BreadcrumbNav`](components/BreadcrumbNav.tsx), mobile-responsive menus
-- **Feedback**: [`Toast`](components/ui/Toast.tsx), loading states, error boundaries
+```bash
+Frontend: http://localhost:3000
+Staff Portal: http://localhost:3000/staff
+```
 
-### 🎭 Specialized Components
-
-- **AI Components**:
-
-  - [`AISmartComparison`](components/AISmartComparison.tsx) - AI-powered product comparison
-  - [`ChatContext`](components/ChatContext.tsx) - Chat state management
-  - [`ProductRecommendations`](components/ProductRecommendations.tsx) - Smart recommendations
-
-- **Business Components**:
-  - [`ServicesShowcase`](components/ServicesShowcase.tsx) - AI services display
-  - [`UseCases`](components/UseCases.tsx) - Industry use cases
-  - [`WhyChooseUs`](components/WhyChooseUs.tsx) - Company advantages
-  - [`StatsCards`](components/StatsCards.tsx) - Analytics dashboard cards
+---
 
 ### 🎨 Design Features
 
