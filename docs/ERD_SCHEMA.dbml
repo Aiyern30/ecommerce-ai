@@ -1,0 +1,376 @@
+// YTL Concrete Hub Database Schema in DBML format
+// Use this file at https://dbdiagram.io to generate ERD diagrams
+
+Project YTL_Concrete_Hub {
+  database_type: 'PostgreSQL'
+  Note: '''
+    # YTL Concrete Hub Database Schema
+    AI-powered ecommerce platform for concrete and construction materials
+    Built with Supabase (PostgreSQL)
+  '''
+}
+
+// ================================
+// CORE TABLES
+// ================================
+
+Table users {
+  id uuid [pk, default: `gen_random_uuid()`]
+  email text [unique, not null]
+  full_name text
+  avatar_url text
+  role text [default: 'customer']
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  Note: 'User accounts (customers and staff) - represents auth.users from Supabase'
+}
+
+// ================================
+// USER MANAGEMENT TABLES
+// ================================
+
+Table addresses {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null, ref: > users.id]
+  full_name text [not null]
+  phone text [not null]
+  address_line1 text [not null]
+  address_line2 text
+  city text [not null]
+  state text [not null]
+  postal_code text [not null]
+  country text [default: 'Malaysia']
+  is_default boolean [default: false]
+  deleted_at timestamptz
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  Note: 'User shipping and billing addresses with soft delete support'
+}
+
+// ================================
+// PRODUCT MANAGEMENT TABLES
+// ================================
+
+Table products {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name text [not null]
+  description text
+  grade text
+  product_type text
+  mortar_ratio text
+  category text [default: 'building_materials']
+  normal_price decimal(10,2)
+  pump_price decimal(10,2)
+  tremie_1_price decimal(10,2)
+  tremie_2_price decimal(10,2)
+  tremie_3_price decimal(10,2)
+  unit text [default: 'per m³']
+  stock_quantity integer [default: 0]
+  status text [default: 'draft']
+  is_featured boolean [default: false]
+  keywords text[]
+  is_active boolean [default: true]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  Note: 'Product catalog with multiple pricing tiers for different delivery methods'
+}
+
+Table product_images {
+  id uuid [pk, default: `gen_random_uuid()`]
+  product_id uuid [not null, ref: > products.id]
+  image_url text [not null]
+  alt_text text
+  is_primary boolean [default: false]
+  sort_order integer [default: 0]
+  created_at timestamptz [default: `now()`]
+  
+  Note: 'Product image gallery with sorting and primary image designation'
+}
+
+// ================================
+// SHOPPING CART TABLES
+// ================================
+
+Table carts {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null, unique, ref: - users.id]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  Note: 'User shopping carts (one-to-one with users)'
+}
+
+Table cart_items {
+  id uuid [pk, default: `gen_random_uuid()`]
+  cart_id uuid [not null, ref: > carts.id]
+  product_id uuid [not null, ref: > products.id]
+  variant_type text
+  quantity integer [not null, default: 1]
+  selected boolean [default: true]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  Note: 'Individual items within shopping carts'
+}
+
+// ================================
+// ORDER MANAGEMENT TABLES
+// ================================
+
+Table orders {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null, ref: > users.id]
+  address_id uuid [not null, ref: > addresses.id]
+  status text [default: 'pending']
+  payment_status text [default: 'pending']
+  payment_intent_id text
+  subtotal decimal(10,2)
+  shipping_cost decimal(10,2)
+  tax decimal(10,2)
+  total decimal(10,2)
+  notes text
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  Note: 'Customer orders with comprehensive status tracking and payment integration'
+}
+
+Table order_items {
+  id uuid [pk, default: `gen_random_uuid()`]
+  order_id uuid [not null, ref: > orders.id]
+  product_id uuid [not null, ref: > products.id]
+  name text [not null]
+  grade text
+  variant_type text
+  price decimal(10,2) [not null]
+  quantity integer [not null]
+  image_url text
+  created_at timestamptz [default: `now()`]
+  
+  Note: 'Individual products within orders with historical pricing'
+}
+
+// ================================
+// BUSINESS SERVICES TABLES
+// ================================
+
+Table additional_services {
+  id uuid [pk, default: `gen_random_uuid()`]
+  service_name text [not null]
+  service_code text [not null, unique]
+  rate_per_m3 decimal(10,2) [not null]
+  description text
+  is_active boolean [default: true]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  Note: 'Configurable additional services with per-cubic-meter pricing'
+}
+
+Table order_additional_services {
+  id uuid [pk, default: `gen_random_uuid()`]
+  order_id uuid [not null, ref: > orders.id]
+  additional_service_id uuid [not null, ref: > additional_services.id]
+  service_name text [not null]
+  rate_per_m3 decimal(10,2) [not null]
+  quantity decimal(10,2) [not null]
+  total_price decimal(10,2) [not null]
+  created_at timestamptz [default: `now()`]
+  
+  Note: 'Additional services applied to specific orders'
+}
+
+Table freight_charges {
+  id uuid [pk, default: `gen_random_uuid()`]
+  min_volume decimal(10,2) [not null]
+  max_volume decimal(10,2) [not null]
+  delivery_fee decimal(10,2) [not null]
+  description text
+  is_active boolean [default: true]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  Note: 'Tiered delivery pricing based on order volume'
+}
+
+// ================================
+// COMMUNICATION TABLES
+// ================================
+
+Table notifications {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null, ref: > users.id]
+  order_id uuid [ref: > orders.id]
+  title text [not null]
+  message text [not null]
+  type text [not null]
+  read boolean [default: false]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  Note: 'System notifications for users with order references'
+}
+
+Table enquiries {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null, ref: > users.id]
+  name text [not null]
+  email text [not null]
+  subject text [not null]
+  message text [not null]
+  status text [default: 'open']
+  staff_reply text
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  Note: 'Customer service enquiries and support tickets'
+}
+
+Table wishlists {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null, ref: > users.id]
+  item_type text [not null]
+  item_id uuid [not null]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  indexes {
+    (user_id, item_type, item_id) [unique]
+  }
+  
+  Note: 'User wishlists for products and content (polymorphic relationship)'
+}
+
+// ================================
+// CONTENT MANAGEMENT TABLES
+// ================================
+
+Table faq_sections {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name text [not null, unique]
+  created_at timestamptz [default: `now()`]
+  
+  Note: 'FAQ organization sections'
+}
+
+Table faq {
+  id uuid [pk, default: `gen_random_uuid()`]
+  section_id uuid [not null, ref: > faq_sections.id]
+  question text [not null]
+  answer text [not null]
+  status publish_status [default: 'draft']
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  Note: 'Frequently asked questions with sectional organization'
+}
+
+Table tags {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name text [not null, unique]
+  
+  Note: 'Reusable tags for content categorization'
+}
+
+Table blogs {
+  id uuid [pk, default: `gen_random_uuid()`]
+  title text [not null]
+  description text
+  content text
+  status publish_status [default: 'draft']
+  link_name text
+  link text
+  image_url text
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  Note: 'Blog posts and articles with publication workflow'
+}
+
+Table blog_images {
+  id uuid [pk, default: `gen_random_uuid()`]
+  blog_id uuid [not null, ref: > blogs.id]
+  image_url text [not null]
+  created_at timestamptz [default: `now()`]
+  
+  Note: 'Additional images for blog posts'
+}
+
+Table blog_tags {
+  id uuid [pk, default: `gen_random_uuid()`]
+  blog_id uuid [not null, ref: > blogs.id]
+  tag_id uuid [not null, ref: > tags.id]
+  
+  indexes {
+    (blog_id, tag_id) [unique]
+  }
+  
+  Note: 'Many-to-many relationship between blogs and tags'
+}
+
+Table posts {
+  id uuid [pk, default: `gen_random_uuid()`]
+  title text [not null]
+  description text
+  mobile_description text
+  link_name text
+  link text
+  image_url text
+  status publish_status [default: 'draft']
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  Note: 'Marketing posts and announcements'
+}
+
+// ================================
+// ENUMS
+// ================================
+
+Enum publish_status {
+  draft
+  published
+}
+
+// ================================
+// TABLE GROUPS (for better visualization)
+// ================================
+
+TableGroup user_management {
+  users
+  addresses
+  wishlists
+  notifications
+  enquiries
+}
+
+TableGroup product_catalog {
+  products
+  product_images
+}
+
+TableGroup shopping_cart {
+  carts
+  cart_items
+}
+
+TableGroup order_management {
+  orders
+  order_items
+  additional_services
+  order_additional_services
+  freight_charges
+}
+
+TableGroup content_management {
+  blogs
+  blog_images
+  blog_tags
+  tags
+  posts
+  faq_sections
+  faq
+}
