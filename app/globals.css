@@ -163,3 +163,24 @@
     -webkit-line-clamp: 2;
   }
 }
+
+/* Hide native search input clear button */
+.search-input-no-cancel::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search-input-no-cancel::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search-input-no-cancel::-webkit-search-results-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search-input-no-cancel::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}

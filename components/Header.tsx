@@ -277,7 +277,7 @@ function ProductSearchBox({
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
           onKeyDown={handleKeyDown}
-          className={`pl-10 pr-20 ${inputClassName}`}
+          className={`pl-10 pr-20 search-input-no-cancel ${inputClassName}`}
         />
         <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
           {isLoading ? (
@@ -287,10 +287,14 @@ function ProductSearchBox({
           )}
         </div>
         {searchQuery && (
-          <button
+          <Button
+            size="icon"
+            variant="ghost"
             onClick={clearSearch}
-            className="absolute right-12 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-          ></button>
+            className="absolute right-12 top-1/2 -translate-y-1/2 p-1 rounded-full transition-colors"
+          >
+            <X />
+          </Button>
         )}
         <Button
           type="button"
