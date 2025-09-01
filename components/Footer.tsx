@@ -66,7 +66,6 @@ const Footer = () => {
   const productLinks = [
     { name: "Products", href: "/products" },
     { name: "Wishlist", href: "/wishlists" },
-    { name: "Checkout", href: "/checkout" },
     { name: "Notifications", href: "/notifications" },
   ];
 
