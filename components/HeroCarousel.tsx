@@ -122,21 +122,22 @@ export default function HeroCarousel() {
   }, [fetchPosts]);
 
   const goToSlide = (index: number) => {
-    setCurrentSlide(index);
+    // Wrap index for infinite loop
+    const total = carouselItems.length;
+    const wrappedIndex = ((index % total) + total) % total;
+    setCurrentSlide(wrappedIndex);
     setIsAutoPlaying(false);
   };
 
   const nextSlide = useCallback(() => {
-    setCurrentSlide((prev) =>
-      prev === carouselItems.length - 1 ? 0 : prev + 1
-    );
+    setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
   }, [carouselItems.length]);
 
-  const prevSlide = () => {
-    setCurrentSlide((prev) =>
-      prev === 0 ? carouselItems.length - 1 : prev - 1
+  const prevSlide = useCallback(() => {
+    setCurrentSlide(
+      (prev) => (prev - 1 + carouselItems.length) % carouselItems.length
     );
-  };
+  }, [carouselItems.length]);
 
   const handlers = useSwipeable({
     onSwipedLeft: nextSlide,
@@ -245,7 +246,7 @@ export default function HeroCarousel() {
       )}
 
       {/* Left Arrow */}
-      {carouselItems.length > 1 && currentSlide > 0 && (
+      {carouselItems.length > 1 && (
         <button
           onClick={prevSlide}
           className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-20 p-2 md:p-3 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all duration-300 hover:scale-110 block"
@@ -268,7 +269,7 @@ export default function HeroCarousel() {
       )}
 
       {/* Right Arrow */}
-      {carouselItems.length > 1 && currentSlide < carouselItems.length - 1 && (
+      {carouselItems.length > 1 && (
         <button
           onClick={nextSlide}
           className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-20 p-2 md:p-3 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all duration-300 hover:scale-110 block"
