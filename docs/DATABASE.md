@@ -12,6 +12,20 @@ The database is designed to support a comprehensive concrete and construction ma
 - **Content Management**: Blogs, FAQs, and marketing content
 - **Business Logic**: Additional services, freight charges, and notifications
 
+## 📚 Related Documentation
+
+### Security & Access Control
+
+- **[RLS Policies Documentation](POLICIES.md)** - Complete Row Level Security policies and implementation details
+
+### Database Functions
+
+- **[Functions Documentation](FUNCTIONS.md)** - All custom database functions, triggers, and analytics functions
+
+### Database Queries
+
+For common database queries and examples, refer to the individual documentation files above.
+
 ## 🗂️ Database Schema
 
 ### 🛍️ Product Management Tables
@@ -381,58 +395,51 @@ Enumeration for content publication workflow:
 - `draft`: Content in development
 - `published`: Live content
 
-## 🔐 Row Level Security (RLS) Policies
+## 🔗 Quick Reference
 
-The YTL Concrete Hub platform implements comprehensive Row Level Security policies to ensure data privacy, security, and proper access control. All policies are designed around two main user roles: **customers** and **staff**.
+### View All Functions
 
-### 🏛️ Policy Architecture
+```sql
+SELECT routine_name, routine_type, data_type
+FROM information_schema.routines
+WHERE routine_schema = 'public'
+ORDER BY routine_name;
+```
 
-#### User Role Detection
+### View All Policies
 
-The system uses JWT token metadata to identify user roles:
+```sql
+SELECT schemaname, tablename, policyname, roles, cmd, qual, with_check
+FROM pg_policies
+WHERE schemaname = 'public'
+ORDER BY tablename, policyname;
+```
 
-- **Customer Role**: Default authenticated users
-- **Staff Role**: Users with `auth.jwt().app_metadata.role = 'staff'` or `auth.jwt().user_metadata.role = 'staff'`
+### View Table Relationships
 
-#### Policy Categories
+```sql
+SELECT
+  tc.table_name,
+  kcu.column_name,
+  ccu.table_name AS foreign_table_name,
+  ccu.column_name AS foreign_column_name
+FROM information_schema.table_constraints AS tc
+JOIN information_schema.key_column_usage AS kcu
+  ON tc.constraint_name = kcu.constraint_name
+  AND tc.table_schema = kcu.table_schema
+JOIN information_schema.constraint_column_usage AS ccu
+  ON ccu.constraint_name = tc.constraint_name
+  AND ccu.table_schema = tc.table_schema
+WHERE tc.constraint_type = 'FOREIGN KEY'
+  AND tc.table_schema = 'public'
+ORDER BY tc.table_name;
+```
 
-1. **Public Read**: Tables accessible to all users
-2. **User Ownership**: Users can only access their own data
-3. **Staff Management**: Staff can manage all data
-4. **System Operations**: Automated system operations
-
-### 📋 Complete Policy Documentation
-
-#### 🏠 User Management Policies
-
-##### `addresses` Table
-
-| Policy Name                              | Command | Condition                                | Description                                |
-| ---------------------------------------- | ------- | ---------------------------------------- | ------------------------------------------ |
-| **Select own addresses**                 | SELECT  | `true`                                   | Users can view all addresses (public read) |
-| **Users can read their own addresses**   | SELECT  | `auth.uid() = user_id`                   | Users can view their own addresses         |
-| **Insert own addresses**                 | INSERT  | `auth.uid() = user_id`                   | Users can create addresses for themselves  |
-| **Users can insert their own addresses** | INSERT  | `auth.uid() = user_id`                   | Duplicate policy for address creation      |
-| **Update own addresses**                 | UPDATE  | `auth.uid() = user_id`                   | Users can modify their own addresses       |
-| **Users can update their own addresses** | UPDATE  | `auth.uid() = user_id`                   | Duplicate policy for address updates       |
-| **Delete own addresses**                 | DELETE  | `auth.uid() = user_id`                   | Users can delete their own addresses       |
-| **Staff can read all addresses**         | SELECT  | `auth.jwt().app_metadata.role = 'staff'` | Staff can view all customer addresses      |
-| **Staff can update all addresses**       | UPDATE  | `auth.jwt().app_metadata.role = 'staff'` | Staff can modify any address               |
-
-**Business Logic:**
-
-- Users have full control over their personal addresses
-- Staff can access all addresses for order management
-- Supports both public and private address viewing
-
-##### `carts` Table
-
-| Policy Name                       | Command | Condition              | Description                 |
 | --------------------------------- | ------- | ---------------------- | --------------------------- |
-| **Allow user to read own carts**  | SELECT  | `user_id = auth.uid()` | Users can view their cart   |
-| **Allow user to insert own cart** | INSERT  | `user_id = auth.uid()` | Users can create their cart |
-| **Allow user to update own cart** | UPDATE  | `user_id = auth.uid()` | Users can modify their cart |
-| **Allow user to delete own cart** | DELETE  | `user_id = auth.uid()` | Users can clear their cart  |
+| **Allow user to read own carts** | SELECT | `user_id = auth.uid()` | Users can view their cart |
+| **Allow user to insert own cart** | INSERT | `user_id = auth.uid()` | Users can create their cart |
+| **Allow user to update own cart** | UPDATE | `user_id = auth.uid()` | Users can modify their cart |
+| **Allow user to delete own cart** | DELETE | `user_id = auth.uid()` | Users can clear their cart |
 
 **Business Logic:**
 
