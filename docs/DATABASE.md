@@ -383,208 +383,363 @@ Enumeration for content publication workflow:
 
 ## 🔐 Row Level Security (RLS) Policies
 
-_Note: Run the following query in Supabase SQL Editor to see all current policies:_
+The YTL Concrete Hub platform implements comprehensive Row Level Security policies to ensure data privacy, security, and proper access control. All policies are designed around two main user roles: **customers** and **staff**.
+
+### 🏛️ Policy Architecture
+
+#### User Role Detection
+
+The system uses JWT token metadata to identify user roles:
+
+- **Customer Role**: Default authenticated users
+- **Staff Role**: Users with `auth.jwt().app_metadata.role = 'staff'` or `auth.jwt().user_metadata.role = 'staff'`
+
+#### Policy Categories
+
+1. **Public Read**: Tables accessible to all users
+2. **User Ownership**: Users can only access their own data
+3. **Staff Management**: Staff can manage all data
+4. **System Operations**: Automated system operations
+
+### 📋 Complete Policy Documentation
+
+#### 🏠 User Management Policies
+
+##### `addresses` Table
+
+| Policy Name                              | Command | Condition                                | Description                                |
+| ---------------------------------------- | ------- | ---------------------------------------- | ------------------------------------------ |
+| **Select own addresses**                 | SELECT  | `true`                                   | Users can view all addresses (public read) |
+| **Users can read their own addresses**   | SELECT  | `auth.uid() = user_id`                   | Users can view their own addresses         |
+| **Insert own addresses**                 | INSERT  | `auth.uid() = user_id`                   | Users can create addresses for themselves  |
+| **Users can insert their own addresses** | INSERT  | `auth.uid() = user_id`                   | Duplicate policy for address creation      |
+| **Update own addresses**                 | UPDATE  | `auth.uid() = user_id`                   | Users can modify their own addresses       |
+| **Users can update their own addresses** | UPDATE  | `auth.uid() = user_id`                   | Duplicate policy for address updates       |
+| **Delete own addresses**                 | DELETE  | `auth.uid() = user_id`                   | Users can delete their own addresses       |
+| **Staff can read all addresses**         | SELECT  | `auth.jwt().app_metadata.role = 'staff'` | Staff can view all customer addresses      |
+| **Staff can update all addresses**       | UPDATE  | `auth.jwt().app_metadata.role = 'staff'` | Staff can modify any address               |
+
+**Business Logic:**
+
+- Users have full control over their personal addresses
+- Staff can access all addresses for order management
+- Supports both public and private address viewing
+
+##### `carts` Table
+
+| Policy Name                       | Command | Condition              | Description                 |
+| --------------------------------- | ------- | ---------------------- | --------------------------- |
+| **Allow user to read own carts**  | SELECT  | `user_id = auth.uid()` | Users can view their cart   |
+| **Allow user to insert own cart** | INSERT  | `user_id = auth.uid()` | Users can create their cart |
+| **Allow user to update own cart** | UPDATE  | `user_id = auth.uid()` | Users can modify their cart |
+| **Allow user to delete own cart** | DELETE  | `user_id = auth.uid()` | Users can clear their cart  |
+
+**Business Logic:**
+
+- Strict ownership model - users only access their own cart
+- No staff override for cart management (privacy)
+
+##### `notifications` Table
+
+| Policy Name                                  | Command | Condition              | Description                                  |
+| -------------------------------------------- | ------- | ---------------------- | -------------------------------------------- |
+| **Allow user to read own notifications**     | SELECT  | `user_id = auth.uid()` | Users can view their notifications           |
+| **Users can view their own notifications**   | SELECT  | `auth.uid() = user_id` | Duplicate read policy                        |
+| **Allow user to insert own notifications**   | INSERT  | `user_id = auth.uid()` | Users can create notifications               |
+| **Allow user to update own notifications**   | UPDATE  | `user_id = auth.uid()` | Users can mark notifications as read         |
+| **Users can update their own notifications** | UPDATE  | `auth.uid() = user_id` | Duplicate update policy                      |
+| **Allow user to delete own notifications**   | DELETE  | `user_id = auth.uid()` | Users can delete notifications               |
+| **Users can delete their own notifications** | DELETE  | `user_id = auth.uid()` | Duplicate delete policy                      |
+| **System can insert notifications**          | INSERT  | `true`                 | System can create notifications for any user |
+| **System can update notifications**          | UPDATE  | `true`                 | System can update notification status        |
+
+**Business Logic:**
+
+- Users have full control over their notifications
+- System can create/update notifications for automated processes
+- No staff access to user notifications (privacy)
+
+##### `wishlists` Table
+
+| Policy Name                              | Command | Condition              | Description                         |
+| ---------------------------------------- | ------- | ---------------------- | ----------------------------------- |
+| **Users can view their own wishlists**   | SELECT  | `auth.uid() = user_id` | Users can view their wishlist items |
+| **Users can insert their own wishlists** | INSERT  | `auth.uid() = user_id` | Users can add items to wishlist     |
+| **Users can delete their own wishlists** | DELETE  | `auth.uid() = user_id` | Users can remove wishlist items     |
+
+**Business Logic:**
+
+- Personal wishlist management
+- No update policy (delete and re-insert pattern)
+- Privacy-focused - no staff access
+
+#### 🛍️ Product Catalog Policies
+
+##### `products` Table
+
+| Policy Name                              | Command | Condition               | Description               |
+| ---------------------------------------- | ------- | ----------------------- | ------------------------- |
+| **Allow public read access to products** | SELECT  | `true`                  | Anyone can view products  |
+| **Allow staff to insert products**       | INSERT  | `auth.role() = 'staff'` | Staff can create products |
+| **Allow staff to update products**       | UPDATE  | `auth.role() = 'staff'` | Staff can modify products |
+| **Allow staff to delete products**       | DELETE  | `auth.role() = 'staff'` | Staff can remove products |
+
+**Business Logic:**
+
+- Public product catalog for browsing
+- Staff-only product management
+- No customer product modifications
+
+##### `product_images` Table
+
+| Policy Name                                    | Command | Condition               | Description                     |
+| ---------------------------------------------- | ------- | ----------------------- | ------------------------------- |
+| **Allow public read access to product_images** | SELECT  | `true`                  | Anyone can view product images  |
+| **Allow staff to insert product_images**       | INSERT  | `auth.role() = 'staff'` | Staff can upload product images |
+| **Allow staff to update product_images**       | UPDATE  | `auth.role() = 'staff'` | Staff can modify image metadata |
+| **Allow staff to delete product_images**       | DELETE  | `auth.role() = 'staff'` | Staff can remove product images |
+
+**Business Logic:**
+
+- Public image access for product browsing
+- Staff-only image management
+- Supports product image galleries
+
+#### 🛒 Order Management Policies
+
+##### `orders` Table
+
+| Policy Name                               | Command | Condition                                | Description                                    |
+| ----------------------------------------- | ------- | ---------------------------------------- | ---------------------------------------------- |
+| **Users can read their own orders**       | SELECT  | `auth.uid() = user_id`                   | Users can view their order history             |
+| **Users can insert their own orders**     | INSERT  | `auth.uid() = user_id`                   | Users can create orders                        |
+| **Users can update their own orders**     | UPDATE  | `auth.uid() = user_id`                   | Users can modify pending orders                |
+| **Staff can read all orders**             | SELECT  | `auth.jwt().app_metadata.role = 'staff'` | Staff can view all orders                      |
+| **Staff can create orders for customers** | INSERT  | `auth.jwt().app_metadata.role = 'staff'` | Staff can create orders on behalf of customers |
+| **Staff can update all orders**           | UPDATE  | `auth.jwt().app_metadata.role = 'staff'` | Staff can modify any order                     |
+| **Staff can delete orders**               | DELETE  | `auth.jwt().app_metadata.role = 'staff'` | Staff can cancel/remove orders                 |
+
+**Business Logic:**
+
+- Users manage their own orders
+- Staff have full order management capabilities
+- Order lifecycle tracking and management
+
+##### `order_items` Table
+
+| Policy Name                                       | Command | Condition                                                                                              | Description                          |
+| ------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------ |
+| **Users can read their own order items**          | SELECT  | `EXISTS (SELECT 1 FROM orders WHERE orders.id = order_items.order_id AND orders.user_id = auth.uid())` | Users can view items in their orders |
+| **Users can insert their own order items**        | INSERT  | `EXISTS (SELECT 1 FROM orders WHERE orders.id = order_items.order_id AND orders.user_id = auth.uid())` | Users can add items to their orders  |
+| **Users can create order items for their orders** | INSERT  | `EXISTS (SELECT 1 FROM orders WHERE orders.id = order_items.order_id AND orders.user_id = auth.uid())` | Duplicate insert policy              |
+| **Staff can read all order items**                | SELECT  | `auth.jwt().app_metadata.role = 'staff'`                                                               | Staff can view all order items       |
+| **Staff can insert order items**                  | INSERT  | `auth.jwt().app_metadata.role = 'staff'`                                                               | Staff can add items to any order     |
+| **Staff can create any order items**              | INSERT  | `auth.jwt().app_metadata.role = 'staff'`                                                               | Duplicate staff insert policy        |
+| **Staff can update all order items**              | UPDATE  | `auth.jwt().app_metadata.role = 'staff'`                                                               | Staff can modify any order item      |
+| **Staff can delete order items**                  | DELETE  | `auth.jwt().app_metadata.role = 'staff'`                                                               | Staff can remove order items         |
+
+**Business Logic:**
+
+- Complex ownership validation through order relationship
+- Users can only modify items in their own orders
+- Staff have full order item management
+
+##### `order_additional_services` Table
+
+| Policy Name                                              | Command | Condition                                                                                                            | Description                             |
+| -------------------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| **Users can read their own order additional services**   | SELECT  | `EXISTS (SELECT 1 FROM orders WHERE orders.id = order_additional_services.order_id AND orders.user_id = auth.uid())` | Users can view services on their orders |
+| **Users can insert their own order additional services** | INSERT  | `EXISTS (SELECT 1 FROM orders WHERE orders.id = order_additional_services.order_id AND orders.user_id = auth.uid())` | Users can add services to their orders  |
+| **Staff can read all order additional services**         | SELECT  | `auth.jwt().app_metadata.role = 'staff'`                                                                             | Staff can view all additional services  |
+| **Staff can insert order additional services**           | INSERT  | `auth.jwt().app_metadata.role = 'staff'`                                                                             | Staff can add services to any order     |
+| **Staff can update all order additional services**       | UPDATE  | `auth.jwt().app_metadata.role = 'staff'`                                                                             | Staff can modify service details        |
+| **Staff can delete order additional services**           | DELETE  | `auth.jwt().app_metadata.role = 'staff'`                                                                             | Staff can remove services               |
+
+**Business Logic:**
+
+- Service management tied to order ownership
+- Additional services like delivery upgrades
+- Staff can manage all service assignments
+
+#### 📝 Content Management Policies
+
+##### `blogs` Table
+
+| Policy Name                        | Command | Condition                                | Description                 |
+| ---------------------------------- | ------- | ---------------------------------------- | --------------------------- |
+| **Authenticated can select blogs** | SELECT  | `true`                                   | Anyone can read blog posts  |
+| **Staff can insert blogs**         | INSERT  | `auth.jwt().app_metadata.role = 'staff'` | Staff can create blog posts |
+| **Staff can update blogs**         | UPDATE  | `auth.jwt().app_metadata.role = 'staff'` | Staff can edit blog posts   |
+| **Staff can delete blogs**         | DELETE  | `auth.jwt().app_metadata.role = 'staff'` | Staff can remove blog posts |
+
+##### `blog_images` Table
+
+| Policy Name                              | Command | Condition                                | Description                  |
+| ---------------------------------------- | ------- | ---------------------------------------- | ---------------------------- |
+| **Authenticated can select blog_images** | SELECT  | `true`                                   | Anyone can view blog images  |
+| **Staff can insert blog_images**         | INSERT  | `auth.jwt().app_metadata.role = 'staff'` | Staff can upload blog images |
+| **Staff can update blog_images**         | UPDATE  | `auth.jwt().app_metadata.role = 'staff'` | Staff can modify blog images |
+| **Staff can delete blog_images**         | DELETE  | `auth.jwt().app_metadata.role = 'staff'` | Staff can remove blog images |
+
+##### `blog_tags` Table
+
+| Policy Name                            | Command | Condition                                | Description                       |
+| -------------------------------------- | ------- | ---------------------------------------- | --------------------------------- |
+| **Authenticated can select blog_tags** | SELECT  | `true`                                   | Anyone can view blog tags         |
+| **Staff can insert blog_tags**         | INSERT  | `auth.jwt().app_metadata.role = 'staff'` | Staff can create tag associations |
+| **Staff can update blog_tags**         | UPDATE  | `auth.jwt().app_metadata.role = 'staff'` | Staff can modify tag associations |
+| **Staff can delete blog_tags**         | DELETE  | `auth.jwt().app_metadata.role = 'staff'` | Staff can remove tag associations |
+
+##### `posts` Table
+
+| Policy Name                     | Command | Condition                                 | Description                     |
+| ------------------------------- | ------- | ----------------------------------------- | ------------------------------- |
+| **Public read access to posts** | SELECT  | `true`                                    | Anyone can read marketing posts |
+| **Staff can insert posts**      | INSERT  | `auth.jwt().user_metadata.role = 'staff'` | Staff can create posts          |
+| **Staff can update posts**      | UPDATE  | `auth.jwt().user_metadata.role = 'staff'` | Staff can edit posts            |
+| **Staff can delete posts**      | DELETE  | `auth.jwt().user_metadata.role = 'staff'` | Staff can remove posts          |
+
+#### ❓ FAQ Management Policies
+
+##### `faq` Table
+
+_Note: This table has multiple overlapping policies that should be consolidated_
+
+| Policy Name                        | Command | Condition                                 | Description                   |
+| ---------------------------------- | ------- | ----------------------------------------- | ----------------------------- |
+| **Allow all to read FAQs**         | SELECT  | `true`                                    | Public FAQ access             |
+| **Public can view FAQs**           | SELECT  | `true`                                    | Duplicate public read policy  |
+| **Allow select for all**           | SELECT  | `true`                                    | Another duplicate public read |
+| **Staff can manage FAQs**          | ALL     | `auth.jwt().user_metadata.role = 'staff'` | Staff full access             |
+| **Staff can insert FAQs**          | INSERT  | `auth.role() = 'staff'`                   | Staff can create FAQs         |
+| **Staff can update FAQ**           | UPDATE  | Multiple staff role checks                | Staff can edit FAQs           |
+| **Staff can update FAQs**          | UPDATE  | `auth.role() = 'staff'`                   | Duplicate staff update        |
+| **Allow insert for all**           | INSERT  | `true`                                    | Public FAQ creation (risky)   |
+| **Allow insert for authenticated** | INSERT  | `auth.role() = 'authenticated'`           | Authenticated FAQ creation    |
+
+**⚠️ Security Recommendation:**
+The FAQ table has redundant and potentially insecure policies. Consider consolidating to:
+
+- Public SELECT access
+- Staff-only INSERT/UPDATE/DELETE access
+
+##### `faq_sections` Table
+
+| Policy Name                       | Command | Condition               | Description                  |
+| --------------------------------- | ------- | ----------------------- | ---------------------------- |
+| **Public can view FAQ sections**  | SELECT  | `true`                  | Anyone can view FAQ sections |
+| **Staff can insert FAQ sections** | INSERT  | `auth.role() = 'staff'` | Staff can create sections    |
+| **Staff can update FAQ sections** | UPDATE  | `auth.role() = 'staff'` | Staff can modify sections    |
+| **Staff can delete FAQ sections** | DELETE  | `auth.role() = 'staff'` | Staff can remove sections    |
+
+#### 📞 Customer Service Policies
+
+##### `enquiries` Table
+
+| Policy Name                        | Command | Condition                                 | Description                          |
+| ---------------------------------- | ------- | ----------------------------------------- | ------------------------------------ |
+| **Users can select own enquiry**   | SELECT  | `auth.uid() = user_id`                    | Users can view their support tickets |
+| **Users can insert own enquiry**   | INSERT  | `auth.uid() = user_id`                    | Users can create support tickets     |
+| **Users can update own enquiry**   | UPDATE  | `auth.uid() = user_id`                    | Users can modify their tickets       |
+| **Users can delete own enquiry**   | DELETE  | `auth.uid() = user_id`                    | Users can cancel their tickets       |
+| **Staff can select all enquiries** | SELECT  | `auth.jwt().user_metadata.role = 'staff'` | Staff can view all support tickets   |
+| **Staff can update all enquiries** | UPDATE  | `auth.jwt().user_metadata.role = 'staff'` | Staff can respond to tickets         |
+| **Staff can delete all enquiries** | DELETE  | `auth.jwt().user_metadata.role = 'staff'` | Staff can close tickets              |
+
+**Business Logic:**
+
+- Customer self-service for support tickets
+- Staff can manage all customer enquiries
+- Full ticket lifecycle management
+
+### 🔧 Policy Implementation Notes
+
+#### Role Authentication Patterns
+
+The system uses several patterns for role detection:
+
+1. **App Metadata**: `auth.jwt().app_metadata.role = 'staff'`
+2. **User Metadata**: `auth.jwt().user_metadata.role = 'staff'`
+3. **Direct Role**: `auth.role() = 'staff'`
+
+#### Common Policy Patterns
+
+##### Ownership Validation
 
 ```sql
-SELECT schemaname, tablename, policyname, roles, cmd, qual, with_check
-FROM pg_policies
-WHERE schemaname = 'public'
-ORDER BY tablename, policyname;
+-- Direct user ownership
+auth.uid() = user_id
+
+-- Related table ownership (orders -> order_items)
+EXISTS (
+  SELECT 1 FROM orders
+  WHERE orders.id = order_items.order_id
+  AND orders.user_id = auth.uid()
+)
 ```
 
-### Recommended Policy Structure
-
-#### User Data Policies
-
-- **addresses**: Users can only access their own addresses
-- **carts**: Users can only access their own cart
-- **cart_items**: Users can only modify items in their own cart
-- **orders**: Users can only view their own orders
-- **notifications**: Users can only see their own notifications
-- **wishlists**: Users can only manage their own wishlist
-- **enquiries**: Users can only view their own enquiries
-
-#### Public Read Policies
-
-- **products**: Public read access for product catalog
-- **product_images**: Public read access for product images
-- **blogs**: Public read access for published blogs
-- **blog_images**: Public read access for blog images
-- **faq**: Public read access for published FAQs
-- **posts**: Public read access for published posts
-- **tags**: Public read access
-- **additional_services**: Public read access for active services
-- **freight_charges**: Public read access for active charges
-
-#### Staff/Admin Policies
-
-- **All tables**: Full CRUD access for authenticated staff users
-- **Content management**: Create, update, delete access for content tables
-
-## ⚙️ Database Functions
-
-_Note: Run the following query to see all custom functions:_
+##### Staff Authorization
 
 ```sql
-SELECT routine_name, routine_definition, routine_type
-FROM information_schema.routines
-WHERE routine_schema = 'public'
-AND routine_type = 'FUNCTION'
-ORDER BY routine_name;
+-- Standard staff check
+auth.jwt().app_metadata.role = 'staff'
+
+-- Alternative staff checks
+auth.jwt().user_metadata.role = 'staff'
+auth.role() = 'staff'
 ```
 
-### Common Functions Needed
-
-#### Cart Management
+##### Public Access
 
 ```sql
--- Function to calculate cart total
-CREATE OR REPLACE FUNCTION calculate_cart_total(cart_uuid uuid)
-RETURNS numeric AS $$
--- Function implementation here
-$$ LANGUAGE plpgsql;
+-- Universal access
+true
+
+-- Authenticated users only
+auth.role() = 'authenticated'
 ```
 
-#### Order Processing
+### 🔒 Security Best Practices
 
-```sql
--- Function to create order from cart
-CREATE OR REPLACE FUNCTION create_order_from_cart(user_uuid uuid, address_uuid uuid)
-RETURNS uuid AS $$
--- Function implementation here
-$$ LANGUAGE plpgsql;
-```
+#### Implemented Security Measures
 
-#### Inventory Management
+1. **Principle of Least Privilege**: Users can only access their own data
+2. **Role-Based Access Control**: Staff have elevated permissions
+3. **Data Isolation**: Customer data is isolated between accounts
+4. **Public Content**: Product and content data is publicly readable
+5. **Audit Trail**: All policies are logged and trackable
 
-```sql
--- Function to update product stock
-CREATE OR REPLACE FUNCTION update_product_stock(product_uuid uuid, quantity_change integer)
-RETURNS boolean AS $$
--- Function implementation here
-$$ LANGUAGE plpgsql;
-```
+#### Recommendations for Improvement
 
-## 📊 Database Relationships
+1. **Consolidate Duplicate Policies**: Remove redundant policies in FAQ table
+2. **Standardize Role Checks**: Use consistent role detection pattern
+3. **Review Public Insert Policies**: Ensure FAQ public insert is intentional
+4. **Add Policy Documentation**: Document business justification for each policy
+5. **Regular Security Audits**: Periodic review of policy effectiveness
 
-### Primary Relationships
+### 📊 Policy Summary by Table
 
-```mermaid
-erDiagram
-    users ||--o{ addresses : "has many"
-    users ||--|| carts : "has one"
-    users ||--o{ orders : "places many"
-    users ||--o{ notifications : "receives many"
-    users ||--o{ wishlists : "has many"
-    users ||--o{ enquiries : "creates many"
+| Table                       | Public Read | User CRUD     | Staff Management | Notes                  |
+| --------------------------- | ----------- | ------------- | ---------------- | ---------------------- |
+| `addresses`                 | ✅          | ✅ Own data   | ✅ All data      | Customer addresses     |
+| `carts`                     | ❌          | ✅ Own data   | ❌               | Private shopping carts |
+| `notifications`             | ❌          | ✅ Own data   | ❌ System only   | User notifications     |
+| `wishlists`                 | ❌          | ✅ Own data   | ❌               | Personal wishlists     |
+| `products`                  | ✅          | ❌            | ✅ All data      | Product catalog        |
+| `product_images`            | ✅          | ❌            | ✅ All data      | Product images         |
+| `orders`                    | ❌          | ✅ Own data   | ✅ All data      | Order management       |
+| `order_items`               | ❌          | ✅ Own orders | ✅ All data      | Order contents         |
+| `order_additional_services` | ❌          | ✅ Own orders | ✅ All data      | Order services         |
+| `blogs`                     | ✅          | ❌            | ✅ All data      | Blog content           |
+| `blog_images`               | ✅          | ❌            | ✅ All data      | Blog images            |
+| `blog_tags`                 | ✅          | ❌            | ✅ All data      | Blog categorization    |
+| `posts`                     | ✅          | ❌            | ✅ All data      | Marketing posts        |
+| `faq`                       | ✅          | ⚠️ Risky      | ✅ All data      | FAQ content            |
+| `faq_sections`              | ✅          | ❌            | ✅ All data      | FAQ organization       |
+| `enquiries`                 | ❌          | ✅ Own data   | ✅ All data      | Customer support       |
 
-    carts ||--o{ cart_items : "contains many"
-    products ||--o{ cart_items : "appears in many"
-    products ||--o{ product_images : "has many"
-    products ||--o{ order_items : "appears in many"
+**Legend:**
 
-    orders ||--o{ order_items : "contains many"
-    orders ||--o{ order_additional_services : "has many"
-    orders }o--|| addresses : "ships to"
-
-    blogs ||--o{ blog_images : "has many"
-    blogs ||--o{ blog_tags : "has many"
-    tags ||--o{ blog_tags : "used in many"
-
-    faq_sections ||--o{ faq : "contains many"
-    additional_services ||--o{ order_additional_services : "applied to many"
-```
-
-## 🚀 Usage Examples
-
-### Product Queries
-
-```sql
--- Get all published concrete products with pricing
-SELECT p.*, pi.image_url as primary_image
-FROM products p
-LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_primary = true
-WHERE p.status = 'published'
-  AND p.product_type = 'concrete'
-  AND p.is_active = true
-ORDER BY p.is_featured DESC, p.created_at DESC;
-```
-
-### Order Processing
-
-```sql
--- Get complete order details with items
-SELECT
-  o.*,
-  a.full_name, a.address_line1, a.city,
-  oi.name as product_name, oi.quantity, oi.price
-FROM orders o
-JOIN addresses a ON o.address_id = a.id
-JOIN order_items oi ON o.id = oi.order_id
-WHERE o.user_id = $1
-ORDER BY o.created_at DESC;
-```
-
-### Shopping Cart
-
-```sql
--- Get user's cart with product details
-SELECT
-  ci.*,
-  p.name, p.grade, p.normal_price, p.pump_price,
-  pi.image_url
-FROM cart_items ci
-JOIN carts c ON ci.cart_id = c.id
-JOIN products p ON ci.product_id = p.id
-LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_primary = true
-WHERE c.user_id = $1;
-```
-
-## 📈 Performance Considerations
-
-### Indexes
-
-Essential indexes for optimal performance:
-
-```sql
--- Product search performance
-CREATE INDEX idx_products_status_type ON products(status, product_type);
-CREATE INDEX idx_products_search ON products USING gin(to_tsvector('english', name || ' ' || description));
-
--- Order processing performance
-CREATE INDEX idx_orders_user_status ON orders(user_id, status);
-CREATE INDEX idx_orders_created_at ON orders(created_at DESC);
-
--- Cart performance
-CREATE INDEX idx_cart_items_cart_id ON cart_items(cart_id);
-CREATE INDEX idx_cart_items_product_id ON cart_items(product_id);
-```
-
-### Query Optimization
-
-- Use appropriate JOINs instead of subqueries where possible
-- Implement pagination for large result sets
-- Use partial indexes for frequently filtered columns
-- Consider materialized views for complex analytics queries
-
-## 🔧 Maintenance
-
-### Regular Tasks
-
-1. **Cleanup soft-deleted addresses** (older than 1 year)
-2. **Archive completed orders** (older than 2 years)
-3. **Clean up abandoned carts** (older than 30 days)
-4. **Update product search indexes**
-5. **Analyze query performance**
-
-### Backup Strategy
-
-- **Daily**: Automated Supabase backups
-- **Weekly**: Full schema and data export
-- **Monthly**: Point-in-time recovery testing
-
----
-
-## 📞 Support
-
-For database-related questions or schema modifications, contact the development team or refer to the [Supabase documentation](https://supabase.com/docs).
+- ✅ = Allowed
+- ❌ = Not allowed
+- ⚠️ = Security concern
