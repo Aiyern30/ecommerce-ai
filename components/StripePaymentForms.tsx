@@ -329,6 +329,27 @@ export function StripePaymentForm({
 
   return (
     <div className="space-y-6">
+      {/* TEST MODE NOTICE UI */}
+      <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 mb-2 flex items-start space-x-3">
+        <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+        <div className="flex-1 text-sm">
+          <span className="font-semibold text-yellow-800 dark:text-yellow-200">
+            Test Mode:
+          </span>
+          <span className="text-yellow-700 dark:text-yellow-300">
+            &nbsp;You are currently in test mode. You can safely enter any
+            bank/card details; no real money will be deducted from your account.
+            <br />
+            If you are concerned, use the following test card:
+            <br />
+            <span className="font-mono bg-yellow-100 dark:bg-yellow-800 px-2 py-1 rounded inline-block mt-1">
+              4242 4242 4242 4242 &nbsp; Exp: 12/27 &nbsp; CVC: 484
+            </span>
+          </span>
+        </div>
+      </div>
+      {/* END TEST MODE NOTICE UI */}
+
       <div className="flex items-center justify-center space-x-2 text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
         <Shield className="h-4 w-4 text-green-600" />
         <span>Secured by Stripe • SSL Encrypted</span>
