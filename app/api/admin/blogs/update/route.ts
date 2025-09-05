@@ -1,10 +1,8 @@
 // app/api/admin/blogs/update/route.ts
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 
 export async function PUT(req: Request) {
-  const supabase = createRouteHandlerClient({ cookies });
   const body = await req.json();
 
   const {
@@ -25,7 +23,7 @@ export async function PUT(req: Request) {
   }
 
   // 1. Update main blog
-  const { error: blogError } = await supabase
+  const { error: blogError } = await supabaseAdmin
     .from("blogs")
     .update({
       title,
@@ -43,22 +41,22 @@ export async function PUT(req: Request) {
   }
 
   // 2. Update tags
-  await supabase.from("blog_tags").delete().eq("blog_id", id);
+  await supabaseAdmin.from("blog_tags").delete().eq("blog_id", id);
   if (tags?.length > 0) {
-    await supabase
+    await supabaseAdmin
       .from("blog_tags")
       .insert(tags.map((tagId: string) => ({ blog_id: id, tag_id: tagId })));
   }
 
   // 3. Update images
-  await supabase.from("blog_images").delete().eq("blog_id", id);
+  await supabaseAdmin.from("blog_images").delete().eq("blog_id", id);
   if (images?.length > 0) {
-    await supabase
+    await supabaseAdmin
       .from("blog_images")
       .insert(images.map((url: string) => ({ blog_id: id, image_url: url })));
   }
 
-  // 4. Delete removed images from Supabase Storage
+  // 4. Delete removed images from supabaseAdmin Storage
   if (removedImages?.length > 0) {
     const pathsToRemove = removedImages
       .map((url: string) => {
@@ -68,7 +66,7 @@ export async function PUT(req: Request) {
       .filter(Boolean);
 
     if (pathsToRemove.length > 0) {
-      await supabase.storage.from("blogs").remove(pathsToRemove);
+      await supabaseAdmin.storage.from("blogs").remove(pathsToRemove);
     }
   }
 
