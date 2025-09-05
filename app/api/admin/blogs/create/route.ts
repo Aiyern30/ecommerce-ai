@@ -1,11 +1,9 @@
 // app/api/admin/blogs/create/route.ts
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  const supabase = createRouteHandlerClient({ cookies });
-
   try {
     const body = await req.json();
     const {
@@ -28,7 +26,7 @@ export async function POST(req: Request) {
     }
 
     // 1. Insert main blog
-    const { data: blog, error: blogError } = await supabase
+    const { data: blog, error: blogError } = await supabaseAdmin
       .from("blogs")
       .insert({
         title,
@@ -54,7 +52,7 @@ export async function POST(req: Request) {
 
     // 2. Insert tags if provided
     if (Array.isArray(tags) && tags.length > 0) {
-      const { error: tagsError } = await supabase.from("blog_tags").insert(
+      const { error: tagsError } = await supabaseAdmin.from("blog_tags").insert(
         tags.map((tagId: string) => ({
           blog_id: blogId,
           tag_id: tagId,
@@ -69,12 +67,14 @@ export async function POST(req: Request) {
 
     // 3. Insert images if provided
     if (Array.isArray(images) && images.length > 0) {
-      const { error: imagesError } = await supabase.from("blog_images").insert(
-        images.map((imageUrl: string) => ({
-          blog_id: blogId,
-          image_url: imageUrl,
-        }))
-      );
+      const { error: imagesError } = await supabaseAdmin
+        .from("blog_images")
+        .insert(
+          images.map((imageUrl: string) => ({
+            blog_id: blogId,
+            image_url: imageUrl,
+          }))
+        );
 
       if (imagesError) {
         console.error("Failed to insert blog images:", imagesError.message);
