@@ -26,6 +26,7 @@ import { TypographyH2, TypographyP } from "@/components/ui/Typography";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { ArrowLeft, Edit, FileText, Trash2 } from "lucide-react";
 import { Faq } from "@/type/faqs";
+import { toast } from "sonner";
 
 export default function FaqViewPage() {
   const params = useParams();
@@ -38,10 +39,9 @@ export default function FaqViewPage() {
   const handleDeleteFaq = async (id: string) => {
     setIsDeleting(true);
     try {
-      const res = await fetch("/api/admin/faqs/delete", {
-        method: "POST",
+      const res = await fetch(`/api/admin/faqs/delete?id=${id}`, {
+        method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
       });
 
       const result = await res.json();
@@ -49,6 +49,7 @@ export default function FaqViewPage() {
       if (!res.ok) {
         alert("Failed to delete FAQ: " + result.error);
       } else {
+        toast.success("FAQ deleted successfully");
         router.push("/staff/faqs");
       }
     } catch (error) {

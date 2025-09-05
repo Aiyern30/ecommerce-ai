@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 
 export async function DELETE(req: Request) {
   try {
-    const { id } = await req.json();
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
 
     if (!id) {
       return NextResponse.json({ error: "Missing FAQ ID" }, { status: 400 });
