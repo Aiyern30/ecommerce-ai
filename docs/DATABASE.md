@@ -435,11 +435,37 @@ WHERE tc.constraint_type = 'FOREIGN KEY'
 ORDER BY tc.table_name;
 ```
 
+## 🛡️ Row Level Security Policies
+
+This section documents the comprehensive Row Level Security (RLS) policies implemented across all tables to ensure data privacy and access control.
+
+### 👤 User Data Access Policies
+
+#### 📋 User Profile Tables
+
+##### `addresses` Table
+
+| Policy Name                            | Command | Condition              | Description                      |
+| -------------------------------------- | ------- | ---------------------- | -------------------------------- |
+| **Allow user to read own addresses**   | SELECT  | `user_id = auth.uid()` | Users can view their addresses   |
+| **Allow user to insert own addresses** | INSERT  | `user_id = auth.uid()` | Users can add new addresses      |
+| **Allow user to update own addresses** | UPDATE  | `user_id = auth.uid()` | Users can modify their addresses |
+| **Allow user to delete own addresses** | DELETE  | `user_id = auth.uid()` | Users can remove their addresses |
+
+**Business Logic:**
+
+- Complete user ownership of address data
+- No cross-user address access
+- No staff override (privacy protection)
+
+##### `carts` Table
+
+| Policy Name                       | Command | Condition              | Description                 |
 | --------------------------------- | ------- | ---------------------- | --------------------------- |
-| **Allow user to read own carts** | SELECT | `user_id = auth.uid()` | Users can view their cart |
-| **Allow user to insert own cart** | INSERT | `user_id = auth.uid()` | Users can create their cart |
-| **Allow user to update own cart** | UPDATE | `user_id = auth.uid()` | Users can modify their cart |
-| **Allow user to delete own cart** | DELETE | `user_id = auth.uid()` | Users can clear their cart |
+| **Allow user to read own carts**  | SELECT  | `user_id = auth.uid()` | Users can view their cart   |
+| **Allow user to insert own cart** | INSERT  | `user_id = auth.uid()` | Users can create their cart |
+| **Allow user to update own cart** | UPDATE  | `user_id = auth.uid()` | Users can modify their cart |
+| **Allow user to delete own cart** | DELETE  | `user_id = auth.uid()` | Users can clear their cart  |
 
 **Business Logic:**
 
