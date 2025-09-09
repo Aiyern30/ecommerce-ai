@@ -166,15 +166,6 @@ export function StripePaymentForm({
 
       setProcessingStage("Creating payment intent...");
 
-      // Log the data being sent for debugging
-      console.log("Selected items being sent:", selectedItems);
-      console.log("Subtotal calculated:", subtotal);
-      console.log("Services total:", servicesTotal);
-      console.log("Freight cost:", freightCost);
-      console.log("Tax:", tax);
-      console.log("Total:", total);
-
-      // Send comprehensive order data to create-payment-intent
       const paymentIntentResponse = await fetch("/api/create-payment-intent", {
         method: "POST",
         headers: {
@@ -218,8 +209,6 @@ export function StripePaymentForm({
       if (!clientSecret || !orderId) {
         throw new Error("Invalid response from payment intent creation");
       }
-
-      console.log("PaymentIntent created for order:", orderId);
 
       setProcessingStage("Processing payment...");
 
