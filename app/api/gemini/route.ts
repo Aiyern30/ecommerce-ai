@@ -16,7 +16,38 @@ import { Product } from "@/type/product";
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
+async function listModels(apiKey: string) {
+  try {
+    const response = await fetch(
+      "https://generativelanguage.googleapis.com/v1/models?key=" + apiKey,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Available models:", data.models);
+
+    // Filter for generateContent capable models
+    const generateContentModels = data.models?.filter((model: any) =>
+      model.supportedGenerationMethods?.includes("generateContent")
+    );
+
+    console.log("Models that support generateContent:", generateContentModels);
+    return generateContentModels;
+  } catch (error) {
+    console.error("Error listing models:", error);
+    throw error;
+  }
+}
+listModels(genAI.apiKey);
 interface Message {
   id: string;
   content: string;
@@ -489,7 +520,7 @@ export async function POST(request: NextRequest) {
     const systemPrompt = generateSystemPrompt(products, intentAnalysis);
 
     // Initialize Gemini model - using the correct model name
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     // Prepare the full prompt with intent-aware context
     const fullPrompt = `${systemPrompt}
