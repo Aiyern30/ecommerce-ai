@@ -16,8 +16,6 @@ const baseMetadata: Metadata = {
     shortcut: "/favicon.svg",
   },
   manifest: "/site.webmanifest",
-  themeColor: "#3B82F6",
-  viewport: "width=device-width, initial-scale=1",
   robots: "index, follow",
   authors: [{ name: "YTL Concrete Hub" }],
   creator: "YTL Concrete Hub",

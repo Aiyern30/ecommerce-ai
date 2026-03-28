@@ -1,6 +1,6 @@
 import "./globals.css";
 import "./custom.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SupabaseProvider } from "@/components/SupabaseProvider";
@@ -15,6 +15,12 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#3B82F6",
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const headersList = await headers();
