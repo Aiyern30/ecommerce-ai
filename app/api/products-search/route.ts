@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
         is_primary,
         sort_order
       )
-    `
+    `,
     )
     .eq("is_active", true)
     .eq("status", "published")
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
 
   if (q && q.length >= 2) {
     queryBuilder = queryBuilder.or(
-      `name.ilike.%${q}%,grade.ilike.%${q}%,keywords.cs.{${q}}`
+      `name.ilike.%${q}%,grade.ilike.%${q}%,keywords.cs.{${q}}`,
     );
   }
 

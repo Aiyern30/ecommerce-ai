@@ -32,7 +32,7 @@ export class ConcreteProductSearchManager {
 
   async searchProducts(
     query: string,
-    options: ProductSearchOptions = {}
+    options: ProductSearchOptions = {},
   ): Promise<Product[]> {
     try {
       const supabase = await this.getSupabaseClient();
@@ -54,7 +54,7 @@ export class ConcreteProductSearchManager {
           normal_price, pump_price, tremie_1_price, tremie_2_price, tremie_3_price,
           unit, stock_quantity, status, is_featured, is_active, keywords,
           created_at, updated_at
-        `
+        `,
         )
         .eq("status", "published")
         .eq("is_active", true);
@@ -92,7 +92,7 @@ export class ConcreteProductSearchManager {
       if (query.trim()) {
         // Search in multiple fields
         queryBuilder = queryBuilder.or(
-          `name.ilike.%${query}%,description.ilike.%${query}%,grade.ilike.%${query}%,keywords.cs.{${query}}`
+          `name.ilike.%${query}%,description.ilike.%${query}%,grade.ilike.%${query}%,keywords.cs.{${query}}`,
         );
       }
 
@@ -116,7 +116,7 @@ export class ConcreteProductSearchManager {
 
   async getProductsByType(
     productType: "concrete" | "mortar",
-    limit = 10
+    limit = 10,
   ): Promise<Product[]> {
     try {
       const supabase = await this.getSupabaseClient();
@@ -128,7 +128,7 @@ export class ConcreteProductSearchManager {
           normal_price, pump_price, tremie_1_price, tremie_2_price, tremie_3_price,
           unit, stock_quantity, status, is_featured, is_active, keywords,
           created_at, updated_at
-        `
+        `,
         )
         .eq("product_type", productType)
         .eq("status", "published")
@@ -161,7 +161,7 @@ export class ConcreteProductSearchManager {
           normal_price, pump_price, tremie_1_price, tremie_2_price, tremie_3_price,
           unit, stock_quantity, status, is_featured, is_active, keywords,
           created_at, updated_at
-        `
+        `,
         )
         .eq("grade", grade)
         .eq("status", "published")
@@ -193,7 +193,7 @@ export class ConcreteProductSearchManager {
           normal_price, pump_price, tremie_1_price, tremie_2_price, tremie_3_price,
           unit, stock_quantity, status, is_featured, is_active, keywords,
           created_at, updated_at
-        `
+        `,
         )
         .eq("is_featured", true)
         .eq("status", "published")
@@ -219,7 +219,7 @@ export class ConcreteProductSearchManager {
       productType?: "concrete" | "mortar";
       excludeIds?: string[];
       limit?: number;
-    } = {}
+    } = {},
   ): Promise<Product[]> {
     try {
       const supabase = await this.getSupabaseClient();
@@ -240,7 +240,7 @@ export class ConcreteProductSearchManager {
             is_primary,
             sort_order
           )
-        `
+        `,
         )
         .eq("status", "published")
         .eq("is_active", true)
@@ -254,7 +254,7 @@ export class ConcreteProductSearchManager {
         queryBuilder = queryBuilder.not(
           "id",
           "in",
-          `(${excludeIds.join(",")})`
+          `(${excludeIds.join(",")})`,
         );
       }
 
@@ -347,7 +347,7 @@ export class ConcreteProductSearchManager {
 
   // Helper method to get all available prices for a product
   getAllPrices(
-    product: Product
+    product: Product,
   ): { type: string; price: number; label: string }[] {
     const prices = [];
 

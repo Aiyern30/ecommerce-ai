@@ -25,7 +25,7 @@ async function listModels(apiKey: string) {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -37,7 +37,7 @@ async function listModels(apiKey: string) {
 
     // Filter for generateContent capable models
     const generateContentModels = data.models?.filter((model: any) =>
-      model.supportedGenerationMethods?.includes("generateContent")
+      model.supportedGenerationMethods?.includes("generateContent"),
     );
 
     console.log("Models that support generateContent:", generateContentModels);
@@ -66,7 +66,7 @@ async function searchProducts(
   priceRange?: { min?: number; max?: number },
   productType?: "concrete" | "mortar",
   mortarRatio?: string,
-  limit = 5
+  limit = 5,
 ): Promise<Product[]> {
   const cookieStore = await cookies();
   const supabase = createRouteHandlerClient({
@@ -86,7 +86,7 @@ async function searchProducts(
           is_primary,
           sort_order
         )
-      `
+      `,
       )
       .eq("status", "published")
       .gt("stock_quantity", 0);
@@ -118,7 +118,7 @@ async function searchProducts(
     // Enhanced text search
     if (query && query.length > 2) {
       queryBuilder = queryBuilder.or(
-        `name.ilike.%${query}%, description.ilike.%${query}%, grade.ilike.%${query}%, mortar_ratio.ilike.%${query}%, keywords.cs.{${query}}`
+        `name.ilike.%${query}%, description.ilike.%${query}%, grade.ilike.%${query}%, mortar_ratio.ilike.%${query}%, keywords.cs.{${query}}`,
       );
     }
 
@@ -145,7 +145,7 @@ async function searchProducts(
 // Enhanced recommendations with mortar support
 async function getSmartRecommendations(
   intentData: any,
-  limit = 3
+  limit = 3,
 ): Promise<Product[]> {
   const cookieStore = await cookies();
   const supabase = createRouteHandlerClient({
@@ -165,7 +165,7 @@ async function getSmartRecommendations(
           is_primary,
           sort_order
         )
-      `
+      `,
       )
       .eq("status", "published")
       .gt("stock_quantity", 0);
@@ -176,7 +176,7 @@ async function getSmartRecommendations(
 
       if (intentData.applicationType) {
         const recommendedRatios = getMortarRatioRecommendations(
-          intentData.applicationType
+          intentData.applicationType,
         );
         if (recommendedRatios.length > 0) {
           queryBuilder = queryBuilder.in("mortar_ratio", recommendedRatios);
@@ -189,7 +189,7 @@ async function getSmartRecommendations(
         const recommendedGrades =
           ConcreteIntentAnalyzer.getGradeRecommendations(
             intentData.applicationType,
-            intentData.projectType
+            intentData.projectType,
           );
         if (recommendedGrades.length > 0) {
           queryBuilder = queryBuilder.in("grade", recommendedGrades);
@@ -249,7 +249,7 @@ function getPriceColumn(deliveryMethod?: string): string {
 // Generate enhanced system prompt with concrete business context
 function generateSystemPrompt(
   products: Product[],
-  intentAnalysis: any
+  intentAnalysis: any,
 ): string {
   const productContext =
     products.length > 0
@@ -350,7 +350,7 @@ Remember: Help customers choose the right concrete grade OR mortar ratio and del
 
 // Enhanced intent-based product filtering
 async function getProductsBasedOnIntent(
-  intentAnalysis: any
+  intentAnalysis: any,
 ): Promise<Product[]> {
   const { intent, extractedData } = intentAnalysis;
   let products: Product[] = [];
@@ -364,7 +364,7 @@ async function getProductsBasedOnIntent(
         undefined,
         extractedData.priceRange,
         "mortar",
-        extractedData.mortarRatio
+        extractedData.mortarRatio,
       );
       break;
 
@@ -376,7 +376,7 @@ async function getProductsBasedOnIntent(
         extractedData.deliveryMethod,
         extractedData.priceRange,
         extractedData.productType,
-        extractedData.mortarRatio
+        extractedData.mortarRatio,
       );
       break;
 
@@ -388,7 +388,7 @@ async function getProductsBasedOnIntent(
           undefined,
           undefined,
           undefined,
-          "mortar"
+          "mortar",
         );
       } else {
         products = await searchProducts("", extractedData.grade);
@@ -408,7 +408,7 @@ async function getProductsBasedOnIntent(
         extractedData.priceRange,
         extractedData.productType,
         extractedData.mortarRatio,
-        8
+        8,
       );
       break;
 
@@ -431,7 +431,7 @@ async function getProductsBasedOnIntent(
     case "stock_inquiry":
       products = await searchProducts(
         extractedData.query || "",
-        extractedData.grade
+        extractedData.grade,
       );
       break;
 
@@ -439,7 +439,7 @@ async function getProductsBasedOnIntent(
     case "technical_question":
       products = await searchProducts(
         extractedData.query || "",
-        extractedData.grade
+        extractedData.grade,
       );
       break;
 
@@ -451,7 +451,7 @@ async function getProductsBasedOnIntent(
           undefined,
           undefined,
           undefined,
-          "mortar"
+          "mortar",
         );
       } else if (extractedData.query && extractedData.query.length > 2) {
         products = await searchProducts(extractedData.query);
@@ -470,7 +470,7 @@ export async function POST(request: NextRequest) {
     if (!message) {
       return NextResponse.json(
         { error: "Message is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -501,7 +501,7 @@ export async function POST(request: NextRequest) {
       // Generate context-aware suggestions
       suggestions = ConcreteIntentAnalyzer.generateSuggestions(
         intentAnalysis.intent,
-        intentAnalysis.extractedData
+        intentAnalysis.extractedData,
       );
     } else {
       // For non-construction queries, provide general suggestions
@@ -521,7 +521,7 @@ export async function POST(request: NextRequest) {
           (msg: Message) =>
             `${msg.sender === "user" ? "Customer" : "Assistant"}: ${
               msg.content
-            }`
+            }`,
         )
         ?.join("\n") || "";
 
@@ -600,7 +600,7 @@ Keep the response conversational and focused on helping the customer make inform
       const cartItems = await getCartItemsServerSide(user.id);
       const item = cartItems.find(
         (ci) =>
-          ci.product?.name?.toLowerCase().replace(/\s+/g, " ") === productName
+          ci.product?.name?.toLowerCase().replace(/\s+/g, " ") === productName,
       );
       if (item) {
         await removeFromCartServerSide(item.id);
@@ -650,7 +650,7 @@ Keep the response conversational and focused on helping the customer make inform
       const cartItems = await getCartItemsServerSide(user.id);
       const item = cartItems.find(
         (ci) =>
-          ci.product?.name?.toLowerCase().replace(/\s+/g, " ") === productName
+          ci.product?.name?.toLowerCase().replace(/\s+/g, " ") === productName,
       );
       if (item) {
         await updateCartItemQuantityServerSide(item.id, newQty);
@@ -675,7 +675,7 @@ Keep the response conversational and focused on helping the customer make inform
       intentAnalysis.intent === "order_status" ||
       (typeof message === "string" &&
         /(order status|track order|my orders|recent orders|order history|show my orders|show recent orders|where is my order|show order)/i.test(
-          message
+          message,
         ))
     ) {
       if (!user?.id) {
@@ -713,7 +713,7 @@ Keep the response conversational and focused on helping the customer make inform
           ],
         },
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

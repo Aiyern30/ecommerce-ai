@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     if (!idempotencyKey) {
       return NextResponse.json(
         { error: "Idempotency key required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     if (!shippingAddress) {
       return NextResponse.json(
         { error: "Shipping address required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     if (existingOrder && existingOrder.payment_intent_id) {
       try {
         const paymentIntent = await stripe.paymentIntents.retrieve(
-          existingOrder.payment_intent_id
+          existingOrder.payment_intent_id,
         );
 
         if (paymentIntent.metadata.idempotencyKey === idempotencyKey) {
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
         }
         return sum;
       },
-      0
+      0,
     );
 
     let shippingCost = 0;
@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
       console.error("Order creation error:", orderError);
       return NextResponse.json(
         { error: "Failed to create order", details: orderError?.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -215,7 +215,7 @@ export async function POST(request: NextRequest) {
           } else {
             console.error(
               `Order items creation error (attempt ${retryCount + 1}):`,
-              itemsError
+              itemsError,
             );
 
             if (itemsError.code === "42501" && retryCount < maxRetries - 1) {
@@ -224,7 +224,7 @@ export async function POST(request: NextRequest) {
             } else {
               console.error(
                 "Failed to create order items after retries:",
-                itemsError
+                itemsError,
               );
               break;
             }
@@ -232,7 +232,7 @@ export async function POST(request: NextRequest) {
         } catch (insertError) {
           console.error(
             `Order items insertion exception (attempt ${retryCount + 1}):`,
-            insertError
+            insertError,
           );
           retryCount++;
           if (retryCount >= maxRetries) break;
@@ -242,7 +242,7 @@ export async function POST(request: NextRequest) {
 
       if (!itemsInserted) {
         console.error(
-          "Order created but order items could not be inserted due to permissions"
+          "Order created but order items could not be inserted due to permissions",
         );
       }
     }
@@ -252,7 +252,7 @@ export async function POST(request: NextRequest) {
         .filter(([, service]) => service !== null)
         .map(([serviceCode]: [string, any]) => {
           const serviceData = additionalServices.find(
-            (s: any) => s.service_code === serviceCode
+            (s: any) => s.service_code === serviceCode,
           );
           return {
             order_id: order.id,
@@ -273,7 +273,7 @@ export async function POST(request: NextRequest) {
         if (servicesError) {
           console.error(
             "Order additional services creation error:",
-            servicesError
+            servicesError,
           );
         }
       }
@@ -300,7 +300,7 @@ export async function POST(request: NextRequest) {
     if (updateError) {
       console.error(
         "Failed to update order with payment intent ID:",
-        updateError
+        updateError,
       );
     }
 
@@ -315,7 +315,7 @@ export async function POST(request: NextRequest) {
         error: error instanceof Error ? error.message : "Internal server error",
         details: "Failed to create order",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

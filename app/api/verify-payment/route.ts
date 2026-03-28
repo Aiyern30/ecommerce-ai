@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
           autoRefreshToken: false,
           persistSession: false,
         },
-      }
+      },
     );
 
     const {
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
           quantity,
           variant_type
         )
-      `
+      `,
       )
       .eq("id", orderId)
       .eq("user_id", user.id)
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     if (updateError) {
       return NextResponse.json(
         { error: "Failed to update order" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
             if (fetchError) {
               console.error(
                 `Failed to fetch product ${item.product_id}:`,
-                fetchError
+                fetchError,
               );
               return { error: fetchError, product_id: item.product_id };
             }
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
             if (stockError) {
               console.error(
                 `Failed to update stock for product ${item.product_id}:`,
-                stockError
+                stockError,
               );
               return { error: stockError, product_id: item.product_id };
             }
@@ -129,11 +129,11 @@ export async function POST(request: NextRequest) {
           } catch (itemError) {
             console.error(
               `Exception updating stock for product ${item.product_id}:`,
-              itemError
+              itemError,
             );
             return { error: itemError, product_id: item.product_id };
           }
-        }
+        },
       );
 
       const results = await Promise.allSettled(quantityUpdates);
@@ -176,7 +176,7 @@ export async function POST(request: NextRequest) {
         user_id: user.id,
         title: "Order Placed Successfully!",
         message: `Your order ${orderId} has been placed successfully and payment confirmed. Total: RM${typedOrder.total.toFixed(
-          2
+          2,
         )}`,
         type: "order",
         order_id: orderId,
@@ -197,7 +197,7 @@ export async function POST(request: NextRequest) {
     console.error("Payment verification error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

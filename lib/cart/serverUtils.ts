@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import type { CartItem } from "@/type/cart";
 
 export async function getOrCreateCartServerSide(
-  userId: string
+  userId: string,
 ): Promise<string | null> {
   const cookieStore = await cookies();
   const supabase = createRouteHandlerClient({
@@ -47,7 +47,7 @@ export async function getOrCreateCartServerSide(
 }
 
 export async function getCartItemsServerSide(
-  userId: string
+  userId: string,
 ): Promise<CartItem[]> {
   const cookieStore = await cookies();
   const supabase = createRouteHandlerClient({
@@ -82,7 +82,7 @@ export async function getCartItemsServerSide(
             sort_order
           )
         )
-      `
+      `,
       )
       .eq("cart_id", cartId)
       .order("created_at", { ascending: false });
@@ -117,7 +117,7 @@ export async function getCartItemsServerSide(
 }
 
 export async function removeFromCartServerSide(
-  itemId: string
+  itemId: string,
 ): Promise<boolean> {
   const cookieStore = await cookies();
   const supabase = createRouteHandlerClient({
@@ -144,7 +144,7 @@ export async function removeFromCartServerSide(
 
 export async function updateCartItemQuantityServerSide(
   itemId: string,
-  quantity: number
+  quantity: number,
 ): Promise<boolean> {
   const cookieStore = await cookies();
   const supabase = createRouteHandlerClient({
@@ -179,7 +179,7 @@ export async function updateCartItemQuantityServerSide(
 // Server-side version of getRecentOrders
 export async function getRecentOrdersServerSide(
   userId: string,
-  limit: number = 5
+  limit: number = 5,
 ) {
   const cookieStore = await cookies();
   const supabase = createRouteHandlerClient({
@@ -201,7 +201,7 @@ export async function getRecentOrdersServerSide(
             grade
           )
         )
-      `
+      `,
       )
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
