@@ -23,10 +23,11 @@ export interface ProductSearchOptions {
 }
 
 export class ConcreteProductSearchManager {
-  private supabase;
-
-  constructor() {
-    this.supabase = createRouteHandlerClient({ cookies });
+  private async getSupabaseClient() {
+    const cookieStore = await cookies();
+    return createRouteHandlerClient({
+      cookies: (() => cookieStore) as unknown as typeof cookies,
+    });
   }
 
   async searchProducts(
@@ -34,6 +35,7 @@ export class ConcreteProductSearchManager {
     options: ProductSearchOptions = {}
   ): Promise<Product[]> {
     try {
+      const supabase = await this.getSupabaseClient();
       const {
         limit = 10,
         productType,
@@ -44,7 +46,7 @@ export class ConcreteProductSearchManager {
         featured,
       } = options;
 
-      let queryBuilder = this.supabase
+      let queryBuilder = supabase
         .from("products")
         .select(
           `
@@ -117,7 +119,8 @@ export class ConcreteProductSearchManager {
     limit = 10
   ): Promise<Product[]> {
     try {
-      const { data, error } = await this.supabase
+      const supabase = await this.getSupabaseClient();
+      const { data, error } = await supabase
         .from("products")
         .select(
           `
@@ -149,7 +152,8 @@ export class ConcreteProductSearchManager {
 
   async getProductsByGrade(grade: string, limit = 10): Promise<Product[]> {
     try {
-      const { data, error } = await this.supabase
+      const supabase = await this.getSupabaseClient();
+      const { data, error } = await supabase
         .from("products")
         .select(
           `
@@ -180,7 +184,8 @@ export class ConcreteProductSearchManager {
 
   async getFeaturedProducts(limit = 5): Promise<Product[]> {
     try {
-      const { data, error } = await this.supabase
+      const supabase = await this.getSupabaseClient();
+      const { data, error } = await supabase
         .from("products")
         .select(
           `
@@ -217,9 +222,10 @@ export class ConcreteProductSearchManager {
     } = {}
   ): Promise<Product[]> {
     try {
+      const supabase = await this.getSupabaseClient();
       const { productType, excludeIds = [], limit = 5 } = options;
 
-      let queryBuilder = this.supabase
+      let queryBuilder = supabase
         .from("products")
         .select(
           `
@@ -271,7 +277,8 @@ export class ConcreteProductSearchManager {
 
   async getAvailableGrades(): Promise<string[]> {
     try {
-      const { data, error } = await this.supabase
+      const supabase = await this.getSupabaseClient();
+      const { data, error } = await supabase
         .from("products")
         .select("grade")
         .eq("status", "published")
@@ -293,7 +300,8 @@ export class ConcreteProductSearchManager {
 
   async getProductTypes(): Promise<string[]> {
     try {
-      const { data, error } = await this.supabase
+      const supabase = await this.getSupabaseClient();
+      const { data, error } = await supabase
         .from("products")
         .select("product_type")
         .eq("status", "published")

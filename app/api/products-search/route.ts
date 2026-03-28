@@ -5,7 +5,10 @@ import { cookies } from "next/headers";
 export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams.get("q")?.trim() || "";
 
-  const supabase = createRouteHandlerClient({ cookies });
+  const cookieStore = await cookies();
+  const supabase = createRouteHandlerClient({
+    cookies: (() => cookieStore) as unknown as typeof cookies,
+  });
 
   let queryBuilder = supabase
     .from("products")

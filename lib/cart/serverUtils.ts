@@ -7,7 +7,10 @@ import type { CartItem } from "@/type/cart";
 export async function getOrCreateCartServerSide(
   userId: string
 ): Promise<string | null> {
-  const supabase = createRouteHandlerClient({ cookies });
+  const cookieStore = await cookies();
+  const supabase = createRouteHandlerClient({
+    cookies: (() => cookieStore) as unknown as typeof cookies,
+  });
 
   try {
     const { data: existingCart, error: fetchError } = await supabase
@@ -46,7 +49,10 @@ export async function getOrCreateCartServerSide(
 export async function getCartItemsServerSide(
   userId: string
 ): Promise<CartItem[]> {
-  const supabase = createRouteHandlerClient({ cookies });
+  const cookieStore = await cookies();
+  const supabase = createRouteHandlerClient({
+    cookies: (() => cookieStore) as unknown as typeof cookies,
+  });
 
   try {
     const cartId = await getOrCreateCartServerSide(userId);
@@ -113,7 +119,10 @@ export async function getCartItemsServerSide(
 export async function removeFromCartServerSide(
   itemId: string
 ): Promise<boolean> {
-  const supabase = createRouteHandlerClient({ cookies });
+  const cookieStore = await cookies();
+  const supabase = createRouteHandlerClient({
+    cookies: (() => cookieStore) as unknown as typeof cookies,
+  });
 
   try {
     const { error } = await supabase
@@ -137,7 +146,10 @@ export async function updateCartItemQuantityServerSide(
   itemId: string,
   quantity: number
 ): Promise<boolean> {
-  const supabase = createRouteHandlerClient({ cookies });
+  const cookieStore = await cookies();
+  const supabase = createRouteHandlerClient({
+    cookies: (() => cookieStore) as unknown as typeof cookies,
+  });
 
   try {
     if (quantity <= 0) {
@@ -169,7 +181,10 @@ export async function getRecentOrdersServerSide(
   userId: string,
   limit: number = 5
 ) {
-  const supabase = createRouteHandlerClient({ cookies });
+  const cookieStore = await cookies();
+  const supabase = createRouteHandlerClient({
+    cookies: (() => cookieStore) as unknown as typeof cookies,
+  });
 
   try {
     const { data, error } = await supabase

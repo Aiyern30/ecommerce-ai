@@ -68,7 +68,10 @@ async function searchProducts(
   mortarRatio?: string,
   limit = 5
 ): Promise<Product[]> {
-  const supabase = createRouteHandlerClient({ cookies });
+  const cookieStore = await cookies();
+  const supabase = createRouteHandlerClient({
+    cookies: (() => cookieStore) as unknown as typeof cookies,
+  });
 
   try {
     let queryBuilder = supabase
@@ -144,7 +147,10 @@ async function getSmartRecommendations(
   intentData: any,
   limit = 3
 ): Promise<Product[]> {
-  const supabase = createRouteHandlerClient({ cookies });
+  const cookieStore = await cookies();
+  const supabase = createRouteHandlerClient({
+    cookies: (() => cookieStore) as unknown as typeof cookies,
+  });
 
   try {
     let queryBuilder = supabase
@@ -468,7 +474,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = createRouteHandlerClient({ cookies });
+    const cookieStore = await cookies();
+    const supabase = createRouteHandlerClient({
+      cookies: (() => cookieStore) as unknown as typeof cookies,
+    });
     const {
       data: { user },
       error: authError,

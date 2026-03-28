@@ -8,7 +8,10 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     try {
-      const supabase = createRouteHandlerClient({ cookies });
+      const cookieStore = await cookies();
+      const supabase = createRouteHandlerClient({
+        cookies: (() => cookieStore) as unknown as typeof cookies,
+      });
 
       const { error } = await supabase.auth.exchangeCodeForSession(code);
 
