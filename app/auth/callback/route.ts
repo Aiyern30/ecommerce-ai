@@ -15,15 +15,15 @@ export async function GET(request: NextRequest) {
       if (error) {
         return NextResponse.redirect(
           `${requestUrl.origin}/login?error=${encodeURIComponent(
-            error.message
-          )}`
+            error.message,
+          )}`,
         );
       }
 
       return NextResponse.redirect(requestUrl.origin);
     } catch {
       return NextResponse.redirect(
-        `${requestUrl.origin}/login?error=unexpected_error`
+        `${requestUrl.origin}/login?error=unexpected_error`,
       );
     }
   }
